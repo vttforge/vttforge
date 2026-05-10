@@ -5,23 +5,13 @@ Once a section is done, delete it (or move it into `CHANGELOG.md` under `[Unrele
 
 ---
 
-## 1. DX decisions — fold into PRD **before** implementation starts
+## 1. DX decisions — fold into PRD **before** implementation starts ✅ RESOLVED 2026-05-10
 
-These were discussed but never made it into `PRD.md`. They shape APIs and build config, so they must be locked in before `@vttforge/core` code is written, otherwise they become v0.2 tech debt.
+All three locked in via PRD v1.4. Research backing each decision documented in agent transcript (errors registry: Astro / React / Vue patterns; source maps: Vite/tsdown defaults + Vitest cautionary tale; schema inference: Zod / Valibot / Effect / Drizzle).
 
-- [ ] **Error codes + linkable docs (`VTTF-001`, `VTTF-002`, …)**
-  - Decide error-code namespace (`VTTF-` prefix vs per-package)
-  - Add an `errors/` route to the future docs site (`vttforge.dev/errors/VTTF-042`)
-  - Document the convention in PRD §5 (or a new §5.3 "Errors & diagnostics")
-  - Add a `VttfError` class skeleton to `@vttforge/core`'s scope
-- [ ] **Source maps in published packages**
-  - Configure `tsdown` with `sourcemap: true` (or `"inline"`) per package
-  - Add `**/*.map` to each `package.json` `files` field
-  - Note in PRD §5 that consumer DevTools step into `.mts` source, not minified output
-- [ ] **Schema-to-TS inference — keep in v1.0 or pull forward to v0.1?**
-  - Currently in v1.0. The PRD calls it the #1 stated pain ("double work").
-  - Decision needed: ship `InferSchema<typeof defineSchema>` helper in v0.1 (small surface, big DX win) or hold for v1.0 stable API
-  - If v0.1: add to §7 API design and v0.1 roadmap
+- [x] **Error codes + linkable docs (`VTTF-NNNN`)** — Hybrid: numeric URL key (`VTTF-042`, append-only, stable across majors) + PascalCase `name` field in registry for stack-trace clarity. Single global namespace. Central registry at `packages/core/src/errors/registry.ts`; codegen pre-build hook emits runtime constants + JSON manifest + VitePress `/errors/VTTF-NNN` pages. `VttfError extends Error` with `code`, `name`, `docsUrl`, native `cause` (ES2022). Multi-cause = `AggregateError`. PRD §7 (Errors & diagnostics).
+- [x] **Source maps in published packages** — External `.map` files with `sourcesContent` embedded via `tsdown` `sourcemap: true` + `declarationMap: true`. NOT inline (consumer bundle bloat), NOT hidden (DevTools won't load). PRD §5.3.
+- [x] **Schema-to-TS inference — phased v0.1 / v1.0** — Partial `InferSchema<T>` in v0.1 covering primitive field subset (`NumberField`, `StringField`, `BooleanField`, `HTMLField`, `ArrayField`, `SchemaField`, `ColorField`, `FilePathField`) — ~80% coverage. Full class-level inference (`extends BaseTypeDataModel<typeof Schema>`) + Drizzle-style `$inferData` accessor + remaining fields (`EmbeddedDataField`, `EmbeddedDocumentField`, `TypedSchemaField`) deferred to v1.0, moved to `@vttforge/types` versioned with Foundry support range. Use `Prettify<T>` on all public conditional types for IDE perf. PRD §7 (InferSchema<T>).
 
 ## 2. Repo housekeeping — before first external eyes
 

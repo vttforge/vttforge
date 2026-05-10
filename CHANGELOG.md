@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Decided 2026-05-10 — DX patterns (PRD v1.4)
+
+Three DX patterns locked in after web-source verification (Zod, Valibot, Effect, Drizzle, Astro errors-data, React/Vue numeric codes, Biome diagnostics, tsdown sourcemap):
+
+- **Errors:** hybrid `VTTF-NNNN` (numeric URL key, append-only, stable across majors) + PascalCase `name` field in central registry. `VttfError extends Error` with `code`, `name`, `docsUrl`, native `cause` (ES2022); multi-cause = `AggregateError`. Codegen emits runtime constants + JSON manifest + VitePress `/errors/VTTF-NNN` pages. PRD §7.
+- **Source maps:** external `.map` files with `sourcesContent` embedded via `tsdown` `sourcemap: true` + `declarationMap: true`. NOT inline, NOT hidden. PRD §5.3.
+- **Schema-to-TS inference:** phased — partial `InferSchema<T>` in v0.1 covering primitive fields + nested `SchemaField` + `ArrayField` (~80% coverage); full class-level inference + Drizzle-style `$inferData` accessor in v1.0, moved to `@vttforge/types` versioned with Foundry. Use `Prettify<T>` for IDE perf. PRD §7.
+
 ### Decided 2026-05-10 — Docs site tooling
 
 - **VitePress 1.x stable** chosen for `vttforge.dev` (planned v0.3) over Starlight, Docusaurus, Nextra, Rspress, Fumadocs, and Mintlify. Rationale: native Vite alignment with our existing monorepo, no parallel React/Next.js/Rspack toolchain required.

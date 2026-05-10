@@ -1,6 +1,6 @@
 # VTTForge — Product Requirements Document
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 **Last updated:** 2026-05-10
 **Author:** Fabricio Cavalcante de Souza ([@fcsouza](https://github.com/fcsouza))
 **Status:** Active — names reserved, repo skeleton in progress
@@ -12,6 +12,14 @@
 **VTTForge** is a developer SDK and CLI for building [FoundryVTT](https://foundryvtt.com) v13+ systems and modules. It eliminates boilerplate, introduces declarative APIs, and ships tooling that scaffolds and builds projects from scratch.
 
 The first consumer of this SDK is **Ordem Paranormal RPG** ([`ordemparanormal_fvtt`](https://github.com/fcsouza/ordemparanormal_fvtt)) — a production FoundryVTT system. Every API decision is validated against that codebase before being generalized.
+
+### What changed in v1.4
+
+This revision locks in three DX patterns researched against current 2026 sources (Zod, Valibot, Effect Schema, Drizzle, Astro errors-data, React/Vue numeric codes, Biome diagnostics, tsdown sourcemap):
+
+- **Errors:** new §7 subsection. Hybrid `VTTF-NNNN` numeric URL key + PascalCase `name` field in a central append-only registry. `VttfError` class extends `Error` with native `cause`; `AggregateError` for multi-cause failures. Codegen emits runtime constants + JSON manifest + VitePress doc pages.
+- **Source maps:** new §5.3. External `.map` files with `sourcesContent` embedded via `tsdown` `sourcemap: true` + `declarationMap: true`. NOT inline (consumer-bundle bloat) and NOT hidden (DevTools won't load).
+- **Schema-to-TS inference:** new §7 subsection. Partial type-level `InferSchema<T>` in v0.1 covering ~80% of real Foundry usage (primitive fields + nested SchemaField + ArrayField). Full class-level inference (`extends BaseTypeDataModel<typeof Schema>`) + Drizzle-style `$inferData` deferred to v1.0 in `@vttforge/types`, gated on `fvtt-types` v13 stabilisation. Wrap public conditional types with `Prettify<T>` for IDE perf.
 
 ### What changed in v1.3
 
@@ -208,6 +216,28 @@ These are required to ship a high-quality public TypeScript SDK in 2026. All are
 - `docs/recipes/tailwind-v4.md` — **experimental** until known issues land: `electron-vite#741` (Tailwind v4 broken in Electron via `@tailwindcss/vite`), `tailwindcss#16531`/`#17234` (hover/render bugs on certain Chromium variants).
 
 `@vttforge/styles` is a separate package that provides the base layer using cascade layers (see §6 and §7.5).
+
+### 5.3 Build outputs — source maps & declaration maps
+
+**Decision (verified May 2026):** ship external source maps with embedded source content for every `@vttforge/*` package.
+
+`tsdown.config.ts` per package:
+
+```ts
+{
+  sourcemap: true,        // external `.map` next to `.mjs` (NOT inline, NOT hidden)
+  declarationMap: true,   // `.d.mts.map` so "Go to Definition" jumps to .mts source
+}
+```
+
+- **External `.map` files**, not `inline`. Inlining bakes source into every `.mjs` and inflates the bundle every consumer ships.
+- **`sourcesContent: true`** (tsdown default when `sourcemap: true`) — the original `.mts` text is embedded in the `.map`, so consumers debug into VTTForge source without needing the `src/` directory in `node_modules/`.
+- **NOT `'hidden'`** — that suppresses the `//# sourceMappingURL=` comment and DevTools won't auto-load the map.
+- `**/*.map` files are included via the `dist/` entry in `package.json` `files`.
+- Expected tarball cost: ~30–60% larger than no-maps. Acceptable for an SDK that compresses to 100–300 KB; the runtime bundle Foundry serves is unchanged (consumers only fetch maps when DevTools is open).
+- Same pattern applied to `.d.mts.map` (`declarationMap`) so type-import "Go to Definition" jumps to the original `.mts`.
+
+Pattern matches Vite/tsdown defaults, `Vue 3`, `Astro`, `Drizzle`. Verified against tsdown's `sourcemap` option ([docs](https://tsdown.dev/options/sourcemap)) and the Vitest cautionary tale (`#7976` — what happens when `sourcesContent` is omitted).
 
 ---
 
@@ -468,6 +498,106 @@ vttforge dev --foundry-data /path/to/foundry/Data
 vttforge build
 ```
 
+### `InferSchema<T>` — schema-to-TS inference (phased v0.1 / v1.0)
+
+The PRD's stated #1 pain ("double work — define schema *and* write a matching TS interface") is addressed by a pure type-level utility, modeled on `z.infer` (Zod), `v.InferOutput` (Valibot), and `Schema.Schema.Type` (Effect). Zero runtime cost — entirely TS conditional types.
+
+**v0.1 (partial inference, ships in `@vttforge/core`):**
+
+```ts
+import { BaseTypeDataModel, f, type InferSchema } from "@vttforge/core";
+
+class AgentData extends BaseTypeDataModel {
+  static defineSchema() {
+    return {
+      level:  new f.NumberField({ required: true, integer: true, initial: 1 }),
+      name:   new f.StringField({ required: true, blank: false }),
+      health: new f.SchemaField({
+        value: new f.NumberField({ required: true, min: 0, initial: 10 }),
+        max:   new f.NumberField({ required: true, min: 0, initial: 10 })
+      }),
+      tags:   new f.ArrayField(new f.StringField()),
+      bio:    new f.HTMLField({ initial: "" })
+    };
+  }
+}
+
+type AgentSchema = ReturnType<typeof AgentData.defineSchema>;
+type AgentSystemData = InferSchema<AgentSchema>;
+// → { level: number; name: string; health: { value: number; max: number }; tags: string[]; bio: string }
+```
+
+**Supported field subset in v0.1** (covers ~80% of real Foundry usage):
+
+- `NumberField` → `number`
+- `StringField` → `string`
+- `BooleanField` → `boolean`
+- `HTMLField` → `string`
+- `ArrayField<F>` → `InferField<F>[]`
+- `SchemaField<S>` → `InferSchema<S>` (recursive)
+- `ColorField` → `string`
+- `FilePathField` → `string`
+
+**Out of scope for v0.1, throws `VttfError [VTTF-1xx SchemaInferenceUnsupported]` at type-level helper compilation:**
+
+- `EmbeddedDataField`, `EmbeddedDocumentField` — require Document type graph from `fvtt-types`, which is still beta for v13 (https://github.com/League-of-Foundry-Developers/foundry-vtt-types).
+- `TypedSchemaField` — Foundry issue [#10192](https://github.com/foundryvtt/foundryvtt/issues/10192) tracks the runtime-side gaps.
+- Fields with non-trivial `initial`/`required` interactions affecting nullability.
+
+**v1.0 (full class-level inference, moved to `@vttforge/types`):**
+
+- Class generic: `class AgentData extends BaseTypeDataModel<typeof AgentData.defineSchema>` — `this.system` becomes typed automatically with no separate `InferSchema` step.
+- Drizzle-style on-class accessor: `typeof AgentData.$inferData` (companion to `$inferInsert` if needed).
+- `InferSchema` and friends move to `@vttforge/types`, versioned in lockstep with Foundry support range (mirrors how `fvtt-types` versions tie to Foundry releases).
+- Full coverage of the field hierarchy once `fvtt-types` v13 stabilises (or VTTForge ships its own augmentation).
+
+**TS hygiene (both phases):** all public conditional-type surfaces wrapped in `Prettify<T>` ([Matt Pocock helper](https://www.totaltypescript.com/concepts/the-prettify-helper)) for IDE hover readability. Effect's docs explicitly recommend the `interface T extends Util<typeof S> {}` pattern for TS perf — adopt for the v1.0 class generic.
+
+### Errors & diagnostics — `VttfError` + `VTTF-NNNN` registry
+
+Every runtime error from `@vttforge/*` has a stable code that resolves to a docs page. The shape combines React/Vue's stable numeric URL key with Astro's named, registry-driven approach for grep-friendly stack traces.
+
+**Code shape: hybrid numeric + name.**
+
+- URL key: `VTTF-NNNN` sequential numeric, **stable across major versions, append-only**. URL is `https://vttforge.dev/errors/VTTF-042`.
+- Display name: PascalCase, lives next to the code in the registry (e.g. `SchemaFieldUnknown`). Surfaces in stack traces via the error class name for grep-ability.
+- Retired codes: marked `@deprecated` in registry, doc page kept with a "no longer occurs in vX.Y+" banner. Numbers are never reused.
+
+**Class shape:**
+
+```ts
+import { VttfError } from "@vttforge/core";
+
+throw new VttfError("VTTF-042", {
+  message: "Schema field 'level' is not a known field type.",
+  cause: originalError,             // ES2022 Error.cause; do not invent your own field
+});
+// Renders in stack as:
+//   VttfError [VTTF-042 SchemaFieldUnknown]: Schema field 'level' is not a known field type.
+//   See https://vttforge.dev/errors/VTTF-042
+```
+
+- Extends `Error`. Adds `code: \`VTTF-${number}\``, `name: string` (PascalCase from registry), `docsUrl: string` (computed).
+- The runtime `message` includes the docs URL inline so it shows in unmodified stack traces — same pattern as React's "Minified React error #130; visit react.dev/errors/130".
+- Multi-cause failures use **ES2022 `AggregateError`** with each sub-error as a `VttfError`. Do not invent a custom `causes` array.
+- Codes are stable across majors; URLs are not versioned (`/errors/VTTF-042` describes current behaviour with a history section). Matches Astro/React/Vue.
+
+**Registry & codegen (single source of truth):**
+
+```
+packages/core/src/errors/
+  registry.ts          # The append-only catalog: { "VTTF-042": { name: "SchemaFieldUnknown", title, docs, deprecatedAt? } }
+  codegen.ts           # Build script (run by `tsdown` pre-build hook)
+                       # Emits: runtime constants + JSON manifest + VitePress doc pages
+  index.ts             # Public exports: VttfError, error factories
+```
+
+- VitePress site auto-generates one Markdown page per code under `docs/errors/` from the registry → linkable from anywhere.
+- A JSON manifest (`@vttforge/core/errors.json`) is published so external tooling (linters, observability) can map codes without parsing source.
+- A CI check ensures every `new VttfError("VTTF-XXX", ...)` site uses a code that exists in the registry (catches typos at build time).
+
+**Cross-cutting note:** when v0.1's partial schema inference encounters an unsupported field (e.g. `EmbeddedDataField`), it throws `VttfError("VTTF-1xx")` whose docs page lists the supported subset and v1.0 timeline. Makes the limitation discoverable instead of silent.
+
 ### `@vttforge/styles` — base CSS layer
 
 Ships a CSS foundation that eliminates the most copy-pasted styles in the FoundryVTT community (drag-drop affordances, tab styling, sheet layout primitives) without fighting consumer styles.
@@ -593,7 +723,7 @@ This is the first project to adopt VTTForge. The migration is phased to de-risk 
 
 - [ ] Turborepo monorepo skeleton (`packages/*`, `turbo.json`, root `package.json` with **pnpm 10+ workspaces** + Corepack via `"packageManager"` field)
 - [ ] `pnpm-workspace.yaml` with `catalog:` section pinning shared deps (TS, Vite, Vitest, Biome, etc.)
-- [ ] `tsdown` configured per package for `.mjs` + `.d.mts` output, with explicit `external` and `dts.resolve` config to dodge `rolldown-plugin-dts#199`
+- [ ] `tsdown` configured per package for `.mjs` + `.d.mts` output, with `sourcemap: true` + `declarationMap: true` (external `.map` files, `sourcesContent` embedded) and explicit `external` + `dts.resolve` config to dodge `rolldown-plugin-dts#199`
 - [ ] Biome config (lint + format)
 - [ ] Changesets setup with `changeset-bot` GH App on the repo
 - [ ] `lefthook.yml` with pre-commit Biome and pre-push typecheck
@@ -611,6 +741,8 @@ This is the first project to adopt VTTForge. The migration is phased to de-risk 
   - [ ] `BaseItemSheet`
   - [ ] `createMigrationRunner`
   - [ ] `registerSystem`
+  - [ ] **`InferSchema<T>` partial type-level inference** (NumberField/StringField/BooleanField/HTMLField/ArrayField/SchemaField/ColorField/FilePathField — see §7)
+  - [ ] **Errors registry + `VttfError` class** (`packages/core/src/errors/`) with codegen pre-build hook emitting runtime constants, JSON manifest, and VitePress doc pages
 - [ ] `@vttforge/styles`:
   - [ ] `tokens.css` (consumes Foundry `CONST.CSS_THEMES` vars), `reset.css`, `base.css`, `components.css`, `index.css`
   - [ ] Sub-layer wiring: `@layer vttforge.reset, vttforge.tokens, vttforge.base, vttforge.components;` (NO top-level `foundry` or `system` — those are owned by Foundry v13)
@@ -651,7 +783,7 @@ This is the first project to adopt VTTForge. The migration is phased to de-risk 
 
 ### 🚀 v1.0.0 — Stable API
 
-- [ ] Schema-to-TypeScript inference (no double-typing)
+- [ ] **Full schema-to-TypeScript inference** — class generic (`class AgentData extends BaseTypeDataModel<typeof AgentData.defineSchema>`), Drizzle-style `$inferData` accessor, `InferSchema` and friends moved to `@vttforge/types` (versioned in lockstep with Foundry support range). Full coverage of `EmbeddedDataField`, `EmbeddedDocumentField`, `TypedSchemaField` once `fvtt-types` v13 stabilises.
 - [ ] `@SystemSetting` decorator
 - [ ] `@DocumentSheet` decorator
 - [ ] `@vttforge/testing` (Quench helpers)
@@ -689,6 +821,9 @@ This is the first project to adopt VTTForge. The migration is phased to de-risk 
 - **Trusted publishing** — required from v0.1 (post-Shai-Hulud baseline), via npm OIDC. No `NPM_TOKEN`. ✅
 - **CI workflow shape** — split `changesets.yml` + `publish.yml` per `changesets/action#515`. ✅
 - **Docs site tooling** — VitePress 1.x stable + `@viteplus/versions` + typedoc-vitepress-theme + Twoslash + Pagefind. Locks in v0.3 (`vttforge.dev`). ✅
+- **Error code shape** — hybrid `VTTF-NNNN` (numeric URL key, append-only, stable across majors) + PascalCase `name` field in registry for stack-trace clarity. Single global namespace; central registry in `@vttforge/core`; codegen emits runtime + JSON manifest + VitePress doc pages. `Error.cause` (ES2022) for chaining; `AggregateError` for multi-cause. ✅
+- **Source maps in published packages** — external `.map` files with `sourcesContent` embedded; `tsdown` config `sourcemap: true` + `declarationMap: true`. NOT inline (consumer bundle bloat) and NOT hidden (DevTools won't auto-load). ✅
+- **Schema-to-TS inference timing** — partial `InferSchema<T>` in v0.1 (primitive field subset, ~80% coverage); full class-level inference + `$inferData` accessor in v1.0, moved to `@vttforge/types` versioned with Foundry support range. ✅
 
 ### Still open
 
