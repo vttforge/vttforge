@@ -630,6 +630,25 @@ This is the first project to adopt VTTForge. The migration is phased to de-risk 
 - [ ] `docs/migrating-from-v12.md` — cascade-layer specificity changes when moving from v12
 - [ ] `.github/workflows/canary.yml` — `release: canary` PR label triggers preview publish
 
+### 🛠️ v0.3.0 — CLI scaffolding + docs site
+
+- [ ] `@vttforge/cli`:
+  - [ ] `vttforge init` — system scaffold (TS template using `@vttforge/core` + `@vttforge/styles`)
+  - [ ] `vttforge init` — module scaffold
+  - [ ] `vttforge dev` — wraps Vite + `@vttforge/vite-plugin` preconfigured
+  - [ ] `vttforge build` — bundle + zip for Foundry release submission
+- [ ] **Docs site at `vttforge.dev`** — VitePress 1.x stable (NOT 2.x alpha) hosted as a separate `docs/` workspace package:
+  - [ ] `@viteplus/versions` for versioned docs (`/v0.1/`, `/v0.2/`, …)
+  - [ ] `typedoc` + `typedoc-plugin-markdown` + `typedoc-vitepress-theme` — auto-generate API reference from `tsdown` entrypoints of `@vttforge/core`, `@vttforge/styles`, `@vttforge/cli`, `@vttforge/vite-plugin`
+  - [ ] `@shikijs/vitepress-twoslash` for TS hover types in code blocks (opt-in per block — perf-sensitive)
+  - [ ] Pagefind for offline zero-config search (preferred over Algolia DocSearch — no application required)
+  - [ ] Error code lookup pages at `/errors/VTTF-XXX` (Markdown files in `errors/` directory, file-based routing)
+  - [ ] Recipe pages at `/recipes/` (Tailwind v3, migration from v12, etc.)
+  - [ ] Deploy via Cloudflare Pages or Vercel
+- [ ] Domain `vttforge.dev` registered + DNS pointed at the docs deploy
+
+> Decision recorded 2026-05-10. VitePress chosen over Starlight (runner-up), Docusaurus, Nextra (5 months stale), Rspress (Rspack/React mismatch), Fumadocs (Next.js), Mintlify ($300+/mo lock-in) for tight Vite/pnpm alignment with the existing monorepo and first-class Twoslash support — see `TODO.md` and the open question 9 of §11.
+
 ### 🚀 v1.0.0 — Stable API
 
 - [ ] Schema-to-TypeScript inference (no double-typing)
@@ -669,6 +688,7 @@ This is the first project to adopt VTTForge. The migration is phased to de-risk 
 - **CSS — Foundry theme integration** — `--vttf-*` tokens consume Foundry's `CONST.CSS_THEMES` variables. ✅
 - **Trusted publishing** — required from v0.1 (post-Shai-Hulud baseline), via npm OIDC. No `NPM_TOKEN`. ✅
 - **CI workflow shape** — split `changesets.yml` + `publish.yml` per `changesets/action#515`. ✅
+- **Docs site tooling** — VitePress 1.x stable + `@viteplus/versions` + typedoc-vitepress-theme + Twoslash + Pagefind. Locks in v0.3 (`vttforge.dev`). ✅
 
 ### Still open
 

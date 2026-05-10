@@ -43,7 +43,7 @@ Can land in parallel with the v0.1 monorepo skeleton PR; not a blocker for start
 
 Don't pre-decide these; resolve when the relevant PR comes up.
 
-- [ ] **Docs site tooling for `vttforge.dev`** — VitePress vs Starlight (Astro) vs Nextra. Decide when v0.3 starts. Recommendation pending: VitePress for tight Vite alignment.
+- [x] **Docs site tooling for `vttforge.dev`** — **Decided 2026-05-10: VitePress 1.x stable** (not 2.x alpha) + `@viteplus/versions` (versioning) + `typedoc-plugin-markdown` + `typedoc-vitepress-theme` (API reference from tsdown entrypoints) + `@shikijs/vitepress-twoslash` (TS hover types in code blocks, opt-in per block due to perf cost) + Pagefind (zero-config offline search). Rationale: native Vite alignment with our stack, no parallel React/Next.js/Rspack toolchain. Folded into PRD §9 v0.3 roadmap.
 - [ ] **Foundry Theme V2 token contract** — exact list of `CONST.CSS_THEMES` variables to consume. Inspect Foundry v13.341+ source before finalizing `@vttforge/styles/tokens.css`.
 - [ ] **Semver / deprecation policy** — explicit policy doc (deprecation window, breaking-change cadence). Defer until just before v1.0 RC.
 - [ ] **`@scope` adoption** — track Foundry compatibility through v0.2 sheet examples; decide for v1.0.

@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Decided 2026-05-10 — Docs site tooling
+
+- **VitePress 1.x stable** chosen for `vttforge.dev` (planned v0.3) over Starlight, Docusaurus, Nextra, Rspress, Fumadocs, and Mintlify. Rationale: native Vite alignment with our existing monorepo, no parallel React/Next.js/Rspack toolchain required.
+- **Companion plugins:** `@viteplus/versions` (versioned docs), `typedoc-plugin-markdown` + `typedoc-vitepress-theme` (auto API reference from tsdown entrypoints), `@shikijs/vitepress-twoslash` (TS hover types in code blocks, opt-in per block), Pagefind (offline zero-config search).
+- **Restored v0.3 roadmap section** (CLI scaffolding + docs site) which was inadvertently dropped during the v1.2 PRD edits.
+
 ### Changed (PRD v1.3 — verification corrections, May 2026)
 
 - **CSS cascade layer naming corrected.** Foundry v13 already owns top-level layer names (`reset, variables, elements, blocks, applications, compatibility, layouts, system, modules, exceptions`) and auto-wraps consumer manifest CSS in the `system` layer. VTTForge's published CSS uses *only* a vendored sub-layer prefix: `@layer vttforge.reset, vttforge.tokens, vttforge.base, vttforge.components`. The previous draft's top-level `foundry` and `system` names would have been ignored or misordered by Foundry's runtime.
