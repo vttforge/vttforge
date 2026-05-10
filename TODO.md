@@ -18,9 +18,6 @@ These were discussed but never made it into `PRD.md`. They shape APIs and build 
   - Configure `tsdown` with `sourcemap: true` (or `"inline"`) per package
   - Add `**/*.map` to each `package.json` `files` field
   - Note in PRD §5 that consumer DevTools step into `.mts` source, not minified output
-- [ ] **`vttforge migrate` codemod — decide v0.2 vs v1.0**
-  - If v0.2: add to roadmap §9, commit to a codemod runner choice (`jscodeshift` vs `ts-morph` vs `ast-grep`)
-  - If v1.0: leave out of v0.x scope explicitly so it doesn't get half-built
 - [ ] **Schema-to-TS inference — keep in v1.0 or pull forward to v0.1?**
   - Currently in v1.0. The PRD calls it the #1 stated pain ("double work").
   - Decision needed: ship `InferSchema<typeof defineSchema>` helper in v0.1 (small surface, big DX win) or hold for v1.0 stable API
