@@ -1,15 +1,43 @@
 # VTTForge — Long Horizon
 
-Ideas parked for **after v1.0** (or beyond). Not actionable now.
-Things move here when they're valuable but not aligned with current priorities,
-or when the cost-to-benefit only makes sense once the SDK is stable.
+Items parked for later. Two kinds live here:
 
-Promote an item out of here by moving it into `TODO.md` (with a target version)
-or into `PRD.md` (if it's becoming a concrete deliverable).
+- **Tactical deferrals** — decisions intentionally pushed to a specific later milestone (e.g. enable at v0.1 release, not now)
+- **Strategic ideas** — valuable but only make sense once the SDK is stable (e.g. post-v1.0 codemod tooling)
+
+Each item lists its **revisit point** so it doesn't get forgotten.
+
+Promote an item out of here by moving it into `TODO.md` (with a target version) or into `PRD.md` (if it's becoming a concrete deliverable).
+
+---
+
+## `.github/FUNDING.yml` — GitHub Sponsors / Patreon
+
+**Revisit point:** at the v0.1.0 release PR.
+
+**What it is.** A `.github/FUNDING.yml` file (2 lines) that surfaces a "Sponsor" button on the repository, pointing to GitHub Sponsors and/or other platforms.
+
+**Why deferred.** Pre-v0.1 means there's no usable artefact yet. Adding a Sponsor button before shipping anything signals "pay before I deliver" — wrong signal for an early-stage open-source project that builds trust via execution, not capture. Cost of deferring is zero (the file is trivial to add later); cost of doing it now is a small but real reputational tax.
+
+**Why not post-v1.0 either.** The window matters: at v0.1 release there's launch enthusiasm — users who try the SDK and find it valuable are the most likely to support it. Waiting until v1.0 misses that window.
+
+**When promoted (at v0.1 PR):**
+
+- Confirm GitHub Sponsors enabled on the `fcsouza` account (or a dedicated `vttforge` org account if created)
+- Decide whether to list Patreon, Ko-fi, Open Collective, etc. in addition — keep it minimal (GitHub Sponsors only is fine)
+- Phrasing in README/docs: explicitly "no required tiers, no paid features" to keep the community-first posture aligned with PRD §11 open question #4 lean
+- File shape:
+  ```yaml
+  github: fcsouza
+  ```
+
+Tracked back to PRD §11 still-open #4 (sponsorship decision). Promotion to `TODO.md` collapses that open question.
 
 ---
 
 ## `vttforge migrate` — codemod for adopting VTTForge from a vanilla FoundryVTT system
+
+**Revisit point:** after v1.0 ships, once at least 2-3 community systems have manually adopted VTTForge.
 
 **What it is.** A CLI command (`vttforge migrate`) that runs codemod scripts over an existing FoundryVTT system source tree and rewrites the boilerplate patterns audited in PRD §3 into VTTForge equivalents:
 

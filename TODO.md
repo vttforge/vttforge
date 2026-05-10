@@ -13,9 +13,9 @@ All three locked in via PRD v1.4. Research backing each decision documented in a
 - [x] **Source maps in published packages** — External `.map` files with `sourcesContent` embedded via `tsdown` `sourcemap: true` + `declarationMap: true`. NOT inline (consumer bundle bloat), NOT hidden (DevTools won't load). PRD §5.3.
 - [x] **Schema-to-TS inference — phased v0.1 / v1.0** — Partial `InferSchema<T>` in v0.1 covering primitive field subset (`NumberField`, `StringField`, `BooleanField`, `HTMLField`, `ArrayField`, `SchemaField`, `ColorField`, `FilePathField`) — ~80% coverage. Full class-level inference (`extends BaseTypeDataModel<typeof Schema>`) + Drizzle-style `$inferData` accessor + remaining fields (`EmbeddedDataField`, `EmbeddedDocumentField`, `TypedSchemaField`) deferred to v1.0, moved to `@vttforge/types` versioned with Foundry support range. Use `Prettify<T>` on all public conditional types for IDE perf. PRD §7 (InferSchema<T>).
 
-## 2. Repo housekeeping — before first external eyes ✅ DONE 2026-05-10 (except FUNDING.yml)
+## 2. Repo housekeeping — before first external eyes ✅ DONE 2026-05-10
 
-All landed in the v1.4 housekeeping commit. `FUNDING.yml` skipped pending the sponsorship decision (PRD §11 still-open #4).
+All landed in the v1.4 housekeeping commit. `FUNDING.yml` deferred to `LONG-HORIZON.md` (revisit at v0.1.0 release PR).
 
 - [x] **`LICENSE`** — MIT, Copyright 2026 Fabricio Cavalcante de Souza and contributors
 - [x] **`.gitignore`** — Node/TS/pnpm/Turborepo/Vitest/Biome + Foundry `Data/` symlink
@@ -25,8 +25,8 @@ All landed in the v1.4 housekeeping commit. `FUNDING.yml` skipped pending the sp
 - [x] **`.github/ISSUE_TEMPLATE/feature_request.yml`** — form with problem, proposed solution, alternatives, target package, target version
 - [x] **`.github/ISSUE_TEMPLATE/config.yml`** — disables blank issues; links to Security advisories, Foundry contact, and Discussions
 - [x] **`.github/PULL_REQUEST_TEMPLATE.md`** — type-of-change, affected packages, checklist (changeset, tests, typecheck, lint, PRD/CHANGELOG, error registry)
-- [ ] **`.github/FUNDING.yml`** — **depends on** PRD §11 still-open #4 (sponsorship decision). Lean in PRD is "enable sponsors at v0.1, no required tiers" but author hasn't confirmed. Skip until decided.
 - [x] **`CODE_OF_CONDUCT.md`** — Contributor Covenant 2.1, GitHub private advisory as enforcement contact (until a dedicated channel exists)
+- ⏭️ **`.github/FUNDING.yml`** — moved to [`LONG-HORIZON.md`](./LONG-HORIZON.md). Revisit at v0.1.0 release PR.
 
 ## 3. Open technical decisions — decide just-in-time, not blocking
 
