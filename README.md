@@ -76,7 +76,7 @@ vttforge build
 1. **Zero lock-in.** VTTForge outputs plain `.mjs` files that Foundry loads natively. You can drop VTTForge from your project at any time.
 2. **Type-safe by default.** Full TypeScript declarations. Eventually, schema-to-type inference (Zod-style) so you stop double-typing your data models.
 3. **Battle-tested.** Every API is validated against [Ordem Paranormal RPG](https://github.com/fcsouza/ordemparanormal_fvtt) — a production system — before being shipped.
-4. **Modern tooling.** pnpm + Corepack, Turborepo, `tsdown`, Vite (consumer dev server), Biome, Changesets, `publint` + `attw` + `knip`. The same stack the rest of the JS ecosystem uses in 2026.
+4. **Modern tooling.** pnpm 10+ with Corepack and catalogs, Turborepo, `tsdown` (Rolldown-based), Vite (consumer dev server), Biome (+ optional Oxlint), Changesets with npm OIDC trusted publishing, `publint` + `attw` + `knip` + `syncpack`, `lefthook`. The same stack the rest of the JS ecosystem uses in 2026 — every choice verified against current sources, see [PRD §5.1](./PRD.md#51-publishing-quality-toolkit).
 5. **Community first.** MIT licensed. No paid tiers. Sponsor optional.
 
 ## Roadmap

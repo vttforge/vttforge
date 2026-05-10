@@ -8,13 +8,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed (PRD v1.3 — verification corrections, May 2026)
+
+- **CSS cascade layer naming corrected.** Foundry v13 already owns top-level layer names (`reset, variables, elements, blocks, applications, compatibility, layouts, system, modules, exceptions`) and auto-wraps consumer manifest CSS in the `system` layer. VTTForge's published CSS uses *only* a vendored sub-layer prefix: `@layer vttforge.reset, vttforge.tokens, vttforge.base, vttforge.components`. The previous draft's top-level `foundry` and `system` names would have been ignored or misordered by Foundry's runtime.
+- **Handlebars HMR plugin reference replaced.** The previously cited `nicktindall/vite-plugin-handlebars` does not exist (the GitHub user has no such repo). Replaced with `alexlafroscia/vite-plugin-handlebars` v2.0.3 (Apr 2026, claims Vite 5–8 support) plus a small custom plugin in `@vttforge/vite-plugin` for sheet-template re-render to compensate for known partial-HMR issues.
+- **`foundry-vtt-types` was renamed to `fvtt-types`.** Install via `fvtt-types@github:League-of-Foundry-Developers/foundry-vtt-types#<sha>` and pin a git SHA from `main` (last npm release v13.341.1 is 10 months stale).
+- **CI pipeline modernized:**
+  - `pnpm/action-setup@v4` → `@v6` (v4 is two majors behind).
+  - npm Trusted Publishing (OIDC) is GA since 2025-07-31 — drop `NPM_TOKEN` and the `--provenance` flag (auto-generated under OIDC). Configure trusted publisher per package on npmjs.com.
+  - Split into two workflows (`changesets.yml` opens the Version PR; `publish.yml` runs OIDC publish with `id-token: write`) per `changesets/action#515`.
+  - npm CLI ≥ 11.5.1, Node ≥ 22.14.0 required.
+- **Tailwind recipe split:** v3 is the primary recipe (`docs/recipes/tailwind-v3.md`); v4 is experimental (`docs/recipes/tailwind-v4.md`) until `electron-vite#741` and Chromium hover/render bugs resolve.
+- **Foundry Theme V2 integration:** `@vttforge/styles` `--vttf-*` tokens consume Foundry's `CONST.CSS_THEMES` variables (e.g. `--color-text-primary`, `--background`) instead of redefining them.
+- **pnpm catalogs adopted from v0.1** for cross-workspace dependency pinning. `syncpack` v15+ auto-migrates and validates.
+- **Mantine-style `styles.layer.css`** variant added to `@vttforge/styles` for consumers who want explicit `@layer vttforge` wrapping.
+- **`tsdown` DTS+peer-deps caveat** documented (`rolldown-plugin-dts#199` open since Mar 2026); mitigated via explicit `external` config and `dts.resolve` options.
+- **Optional Oxlint** added as a CI fast-fail layer — v1.0 stable since Aug 2025; not a Biome replacement.
+- **Trusted publishing elevated to v0.1 requirement** (was v1.0 nice-to-have) post the late-2025 supply-chain incidents (Shai-Hulud variants, Bitwarden CLI hijack).
+
 ### Changed (PRD v1.2 — tooling + CSS finalization)
 
 - **Library bundler:** `tsdown` (Rolldown-based) replaces Vite library mode for the SDK packages. Vite remains the dev server consumed by `vttforge dev`.
 - **Package manager:** pnpm + Corepack replaces Bun workspaces for monorepo + publishing.
 - **CSS strategy** finalized:
   - New `@vttforge/styles` package will ship the base CSS layer (tokens, reset, base, components, opt-in themes).
-  - Scoping uses CSS Cascade Layers (`@layer foundry, vttforge.tokens, vttforge.base, vttforge.components, system;`).
+  - Scoping uses CSS Cascade Layers.
   - `@vttforge/vite-plugin` will ship a vanilla CSS + PostCSS pipeline (Sass opt-in via consumer install; Tailwind not bundled — documented recipe only).
 
 ### Removed
@@ -23,15 +41,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Planned for v0.1.0
 
-- Turborepo monorepo skeleton with **pnpm workspaces** + Corepack
-- `tsdown` configured per package (`.mjs` + `.d.mts` output)
-- Biome lint + format config
+- Turborepo monorepo skeleton with **pnpm 10+ workspaces** + Corepack via `"packageManager"` field
+- `pnpm-workspace.yaml` with `catalog:` section pinning shared deps
+- `tsdown` configured per package (`.mjs` + `.d.mts` output) with explicit `external` and `dts.resolve` config
+- Biome lint + format config (Oxlint as optional CI fast-fail pre-check)
 - Changesets for versioning + `changeset-bot` (GH App)
 - `lefthook` git hooks (pre-commit Biome, pre-push typecheck)
-- `syncpack` for cross-package dep version alignment
+- `syncpack` v15+ for cross-package dep version alignment + pnpm catalog migration
 - TypeScript strict + ESM-only base config
-- GitHub Actions CI: `lint`, `typecheck`, `test`, `build`, `package-quality` (`publint` + `@arethetypeswrong/cli`), `knip`
-- GitHub Actions release: `changesets/action@v1` with npm provenance via OIDC
+- `fvtt-types` pinned to a `main` git SHA (not an npm tag)
+- GitHub Actions CI: `lint`, `typecheck`, `test` (Node 22 + 24), `build`, `package-quality` (`publint` + `@arethetypeswrong/cli`), `knip`
+- GitHub Actions release: split `changesets.yml` (Version PR) + `publish.yml` (OIDC trusted publish with `id-token: write`, no `NPM_TOKEN`, no `--provenance` flag)
+- `pnpm/action-setup@v6` (reads version from `packageManager`)
 - `@vttforge/core`:
   - `f` fields alias re-export
   - `BaseTypeDataModel` (eliminates stub `migrateData`)
