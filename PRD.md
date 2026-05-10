@@ -1,7 +1,7 @@
 # VTTForge — Product Requirements Document
 
-**Version:** 1.1.0
-**Last updated:** 2026-05-04
+**Version:** 1.2.0
+**Last updated:** 2026-05-10
 **Author:** Fabricio Cavalcante de Souza ([@fcsouza](https://github.com/fcsouza))
 **Status:** Active — names reserved, repo skeleton in progress
 
@@ -13,9 +13,20 @@
 
 The first consumer of this SDK is **Ordem Paranormal RPG** ([`ordemparanormal_fvtt`](https://github.com/fcsouza/ordemparanormal_fvtt)) — a production FoundryVTT system. Every API decision is validated against that codebase before being generalized.
 
+### What changed in v1.2
+
+This revision finalizes the tooling and CSS strategy before v0.1 implementation begins:
+
+- **Bundler:** `tsdown` (Rolldown-based) replaces Vite library mode for publishing the SDK packages
+- **Package manager:** pnpm + Corepack replaces Bun workspaces (better publish/provenance/peer-dep story for a public SDK)
+- **Quality toolkit:** added `publint`, `@arethetypeswrong/cli`, `knip`, `syncpack`, `lefthook`, `tsx`
+- **CI/release:** detailed pipeline with npm provenance via OIDC, branch protection, and changesets/action
+- **CSS strategy:** new `@vttforge/styles` package built on CSS Cascade Layers; `@vttforge/vite-plugin` ships a vanilla CSS + PostCSS pipeline (Sass opt-in, Tailwind via documented recipe only)
+- **Documentation cleanup:** the obsolete `FVTT-SDK-PRD.md` draft is removed (this `PRD.md` is the single source of truth)
+
 ### What changed in v1.1
 
-This document supersedes [the original PRD](#) by:
+The previous revision superseded the original `FVTT-SDK-PRD.md` by:
 
 - Renaming the project from `@fvtt-sdk/*` to `@vttforge/*` (trademark safety + brand identity)
 - Recording infrastructure milestones (npm org, GitHub org, placeholder publishes)
@@ -98,22 +109,35 @@ Building FoundryVTT systems and modules requires:
 
 ## 5. Tech stack
 
-### Runtime (`@vttforge/core`, `@vttforge/vite-plugin`)
+### Source + types
 
 | Technology | Role | Link |
 |---|---|---|
-| **TypeScript 5.x** | Source language | https://www.typescriptlang.org |
-| **ESM output (`.mjs`)** | Foundry requires ES modules | https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules |
-| **`foundry-vtt-types`** | Type definitions for the Foundry API | https://github.com/League-of-Foundry-Developers/foundry-vtt-types |
-| **Vite 6** | Bundler for packages + dev server | https://vitejs.dev |
-| **`vite-plugin-handlebars`** | HMR for `.hbs` templates | https://github.com/nicktindall/vite-plugin-handlebars |
+| **TypeScript 5.x** | Source language; strict mode, ESM-only | https://www.typescriptlang.org |
+| **ESM output (`.mjs` + `.d.mts`)** | Foundry loads ES modules natively | https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules |
+| **`foundry-vtt-types`** | Type definitions for the Foundry API (pinned) | https://github.com/League-of-Foundry-Developers/foundry-vtt-types |
+
+### Library bundler (`@vttforge/core`, `@vttforge/cli`, `@vttforge/vite-plugin`)
+
+| Technology | Role | Link |
+|---|---|---|
+| **`tsdown`** | Rolldown-based ESM-first bundler; emits `.mjs` + `.d.mts` cleanly | https://github.com/rolldown/tsdown |
+
+> Vite library mode was the original choice but is awkward for multi-entry SDKs that need clean `.d.mts`. `tsup` is in maintenance. `tsdown` is the recommended 2026 library bundler.
+
+### Consumer dev server (`@vttforge/vite-plugin`)
+
+| Technology | Role | Link |
+|---|---|---|
+| **Vite 6** | Dev server consumed by `vttforge dev` (HMR, asset graph) | https://vitejs.dev |
+| **`vite-plugin-handlebars`** | HMR for `.hbs` templates (validate activity; internalize if stale) | https://github.com/nicktindall/vite-plugin-handlebars |
 
 ### CLI (`@vttforge/cli`)
 
 | Technology | Role | Link |
 |---|---|---|
-| **Bun / Node.js** | Runtime | https://bun.sh |
-| **Citty** | CLI framework (lightweight, typed) | https://github.com/unjs/citty |
+| **Node.js 20+ (Bun optional for local dev)** | Runtime | https://nodejs.org |
+| **Citty** | CLI framework (lightweight, typed, unjs-aligned) | https://github.com/unjs/citty |
 | **Giget** | Template scaffolding (`degit`-like) | https://github.com/unjs/giget |
 | **Clack** | Interactive prompts | https://github.com/bombshell-dev/clack |
 
@@ -122,17 +146,38 @@ Building FoundryVTT systems and modules requires:
 | Technology | Role | Link |
 |---|---|---|
 | **Turborepo** | Task pipeline + remote caching | https://turbo.build |
-| **Bun workspaces** | Package manager | https://bun.sh/docs/install/workspaces |
+| **pnpm + Corepack** | Package manager + workspaces | https://pnpm.io |
 | **Changesets** | Versioning + changelog | https://github.com/changesets/changesets |
+
+> pnpm replaces Bun workspaces. For a public SDK publishing 5+ packages, pnpm has the more mature publish/peer-dep/provenance story. Bun stays as an optional local runtime, never the install path.
 
 ### Quality
 
 | Technology | Role | Link |
 |---|---|---|
-| **Vitest** | Unit testing | https://vitest.dev |
+| **Biome** | Linting + formatting (single binary, no plugin sprawl) | https://biomejs.dev |
+| **Vitest** | Unit testing (with `happy-dom` for sheet-render tests) | https://vitest.dev |
 | **Quench (via FVTT)** | In-world integration testing | https://github.com/Ethaks/FVTT-Quench |
-| **Biome** | Linting + formatting | https://biomejs.dev |
 | **GitHub Actions** | CI/CD | https://docs.github.com/en/actions |
+
+### 5.1 Publishing quality toolkit
+
+These are required to ship a high-quality public TypeScript SDK in 2026. All are wired into CI as gates (or warnings, see §6).
+
+| Tool | Purpose | Link |
+|---|---|---|
+| **`publint`** | Validates `package.json` `exports`/`types`/`main`/`module` correctness | https://publint.dev |
+| **`@arethetypeswrong/cli` (attw)** | Validates `.d.mts` resolves under Node ESM, bundlers, and `nodenext` | https://github.com/arethetypeswrong/arethetypeswrong.github.io |
+| **`knip`** | Detects unused exports/files across the monorepo | https://knip.dev |
+| **`syncpack`** | Keeps shared dependency versions in sync across packages | https://jamiemason.github.io/syncpack |
+| **`lefthook`** | Git hooks (pre-commit Biome on staged, pre-push typecheck) | https://github.com/evilmartians/lefthook |
+| **`tsx`** | Running TS scripts in `scripts/` | https://github.com/privatenumber/tsx |
+| **npm provenance** | SLSA attestation via `--provenance` + GitHub OIDC | https://docs.npmjs.com/generating-provenance-statements |
+| **`changeset-bot` (GH App)** | Comments on PRs missing changesets | https://github.com/apps/changeset-bot |
+
+### 5.2 CSS pipeline
+
+Default: vanilla CSS + PostCSS (`autoprefixer`, `postcss-nesting`, `postcss-custom-media`). Sass is supported when the consumer installs it (Vite native), but is not a peer dependency. Tailwind is **not** bundled — see `docs/recipes/tailwind.md` (Tailwind v4 + cascade layers recipe). `@vttforge/styles` is the new package providing the base layer (see §6 and §7.5).
 
 ---
 
@@ -141,9 +186,9 @@ Building FoundryVTT systems and modules requires:
 ### Repository structure
 
 ```
-vttforge/                            # Turborepo monorepo
+vttforge/                            # Turborepo monorepo (pnpm workspaces)
 ├── packages/
-│   ├── core/                        # @vttforge/core
+│   ├── core/                        # @vttforge/core (runtime JS only)
 │   │   ├── src/
 │   │   │   ├── index.mts
 │   │   │   ├── system/
@@ -159,6 +204,19 @@ vttforge/                            # Turborepo monorepo
 │   │   │       └── migration-runner.mts
 │   │   ├── package.json
 │   │   └── tsconfig.json
+│   ├── styles/                      # @vttforge/styles (NEW — base CSS layer)
+│   │   ├── src/
+│   │   │   ├── tokens.css           # CSS custom properties (--vttf-*)
+│   │   │   ├── reset.css            # minimal Foundry-aware reset
+│   │   │   ├── base.css             # sheet layout primitives
+│   │   │   ├── components.css      # tabs, drag-drop, inputs, buttons, dialogs
+│   │   │   ├── themes/
+│   │   │   │   ├── light.css
+│   │   │   │   ├── dark.css
+│   │   │   │   ├── high-contrast.css
+│   │   │   │   └── auto.css         # respects prefers-color-scheme
+│   │   │   └── index.css            # tokens + reset + base + components (no theme)
+│   │   └── package.json
 │   ├── cli/                         # @vttforge/cli
 │   │   ├── src/
 │   │   │   ├── index.mts
@@ -173,19 +231,54 @@ vttforge/                            # Turborepo monorepo
 │   │   └── src/
 │   │       ├── index.mts
 │   │       ├── hbs-hmr.mts         # HMR for .hbs files
+│   │       ├── css-pipeline.mts    # PostCSS preset; Sass opt-in detection
 │   │       └── manifest-sync.mts   # Auto-sync system.json / module.json
 │   ├── testing/                    # @vttforge/testing (v1.x)
 │   └── types/                      # @vttforge/types (v1.x)
 ├── examples/
 │   ├── simple-system/              # Minimal system using VTTForge
 │   └── simple-module/              # Minimal module using VTTForge
+├── docs/
+│   └── recipes/
+│       └── tailwind.md             # Tailwind v4 + cascade layers recipe (opt-in)
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                  # lint, typecheck, test, build, package-quality, knip
+│       ├── release.yml             # changesets/action with --provenance
+│       └── canary.yml              # opt-in preview publishes (v0.2+)
+├── .changeset/
 ├── turbo.json
+├── pnpm-workspace.yaml
 ├── package.json
+├── biome.json
+├── lefthook.yml
 ├── PRD.md
 ├── README.md
 ├── CHANGELOG.md
 └── CONTRIBUTING.md
 ```
+
+### CI / release pipeline
+
+**`ci.yml`** (PR + push to `main`) — required jobs:
+
+- `lint` → `biome ci . && pnpm syncpack lint`
+- `typecheck` → `turbo run typecheck`
+- `test` → `turbo run test` (Node 20 + Node 22 matrix)
+- `build` → `turbo run build`
+- `package-quality` → `turbo run publint && turbo run attw` (depends on `build`)
+- `knip` → non-blocking until v0.1.0, blocking after
+
+Setup: `actions/setup-node@v4` + Corepack + `pnpm/action-setup@v4` with cached `~/.pnpm-store` and Turbo remote cache.
+
+**`release.yml`** (push to `main`):
+
+- Single job using `changesets/action@v1` (opens "Version Packages" PR or publishes when merged)
+- Permissions: `contents: write`, `pull-requests: write`, `id-token: write` (last enables provenance)
+- Publish: `pnpm publish -r --provenance --access public --no-git-checks`
+- Auth: `NPM_TOKEN` granular automation token, or Trusted Publishing once available for scoped orgs
+
+**Branch protection on `main`:** PR review (1), required checks (`lint`, `typecheck`, `test`, `build`, `package-quality`), linear history, no force pushes.
 
 ---
 
@@ -331,6 +424,50 @@ vttforge dev --foundry-data /path/to/foundry/Data
 vttforge build
 ```
 
+### `@vttforge/styles` — base CSS layer
+
+Ships a CSS foundation that eliminates the most copy-pasted styles in the FoundryVTT community (drag-drop affordances, tab styling, sheet layout primitives) without fighting consumer styles.
+
+**Scoping with CSS Cascade Layers:**
+
+```css
+@layer foundry, vttforge.tokens, vttforge.base, vttforge.components, system;
+```
+
+Consumer system styles fall into the implicit `system` layer (highest), so consumers always win without `!important`. Foundry's unlayered styles still win against layered ones where appropriate.
+
+**Recommended consumption — explicit:**
+
+```css
+/* my-system/styles/main.css */
+@import "@vttforge/styles";   /* tokens + reset + base + components */
+@import "@vttforge/styles/themes/auto.css";  /* opt-in theme */
+
+/* your system styles here automatically land in the `system` layer */
+.my-system .character-name { ... }
+```
+
+**Auto-inject (opt-in via vite-plugin):**
+
+```ts
+// vite.config.ts
+import { vttforge } from "@vttforge/vite-plugin";
+
+export default {
+  plugins: [vttforge({ injectBaseStyles: true })]   // off by default
+};
+```
+
+**What ships:**
+
+- `tokens.css` — design tokens via `--vttf-*` custom properties (color, spacing 4/8/12/16/24/32/48, type scale, radii, shadows, motion). Tokens fall back to Foundry's own variables where they exist (`--vttf-color-bg: var(--color-bg, #1d1d1d);`).
+- `reset.css` — minimal reset that respects Foundry's existing baseline.
+- `base.css` — `.vttf-window`, `.vttf-parts`, `.vttf-tab-bar`, `.vttf-tab-panel`.
+- `components.css` — drag-drop (`.vttf-drop-target`, `.vttf-dragging`, `.vttf-drop-valid/invalid`), tabs paired with `static TABS` from `BaseActorSheet`, opt-in `.vttf-input` form baseline.
+- `themes/{light,dark,high-contrast,auto}.css` — opt-in theme overrides via `.vttf-theme-*` class scopes.
+
+The plugin writes the resolved CSS path into the system manifest's `styles` field during `vttforge build`.
+
 ---
 
 ## 8. Migration plan: `ordemparanormal` → VTTForge
@@ -376,11 +513,15 @@ This is the first project to adopt VTTForge. The migration is phased to de-risk 
 
 ### 🏗️ v0.1.0 — Core runtime + repo foundation (IN PROGRESS)
 
-- [ ] Turborepo monorepo skeleton (`packages/*`, `turbo.json`, root `package.json` with Bun workspaces)
+- [ ] Turborepo monorepo skeleton (`packages/*`, `turbo.json`, root `package.json` with **pnpm workspaces** + Corepack)
+- [ ] `tsdown` configured per package for `.mjs` + `.d.mts` output
 - [ ] Biome config (lint + format)
 - [ ] Changesets setup
+- [ ] `lefthook.yml` with pre-commit Biome and pre-push typecheck
+- [ ] `syncpack` config to keep dep versions aligned
 - [ ] TypeScript base config (strict, ESM-only, `.mts` output)
-- [ ] CI: GitHub Actions for lint + test + build on PR
+- [ ] CI: `.github/workflows/ci.yml` with `lint`, `typecheck`, `test`, `build`, `package-quality` (publint + attw), `knip`
+- [ ] CI: `.github/workflows/release.yml` with changesets/action and `--provenance`
 - [ ] `@vttforge/core`:
   - [ ] `f` fields alias re-export
   - [ ] `BaseTypeDataModel`
@@ -389,23 +530,22 @@ This is the first project to adopt VTTForge. The migration is phased to de-risk 
   - [ ] `BaseItemSheet`
   - [ ] `createMigrationRunner`
   - [ ] `registerSystem`
-- [ ] `examples/simple-system` working demo
+- [ ] `@vttforge/styles`:
+  - [ ] `tokens.css`, `reset.css`, `base.css`, `components.css`, `index.css`
+  - [ ] Cascade layers wiring (`@layer foundry, vttforge.tokens, vttforge.base, vttforge.components, system;`)
+  - [ ] Opt-in themes (`light`, `dark`, `high-contrast`, `auto`)
+- [ ] `examples/simple-system` working demo (consumes `@vttforge/core` + `@vttforge/styles`)
 - [ ] Migrate `ordemparanormal` to use all of the above
 
 ### 📦 v0.2.0 — Build tooling
 
 - [ ] `@vttforge/vite-plugin`:
   - [ ] HMR for `.hbs` templates
-  - [ ] Manifest sync (`system.json` / `module.json`)
+  - [ ] CSS pipeline (PostCSS preset; Sass detection; `injectBaseStyles` option)
+  - [ ] Manifest sync (`system.json` / `module.json`) including `styles` field rewrite during dev
   - [ ] Foundry `Data/` symlink helper
-
-### 🛠️ v0.3.0 — CLI scaffolding
-
-- [ ] `vttforge init` — system scaffold
-- [ ] `vttforge init` — module scaffold
-- [ ] `vttforge dev` — wraps Vite with VTTForge plugin preconfigured
-- [ ] `vttforge build` — bundle + zip for release
-- [ ] Domain `vttforge.dev` registered + landing page
+- [ ] `docs/recipes/tailwind.md` — Tailwind v4 + cascade layers recipe
+- [ ] `.github/workflows/canary.yml` — `release: canary` PR label triggers preview publish
 
 ### 🚀 v1.0.0 — Stable API
 
@@ -432,10 +572,24 @@ This is the first project to adopt VTTForge. The migration is phased to de-risk 
 
 ## 11. Open questions
 
+### Resolved in v1.2
+
+- **Package distribution** — scoped `@vttforge/*` packages on npm. ✅
+- **ESM-only vs dual CJS/ESM** — ESM-only. ✅
+- **Library bundler** — `tsdown`. ✅
+- **Package manager** — pnpm + Corepack. ✅
+- **CSS — base styles location** — separate `@vttforge/styles` package. ✅
+- **CSS — scoping strategy** — Cascade Layers (`@layer foundry, vttforge.tokens, vttforge.base, vttforge.components, system;`). ✅
+- **CSS — Tailwind** — not bundled; documented recipe (`docs/recipes/tailwind.md`). ✅
+- **CSS — pipeline default** — vanilla CSS + PostCSS, Sass opt-in. ✅
+
+### Still open
+
 1. **`registerSystem` placement** — should it wrap `Hooks.once("init")` itself (caller just calls `registerSystem()` at module top level) or require the caller to be inside a hook? Wrapping is cleaner DX but hides the lifecycle. **Lean: explicit hook for now, magic later.**
 2. **Vite as a hard CLI dependency** — forces Vite on everyone using `vttforge dev/build`. Consider making it optional (bring-your-own bundler) with the plugin as an add-on. **Lean: Vite-first for v0.x, abstract in v1.0.**
 3. **Decorator strategy** — TC39 stage 3 decorators vs experimental. Foundry community ships ESM, but decorators add transpilation requirements. **Lean: skip decorators for v0.1, revisit after stage 3 stabilizes in TS 5.5+.**
 4. **Patreon / sponsorship** — should VTTForge accept GitHub Sponsors / Patreon to fund development? Affects how the project is positioned (pure community vs sustainable side-project). **Lean: enable sponsors at v0.1 release, no required tiers.**
+5. **Trusted Publishing on npm** — switch from `NPM_TOKEN` to OIDC-based Trusted Publishing once the feature is stable for scoped orgs. Tracking; non-blocking for v0.1.
 
 ---
 

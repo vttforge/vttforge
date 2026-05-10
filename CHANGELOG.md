@@ -8,13 +8,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed (PRD v1.2 — tooling + CSS finalization)
+
+- **Library bundler:** `tsdown` (Rolldown-based) replaces Vite library mode for the SDK packages. Vite remains the dev server consumed by `vttforge dev`.
+- **Package manager:** pnpm + Corepack replaces Bun workspaces for monorepo + publishing.
+- **CSS strategy** finalized:
+  - New `@vttforge/styles` package will ship the base CSS layer (tokens, reset, base, components, opt-in themes).
+  - Scoping uses CSS Cascade Layers (`@layer foundry, vttforge.tokens, vttforge.base, vttforge.components, system;`).
+  - `@vttforge/vite-plugin` will ship a vanilla CSS + PostCSS pipeline (Sass opt-in via consumer install; Tailwind not bundled — documented recipe only).
+
+### Removed
+
+- `FVTT-SDK-PRD.md` — obsolete pre-rename draft. `PRD.md` v1.2 is now the single source of truth.
+
 ### Planned for v0.1.0
 
-- Turborepo monorepo skeleton with Bun workspaces
+- Turborepo monorepo skeleton with **pnpm workspaces** + Corepack
+- `tsdown` configured per package (`.mjs` + `.d.mts` output)
 - Biome lint + format config
-- Changesets for versioning
+- Changesets for versioning + `changeset-bot` (GH App)
+- `lefthook` git hooks (pre-commit Biome, pre-push typecheck)
+- `syncpack` for cross-package dep version alignment
 - TypeScript strict + ESM-only base config
-- GitHub Actions CI (lint, test, build)
+- GitHub Actions CI: `lint`, `typecheck`, `test`, `build`, `package-quality` (`publint` + `@arethetypeswrong/cli`), `knip`
+- GitHub Actions release: `changesets/action@v1` with npm provenance via OIDC
 - `@vttforge/core`:
   - `f` fields alias re-export
   - `BaseTypeDataModel` (eliminates stub `migrateData`)
@@ -22,7 +39,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `BaseActorSheet` / `BaseItemSheet` (eliminates DragDrop, `_getTabs`, `_onEditImage`, `_onDrop` boilerplate)
   - `createMigrationRunner`
   - `registerSystem` (one-call init replacing `Hooks.once("init")` block)
-- `examples/simple-system` working demo
+- `@vttforge/styles`:
+  - `tokens.css`, `reset.css`, `base.css`, `components.css`, `index.css`
+  - Cascade layers wiring + opt-in themes (`light`, `dark`, `high-contrast`, `auto`)
+- `examples/simple-system` working demo (consumes `@vttforge/core` + `@vttforge/styles`)
 - Migration of [`ordemparanormal_fvtt`](https://github.com/fcsouza/ordemparanormal_fvtt) to validate the API
 
 ---
