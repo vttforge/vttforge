@@ -13,18 +13,20 @@ All three locked in via PRD v1.4. Research backing each decision documented in a
 - [x] **Source maps in published packages** — External `.map` files with `sourcesContent` embedded via `tsdown` `sourcemap: true` + `declarationMap: true`. NOT inline (consumer bundle bloat), NOT hidden (DevTools won't load). PRD §5.3.
 - [x] **Schema-to-TS inference — phased v0.1 / v1.0** — Partial `InferSchema<T>` in v0.1 covering primitive field subset (`NumberField`, `StringField`, `BooleanField`, `HTMLField`, `ArrayField`, `SchemaField`, `ColorField`, `FilePathField`) — ~80% coverage. Full class-level inference (`extends BaseTypeDataModel<typeof Schema>`) + Drizzle-style `$inferData` accessor + remaining fields (`EmbeddedDataField`, `EmbeddedDocumentField`, `TypedSchemaField`) deferred to v1.0, moved to `@vttforge/types` versioned with Foundry support range. Use `Prettify<T>` on all public conditional types for IDE perf. PRD §7 (InferSchema<T>).
 
-## 2. Repo housekeeping — before first external eyes
+## 2. Repo housekeeping — before first external eyes ✅ DONE 2026-05-10 (except FUNDING.yml)
 
-Can land in parallel with the v0.1 monorepo skeleton PR; not a blocker for starting code.
+All landed in the v1.4 housekeeping commit. `FUNDING.yml` skipped pending the sponsorship decision (PRD §11 still-open #4).
 
-- [ ] **`LICENSE`** — README claims MIT, file doesn't exist yet. Add SPDX header text from https://spdx.org/licenses/MIT.html with `Copyright (c) 2026 Fabricio Cavalcante de Souza and contributors`.
-- [ ] **`.gitignore`** — currently empty. At minimum: `node_modules/`, `dist/`, `.turbo/`, `*.tsbuildinfo`, `coverage/`, `.DS_Store`, `.env*`, `*.log`.
-- [ ] **`CONTRIBUTING.md`** — README promises "when it lands". Cover: how to set up the monorepo (Corepack + pnpm), how to run tests, the changeset workflow, the conventional-commit style, the security disclosure pointer.
-- [ ] **`SECURITY.md`** — relevant given the supply-chain / OIDC posture. Use the GitHub-recommended template; point to `security@vttforge.dev` (or fcsouza's email until the domain is up).
-- [ ] **`.github/ISSUE_TEMPLATE/`** — at minimum `bug_report.yml` and `feature_request.yml` (form-based, not legacy markdown).
-- [ ] **`.github/PULL_REQUEST_TEMPLATE.md`** — checklist for: changeset present, tests added/updated, docs touched if API changed.
-- [ ] **`.github/FUNDING.yml`** — only if open-question #4 (sponsorship) is decided yes for v0.1.
-- [ ] **`CODE_OF_CONDUCT.md`** — Contributor Covenant 2.1 boilerplate is fine.
+- [x] **`LICENSE`** — MIT, Copyright 2026 Fabricio Cavalcante de Souza and contributors
+- [x] **`.gitignore`** — Node/TS/pnpm/Turborepo/Vitest/Biome + Foundry `Data/` symlink
+- [x] **`CONTRIBUTING.md`** — pre-v0.1 stance (boilerplate reports / API feedback / docs PRs welcome) + forward-looking setup/test/changeset workflow for when the monorepo lands; conventional commits style; PR checklist
+- [x] **`SECURITY.md`** — supported-versions table, GitHub private vulnerability reporting link, scope statement, npm provenance verification instructions
+- [x] **`.github/ISSUE_TEMPLATE/bug_report.yml`** — form with VTTForge version, Foundry version, affected package, repro, error code field
+- [x] **`.github/ISSUE_TEMPLATE/feature_request.yml`** — form with problem, proposed solution, alternatives, target package, target version
+- [x] **`.github/ISSUE_TEMPLATE/config.yml`** — disables blank issues; links to Security advisories, Foundry contact, and Discussions
+- [x] **`.github/PULL_REQUEST_TEMPLATE.md`** — type-of-change, affected packages, checklist (changeset, tests, typecheck, lint, PRD/CHANGELOG, error registry)
+- [ ] **`.github/FUNDING.yml`** — **depends on** PRD §11 still-open #4 (sponsorship decision). Lean in PRD is "enable sponsors at v0.1, no required tiers" but author hasn't confirmed. Skip until decided.
+- [x] **`CODE_OF_CONDUCT.md`** — Contributor Covenant 2.1, GitHub private advisory as enforcement contact (until a dedicated channel exists)
 
 ## 3. Open technical decisions — decide just-in-time, not blocking
 

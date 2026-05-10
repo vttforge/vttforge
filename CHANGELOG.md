@@ -8,6 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added 2026-05-10 — Repo housekeeping
+
+Section 2 of `TODO.md` resolved (all but `FUNDING.yml`):
+
+- `LICENSE` (MIT)
+- `.gitignore` (Node/TS/pnpm/Turborepo)
+- `CONTRIBUTING.md` (pre-v0.1 stance + forward-looking dev workflow)
+- `SECURITY.md` (GitHub private vulnerability reporting + npm provenance verification)
+- `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1)
+- `.github/ISSUE_TEMPLATE/bug_report.yml`
+- `.github/ISSUE_TEMPLATE/feature_request.yml`
+- `.github/ISSUE_TEMPLATE/config.yml` (disables blank issues, routes security/discussions correctly)
+- `.github/PULL_REQUEST_TEMPLATE.md`
+
+`FUNDING.yml` deferred until PRD §11 open question #4 (sponsorship) is decided.
+
 ### Decided 2026-05-10 — DX patterns (PRD v1.4)
 
 Three DX patterns locked in after web-source verification (Zod, Valibot, Effect, Drizzle, Astro errors-data, React/Vue numeric codes, Biome diagnostics, tsdown sourcemap):

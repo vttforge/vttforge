@@ -1,0 +1,90 @@
+name: Bug report
+description: Report something that doesn't work as documented
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report.
+
+        Before filing, please check the [error code reference](https://vttforge.dev/errors/) if you have a `VTTF-NNNN` code in your error message — many issues have a documented cause and fix there.
+
+  - type: input
+    id: vttforge-version
+    attributes:
+      label: VTTForge version
+      description: Run `pnpm list @vttforge/core` (or the package you're using) — paste the version here.
+      placeholder: "e.g. @vttforge/core@0.1.2"
+    validations:
+      required: true
+
+  - type: input
+    id: foundry-version
+    attributes:
+      label: FoundryVTT version
+      description: The full Foundry version (e.g. v13.341).
+      placeholder: "v13.341"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package?
+      multiple: true
+      options:
+        - "@vttforge/core"
+        - "@vttforge/styles"
+        - "@vttforge/cli"
+        - "@vttforge/vite-plugin"
+        - "@vttforge/testing"
+        - "@vttforge/types"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of what went wrong vs. what you expected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: |
+        Minimal steps to reproduce. A link to a public repo or a minimal code snippet helps the most.
+      placeholder: |
+        1. Create a system with `vttforge init`
+        2. Define a `BaseTypeDataModel` with field X
+        3. Open the sheet — observe Y
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Error message / stack trace
+      description: If there's a `VTTF-NNNN` code, paste the full error. Use code blocks (```).
+      render: text
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser version (if browser-based Foundry), or Electron version (if standalone).
+      placeholder: "macOS 14.4, Electron 33, Chromium 130"
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I checked the [error code reference](https://vttforge.dev/errors/) for my `VTTF-NNNN` code if one was emitted
+          required: false
+        - label: I searched existing issues and didn't find a duplicate
+          required: true
