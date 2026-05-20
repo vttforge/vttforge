@@ -49,8 +49,9 @@ In our reference migration ([Ordem Paranormal RPG](https://github.com/fcsouza/or
 | Package | What it does | Status |
 |---|---|---|
 | [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | Runtime utilities: `BaseTypeDataModel`, `BaseActorSheet`, `SystemConfig`, `registerSystem` | 🚧 v0.1 in progress |
+| `@vttforge/styles` | Base CSS layer: design tokens, sheet primitives, drag-drop affordances, opt-in themes (CSS Cascade Layers) | 🚧 v0.1 in progress |
+| [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | Vite plugin: HMR for `.hbs`, CSS pipeline (PostCSS), manifest sync | 📋 v0.2 planned |
 | [`@vttforge/cli`](https://www.npmjs.com/package/@vttforge/cli) | `vttforge init / dev / build` | 📋 v0.3 planned |
-| [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | Vite plugin: HMR for `.hbs`, manifest sync | 📋 v0.2 planned |
 | [`@vttforge/testing`](https://www.npmjs.com/package/@vttforge/testing) | Quench helpers for system/module tests | 📋 v1.0 planned |
 | [`@vttforge/types`](https://www.npmjs.com/package/@vttforge/types) | Shared TypeScript types | 📋 v1.0 planned |
 
@@ -75,7 +76,7 @@ vttforge build
 1. **Zero lock-in.** VTTForge outputs plain `.mjs` files that Foundry loads natively. You can drop VTTForge from your project at any time.
 2. **Type-safe by default.** Full TypeScript declarations. Eventually, schema-to-type inference (Zod-style) so you stop double-typing your data models.
 3. **Battle-tested.** Every API is validated against [Ordem Paranormal RPG](https://github.com/fcsouza/ordemparanormal_fvtt) — a production system — before being shipped.
-4. **Modern tooling.** Vite, Bun, Turborepo, Biome, Changesets. The same stack the rest of the JS ecosystem uses in 2026.
+4. **Modern tooling.** pnpm 10+ with Corepack and catalogs, Turborepo, `tsdown` (Rolldown-based), Vite (consumer dev server), Biome (+ optional Oxlint), Changesets with npm OIDC trusted publishing, `publint` + `attw` + `knip` + `syncpack`, `lefthook`. The same stack the rest of the JS ecosystem uses in 2026 — every choice verified against current sources, see [PRD §5.1](./PRD.md#51-publishing-quality-toolkit).
 5. **Community first.** MIT licensed. No paid tiers. Sponsor optional.
 
 ## Roadmap

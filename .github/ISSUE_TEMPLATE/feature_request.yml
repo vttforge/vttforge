@@ -1,0 +1,65 @@
+name: Feature request
+description: Suggest an API, a boilerplate-elimination pattern, or a tooling improvement
+title: "[feat] "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, please skim [PRD.md](https://github.com/vttforge/vttforge/blob/main/PRD.md) — the SDK has a documented scope and some features are intentionally out (PRD §4 "Non-goals"). Feature requests aligned with goals get prioritised faster.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem?
+      description: |
+        Describe the friction or boilerplate pattern. Real code from your own system/module is the most useful — see PRD §3 for the kind of pain points we're cataloguing.
+      placeholder: |
+        "Every sheet in my system copy-pastes a 20-line handler for X..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What API or feature would fix this? Pseudocode is welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds you've tried, or other approaches that don't fit.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package would this live in?
+      options:
+        - "@vttforge/core"
+        - "@vttforge/styles"
+        - "@vttforge/cli"
+        - "@vttforge/vite-plugin"
+        - "@vttforge/testing"
+        - "@vttforge/types"
+        - "New package"
+        - "Not sure"
+
+  - type: dropdown
+    id: target-version
+    attributes:
+      label: Target version (rough)
+      options:
+        - "v0.1 (in progress)"
+        - "v0.2 / v0.3"
+        - "v1.0"
+        - "Long-horizon (post v1.0)"
+        - "Not sure"
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Links to your system, existing implementations, similar APIs in other libraries, etc.

@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+
+# Test outputs
+coverage/
+.vitest-cache/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# npm pack outputs
+*.tgz
+
+# Changeset working files (committed changesets stay tracked)
+# .changeset/*.md  ← intentionally NOT ignored
+
+# Foundry data symlinks created by `vttforge dev`
+/Data
