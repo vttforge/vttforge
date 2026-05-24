@@ -28,11 +28,12 @@ jobs:
 
       - name: Activate pnpm via Corepack
         run: |
+          npm install -g corepack@latest
           corepack enable
-          corepack prepare pnpm@10.33.4 --activate
+          corepack install -g pnpm@10.33.4
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Lint
         run: pnpm lint
@@ -45,11 +46,12 @@ jobs:
 
       - name: Activate pnpm via Corepack
         run: |
+          npm install -g corepack@latest
           corepack enable
-          corepack prepare pnpm@10.33.4 --activate
+          corepack install -g pnpm@10.33.4
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Typecheck
         run: pnpm typecheck
@@ -62,11 +64,12 @@ jobs:
 
       - name: Activate pnpm via Corepack
         run: |
+          npm install -g corepack@latest
           corepack enable
-          corepack prepare pnpm@10.33.4 --activate
+          corepack install -g pnpm@10.33.4
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Test
         run: pnpm test
@@ -79,11 +82,12 @@ jobs:
 
       - name: Activate pnpm via Corepack
         run: |
+          npm install -g corepack@latest
           corepack enable
-          corepack prepare pnpm@10.33.4 --activate
+          corepack install -g pnpm@10.33.4
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Build
         run: pnpm build
@@ -107,11 +111,12 @@ jobs:
 
       - name: Activate pnpm via Corepack
         run: |
+          npm install -g corepack@latest
           corepack enable
-          corepack prepare pnpm@10.33.4 --activate
+          corepack install -g pnpm@10.33.4
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Build
         run: pnpm build
@@ -131,11 +136,12 @@ jobs:
 
       - name: Activate pnpm via Corepack
         run: |
+          npm install -g corepack@latest
           corepack enable
-          corepack prepare pnpm@10.33.4 --activate
+          corepack install -g pnpm@10.33.4
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Knip
         run: pnpm knip
