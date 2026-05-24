@@ -46,14 +46,14 @@ export interface GameApi {
   readonly user?: { readonly isGM: boolean };
 }
 
-export type ConfigCollection<T = unknown> = Record<string, T>;
+type ConfigCollection<T = unknown> = Record<string, T>;
 
-export interface ActorConfig {
+interface ActorConfig {
   documentClass?: unknown;
   dataModels: ConfigCollection;
 }
 
-export interface ItemConfig {
+interface ItemConfig {
   documentClass?: unknown;
   dataModels: ConfigCollection;
 }
@@ -73,16 +73,4 @@ export interface FoundryConfig {
   ActiveEffect: ActiveEffectConfig;
   statusEffects?: unknown[];
   [key: string]: unknown;
-}
-
-/**
- * Reads a Foundry global off of `globalThis`. Throws VTTF-0002 if it's missing
- * — better to fail loud than silently no-op.
- */
-export function requireFoundryGlobal<K extends string>(key: K): unknown {
-  const value = (globalThis as Record<string, unknown>)[key];
-  if (value === undefined || value === null) {
-    return undefined;
-  }
-  return value;
 }

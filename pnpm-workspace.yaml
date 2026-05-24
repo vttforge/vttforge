@@ -13,7 +13,6 @@ catalog:
   publint: ^0.3.21
   syncpack: ^15.3.1
   tsdown: ^0.22.0
-  tsx: ^4.22.3
   unrun: ^0.3.0
   turbo: ^2.9.14
   typescript: ^6.0.3
