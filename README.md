@@ -9,13 +9,13 @@
 [![FoundryVTT](https://img.shields.io/badge/FoundryVTT-v13%2B-orange?style=flat-square)](https://foundryvtt.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 
-[📖 Documentation](#) · [🗺️ Roadmap](./PRD.md#9-roadmap--status) · [🐛 Report bug](https://github.com/vttforge/vttforge/issues)
+[📖 Documentation](#) · [🗺️ Roadmap](#roadmap) · [🐛 Report bug](https://github.com/vttforge/vttforge/issues)
 
 </div>
 
 ---
 
-> ⚠️ **Status:** Early development. Package names are reserved on npm but no usable code has shipped yet. Watch this repo for the v0.1 release. The full plan lives in [PRD.md](./PRD.md).
+> ⚠️ **Status:** Early development. Package names are reserved on npm but no usable code has shipped yet. Watch this repo for the v0.1 release.
 
 ## Why VTTForge?
 
@@ -42,7 +42,7 @@ class CharacterSheet extends BaseActorSheet {
 }
 ```
 
-In our reference migration ([Ordem Paranormal RPG](https://github.com/fcsouza/ordemparanormal_fvtt)), VTTForge eliminates **~430 lines of structural boilerplate** with zero functionality regression. See [PRD.md](./PRD.md) for the full audit.
+VTTForge eliminates **hundreds of lines of structural boilerplate** with zero functionality regression — validated against a real production FoundryVTT system before each API ships.
 
 ## Packages
 
@@ -75,16 +75,14 @@ vttforge build
 
 1. **Zero lock-in.** VTTForge outputs plain `.mjs` files that Foundry loads natively. You can drop VTTForge from your project at any time.
 2. **Type-safe by default.** Full TypeScript declarations. Eventually, schema-to-type inference (Zod-style) so you stop double-typing your data models.
-3. **Battle-tested.** Every API is validated against [Ordem Paranormal RPG](https://github.com/fcsouza/ordemparanormal_fvtt) — a production system — before being shipped.
-4. **Modern tooling.** pnpm 10+ with Corepack and catalogs, Turborepo, `tsdown` (Rolldown-based), Vite (consumer dev server), Biome (+ optional Oxlint), Changesets with npm OIDC trusted publishing, `publint` + `attw` + `knip` + `syncpack`, `lefthook`. The same stack the rest of the JS ecosystem uses in 2026 — every choice verified against current sources, see [PRD §5.1](./PRD.md#51-publishing-quality-toolkit).
+3. **Battle-tested.** Every API is validated against a real production FoundryVTT system before being shipped.
+4. **Modern tooling.** pnpm 10+ with Corepack and catalogs, Turborepo, `tsdown` (Rolldown-based), Vite (consumer dev server), Biome (+ optional Oxlint), Changesets with npm OIDC trusted publishing, `publint` + `attw` + `knip` + `syncpack`, `lefthook`. The same stack the rest of the JS ecosystem uses in 2026.
 5. **Community first.** MIT licensed. No paid tiers. Sponsor optional.
 
 ## Roadmap
 
-See [PRD.md](./PRD.md) for the full technical spec and milestone breakdown.
-
 - ✅ **v0.0** — Names reserved, repo created
-- 🏗️ **v0.1** — `@vttforge/core` runtime + `ordemparanormal` reference migration
+- 🏗️ **v0.1** — `@vttforge/core` runtime + first reference migration
 - 📦 **v0.2** — `@vttforge/vite-plugin` (HMR, manifest sync)
 - 🛠️ **v0.3** — `@vttforge/cli` scaffolding
 - 🚀 **v1.0** — Schema inference, decorators, stable API
