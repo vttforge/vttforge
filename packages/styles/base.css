@@ -1,0 +1,9 @@
+/*!
+ * @vttforge/styles — base.css
+ *
+ * Baseline element styling on top of `tokens` + `reset`. Real ruleset lands in v0.1.0.
+ */
+
+@layer vttforge.base {
+  /* intentionally empty placeholder */
+}
