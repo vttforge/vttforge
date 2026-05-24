@@ -1,0 +1,51 @@
+name: Publish to npm
+
+# Triggered when changesets/action merges the Version PR into main and tags a release,
+# or when a tag is pushed manually. Publish runs under npm Trusted Publishing (OIDC):
+# no NPM_TOKEN, no `--provenance` flag (provenance is auto-generated server-side under OIDC).
+# Per-package npmjs.com Trusted Publisher config must point at this repo + workflow filename.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write # required for npm OIDC trusted publishing
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build + publint + publish (OIDC)
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Publint
+        run: pnpm publint
+
+      # OIDC trusted publishing: requires npm CLI >= 11.5.1 and trusted publisher
+      # configured for each @vttforge/* package on npmjs.com.
+      - name: Publish
+        run: pnpm publish -r --access public --no-git-checks
