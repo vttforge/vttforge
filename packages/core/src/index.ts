@@ -1,12 +1,14 @@
 /**
  * @vttforge/core — runtime utilities for FoundryVTT v13+ systems and modules.
  *
- * v0.0.1 surface:
+ * v0.1 surface:
  *
  *   - registerSystem()             — one-call init, replaces Hooks.once("init")
  *   - SystemConfig                 — typed wrapper around game.settings
  *   - BaseTypeDataModel()          — TypeDataModel with safe migrateData default
  *   - BaseActorSheet()             — ActorSheetV2 + HandlebarsApplicationMixin
+ *   - fields()                     — typed bag of foundry.data.fields constructors
+ *   - InferSchema<T>               — derive `system` shape from defineSchema()
  *   - VttfError + error registry   — VTTF-NNNN codes with docs URLs
  *
  * Foundry classes are resolved from `globalThis.foundry` lazily so the package
@@ -14,10 +16,43 @@
  * `@vttforge/types` in v1.0.
  */
 
-export const VTTFORGE_CORE_VERSION = '0.0.1';
+export const VTTFORGE_CORE_VERSION = '0.1.0';
 
 export { BaseActorSheet, VTTFORGE_SHEET_CLASS } from './base-actor-sheet.js';
 export { BaseTypeDataModel } from './base-type-data-model.js';
+export type {
+  ArrayFieldOptions,
+  BooleanFieldOptions,
+  ColorFieldOptions,
+  DataFieldOptions,
+  FilePathFieldOptions,
+  HTMLFieldOptions,
+  NumberFieldOptions,
+  SchemaFieldOptions,
+  StringFieldOptions,
+} from './data/field-options.js';
+export {
+  type ArrayFieldCtor,
+  type ArrayFieldInstance,
+  type BooleanFieldCtor,
+  type BooleanFieldInstance,
+  type ColorFieldCtor,
+  type ColorFieldInstance,
+  type FieldInstance,
+  type FieldsApi,
+  type FilePathFieldCtor,
+  type FilePathFieldInstance,
+  fields,
+  type HTMLFieldCtor,
+  type HTMLFieldInstance,
+  type NumberFieldCtor,
+  type NumberFieldInstance,
+  type SchemaFieldCtor,
+  type SchemaFieldInstance,
+  type StringFieldCtor,
+  type StringFieldInstance,
+} from './data/fields.js';
+export type { InferField, InferSchema, Prettify } from './data/infer-schema.js';
 export {
   docsUrlFor,
   getErrorEntry,
