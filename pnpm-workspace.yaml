@@ -3,7 +3,7 @@ packages:
   - 'examples/*'
 
 catalog:
-  '@arethetypeswrong/cli': ^0.13.0
+  '@arethetypeswrong/cli': ^0.18.2
   '@biomejs/biome': ^2.4.15
   '@changesets/cli': ^2.31.0
   '@types/node': ^22.10.0
