@@ -1,0 +1,12 @@
+@import "@vttforge/styles";
+
+@layer vttforge-example {
+  .vttforge-example .actor-sheet {
+    padding: var(--vttf-space-4);
+    background: var(--vttf-color-surface);
+    color: var(--vttf-color-text);
+    border: 1px solid var(--vttf-color-border);
+    border-radius: var(--vttf-radius-md);
+    font-family: var(--vttf-font-family);
+  }
+}
