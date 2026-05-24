@@ -6,7 +6,7 @@ catalog:
   '@arethetypeswrong/cli': ^0.18.2
   '@biomejs/biome': ^2.4.15
   '@changesets/cli': ^2.31.0
-  '@types/node': ^22.10.0
+  '@types/node': ^25.9.1
   happy-dom: ^20.9.0
   knip: ^6.14.2
   lefthook: ^2.1.8
