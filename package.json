@@ -1,0 +1,33 @@
+{
+  "name": "vttforge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A modern SDK and CLI for building FoundryVTT v13+ systems and modules.",
+  "type": "module",
+  "packageManager": "pnpm@10.33.4",
+  "engines": {
+    "node": ">=22.14.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "publint": "turbo run publint",
+    "attw": "turbo run attw",
+    "lint": "biome ci . --colors=off && syncpack lint",
+    "format": "biome check --write . --colors=off",
+    "knip": "knip",
+    "changeset": "changeset",
+    "changeset:version": "changeset version && pnpm install --lockfile-only"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@changesets/cli": "catalog:",
+    "knip": "catalog:",
+    "lefthook": "catalog:",
+    "syncpack": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}
