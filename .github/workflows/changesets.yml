@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
 
-# Required so the action can open the Version PR / push commits.
 permissions:
   contents: write
   pull-requests: write
@@ -15,28 +14,23 @@ concurrency:
 
 jobs:
   release:
-    name: Open Version PR / release
-    runs-on: ubuntu-latest
-    # Skip the action's own release commits to avoid loops
+    name: Open Version PR
+    runs-on: [self-hosted, linux, x64, gcp]
     if: github.repository == 'vttforge/vttforge'
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: pnpm
+      - name: Activate pnpm via Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.4 --activate
 
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Create Version PR (no publishing here — publish.yml handles that under OIDC)
+      - name: Create Version PR (publishing happens in publish.yml under OIDC)
         uses: changesets/action@v1
         with:
           version: pnpm changeset:version
