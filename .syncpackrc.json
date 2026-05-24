@@ -1,0 +1,42 @@
+{
+  "versionGroups": [
+    {
+      "label": "Internal @vttforge packages use workspace protocol",
+      "packages": ["**"],
+      "dependencies": ["@vttforge/**"],
+      "pinVersion": "workspace:*"
+    }
+  ],
+  "semverGroups": [
+    {
+      "label": "Allow workspace protocol",
+      "dependencies": ["@vttforge/**"],
+      "range": ""
+    }
+  ],
+  "sortFirst": [
+    "name",
+    "description",
+    "version",
+    "private",
+    "type",
+    "license",
+    "author",
+    "homepage",
+    "repository",
+    "bugs",
+    "keywords",
+    "main",
+    "module",
+    "types",
+    "exports",
+    "bin",
+    "files",
+    "scripts",
+    "dependencies",
+    "devDependencies",
+    "peerDependencies",
+    "engines",
+    "publishConfig"
+  ]
+}
