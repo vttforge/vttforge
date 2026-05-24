@@ -37,7 +37,7 @@ jobs:
           echo "registry=https://registry.npmjs.org/" > ~/.npmrc
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Build
         run: pnpm build
