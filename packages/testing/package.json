@@ -38,13 +38,14 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "publint": "publint",
-    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output — re-enable later'"
+    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output \u2014 re-enable later'"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
+    "unrun": "catalog:",
     "vitest": "catalog:"
   },
   "engines": {
