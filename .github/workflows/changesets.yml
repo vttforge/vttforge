@@ -29,7 +29,7 @@ jobs:
           corepack install -g pnpm@10.33.4
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --force
 
       - name: Create Version PR (publishing happens in publish.yml under OIDC)
         uses: changesets/action@v1
