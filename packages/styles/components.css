@@ -1,0 +1,10 @@
+/*!
+ * @vttforge/styles — components.css
+ *
+ * Sheet primitives (drag/drop affordances, tab strips, image picker). Real ruleset
+ * lands in v0.1.0 alongside @vttforge/core sheet base classes.
+ */
+
+@layer vttforge.components {
+  /* intentionally empty placeholder */
+}

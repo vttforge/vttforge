@@ -1,0 +1,18 @@
+/*!
+ * @vttforge/styles
+ *
+ * One-line import for consumers that want everything VTTForge ships, in the right
+ * cascade-layer order.
+ *
+ *   @import '@vttforge/styles';
+ *
+ * Layer order matches Foundry v13's outer layer: tokens → reset → base → components.
+ * Foundry's own runtime wraps system CSS in its top-level `system` layer.
+ */
+
+@layer vttforge.tokens, vttforge.reset, vttforge.base, vttforge.components;
+
+@import "./tokens.css";
+@import "./reset.css";
+@import "./base.css";
+@import "./components.css";

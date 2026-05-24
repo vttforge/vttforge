@@ -1,0 +1,57 @@
+{
+  "name": "@vttforge/vite-plugin",
+  "version": "0.0.1",
+  "description": "Vite plugin for VTTForge: HMR for .hbs templates, manifest sync, CSS pipeline (PostCSS, optional Sass).",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/vttforge/vttforge#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vttforge/vttforge.git",
+    "directory": "packages/vite-plugin"
+  },
+  "bugs": "https://github.com/vttforge/vttforge/issues",
+  "keywords": [
+    "foundryvtt",
+    "vite-plugin",
+    "hmr"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "publint": "publint",
+    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output — re-enable later'"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "catalog:",
+    "@types/node": "catalog:",
+    "publint": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  }
+}

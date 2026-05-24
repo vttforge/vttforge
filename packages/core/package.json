@@ -1,0 +1,59 @@
+{
+  "name": "@vttforge/core",
+  "version": "0.0.1",
+  "description": "VTTForge core runtime: BaseTypeDataModel, BaseActorSheet, SystemConfig, registerSystem, error registry.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/vttforge/vttforge#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vttforge/vttforge.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/vttforge/vttforge/issues",
+  "keywords": [
+    "foundryvtt",
+    "foundry-vtt",
+    "sdk",
+    "typescript",
+    "vtt"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "publint": "publint",
+    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output (filename undefined) — re-enable once upstream issue is fixed'"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "catalog:",
+    "happy-dom": "catalog:",
+    "publint": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  }
+}

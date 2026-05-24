@@ -1,0 +1,10 @@
+/*!
+ * @vttforge/styles — reset.css
+ *
+ * Scoped reset that complements Foundry's own `reset` layer without overriding it.
+ * Real ruleset lands in v0.1.0.
+ */
+
+@layer vttforge.reset {
+  /* intentionally empty placeholder */
+}
