@@ -1,0 +1,27 @@
+{
+  "id": "vttforge-example",
+  "title": "VTTForge Example System",
+  "description": "Minimal Foundry v13 system that proves @vttforge/core imports cleanly and registerSystem() wires up CONFIG mutations end-to-end.",
+  "version": "0.0.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13.341"
+  },
+  "authors": [{ "name": "VTTForge Contributors" }],
+  "esmodules": ["scripts/main.mjs"],
+  "styles": ["styles/example.css"],
+  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "documentTypes": {
+    "Actor": { "character": {} },
+    "Item": { "gear": {} }
+  },
+  "gridDistance": 5,
+  "gridUnits": "ft",
+  "primaryTokenAttribute": "health",
+  "secondaryTokenAttribute": "power",
+  "flags": {
+    "vttforge-example": {
+      "needsMigrationVersion": "0.0.0"
+    }
+  }
+}
