@@ -6,14 +6,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Before filing, please skim [PRD.md](https://github.com/vttforge/vttforge/blob/main/PRD.md) — the SDK has a documented scope and some features are intentionally out (PRD §4 "Non-goals"). Feature requests aligned with goals get prioritised faster.
+        Before filing, please check open issues and the README — the SDK has a focused scope and some features are intentionally out. Feature requests aligned with stated goals get prioritised faster.
 
   - type: textarea
     id: problem
     attributes:
       label: What's the problem?
       description: |
-        Describe the friction or boilerplate pattern. Real code from your own system/module is the most useful — see PRD §3 for the kind of pain points we're cataloguing.
+        Describe the friction or boilerplate pattern. Real code from your own system/module is the most useful.
       placeholder: |
         "Every sheet in my system copy-pastes a 20-line handler for X..."
     validations:

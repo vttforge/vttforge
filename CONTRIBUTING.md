@@ -1,11 +1,11 @@
 # Contributing to VTTForge
 
-Thanks for considering a contribution. VTTForge is in pre-v0.1 — the core API is being shaped against a real production system ([Ordem Paranormal RPG](https://github.com/fcsouza/ordemparanormal_fvtt)) before stabilising. The most useful contributions today are different from when the SDK is stable.
+Thanks for considering a contribution. VTTForge is in pre-v0.1 — the core API is being shaped against a real production FoundryVTT system before stabilising. The most useful contributions today are different from when the SDK is stable.
 
 ## What's most useful right now (pre-v0.1)
 
-- **Boilerplate reports** — open an issue with a pattern from your own FoundryVTT system or module that VTTForge could eliminate. See [PRD §3](./PRD.md#3-problem-statement) for the kind of patterns we're cataloguing.
-- **API design feedback** — read [PRD §7](./PRD.md#7-api-design) and tell us where the shape feels wrong before it ships.
+- **Boilerplate reports** — open an issue with a pattern from your own FoundryVTT system or module that VTTForge could eliminate.
+- **API design feedback** — once the v0.1 API surface lands, tell us where the shape feels wrong before it stabilises.
 - **Docs / typo fixes** — always welcome via PR.
 - **Trying the v0.1 release** when it lands — early adopters who can give feedback on rough edges are gold.
 
@@ -72,7 +72,7 @@ Before you open a PR, make sure:
 - [ ] Tests added/updated for behaviour changes
 - [ ] `pnpm typecheck` + `pnpm test` + `pnpm lint` pass locally
 - [ ] Docs updated if the change is user-visible
-- [ ] If you touched an API marked stable in PRD §7, the change has a strong rationale
+- [ ] If you touched an API marked stable, the change has a strong rationale
 
 The PR template surfaces this same checklist.
 
