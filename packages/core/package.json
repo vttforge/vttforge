@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/core",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "VTTForge core runtime: BaseTypeDataModel, BaseActorSheet, SystemConfig, registerSystem, error registry.",
   "type": "module",
   "license": "MIT",
@@ -39,7 +39,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "publint": "publint",
-    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output (filename undefined) \u2014 re-enable once upstream issue is fixed'"
+    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output (filename undefined) — re-enable once upstream issue is fixed'"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
