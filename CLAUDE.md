@@ -38,18 +38,23 @@ Foundation work in progress. See `plans/PRD.md` for the full spec, `plans/TODO.m
 - **Publishing:** npm OIDC Trusted Publishing (no `NPM_TOKEN`, no `--provenance` flag).
 - **Foundry types:** `fvtt-types` pinned to a git SHA from `main` (not npm).
 
-## Commands (placeholder — fill in as the monorepo lands)
+## Commands
 
 ```bash
 corepack enable
 pnpm install
-pnpm typecheck     # tsc --noEmit across all packages
-pnpm test          # Vitest across the monorepo
-pnpm build         # tsdown build of every package
-pnpm lint          # biome + syncpack
-pnpm publint       # exports map validation
-pnpm attw          # types resolution check
+pnpm typecheck     # turbo → tsc --noEmit per package
+pnpm test          # turbo → Vitest per package
+pnpm build         # turbo → tsdown per package
+pnpm lint          # biome ci . + syncpack lint
+pnpm format        # biome check --write .
+pnpm publint       # turbo → publint per package
+pnpm attw          # turbo → @arethetypeswrong/cli per package
 ```
+
+### Known quirk: pnpm + biome OOM warning
+
+`pnpm lint` may print `[warn] Linter process terminated abnormally (possibly out of memory)` when the parent shell has certain TTY/stdio setups (observed on macOS arm64 + Node 26 + pnpm 10.33). Workaround: run via a fresh subshell (`bash -c "pnpm lint"`) or call biome directly (`./node_modules/.bin/biome ci . --colors=off`). CI is unaffected (it always runs in a fresh subshell).
 
 ## Repo Structure
 
