@@ -1,9 +1,9 @@
 name: Publish to npm
 
-# Triggered when changesets/action merges the Version PR into main and tags a release,
-# or when a tag is pushed manually. Publish runs under npm Trusted Publishing (OIDC):
-# no NPM_TOKEN, no `--provenance` flag (provenance is auto-generated server-side under OIDC).
-# Per-package npmjs.com Trusted Publisher config must point at this repo + workflow filename.
+# Tagged release (v*) triggers publish under npm Trusted Publishing (OIDC).
+# No NPM_TOKEN, no --provenance flag — both handled server-side under OIDC.
+# Per-package npmjs.com Trusted Publisher config must point at this repo +
+# this workflow filename.
 on:
   push:
     tags:
@@ -21,20 +21,19 @@ concurrency:
 jobs:
   publish:
     name: Build + publint + publish (OIDC)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, gcp]
     environment: npm-publish
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+      - name: Activate pnpm via Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.4 --activate
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: pnpm
-          registry-url: https://registry.npmjs.org/
+      - name: Configure npm registry (OIDC handles auth)
+        run: |
+          echo "registry=https://registry.npmjs.org/" > ~/.npmrc
 
       - name: Install
         run: pnpm install --frozen-lockfile
@@ -45,7 +44,7 @@ jobs:
       - name: Publint
         run: pnpm publint
 
-      # OIDC trusted publishing: requires npm CLI >= 11.5.1 and trusted publisher
-      # configured for each @vttforge/* package on npmjs.com.
+      # OIDC trusted publishing requires npm CLI >= 11.5.1.
+      # Corepack-managed pnpm 10.33+ ships a compatible npm bundle.
       - name: Publish
         run: pnpm publish -r --access public --no-git-checks

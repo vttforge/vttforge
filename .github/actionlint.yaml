@@ -1,0 +1,5 @@
+self-hosted-runner:
+  # Custom self-hosted runner labels for the fcsouza/infra GCP runner pool.
+  # See infra/gcp/runners/README.md.
+  labels:
+    - gcp
