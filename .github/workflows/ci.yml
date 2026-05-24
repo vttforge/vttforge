@@ -24,7 +24,7 @@ jobs:
     name: Lint (biome + syncpack)
     runs-on: [self-hosted, linux, x64, gcp]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Activate pnpm via Corepack
         run: |
@@ -42,7 +42,7 @@ jobs:
     name: Typecheck
     runs-on: [self-hosted, linux, x64, gcp]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Activate pnpm via Corepack
         run: |
@@ -60,7 +60,7 @@ jobs:
     name: Test
     runs-on: [self-hosted, linux, x64, gcp]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Activate pnpm via Corepack
         run: |
@@ -78,7 +78,7 @@ jobs:
     name: Build
     runs-on: [self-hosted, linux, x64, gcp]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Activate pnpm via Corepack
         run: |
@@ -93,7 +93,7 @@ jobs:
         run: pnpm build
 
       - name: Upload dist artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: |
@@ -107,7 +107,7 @@ jobs:
     runs-on: [self-hosted, linux, x64, gcp]
     needs: build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Activate pnpm via Corepack
         run: |
@@ -132,7 +132,7 @@ jobs:
     runs-on: [self-hosted, linux, x64, gcp]
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Activate pnpm via Corepack
         run: |
