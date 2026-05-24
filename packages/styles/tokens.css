@@ -1,18 +1,50 @@
 /*!
  * @vttforge/styles — tokens.css
  *
- * Design tokens. PLACEHOLDER — real values land in v0.1.0 once Foundry v13.341+
- * `CONST.CSS_THEMES` token contract is inspected. See .internal/TODO.md §3.
+ * Design tokens. PLACEHOLDER token set for v0.0.1 layout testing.
  *
- * Tokens are exposed as `--vttf-*` custom properties under the `vttforge.tokens`
- * cascade layer. Consumers can override per-system by re-declaring under a more
- * specific selector or a later layer.
+ * The final `--vttf-*` palette will be derived from Foundry v13.341+
+ * `CONST.CSS_THEMES` (Theme V2) so VTTForge sheets pick up Foundry's
+ * light/dark themes for free. See .internal/TODO.md §3.
+ *
+ * For now, tokens fall back to Foundry's own CSS variables (`--color-text-*`
+ * etc.) when present, with literal defaults for non-Foundry environments
+ * (Storybook, isolated docs, etc.).
  */
 
 @layer vttforge.tokens {
   :root {
-    --vttf-color-text: inherit;
-    --vttf-color-bg: transparent;
-    --vttf-spacing-unit: 0.25rem;
+    /* Foreground / text */
+    --vttf-color-text: var(--color-text-primary, #1a1a1a);
+    --vttf-color-text-muted: var(--color-text-secondary, #4a4a4a);
+    --vttf-color-text-inverse: var(--color-text-light-primary, #f5f5f5);
+
+    /* Surfaces */
+    --vttf-color-surface: var(--color-bg-primary, #ffffff);
+    --vttf-color-surface-elevated: var(--color-bg-secondary, #f3f3f3);
+    --vttf-color-border: var(--color-border, rgba(0 0 0 / 12%));
+
+    /* Accents */
+    --vttf-color-accent: var(--color-warm-2, #b85c38);
+    --vttf-color-accent-muted: var(--color-cool-2, #486581);
+
+    /* Spacing scale (4-pt grid) */
+    --vttf-space-1: 0.25rem;
+    --vttf-space-2: 0.5rem;
+    --vttf-space-3: 0.75rem;
+    --vttf-space-4: 1rem;
+    --vttf-space-6: 1.5rem;
+    --vttf-space-8: 2rem;
+
+    /* Radii */
+    --vttf-radius-sm: 0.25rem;
+    --vttf-radius-md: 0.5rem;
+    --vttf-radius-lg: 0.75rem;
+
+    /* Typography */
+    --vttf-font-family: var(--font-primary, system-ui, sans-serif);
+    --vttf-font-size-sm: 0.875rem;
+    --vttf-font-size-md: 1rem;
+    --vttf-font-size-lg: 1.25rem;
   }
 }

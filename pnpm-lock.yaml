@@ -74,7 +74,18 @@ importers:
 
   examples/simple-module: {}
 
-  examples/simple-system: {}
+  examples/simple-system:
+    dependencies:
+      '@vttforge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@vttforge/styles':
+        specifier: workspace:*
+        version: link:../../packages/styles
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
 
   packages/cli:
     devDependencies:

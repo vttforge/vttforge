@@ -6,7 +6,14 @@
   "type": "module",
   "scripts": {
     "build": "echo 'simple-system: scaffolding lands in v0.1.0'",
-    "typecheck": "echo 'simple-system: typecheck lands in v0.1.0'",
+    "typecheck": "tsc --noEmit",
     "test": "echo 'simple-system: no tests yet'"
+  },
+  "dependencies": {
+    "@vttforge/core": "workspace:*",
+    "@vttforge/styles": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
   }
 }
