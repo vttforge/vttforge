@@ -1,0 +1,44 @@
+version: 2
+updates:
+  # npm dependencies across the monorepo (pnpm workspace + catalog)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 10
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: chore(deps)
+      include: scope
+    labels: ['dependencies']
+    groups:
+      dev-deps:
+        dependency-type: development
+        update-types: [minor, patch]
+      prod-deps:
+        dependency-type: production
+        update-types: [minor, patch]
+    ignore:
+      # fvtt-types is intentionally pinned to a git SHA from main (PRD §5);
+      # last npm release is 10+ months stale. Bump manually when needed.
+      - dependency-name: fvtt-types
+
+  # GitHub Actions versions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(ci)
+      include: scope
+    labels: ['dependencies', 'github-actions']
+    groups:
+      actions:
+        patterns: ['*']
