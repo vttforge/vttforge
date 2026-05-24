@@ -38,7 +38,7 @@ Closes #
 - [ ] `pnpm typecheck` passes
 - [ ] `pnpm test` passes
 - [ ] `pnpm lint` passes (Biome + syncpack)
-- [ ] If a public API changed: PRD §7 updated and CHANGELOG entry phrased for end users
+- [ ] If a public API changed: CHANGELOG entry phrased for end users
 - [ ] If a new error path was added: a `VTTF-NNNN` registry entry was added in `packages/core/src/errors/registry.ts` and the docs page generates correctly
 
 ## Additional notes
