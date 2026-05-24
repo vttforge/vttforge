@@ -144,4 +144,10 @@ jobs:
         run: pnpm install --frozen-lockfile --force
 
       - name: Knip
+        env:
+          # Runner image ships Node 22.11; oxc-parser (used by knip) has CJS
+          # that require()s ESM, which Node only enables by default from 22.12
+          # onwards. Drop this once the infra runner image bumps Node ≥ 22.14
+          # (matches our engines.node floor). See .internal/to-revise.md.
+          NODE_OPTIONS: '--experimental-require-module'
         run: pnpm knip
