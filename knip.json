@@ -2,10 +2,15 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     ".": {
-      "ignoreDependencies": ["tsx"]
+      "ignoreDependencies": []
     },
     "packages/*": {
       "ignoreDependencies": ["@arethetypeswrong/cli"]
+    },
+    "examples/simple-system": {
+      "entry": ["scripts/main.mjs", "styles/example.css"],
+      "project": ["scripts/**/*.mjs", "styles/**/*.css"],
+      "ignoreDependencies": ["@vttforge/styles"]
     }
   },
   "ignore": [".internal/**"]
