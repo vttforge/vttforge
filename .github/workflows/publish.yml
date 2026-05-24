@@ -28,8 +28,9 @@ jobs:
 
       - name: Activate pnpm via Corepack
         run: |
+          npm install -g corepack@latest
           corepack enable
-          corepack prepare pnpm@10.33.4 --activate
+          corepack install -g pnpm@10.33.4
 
       - name: Configure npm registry (OIDC handles auth)
         run: |
