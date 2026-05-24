@@ -1,0 +1,51 @@
+{
+  "name": "@vttforge/styles",
+  "version": "0.0.1",
+  "description": "VTTForge base CSS layer: design tokens, reset, base, components, opt-in themes (CSS Cascade Layers).",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/vttforge/vttforge#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vttforge/vttforge.git",
+    "directory": "packages/styles"
+  },
+  "bugs": "https://github.com/vttforge/vttforge/issues",
+  "keywords": [
+    "foundryvtt",
+    "css",
+    "cascade-layers",
+    "design-tokens"
+  ],
+  "exports": {
+    ".": "./index.css",
+    "./tokens.css": "./tokens.css",
+    "./reset.css": "./reset.css",
+    "./base.css": "./base.css",
+    "./components.css": "./components.css",
+    "./styles.layer.css": "./styles.layer.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "*.css",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "echo 'styles is CSS-only — no build needed'",
+    "typecheck": "echo 'styles is CSS-only — no typecheck'",
+    "test": "echo 'styles has no tests yet'",
+    "publint": "publint",
+    "attw": "echo 'styles is CSS-only — no types'"
+  },
+  "devDependencies": {
+    "publint": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  }
+}

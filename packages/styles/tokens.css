@@ -1,0 +1,18 @@
+/*!
+ * @vttforge/styles — tokens.css
+ *
+ * Design tokens. PLACEHOLDER — real values land in v0.1.0 once Foundry v13.341+
+ * `CONST.CSS_THEMES` token contract is inspected. See .internal/TODO.md §3.
+ *
+ * Tokens are exposed as `--vttf-*` custom properties under the `vttforge.tokens`
+ * cascade layer. Consumers can override per-system by re-declaring under a more
+ * specific selector or a later layer.
+ */
+
+@layer vttforge.tokens {
+  :root {
+    --vttf-color-text: inherit;
+    --vttf-color-bg: transparent;
+    --vttf-spacing-unit: 0.25rem;
+  }
+}
