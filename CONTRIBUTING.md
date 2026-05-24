@@ -43,6 +43,25 @@ pnpm lint           # Biome lint + format check
 pnpm build          # tsdown build of every package
 ```
 
+### Running Foundry locally via Docker
+
+For sheet/runtime work you'll want a real Foundry v13 instance with the example system loaded. The repo ships a `docker-compose.dev.yml` that uses the [felddy/foundryvtt](https://hub.docker.com/r/felddy/foundryvtt) image and mounts `examples/simple-system` + `examples/simple-module` read-only into the container's data tree.
+
+1. **Copy the env template** and fill in your Foundry credentials (license key + foundryvtt.com login — these stay on your machine, never commit `.env`):
+   ```bash
+   cp .env.example .env
+   ```
+2. **Start Foundry:**
+   ```bash
+   docker compose -f docker-compose.dev.yml up
+   ```
+3. Open <http://localhost:30000>. On first boot the image downloads the licensed Foundry distribution into the `foundry-dev-data` volume (one-time, slow). Subsequent boots are fast.
+4. Inside Foundry, create a world using the **VTTForge Example** system (or activate the example module). Code changes in `examples/simple-system/` and `examples/simple-module/` are visible immediately — refresh the world to reload.
+
+`Ctrl+C` stops the container. To wipe Foundry state (worlds, settings) and start clean: `docker compose -f docker-compose.dev.yml down -v`.
+
+> Foundry credentials are personal and license-gated. We intentionally **do not** run Foundry in GitHub Actions — each contributor brings their own license for local smoke tests.
+
 ### Adding a changeset
 
 If your PR changes anything user-visible in any `@vttforge/*` package, **add a changeset**:
