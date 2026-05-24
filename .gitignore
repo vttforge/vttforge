@@ -1,6 +1,11 @@
 # Dependencies
 node_modules/
 .internal/
+
+# Agent skills (pulled via skills-lock.json, not committed)
+.agents/skills/
+.claude/skills/
+
 # Build outputs
 dist/
 build/
