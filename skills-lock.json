@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "foundry-vtt-module-dev": {
+      "source": "fcsouza/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/foundry-vtt-module-dev/SKILL.md",
+      "computedHash": "2f2701a1222af20891c79152e10fbafec7e250ea751a9b6aea1a79bbc5e92835"
+    },
+    "foundry-vtt-system-dev": {
+      "source": "fcsouza/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/foundry-vtt-system-dev/SKILL.md",
+      "computedHash": "dc6b5dbfa50e7de6d7016391aaceab32c100f9b5feec5064376e48deadaba969"
+    }
+  }
+}
