@@ -1,6 +1,11 @@
 # Dependencies
 node_modules/
 plans/
+
+# Agent skills (pulled via skills-lock.json, not committed)
+.agents/skills/
+.claude/skills/
+
 # Build outputs
 dist/
 build/
