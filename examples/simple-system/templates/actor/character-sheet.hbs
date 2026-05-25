@@ -1,0 +1,131 @@
+{{!--
+  Character sheet — exercises every PR 5–8 deliverable end-to-end.
+
+  Tabs nav uses `data-tab`/`data-group` so ApplicationV2's tab state machine
+  routes clicks. `context.tabs.primary` was auto-populated by BaseActorSheet's
+  _prepareContext (no _prepareTabs call in user code).
+
+  `<img data-edit="img">` is handled by DocumentSheetV2's built-in editImage
+  action — we never wire a portrait picker ourselves.
+
+  `<prose-mirror>` is the v13 rich text element (replaces the legacy
+  {{editor}} helper).
+--}}
+<form autocomplete="off">
+
+  <header class="sheet-header">
+    <img class="portrait" src="{{actor.img}}" alt="{{actor.name}}" data-edit="img" />
+    <div class="title">
+      <input type="text" name="name" value="{{actor.name}}"
+             placeholder="{{localize 'VTTFORGE_EXAMPLE.Sheet.NamePlaceholder'}}" />
+      <div class="title-meta">
+        <label>
+          {{localize "VTTFORGE_EXAMPLE.Sheet.Level"}}
+          <input type="number" name="system.level" value="{{system.level}}" min="1" max="20" />
+        </label>
+        <span class="ac">
+          {{localize "VTTFORGE_EXAMPLE.Sheet.AC"}}: <strong>{{system.armorClass}}</strong>
+        </span>
+      </div>
+    </div>
+    <div class="resources">
+      <div class="resource health">
+        <label>{{localize "VTTFORGE_EXAMPLE.Sheet.Health"}}</label>
+        <div class="bar">
+          <input type="number" name="system.health.value" value="{{system.health.value}}" min="0" />
+          <span class="sep">/</span>
+          <span class="max">{{system.health.max}}</span>
+        </div>
+      </div>
+      <div class="resource power">
+        <label>{{localize "VTTFORGE_EXAMPLE.Sheet.Power"}}</label>
+        <div class="bar">
+          <input type="number" name="system.power.value" value="{{system.power.value}}" min="0" />
+          <span class="sep">/</span>
+          <input type="number" name="system.power.max" value="{{system.power.max}}" min="0" />
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="sheet-tabs" data-group="primary">
+    {{#each tabs.primary.tabs as |tab|}}
+      <a class="tab-link{{#if tab.active}} active{{/if}}"
+         data-tab="{{tab.id}}"
+         data-group="primary"
+         data-action="tab"
+         title="{{localize tab.label}}">
+        {{#if tab.icon}}<i class="{{tab.icon}}"></i>{{/if}}
+        <span>{{localize tab.label}}</span>
+      </a>
+    {{/each}}
+  </nav>
+
+  <section class="sheet-body">
+    {{!-- ABILITIES --}}
+    <section class="tab abilities {{#if tabs.primary.tabs.[0].active}}active{{/if}}"
+             data-tab="abilities" data-group="primary">
+      <div class="ability-grid">
+        {{#each abilities as |ability|}}
+          <div class="ability">
+            <button type="button" class="ability-roll"
+                    data-action="rollAbility" data-ability="{{ability.key}}"
+                    title="{{localize 'VTTFORGE_EXAMPLE.Sheet.Roll.label'}}">
+              <i class="fa-solid fa-dice-d20"></i>
+            </button>
+            <label>{{ability.label}}</label>
+            <input type="number" name="system.abilities.{{ability.key}}.value"
+                   value="{{ability.value}}" min="1" max="30" />
+            <span class="mod">{{numberFormat ability.mod sign=true}}</span>
+          </div>
+        {{/each}}
+      </div>
+    </section>
+
+    {{!-- INVENTORY --}}
+    <section class="tab inventory {{#if tabs.primary.tabs.[1].active}}active{{/if}}"
+             data-tab="inventory" data-group="primary">
+      <header class="inventory-header">
+        <h3>{{localize "VTTFORGE_EXAMPLE.Sheet.Inventory"}}</h3>
+        <button type="button" data-action="createGear"
+                title="{{localize 'VTTFORGE_EXAMPLE.Sheet.NewGear'}}">
+          <i class="fa-solid fa-plus"></i>
+          <span>{{localize "VTTFORGE_EXAMPLE.Sheet.NewGear"}}</span>
+        </button>
+      </header>
+      <ul class="items-list">
+        {{#each gear as |item|}}
+          <li class="item" data-item-id="{{item.id}}" draggable="true">
+            <img src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+            <span class="item-name">{{item.name}}</span>
+            <span class="item-quantity">×{{item.system.quantity}}</span>
+            <span class="item-weight">{{item.system.weight}} lb</span>
+            <button type="button" data-action="deleteItem"
+                    title="{{localize 'VTTFORGE_EXAMPLE.Sheet.Delete'}}">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </li>
+        {{else}}
+          <li class="empty">{{localize "VTTFORGE_EXAMPLE.Sheet.NoGear"}}</li>
+        {{/each}}
+      </ul>
+    </section>
+
+    {{!-- BIOGRAPHY --}}
+    <section class="tab biography {{#if tabs.primary.tabs.[2].active}}active{{/if}}"
+             data-tab="biography" data-group="primary">
+      {{#if isEditable}}
+        <prose-mirror name="system.biography"
+                      button="true"
+                      editable="{{isEditable}}"
+                      toggled="false"
+                      value="{{system.biography}}">
+          {{{enrichedBiography}}}
+        </prose-mirror>
+      {{else}}
+        <div class="biography-readonly">{{{enrichedBiography}}}</div>
+      {{/if}}
+    </section>
+  </section>
+
+</form>

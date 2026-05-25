@@ -1,4 +1,38 @@
 {
   "VTTFORGE_EXAMPLE.System.title": "VTTForge Example System",
-  "VTTFORGE_EXAMPLE.System.description": "Minimal smoke test for the VTTForge SDK."
+  "VTTFORGE_EXAMPLE.System.description": "Smoke-test system that exercises @vttforge/core end-to-end.",
+
+  "TYPES.Actor.character": "Character",
+  "TYPES.Item.gear": "Gear",
+
+  "VTTFORGE_EXAMPLE.Sheet.Character.title": "Character",
+  "VTTFORGE_EXAMPLE.Sheet.Gear.title": "Gear",
+  "VTTFORGE_EXAMPLE.Sheet.NamePlaceholder": "Name…",
+  "VTTFORGE_EXAMPLE.Sheet.Level": "Level",
+  "VTTFORGE_EXAMPLE.Sheet.AC": "AC",
+  "VTTFORGE_EXAMPLE.Sheet.Health": "Health",
+  "VTTFORGE_EXAMPLE.Sheet.Power": "Power",
+  "VTTFORGE_EXAMPLE.Sheet.Inventory": "Inventory",
+  "VTTFORGE_EXAMPLE.Sheet.NewGear": "New gear",
+  "VTTFORGE_EXAMPLE.Sheet.NewGearName": "New Gear",
+  "VTTFORGE_EXAMPLE.Sheet.NoGear": "No gear yet — drag items here or click 'New gear'.",
+  "VTTFORGE_EXAMPLE.Sheet.Delete": "Delete",
+  "VTTFORGE_EXAMPLE.Sheet.Tabs.abilities": "Abilities",
+  "VTTFORGE_EXAMPLE.Sheet.Tabs.inventory": "Inventory",
+  "VTTFORGE_EXAMPLE.Sheet.Tabs.biography": "Biography",
+  "VTTFORGE_EXAMPLE.Sheet.Tabs.details": "Details",
+  "VTTFORGE_EXAMPLE.Sheet.Tabs.description": "Description",
+  "VTTFORGE_EXAMPLE.Sheet.Roll.label": "Roll",
+  "VTTFORGE_EXAMPLE.Sheet.Roll.flavor": "{ability} check",
+  "VTTFORGE_EXAMPLE.Sheet.Drop.rejected": "Cannot drop {type} items on a character — only gear is accepted.",
+
+  "VTTFORGE_EXAMPLE.Ability.str": "Strength",
+  "VTTFORGE_EXAMPLE.Ability.dex": "Dexterity",
+  "VTTFORGE_EXAMPLE.Ability.con": "Constitution",
+  "VTTFORGE_EXAMPLE.Ability.int": "Intelligence",
+  "VTTFORGE_EXAMPLE.Ability.wis": "Wisdom",
+  "VTTFORGE_EXAMPLE.Ability.cha": "Charisma",
+
+  "VTTFORGE_EXAMPLE.Gear.Quantity": "Quantity",
+  "VTTFORGE_EXAMPLE.Gear.Weight": "Weight (lb)"
 }
