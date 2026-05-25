@@ -15,7 +15,7 @@
 
 ---
 
-> ⚠️ **Status:** Pre-release. `@vttforge/core@0.2.0` builds, typechecks, and ships 70+ tests, but is not on npm yet — Trusted Publisher setup is pending. Watch this repo for the v0.1.0 release.
+> ⚠️ **Status:** Pre-release. `@vttforge/core` builds, typechecks, ships 100+ tests, and is validated end-to-end inside Foundry v13 via the bundled `examples/simple-system` (tabbed character sheet, drag-drop, migration runner). Not on npm yet — Trusted Publisher setup is pending. Watch this repo for the v0.1.0 release.
 
 ## Why VTTForge?
 
@@ -66,16 +66,30 @@ VTTForge eliminates **hundreds of lines of structural boilerplate** with zero fu
 
 | Package | What it does | Status |
 |---|---|---|
-| [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | Runtime utilities: `BaseTypeDataModel`, `BaseActorSheet`, `BaseItemSheet`, `SystemConfig`, `registerSystem`, `fields()`, `InferSchema<T>`, `VttfError` | 🚧 v0.1 in progress |
+| [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | Runtime utilities: `BaseTypeDataModel`, `BaseActorSheet`, `BaseItemSheet`, `SystemConfig`, `registerSystem`, `fields()`, `InferSchema<T>`, `createMigrationRunner`, `getErrorManifest`, `VttfError` | 🚧 v0.1 in progress |
 | `@vttforge/styles` | Base CSS layer: design tokens, sheet primitives, drag-drop affordances, opt-in themes (CSS Cascade Layers) | 🚧 v0.1 in progress |
 | [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | Vite plugin: HMR for `.hbs`, CSS pipeline (PostCSS), manifest sync | 📋 v0.2 planned |
 | [`@vttforge/cli`](https://www.npmjs.com/package/@vttforge/cli) | `vttforge init / dev / build` | 📋 v0.3 planned |
 | [`@vttforge/testing`](https://www.npmjs.com/package/@vttforge/testing) | Quench helpers for system/module tests | 📋 v1.0 planned |
 | [`@vttforge/types`](https://www.npmjs.com/package/@vttforge/types) | Shared TypeScript types | 📋 v1.0 planned |
 
-## Quick start
+## Try it today
 
-> Coming with v0.1.0. The shape will look like this:
+The repo ships a working Foundry v13 system you can boot in one command. Requires Docker + a [foundryvtt.com](https://foundryvtt.com) license:
+
+```bash
+git clone https://github.com/vttforge/vttforge && cd vttforge
+corepack enable && pnpm install
+pnpm build                                       # builds @vttforge/core + bundles the example
+cp .env.example .env                             # fill in FOUNDRY_LICENSE_KEY / USERNAME / PASSWORD
+docker compose -f docker-compose.dev.yml up      # → http://localhost:30000
+```
+
+Inside Foundry: install **VTTForge Example System**, create a world, add a Character actor — the SDK-provided tabbed sheet renders with abilities/inventory/biography, drag-drop inventory, and the demo migration runs at world load.
+
+## Quick start (v0.1.0)
+
+> Coming with v0.1.0 once `@vttforge/cli` ships. The shape will look like this:
 
 ```bash
 # Scaffold a new FoundryVTT system in TypeScript
