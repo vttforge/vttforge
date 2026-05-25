@@ -36,6 +36,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsdown",
+    "postbuild": "node ./scripts/codegen-errors.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "publint": "publint",
