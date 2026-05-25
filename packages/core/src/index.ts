@@ -7,6 +7,7 @@
  *   - SystemConfig                 — typed wrapper around game.settings
  *   - BaseTypeDataModel()          — TypeDataModel with safe migrateData default
  *   - BaseActorSheet()             — ActorSheetV2 + HandlebarsApplicationMixin
+ *   - BaseItemSheet()              — ItemSheetV2 + HandlebarsApplicationMixin
  *   - fields()                     — typed bag of foundry.data.fields constructors
  *   - InferSchema<T>               — derive `system` shape from defineSchema()
  *   - VttfError + error registry   — VTTF-NNNN codes with docs URLs
@@ -16,9 +17,14 @@
  * `@vttforge/types` in v1.0.
  */
 
-export const VTTFORGE_CORE_VERSION = '0.1.0';
+export const VTTFORGE_CORE_VERSION = '0.2.0';
 
-export { BaseActorSheet, VTTFORGE_SHEET_CLASS } from './base-actor-sheet.js';
+export {
+  BaseActorSheet,
+  type DragDropConfig,
+  VTTFORGE_SHEET_CLASS,
+} from './base-actor-sheet.js';
+export { BaseItemSheet } from './base-item-sheet.js';
 export { BaseTypeDataModel } from './base-type-data-model.js';
 export type {
   ArrayFieldOptions,
