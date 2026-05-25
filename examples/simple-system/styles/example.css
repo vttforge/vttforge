@@ -1,12 +1,212 @@
 @import "@vttforge/styles";
 
-@layer vttforge-example {
-  .vttforge-example .actor-sheet {
-    padding: var(--vttf-space-4);
-    background: var(--vttf-color-surface);
-    color: var(--vttf-color-text);
-    border: 1px solid var(--vttf-color-border);
-    border-radius: var(--vttf-radius-md);
-    font-family: var(--vttf-font-family);
-  }
+/*
+ * Per Foundry system guidance "Styling & Themes" rule #3, component CSS stays
+ * UNLAYERED so it wins over Foundry's @layer applications without specificity
+ * wars. Only token / variable definitions belong in @layer variables.
+ *
+ * Scoped under .vttforge-example (our system marker class) AND .vttforge
+ * (the marker every BaseActorSheet/BaseItemSheet adds via VTTFORGE_SHEET_CLASS),
+ * so nothing leaks into core Foundry UI.
+ */
+
+.vttforge-example.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vttf-space-4, 0.75rem);
+  padding: var(--vttf-space-4, 0.75rem);
+  background: var(--vttf-color-surface, var(--color-bg-primary));
+  color: var(--vttf-color-text, var(--color-text-primary));
+  font-family: var(--vttf-font-family, var(--font-primary));
+}
+
+.vttforge-example .sheet-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--vttf-space-4, 0.75rem);
+  align-items: center;
+  padding-bottom: var(--vttf-space-3, 0.5rem);
+  border-bottom: 1px solid var(--vttf-color-border, var(--color-border));
+}
+
+.vttforge-example .portrait {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--vttf-radius-md, 6px);
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.vttforge-example .title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.vttforge-example .title input[name="name"] {
+  font-size: 1.25rem;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+}
+
+.vttforge-example .title input[name="name"]:focus {
+  border-bottom-color: var(--vttf-color-border, var(--color-border));
+}
+
+.vttforge-example .title-meta {
+  display: flex;
+  gap: var(--vttf-space-4, 0.75rem);
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.vttforge-example .title-meta input {
+  width: 3rem;
+  text-align: center;
+}
+
+.vttforge-example .resources {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: end;
+}
+
+.vttforge-example .resource {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.vttforge-example .resource .bar {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.vttforge-example .resource input[type="number"] {
+  width: 3.5rem;
+  text-align: center;
+}
+
+.vttforge-example .sheet-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--vttf-color-border, var(--color-border));
+}
+
+.vttforge-example .tab-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+}
+
+.vttforge-example .tab-link.active {
+  border-bottom-color: var(--vttf-color-accent, var(--color-warm-2));
+  font-weight: 600;
+}
+
+.vttforge-example .sheet-body {
+  flex: 1;
+  overflow: auto;
+  min-height: 320px;
+}
+
+.vttforge-example .tab {
+  display: none;
+}
+
+.vttforge-example .tab.active {
+  display: block;
+}
+
+/* abilities */
+.vttforge-example .ability-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--vttf-space-3, 0.5rem);
+}
+
+.vttforge-example .ability {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.4rem;
+  background: var(--vttf-color-surface-alt, var(--color-bg-secondary));
+  border-radius: var(--vttf-radius-sm, 4px);
+}
+
+.vttforge-example .ability input {
+  width: 3rem;
+  text-align: center;
+}
+
+.vttforge-example .ability .mod {
+  font-weight: 600;
+  min-width: 1.75rem;
+  text-align: center;
+}
+
+.vttforge-example .ability-roll {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+/* inventory */
+.vttforge-example .inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--vttf-space-3, 0.5rem);
+}
+
+.vttforge-example .items-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vttforge-example .items-list .item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.4rem 0.5rem;
+  background: var(--vttf-color-surface-alt, var(--color-bg-secondary));
+  border-radius: var(--vttf-radius-sm, 4px);
+  cursor: grab;
+}
+
+.vttforge-example .items-list .item:active {
+  cursor: grabbing;
+}
+
+.vttforge-example .items-list .empty {
+  text-align: center;
+  padding: var(--vttf-space-4, 0.75rem);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* gear sheet */
+.vttforge-example.item .field {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: var(--vttf-space-3, 0.5rem);
+  align-items: center;
+  padding: 0.35rem 0;
 }
