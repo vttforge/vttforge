@@ -40,6 +40,18 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'SystemConfig.get() / set() was called with a key that was never passed to SystemConfig.register(). Register the setting in your init hook before reading it.',
   }),
+  'VTTF-0004': Object.freeze({
+    code: 'VTTF-0004',
+    name: 'MigrationFailed',
+    summary:
+      'A migration function passed to createMigrationRunner() threw. The original error is available on .cause. The schemaVersion setting is not advanced past the failed migration so retrying on the next world load picks up where the failure left off.',
+  }),
+  'VTTF-0005': Object.freeze({
+    code: 'VTTF-0005',
+    name: 'WorldTooOldForMigration',
+    summary:
+      'createMigrationRunner() was called on a world whose stored schemaVersion is older than the configured compatibleVersion floor. Upgrade the world to a supported intermediate version before continuing — running migrations across the gap would corrupt data.',
+  }),
 });
 
 /**
