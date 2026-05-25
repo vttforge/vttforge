@@ -49,21 +49,21 @@
   </header>
 
   <nav class="sheet-tabs" data-group="primary">
-    {{#each tabs.primary.tabs as |tab|}}
-      <a class="tab-link{{#if tab.active}} active{{/if}}"
-         data-tab="{{tab.id}}"
-         data-group="primary"
-         data-action="tab"
-         title="{{localize tab.label}}">
+    {{#each tabs as |tab|}}
+      <button type="button" class="item {{tab.cssClass}}"
+              data-tab="{{tab.id}}"
+              data-group="primary"
+              data-action="tab"
+              title="{{localize tab.label}}">
         {{#if tab.icon}}<i class="{{tab.icon}}"></i>{{/if}}
         <span>{{localize tab.label}}</span>
-      </a>
+      </button>
     {{/each}}
   </nav>
 
   <section class="sheet-body">
     {{!-- ABILITIES --}}
-    <section class="tab abilities {{#if tabs.primary.tabs.[0].active}}active{{/if}}"
+    <section class="tab abilities {{tabs.abilities.cssClass}}"
              data-tab="abilities" data-group="primary">
       <div class="ability-grid">
         {{#each abilities as |ability|}}
@@ -83,7 +83,7 @@
     </section>
 
     {{!-- INVENTORY --}}
-    <section class="tab inventory {{#if tabs.primary.tabs.[1].active}}active{{/if}}"
+    <section class="tab inventory {{tabs.inventory.cssClass}}"
              data-tab="inventory" data-group="primary">
       <header class="inventory-header">
         <h3>{{localize "VTTFORGE_EXAMPLE.Sheet.Inventory"}}</h3>
@@ -112,7 +112,7 @@
     </section>
 
     {{!-- BIOGRAPHY --}}
-    <section class="tab biography {{#if tabs.primary.tabs.[2].active}}active{{/if}}"
+    <section class="tab biography {{tabs.biography.cssClass}}"
              data-tab="biography" data-group="primary">
       {{#if isEditable}}
         <prose-mirror name="system.biography"
