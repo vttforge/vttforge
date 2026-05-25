@@ -8,9 +8,9 @@
  *   init       → CONFIG mutations (dataModels, documentClass, statusEffects)
  *   i18nInit   → translate CONFIG labels
  *   setup      → enrichers, packs
- *   ready      → migrations (GM-only)
+ *   ready      → migrations (GM-only — consumer guards inside onReady)
  *
- * v0.1 scope: `init` only. `setup`/`ready` callbacks land in v0.1.1.
+ * v0.1 scope: `init` + `ready`. `setup` / `i18nInit` callbacks remain v0.1.1.
  *
  * Per PRD §11 open question #1, we wrap the hook ourselves ("explicit hook for
  * now"); callers don't need to write `Hooks.once("init", ...)` themselves.
@@ -60,6 +60,15 @@ export interface SystemRegistration {
 
   /** Optional post-init hook for work that depends on the mutations above. */
   readonly onAfterInit?: () => void;
+
+  /**
+   * Optional `ready` hook — fires once after Foundry has finished bootstrap.
+   * The natural home for migration runners (`createMigrationRunner().run()`).
+   *
+   * **Not GM-gated.** Guard inside your callback (`if (!game.user.isGM) return;`)
+   * when the work is GM-only — migrations always are.
+   */
+  readonly onReady?: () => void | Promise<void>;
 }
 
 const registered = new Set<string>();
@@ -113,6 +122,14 @@ export function registerSystem(config: SystemRegistration): SystemRegistration {
   hooks.once('init', () => {
     applyInit(config);
   });
+  if (config.onReady !== undefined) {
+    hooks.once('ready', () => {
+      // Foundry awaits ready-hook results, but `Hooks.once` types it as
+      // `unknown` so we don't return anything ourselves — Foundry treats
+      // Promise rejections as unhandled, which is the right escalation.
+      void config.onReady?.();
+    });
+  }
 
   return config;
 }
