@@ -1,8 +1,8 @@
 {
   "id": "vttforge-example",
   "title": "VTTForge Example System",
-  "description": "Minimal Foundry v13 system that proves @vttforge/core imports cleanly and registerSystem() wires up CONFIG mutations end-to-end.",
-  "version": "0.0.0",
+  "description": "Minimal Foundry v13 system that exercises @vttforge/core end-to-end — typed data models, sheet boilerplate eliminators, migration runner, and the VTTF-NNNN error catalogue.",
+  "version": "0.1.0",
   "compatibility": {
     "minimum": "13",
     "verified": "13.341"
@@ -12,8 +12,16 @@
   "styles": ["styles/example.css"],
   "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
   "documentTypes": {
-    "Actor": { "character": {} },
-    "Item": { "gear": {} }
+    "Actor": {
+      "character": {
+        "htmlFields": ["biography"]
+      }
+    },
+    "Item": {
+      "gear": {
+        "htmlFields": ["description"]
+      }
+    }
   },
   "gridDistance": 5,
   "gridUnits": "ft",
@@ -21,7 +29,9 @@
   "secondaryTokenAttribute": "power",
   "flags": {
     "vttforge-example": {
-      "needsMigrationVersion": "0.0.0"
+      "needsMigrationVersion": "0.1.0",
+      "compatibleMigrationVersion": "0.0.0",
+      "hotReload": ["css", "hbs", "json"]
     }
   }
 }
