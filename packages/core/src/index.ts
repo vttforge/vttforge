@@ -10,6 +10,7 @@
  *   - BaseItemSheet()              — ItemSheetV2 + HandlebarsApplicationMixin
  *   - fields()                     — typed bag of foundry.data.fields constructors
  *   - InferSchema<T>               — derive `system` shape from defineSchema()
+ *   - createMigrationRunner()      — declarative schema migrations (register + run)
  *   - VttfError + error registry   — VTTF-NNNN codes with docs URLs
  *
  * Foundry classes are resolved from `globalThis.foundry` lazily so the package
@@ -78,5 +79,12 @@ export type {
   SettingConfig,
   SettingScope,
 } from './foundry-globals.js';
+export { createMigrationRunner } from './migrations/runner.js';
+export type {
+  Migration,
+  MigrationLogger,
+  MigrationRunner,
+  MigrationRunnerOptions,
+} from './migrations/types.js';
 export { registerSystem, type SystemRegistration } from './register-system.js';
 export { SystemConfig } from './system-config.js';

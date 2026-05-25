@@ -138,4 +138,49 @@ describe('registerSystem', () => {
     const initCallback = hooks.once.mock.calls[0]?.[1] as () => void;
     expect(() => initCallback()).toThrow(VttfError);
   });
+
+  it('does not register a ready hook when onReady is omitted', () => {
+    const { hooks } = setupFoundryGlobals();
+    registerSystem({ id: 'my-system' });
+    const readyCalls = hooks.once.mock.calls.filter((call) => call[0] === 'ready');
+    expect(readyCalls).toHaveLength(0);
+  });
+
+  it('schedules onReady via Hooks.once("ready")', () => {
+    const { hooks } = setupFoundryGlobals();
+    const onReady = vi.fn();
+    registerSystem({ id: 'my-system', onReady });
+    const readyCall = hooks.once.mock.calls.find((call) => call[0] === 'ready');
+    expect(readyCall).toBeDefined();
+    expect(typeof readyCall?.[1]).toBe('function');
+  });
+
+  it('invokes onReady when the ready hook fires', () => {
+    const { hooks } = setupFoundryGlobals();
+    const onReady = vi.fn();
+    registerSystem({ id: 'my-system', onReady });
+    const readyCallback = hooks.once.mock.calls.find((call) => call[0] === 'ready')?.[1] as
+      | (() => void)
+      | undefined;
+    expect(readyCallback).toBeDefined();
+    readyCallback?.();
+    expect(onReady).toHaveBeenCalledOnce();
+  });
+
+  it('supports async onReady (returned promise is fire-and-forget)', async () => {
+    const { hooks } = setupFoundryGlobals();
+    let resolved = false;
+    const onReady = vi.fn(async () => {
+      await Promise.resolve();
+      resolved = true;
+    });
+    registerSystem({ id: 'my-system', onReady });
+    const readyCallback = hooks.once.mock.calls.find((call) => call[0] === 'ready')?.[1] as
+      | (() => void)
+      | undefined;
+    readyCallback?.();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(resolved).toBe(true);
+    expect(onReady).toHaveBeenCalledOnce();
+  });
 });
