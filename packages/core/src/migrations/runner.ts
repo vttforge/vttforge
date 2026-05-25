@@ -94,6 +94,7 @@ function resolveLogger(): MigrationLogger {
   const notifications = ui?.notifications;
   return {
     info(message) {
+      // biome-ignore lint/suspicious/noConsole: console.info is the only Foundry-portable info-level logger
       console.info(message);
       notifications?.info?.(message);
     },
