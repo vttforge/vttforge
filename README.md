@@ -15,7 +15,7 @@
 
 ---
 
-> ⚠️ **Status:** Early development. Package names are reserved on npm but no usable code has shipped yet. Watch this repo for the v0.1 release.
+> ⚠️ **Status:** Pre-release. `@vttforge/core@0.2.0` builds, typechecks, and ships 70+ tests, but is not on npm yet — Trusted Publisher setup is pending. Watch this repo for the v0.1.0 release.
 
 ## Why VTTForge?
 
@@ -24,31 +24,49 @@ If you've built a FoundryVTT system, you've copy-pasted these:
 ```ts
 // Every. Single. Sheet.
 #createDragDropHandlers() { /* 36 lines of identical wiring */ }
-_getTabs(parts) { /* 50-line switch table */ }
-async _onEditImage(event) { /* identical FilePicker boilerplate */ }
-async _onDrop(event) { /* identical type dispatch */ }
+async _prepareContext(options) {
+  const context = await super._prepareContext(options);
+  context.tabs = { primary: this._prepareTabs("primary"), ... };  // every group, every sheet
+  return context;
+}
+async _onDropItem(event, data) {
+  const item = await fromUuid(data.uuid);  // fromUuid ceremony in every sheet
+  // …type-switching, validation, transfer logic
+}
 ```
 
 VTTForge replaces all of that with declarative APIs:
 
 ```ts
-import { BaseActorSheet } from "@vttforge/core";
+import { BaseActorSheet, fields, type InferSchema } from "@vttforge/core";
 
-class CharacterSheet extends BaseActorSheet {
+class CharacterSheet extends BaseActorSheet() {
   static PARTS = { /* your templates */ };
-  static TABS  = { /* your tabs — _getTabs() generated for you */ };
+  static TABS  = { /* declared once; context.tabs[group] auto-filled in _prepareContext */ };
+  static DRAG_DROP = [{ dragSelector: ".item[draggable=true]" }];
 
-  // DragDrop, _onEditImage, _onDrop — already done. Just override what you need.
+  // Typed drop sugar — fromUuid already done. Return undefined to fall through to Foundry's default.
+  async onDropItem(item, event) { /* … */ }
 }
+
+// Same defineSchema() drives both runtime validation AND your TypeScript types.
+class CharacterData extends BaseTypeDataModel() {
+  static defineSchema() {
+    const f = fields();
+    return { level: new f.NumberField({ required: true, initial: 1 }) };
+  }
+}
+type CharacterSystem = InferSchema<ReturnType<typeof CharacterData.defineSchema>>;
+// → { level: number }
 ```
 
-VTTForge eliminates **hundreds of lines of structural boilerplate** with zero functionality regression — validated against a real production FoundryVTT system before each API ships.
+VTTForge eliminates **hundreds of lines of structural boilerplate** with zero functionality regression — validated against a real production FoundryVTT system before each API ships. Where Foundry already does something well (`editImage` from `DocumentSheetV2`, the `_getTabs()` state machine on ApplicationV2), we don't reinvent it.
 
 ## Packages
 
 | Package | What it does | Status |
 |---|---|---|
-| [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | Runtime utilities: `BaseTypeDataModel`, `BaseActorSheet`, `SystemConfig`, `registerSystem` | 🚧 v0.1 in progress |
+| [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | Runtime utilities: `BaseTypeDataModel`, `BaseActorSheet`, `BaseItemSheet`, `SystemConfig`, `registerSystem`, `fields()`, `InferSchema<T>`, `VttfError` | 🚧 v0.1 in progress |
 | `@vttforge/styles` | Base CSS layer: design tokens, sheet primitives, drag-drop affordances, opt-in themes (CSS Cascade Layers) | 🚧 v0.1 in progress |
 | [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | Vite plugin: HMR for `.hbs`, CSS pipeline (PostCSS), manifest sync | 📋 v0.2 planned |
 | [`@vttforge/cli`](https://www.npmjs.com/package/@vttforge/cli) | `vttforge init / dev / build` | 📋 v0.3 planned |
