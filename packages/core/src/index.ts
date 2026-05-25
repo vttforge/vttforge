@@ -61,6 +61,11 @@ export {
 } from './data/fields.js';
 export type { InferField, InferSchema, Prettify } from './data/infer-schema.js';
 export {
+  ERROR_MANIFEST_VERSION,
+  type ErrorManifest,
+  getErrorManifest,
+} from './errors/manifest.js';
+export {
   docsUrlFor,
   getErrorEntry,
   listErrorEntries,
