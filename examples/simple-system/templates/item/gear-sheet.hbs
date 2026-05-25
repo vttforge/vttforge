@@ -1,0 +1,54 @@
+{{!-- Gear sheet — minimal demo of BaseItemSheet on ItemSheetV2. --}}
+<form autocomplete="off">
+
+  <header class="sheet-header">
+    <img class="portrait" src="{{item.img}}" alt="{{item.name}}" data-edit="img" />
+    <input type="text" name="name" value="{{item.name}}"
+           placeholder="{{localize 'VTTFORGE_EXAMPLE.Sheet.NamePlaceholder'}}" />
+  </header>
+
+  <nav class="sheet-tabs" data-group="primary">
+    {{#each tabs.primary.tabs as |tab|}}
+      <a class="tab-link{{#if tab.active}} active{{/if}}"
+         data-tab="{{tab.id}}"
+         data-group="primary"
+         data-action="tab"
+         title="{{localize tab.label}}">
+        {{#if tab.icon}}<i class="{{tab.icon}}"></i>{{/if}}
+        <span>{{localize tab.label}}</span>
+      </a>
+    {{/each}}
+  </nav>
+
+  <section class="sheet-body">
+    {{!-- DETAILS --}}
+    <section class="tab details {{#if tabs.primary.tabs.[0].active}}active{{/if}}"
+             data-tab="details" data-group="primary">
+      <div class="field">
+        <label>{{localize "VTTFORGE_EXAMPLE.Gear.Quantity"}}</label>
+        <input type="number" name="system.quantity" value="{{system.quantity}}" min="0" />
+      </div>
+      <div class="field">
+        <label>{{localize "VTTFORGE_EXAMPLE.Gear.Weight"}}</label>
+        <input type="number" name="system.weight" value="{{system.weight}}" min="0" step="0.1" />
+      </div>
+    </section>
+
+    {{!-- DESCRIPTION --}}
+    <section class="tab description {{#if tabs.primary.tabs.[1].active}}active{{/if}}"
+             data-tab="description" data-group="primary">
+      {{#if isEditable}}
+        <prose-mirror name="system.description"
+                      button="true"
+                      editable="{{isEditable}}"
+                      toggled="false"
+                      value="{{system.description}}">
+          {{{enrichedDescription}}}
+        </prose-mirror>
+      {{else}}
+        <div class="description-readonly">{{{enrichedDescription}}}</div>
+      {{/if}}
+    </section>
+  </section>
+
+</form>
