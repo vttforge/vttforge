@@ -1,7 +1,12 @@
 services:
   foundry:
     image: felddy/foundryvtt:13
-    user: "${FOUNDRY_UID:-501}:${FOUNDRY_GID:-20}"
+    # Run as root so felddy's entrypoint can chown the named volume on first
+    # boot. Foundry itself drops privileges via felddy's launcher once the
+    # data directory is set up. (The ordem-paranormal compose works with a
+    # numeric `user:` only because that volume was bootstrapped against an
+    # older felddy image that chmod 0777'd /data/Data.)
+    user: "0:0"
     environment:
       FOUNDRY_LICENSE_KEY: ${FOUNDRY_LICENSE_KEY}
       FOUNDRY_USERNAME: ${FOUNDRY_USERNAME}

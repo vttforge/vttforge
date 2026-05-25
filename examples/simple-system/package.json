@@ -5,7 +5,7 @@
   "description": "Reference Foundry VTT system built on @vttforge/core + @vttforge/styles.",
   "type": "module",
   "scripts": {
-    "build": "echo 'simple-system: scaffolding lands in v0.1.0'",
+    "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -15,7 +15,9 @@
   },
   "devDependencies": {
     "happy-dom": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
+    "unrun": "catalog:",
     "vitest": "catalog:"
   }
 }

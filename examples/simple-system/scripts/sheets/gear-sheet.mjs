@@ -21,9 +21,29 @@ export class GearSheet extends BaseItemSheet() {
         icon: 'fa-solid fa-sack',
       },
       position: { width: 480, height: 420 },
+      actions: {
+        tab: GearSheet._onTab,
+      },
     },
     { inplace: false },
   );
+
+  /** Default tab navigation handler — ApplicationV2 doesn't ship one. */
+  static _onTab(_event, target) {
+    // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time
+    const sheet = this;
+    const group = target.dataset.group;
+    const tab = target.dataset.tab;
+    if (!group || !tab) return;
+    sheet.tabGroups[group] = tab;
+    const root = sheet.element;
+    for (const link of root.querySelectorAll(`nav[data-group="${group}"] [data-tab]`)) {
+      link.classList.toggle('active', link.dataset.tab === tab);
+    }
+    for (const section of root.querySelectorAll(`section.tab[data-group="${group}"]`)) {
+      section.classList.toggle('active', section.dataset.tab === tab);
+    }
+  }
 
   static PARTS = {
     sheet: {
@@ -54,6 +74,10 @@ export class GearSheet extends BaseItemSheet() {
   /** @override */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
+    // Same single-group tabs unwrap as CharacterSheet — see comment there.
+    if (context.tabs?.primary && Object.keys(context.tabs).length === 1) {
+      context.tabs = context.tabs.primary;
+    }
     const item = this.document;
     context.item = item;
     context.system = item.system;
