@@ -78,7 +78,7 @@ describe('BaseItemSheet', () => {
     expect(opts.position.width).toBeLessThan(600);
   });
 
-  it('auto-fills context.tabs for every TABS group', async () => {
+  it('leaves single-group sheets to ApplicationV2 (no wrap, no _prepareTabs calls)', async () => {
     const Base = BaseItemSheet();
     const prepareTabs = vi.fn((group: string) => ({ group }));
     class Sheet extends Base {
@@ -90,8 +90,36 @@ describe('BaseItemSheet', () => {
     const instance = new Sheet();
     const ctx = (await instance._prepareContext({})) as Record<string, unknown>;
     expect(ctx.fromSuper).toBe(true);
+    expect(prepareTabs).not.toHaveBeenCalled();
+    expect(ctx.tabs).toBeUndefined();
+  });
+
+  it('auto-wraps multi-group TABS so each group is keyed under context.tabs[group]', async () => {
+    const Base = BaseItemSheet();
+    const prepareTabs = vi.fn((group: string) => ({ group, active: 'first' }));
+    class Sheet extends Base {
+      static TABS = {
+        primary: { tabs: [{ id: 'a', group: 'primary', label: 'A' }], initial: 'a' },
+        secondary: { tabs: [{ id: 'b', group: 'secondary', label: 'B' }], initial: 'b' },
+      };
+      _prepareTabs = prepareTabs;
+    }
+    const instance = new Sheet();
+    const ctx = (await instance._prepareContext({})) as Record<string, unknown>;
     expect(prepareTabs).toHaveBeenCalledWith('primary');
-    expect(ctx.tabs).toEqual({ primary: { group: 'primary' } });
+    expect(prepareTabs).toHaveBeenCalledWith('secondary');
+    expect(ctx.tabs).toEqual({
+      primary: { group: 'primary', active: 'first' },
+      secondary: { group: 'secondary', active: 'first' },
+    });
+  });
+
+  it('registers a default `vttforgeTab` action that swaps .active classes', () => {
+    const Base = BaseItemSheet();
+    expect(
+      (Base as unknown as { DEFAULT_OPTIONS: { actions: { vttforgeTab?: unknown } } })
+        .DEFAULT_OPTIONS.actions.vttforgeTab,
+    ).toBeTypeOf('function');
   });
 
   it('binds DragDrop entries declared via static DRAG_DROP', () => {

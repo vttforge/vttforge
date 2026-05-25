@@ -159,7 +159,7 @@ export function BaseActorSheet(): AnyConstructor {
       position: { width: 600, height: 700 },
       tag: 'form',
       form: { submitOnChange: true, closeOnSubmit: false },
-      actions: {},
+      actions: { vttforgeTab: VttforgeBaseActorSheet._onTab },
     } as const;
 
     /**
@@ -170,9 +170,13 @@ export function BaseActorSheet(): AnyConstructor {
     static readonly DRAG_DROP: ReadonlyArray<DragDropConfig> = [];
 
     /**
-     * Augment ApplicationV2's context with `tabs[group]` for every group
-     * declared in `static TABS`, so subclasses can render tabs without
-     * having to call `_prepareTabs(group)` manually.
+     * Augment ApplicationV2's context with `tabs[group]` for sheets that
+     * declare **multiple** `static TABS` groups. ApplicationV2 already
+     * auto-populates `context.tabs` (keyed by tab id) for single-group
+     * sheets — overriding that flat shape would force every consumer to
+     * either unwrap or write `context.tabs.<group>.<tabId>` in templates.
+     * Multi-group sheets get nested `context.tabs.<group>.<tabId>` because
+     * ApplicationV2 returns `{}` for them by default.
      */
     async _prepareContext(options: unknown): Promise<Record<string, unknown>> {
       const superPrepare = (
@@ -187,7 +191,7 @@ export function BaseActorSheet(): AnyConstructor {
       const tabsConfig = (this.constructor as { TABS?: Record<string, unknown> }).TABS;
       if (tabsConfig && typeof tabsConfig === 'object') {
         const groups = Object.keys(tabsConfig);
-        if (groups.length > 0) {
+        if (groups.length > 1) {
           const prepareTabs = (this as { _prepareTabs?: (group: string) => unknown })._prepareTabs;
           const tabs: Record<string, unknown> = {};
           for (const group of groups) {
@@ -197,6 +201,39 @@ export function BaseActorSheet(): AnyConstructor {
         }
       }
       return context;
+    }
+
+    /**
+     * Default `tab` action handler. ApplicationV2 doesn't ship one, so every
+     * sheet that uses `<button data-action="tab" data-tab=… data-group=…>`
+     * has to wire its own. We toggle the `.active` class on the matching
+     * nav element (`[data-action="tab"][data-tab=…][data-group=…]`) and
+     * on `section.tab[data-tab=…][data-group=…]`, then update
+     * `sheet.tabGroups[group]` so subsequent re-renders pick the right
+     * initial tab.
+     *
+     * ApplicationV2's action dispatcher binds `this` to the sheet instance
+     * at call time even though the handler is declared `static`.
+     */
+    static _onTab(_event: Event, target: HTMLElement): void {
+      // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time — wrap the cast in a single line so biome's auto-fix can't rewrite downstream references to the class name
+      const sheet = this as unknown as { tabGroups: Record<string, string>; element?: HTMLElement };
+      const group = target.dataset?.group;
+      const tab = target.dataset?.tab;
+      if (!group || !tab) return;
+      sheet.tabGroups[group] = tab;
+      const root = sheet.element;
+      if (!root) return;
+      for (const link of root.querySelectorAll<HTMLElement>(
+        `[data-action="vttforgeTab"][data-group="${group}"]`,
+      )) {
+        link.classList.toggle('active', link.dataset.tab === tab);
+      }
+      for (const section of root.querySelectorAll<HTMLElement>(
+        `section.tab[data-group="${group}"]`,
+      )) {
+        section.classList.toggle('active', section.dataset.tab === tab);
+      }
     }
 
     /**

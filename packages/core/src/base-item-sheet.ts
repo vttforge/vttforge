@@ -104,11 +104,17 @@ export function BaseItemSheet(): AnyConstructor {
       position: { width: 520, height: 480 },
       tag: 'form',
       form: { submitOnChange: true, closeOnSubmit: false },
-      actions: {},
+      actions: { vttforgeTab: VttforgeBaseItemSheet._onTab },
     } as const;
 
     static readonly DRAG_DROP: ReadonlyArray<DragDropConfig> = [];
 
+    /**
+     * Multi-group sheets get nested `context.tabs.<group>.<tabId>` because
+     * ApplicationV2 returns `{}` for them by default; single-group sheets
+     * use ApplicationV2's flat `context.tabs.<tabId>` shape untouched. See
+     * BaseActorSheet for the long version.
+     */
     async _prepareContext(options: unknown): Promise<Record<string, unknown>> {
       const superPrepare = (
         Mixed.prototype as {
@@ -122,7 +128,7 @@ export function BaseItemSheet(): AnyConstructor {
       const tabsConfig = (this.constructor as { TABS?: Record<string, unknown> }).TABS;
       if (tabsConfig && typeof tabsConfig === 'object') {
         const groups = Object.keys(tabsConfig);
-        if (groups.length > 0) {
+        if (groups.length > 1) {
           const prepareTabs = (this as { _prepareTabs?: (group: string) => unknown })._prepareTabs;
           const tabs: Record<string, unknown> = {};
           for (const group of groups) {
@@ -132,6 +138,27 @@ export function BaseItemSheet(): AnyConstructor {
         }
       }
       return context;
+    }
+
+    static _onTab(_event: Event, target: HTMLElement): void {
+      // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time
+      const sheet = this as unknown as { tabGroups: Record<string, string>; element?: HTMLElement };
+      const group = target.dataset?.group;
+      const tab = target.dataset?.tab;
+      if (!group || !tab) return;
+      sheet.tabGroups[group] = tab;
+      const root = sheet.element;
+      if (!root) return;
+      for (const link of root.querySelectorAll<HTMLElement>(
+        `[data-action="vttforgeTab"][data-group="${group}"]`,
+      )) {
+        link.classList.toggle('active', link.dataset.tab === tab);
+      }
+      for (const section of root.querySelectorAll<HTMLElement>(
+        `section.tab[data-group="${group}"]`,
+      )) {
+        section.classList.toggle('active', section.dataset.tab === tab);
+      }
     }
 
     _onRender(context: unknown, options: unknown): void {
