@@ -134,6 +134,55 @@ describe('BaseActorSheet — _prepareContext tab auto-population', () => {
     expect(ctx.fromSuper).toBe(true);
     expect(ctx.tabs).toBeUndefined();
   });
+
+  it('leaves single-group sheets to ApplicationV2 (no wrap, no _prepareTabs call)', async () => {
+    const Base = BaseActorSheet();
+    const prepareTabs = vi.fn();
+    class Sheet extends Base {
+      static TABS = {
+        primary: { tabs: [{ id: 'a', group: 'primary', label: 'A' }], initial: 'a' },
+      };
+      _prepareTabs = prepareTabs;
+    }
+    const instance = new Sheet();
+    const ctx = (await instance._prepareContext({})) as Record<string, unknown>;
+    expect(prepareTabs).not.toHaveBeenCalled();
+    expect(ctx.tabs).toBeUndefined();
+  });
+});
+
+describe('BaseActorSheet — default `tab` action', () => {
+  it('registers a `vttforgeTab` handler on DEFAULT_OPTIONS.actions', () => {
+    const Sub = BaseActorSheet();
+    const handler = (Sub as unknown as { DEFAULT_OPTIONS: { actions: { vttforgeTab?: unknown } } })
+      .DEFAULT_OPTIONS.actions.vttforgeTab;
+    expect(handler).toBeTypeOf('function');
+  });
+
+  it('toggles .active on matching nav button and content section, updates tabGroups', () => {
+    const Sub = BaseActorSheet();
+    const handler = (
+      Sub as unknown as {
+        DEFAULT_OPTIONS: { actions: { vttforgeTab: (event: Event, target: HTMLElement) => void } };
+      }
+    ).DEFAULT_OPTIONS.actions.vttforgeTab;
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <nav data-group="primary">
+        <button data-action="vttforgeTab" data-tab="a" data-group="primary" class="active"></button>
+        <button data-action="vttforgeTab" data-tab="b" data-group="primary"></button>
+      </nav>
+      <section class="tab" data-tab="a" data-group="primary"></section>
+      <section class="tab" data-tab="b" data-group="primary"></section>
+    `;
+    const sheet = { tabGroups: { primary: 'a' }, element: root };
+    const target = root.querySelector('[data-tab="b"]') as HTMLElement;
+    handler.call(sheet as unknown as object, new Event('click'), target);
+    expect(sheet.tabGroups.primary).toBe('b');
+    expect(root.querySelector('[data-tab="a"]')?.classList.contains('active')).toBe(false);
+    expect(root.querySelector('[data-tab="b"]')?.classList.contains('active')).toBe(true);
+    expect(root.querySelector('section[data-tab="b"]')?.classList.contains('active')).toBe(true);
+  });
 });
 
 describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {

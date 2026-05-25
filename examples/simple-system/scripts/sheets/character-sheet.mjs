@@ -32,7 +32,6 @@ export class CharacterSheet extends BaseActorSheet() {
       },
       position: { width: 640, height: 700 },
       actions: {
-        tab: CharacterSheet._onTab,
         rollAbility: CharacterSheet._onRollAbility,
         createGear: CharacterSheet._onCreateGear,
         deleteItem: CharacterSheet._onDeleteItem,
@@ -83,13 +82,6 @@ export class CharacterSheet extends BaseActorSheet() {
   /** @override */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    // BaseActorSheet auto-wraps the single-group context.tabs as { primary: {...} },
-    // which collides with ApplicationV2's flat default. Unwrap so the template
-    // can use `tabs.<tabId>.cssClass` per Foundry's own convention. TODO: fix
-    // upstream in @vttforge/core (PR follow-up).
-    if (context.tabs?.primary && Object.keys(context.tabs).length === 1) {
-      context.tabs = context.tabs.primary;
-    }
     const actor = this.document;
     const system = actor.system;
     const abilityLabels = {
@@ -126,28 +118,6 @@ export class CharacterSheet extends BaseActorSheet() {
       return false;
     }
     return undefined;
-  }
-
-  /**
-   * Default tab navigation handler — ApplicationV2 doesn't ship one. Manages
-   * the `.active` class on both the nav `.item` and the matching `.tab`
-   * section directly instead of delegating to `changeTab`, which couples to
-   * an HTML structure not yet matched by this template.
-   */
-  static _onTab(_event, target) {
-    // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time — capturing into a local prevents the noThisInStatic auto-fix from rewriting downstream `this.X` to `CharacterSheet.X`
-    const sheet = this;
-    const group = target.dataset.group;
-    const tab = target.dataset.tab;
-    if (!group || !tab) return;
-    sheet.tabGroups[group] = tab;
-    const root = sheet.element;
-    for (const link of root.querySelectorAll(`nav[data-group="${group}"] [data-tab]`)) {
-      link.classList.toggle('active', link.dataset.tab === tab);
-    }
-    for (const section of root.querySelectorAll(`section.tab[data-group="${group}"]`)) {
-      section.classList.toggle('active', section.dataset.tab === tab);
-    }
   }
 
   static async _onRollAbility(_event, target) {
