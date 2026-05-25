@@ -89,9 +89,15 @@ importers:
       happy-dom:
         specifier: 'catalog:'
         version: 20.9.0
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.0(@arethetypeswrong/core@0.18.2)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(publint@0.3.21)(typescript@6.0.3)(unrun@0.3.0)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      unrun:
+        specifier: 'catalog:'
+        version: 0.3.0
       vitest:
         specifier: 'catalog:'
         version: 4.1.7(@types/node@25.9.1)(happy-dom@20.9.0)(vite@8.0.14(@types/node@25.9.1)(jiti@2.7.0)(yaml@2.9.0))

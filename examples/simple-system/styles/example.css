@@ -10,12 +10,20 @@
  * so nothing leaks into core Foundry UI.
  */
 
+/* Force an opaque sheet background — without this, Foundry's ApplicationV2
+ * default is transparent in many themes and the canvas bleeds through.
+ * Falls back to a dark slate before Foundry's tokens load. */
+.vttforge-example.sheet,
+.vttforge-example .window-content {
+  background: var(--color-bg-primary, #1c1c22);
+  opacity: 1;
+}
+
 .vttforge-example.sheet {
   display: flex;
   flex-direction: column;
   gap: var(--vttf-space-4, 0.75rem);
   padding: var(--vttf-space-4, 0.75rem);
-  background: var(--vttf-color-surface, var(--color-bg-primary));
   color: var(--vttf-color-text, var(--color-text-primary));
   font-family: var(--vttf-font-family, var(--font-primary));
 }
@@ -99,7 +107,7 @@
   border-bottom: 1px solid var(--vttf-color-border, var(--color-border));
 }
 
-.vttforge-example .tab-link {
+.vttforge-example .sheet-tabs .item {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -109,7 +117,7 @@
   text-decoration: none;
 }
 
-.vttforge-example .tab-link.active {
+.vttforge-example .sheet-tabs .item.active {
   border-bottom-color: var(--vttf-color-accent, var(--color-warm-2));
   font-weight: 600;
 }

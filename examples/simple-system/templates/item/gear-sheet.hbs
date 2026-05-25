@@ -8,21 +8,21 @@
   </header>
 
   <nav class="sheet-tabs" data-group="primary">
-    {{#each tabs.primary.tabs as |tab|}}
-      <a class="tab-link{{#if tab.active}} active{{/if}}"
-         data-tab="{{tab.id}}"
-         data-group="primary"
-         data-action="tab"
-         title="{{localize tab.label}}">
+    {{#each tabs as |tab|}}
+      <button type="button" class="item {{tab.cssClass}}"
+              data-tab="{{tab.id}}"
+              data-group="primary"
+              data-action="tab"
+              title="{{localize tab.label}}">
         {{#if tab.icon}}<i class="{{tab.icon}}"></i>{{/if}}
         <span>{{localize tab.label}}</span>
-      </a>
+      </button>
     {{/each}}
   </nav>
 
   <section class="sheet-body">
     {{!-- DETAILS --}}
-    <section class="tab details {{#if tabs.primary.tabs.[0].active}}active{{/if}}"
+    <section class="tab details {{tabs.details.cssClass}}"
              data-tab="details" data-group="primary">
       <div class="field">
         <label>{{localize "VTTFORGE_EXAMPLE.Gear.Quantity"}}</label>
@@ -35,7 +35,7 @@
     </section>
 
     {{!-- DESCRIPTION --}}
-    <section class="tab description {{#if tabs.primary.tabs.[1].active}}active{{/if}}"
+    <section class="tab description {{tabs.description.cssClass}}"
              data-tab="description" data-group="primary">
       {{#if isEditable}}
         <prose-mirror name="system.description"
