@@ -1,5 +1,110 @@
 # @vttforge/core
 
+## 0.3.0
+
+### Minor Changes
+
+- 234a4b2: Extend `BaseActorSheet` and add `BaseItemSheet` — the boilerplate every shipping
+  system copy-pastes is now hoisted into the SDK.
+
+  - `static DRAG_DROP` — declare drag sources / drop targets as data; the base
+    wires real `foundry.applications.ux.DragDrop` instances in `_onRender` with
+    `isEditable`-gated permissions and a default `_onDragStart` that serialises
+    `data-item-id` elements as `{ type: "Item", uuid }`.
+  - `_prepareContext` auto-fills `context.tabs[group]` for every group declared
+    in ApplicationV2's `static TABS`, eliminating manual `_prepareTabs(group)`
+    calls in subclass `_prepareContext`.
+  - Typed drop dispatch: override `onDropItem(item, event)` / `onDropActor(...)` /
+    `onDropFolder(...)` / `onDropActiveEffect(...)` and skip the `fromUuid()`
+    ceremony. Returning `undefined` falls through to Foundry's default
+    `_onDropX`; return anything else to take ownership.
+  - New `BaseItemSheet()` mirror with the same `static DRAG_DROP` + tab
+    auto-population, minus the drop dispatch (items rarely receive drops).
+  - Exports new `DragDropConfig` type for typed `static DRAG_DROP` declarations.
+
+  `editImage` is intentionally not reinvented — it already ships on
+  `DocumentSheetV2` (inherited by both `ActorSheetV2` and `ItemSheetV2`).
+  Templates wire `<img data-edit="img">` and Foundry's built-in action handles
+  the `FilePicker` flow.
+
+- 4fd5a07: Error registry codegen — `docsUrl` now resolves to a real page.
+
+  `postbuild` hook (`packages/core/scripts/codegen-errors.mjs`) reads the
+  just-built `dist/index.mjs`, calls `listErrorEntries()`, and emits:
+
+  - `dist/errors-manifest.json` — versioned JSON catalogue shipped in the
+    tarball alongside the bundled JS/types. Stable shape (`version`,
+    `package`, `packageVersion`, `entries[]`) so external tooling (the v0.3
+    docs site, IDE extensions, lint rules) has a single source of truth.
+  - `docs/errors/VTTF-NNNN.md` at the repo root — one Markdown stub per code,
+    committed so the `docsUrl` already resolves while the full VitePress site
+    is being built in v0.3.
+
+  New runtime helper: `getErrorManifest()` returns the same data as
+  `listErrorEntries()`, wrapped in a typed `ErrorManifest` envelope with a
+  stable `version: 1` field for future format migrations.
+
+  Plan deviation: the original `.internal/v0.1-next-steps.md` PR 8 spec said
+  `prebuild`, but `postbuild` lets the script import the just-built ESM
+  directly instead of needing `tsx`/`unrun` to load the TS source.
+  Documented inline in the codegen script.
+
+- 0896bb0: Add `createMigrationRunner()` for declarative schema migrations, plus
+  `onReady` lifecycle on `registerSystem()`.
+
+  `createMigrationRunner({ systemId, migrations, ... })` returns `{ register(),
+run(), targetVersion }`. Call `register()` from `init` to register the
+  `schemaVersion` setting; call `run()` from `ready` (gated by
+  `game.user.isGM`) to execute every pending migration in order. Migrations use
+  semver versions and `foundry.utils.isNewerVersion` for comparison, the same
+  contract `system.json`'s `flags.<systemId>.needsMigrationVersion` /
+  `compatibleMigrationVersion` use.
+
+  Failure semantics: `schemaVersion` is committed per-migration, so a
+  mid-sequence throw leaves the world at the last successful version and the
+  retry on the next world load picks up exactly where it failed. Migration
+  errors are wrapped in `VttfError VTTF-0004` with the original error on
+  `.cause`; calling `run()` against a world older than `compatibleVersion`
+  throws `VttfError VTTF-0005`.
+
+  `registerSystem()` gains `onReady?: () => void | Promise<void>` — the natural
+  place to wire `migrationRunner.run()`. Not GM-gated; consumer guards inside
+  their callback.
+
+  New error codes (append-only): `VTTF-0004 MigrationFailed`,
+  `VTTF-0005 WorldTooOldForMigration`.
+
+- 49a8718: Fix `BaseActorSheet` / `BaseItemSheet` tab handling so sheets work without
+  per-consumer workarounds.
+
+  Two issues surfaced when running the example sheet inside a live Foundry v13:
+
+  - **`context.tabs` double-wrap on single-group sheets.** The previous
+    `_prepareContext` override unconditionally set `context.tabs[group]`,
+    even when ApplicationV2 already populated a flat
+    `context.tabs[tabId]` for single-group sheets. The collision forced
+    consumers to either unwrap manually or write `context.tabs.<group>.<tabId>`
+    in every template. Fixed: BaseActorSheet/BaseItemSheet now only fill
+    `context.tabs[group]` for **multi-group** sheets (single-group sheets
+    see ApplicationV2's flat shape untouched).
+
+  - **No default `tab`-style action handler.** ApplicationV2 doesn't ship a
+    built-in handler for `data-action="…"` tab navigation buttons, and the
+    bare name `tab` is reserved by the framework (custom handlers under that
+    name never fire). Fixed: both base sheets now ship a `vttforgeTab`
+    action that toggles `.active` on the matching nav button
+    (`[data-action="vttforgeTab"][data-group=…][data-tab=…]`) and content
+    section (`section.tab[data-group=…][data-tab=…]`) and updates
+    `sheet.tabGroups[group]`. Templates that already used the old per-sheet
+    workaround need to rename `data-action="tab"` → `data-action="vttforgeTab"`.
+
+  Discovered during development testing — not derived from any external
+  source.
+
+  Patch bump for the example: drops the `_prepareContext` unwrap workaround
+  and the per-sheet `_onTab` static handlers added in the previous PR,
+  since both now live in the SDK.
+
 ## 0.2.0
 
 ### Minor Changes
