@@ -111,9 +111,6 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
-      unrun:
-        specifier: 'catalog:'
-        version: 0.3.0
       vite:
         specifier: 'catalog:'
         version: 6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
