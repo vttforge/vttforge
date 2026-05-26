@@ -1,5 +1,13 @@
 # @vttforge-examples/simple-system
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [45b9547]
+- Updated dependencies [6bde407]
+  - @vttforge/styles@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes
@@ -7,7 +15,6 @@
 - 3e51346: `examples/simple-system` is now a real, runnable Foundry v13 system.
 
   End-to-end smoke for everything `@vttforge/core` ships in v0.1:
-
   - `BaseTypeDataModel()` + `fields()` driving `CharacterData` (level, abilities,
     health, power, biography) and `GearData` (quantity, weight, description).
     `prepareDerivedData()` computes ability mods + max HP + armor class.
@@ -32,7 +39,6 @@
 ### Patch Changes
 
 - a152969: Make `examples/simple-system` actually render inside Foundry v13:
-
   - **Bundle the entry with tsdown** (`dist/main.mjs`). Browsers can't resolve
     bare specifiers like `@vttforge/core`, and Foundry serves system files as
     static assets — so the entry point has to be self-contained. This is what
@@ -65,7 +71,6 @@
   per-consumer workarounds.
 
   Two issues surfaced when running the example sheet inside a live Foundry v13:
-
   - **`context.tabs` double-wrap on single-group sheets.** The previous
     `_prepareContext` override unconditionally set `context.tabs[group]`,
     even when ApplicationV2 already populated a flat
