@@ -24,12 +24,14 @@
     "./base.css": "./base.css",
     "./components.css": "./components.css",
     "./styles.layer.css": "./styles.layer.css",
+    "./themes/forge.css": "./themes/forge.css",
     "./tokens.json": "./tokens.json",
     "./package.json": "./package.json"
   },
   "files": [
     "*.css",
     "dist/*.css",
+    "themes/*.css",
     "tokens.json",
     "README.md",
     "CHANGELOG.md"

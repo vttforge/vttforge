@@ -2,9 +2,60 @@
  * @vttforge/styles — reset.css
  *
  * Scoped reset that complements Foundry's own `reset` layer without overriding it.
- * Real ruleset lands in v0.1.0.
+ * Targets only VTTForge-marked roots: `.vttf-app`, `.vttf-sheet`, `form[data-vttf]`.
+ * Outside those scopes, Foundry's reset is untouched.
  */
 
 @layer vttforge.reset {
-  /* intentionally empty placeholder */
+  .vttf-app,
+  .vttf-app *,
+  .vttf-app *::before,
+  .vttf-app *::after,
+  .vttf-sheet,
+  .vttf-sheet *,
+  .vttf-sheet *::before,
+  .vttf-sheet *::after,
+  form[data-vttf],
+  form[data-vttf] *,
+  form[data-vttf] *::before,
+  form[data-vttf] *::after {
+    box-sizing: border-box;
+  }
+
+  .vttf-app,
+  .vttf-sheet {
+    margin: 0;
+  }
+
+  .vttf-app button,
+  .vttf-sheet button,
+  form[data-vttf] button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+
+  .vttf-app input,
+  .vttf-sheet input,
+  .vttf-app textarea,
+  .vttf-sheet textarea,
+  .vttf-app select,
+  .vttf-sheet select,
+  form[data-vttf] input,
+  form[data-vttf] textarea,
+  form[data-vttf] select {
+    font: inherit;
+    color: inherit;
+  }
+
+  .vttf-app ul,
+  .vttf-app ol,
+  .vttf-sheet ul,
+  .vttf-sheet ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 }
