@@ -8,22 +8,32 @@
   "VTTFORGE_EXAMPLE.Sheet.Character.title": "Character",
   "VTTFORGE_EXAMPLE.Sheet.Gear.title": "Gear",
   "VTTFORGE_EXAMPLE.Sheet.NamePlaceholder": "Name…",
-  "VTTFORGE_EXAMPLE.Sheet.Level": "Level",
-  "VTTFORGE_EXAMPLE.Sheet.AC": "AC",
-  "VTTFORGE_EXAMPLE.Sheet.Health": "Health",
-  "VTTFORGE_EXAMPLE.Sheet.Power": "Power",
+  "VTTFORGE_EXAMPLE.Sheet.Level": "LV",
+  "VTTFORGE_EXAMPLE.Sheet.AbilityScores": "Ability scores",
   "VTTFORGE_EXAMPLE.Sheet.Inventory": "Inventory",
+  "VTTFORGE_EXAMPLE.Sheet.Spells": "Spells",
+  "VTTFORGE_EXAMPLE.Sheet.SpellsEmpty": "Spells slot reserved for a follow-up PR.",
+  "VTTFORGE_EXAMPLE.Sheet.Biography": "Biography",
   "VTTFORGE_EXAMPLE.Sheet.NewGear": "New gear",
   "VTTFORGE_EXAMPLE.Sheet.NewGearName": "New Gear",
   "VTTFORGE_EXAMPLE.Sheet.NoGear": "No gear yet — drag items here or click 'New gear'.",
   "VTTFORGE_EXAMPLE.Sheet.Delete": "Delete",
+
+  "VTTFORGE_EXAMPLE.Sheet.Quick.HP": "HP",
+  "VTTFORGE_EXAMPLE.Sheet.Quick.AC": "AC",
+  "VTTFORGE_EXAMPLE.Sheet.Quick.SPD": "SPD",
+  "VTTFORGE_EXAMPLE.Sheet.Quick.INIT": "INIT",
+
   "VTTFORGE_EXAMPLE.Sheet.Tabs.abilities": "Abilities",
   "VTTFORGE_EXAMPLE.Sheet.Tabs.inventory": "Inventory",
+  "VTTFORGE_EXAMPLE.Sheet.Tabs.spells": "Spells",
   "VTTFORGE_EXAMPLE.Sheet.Tabs.biography": "Biography",
   "VTTFORGE_EXAMPLE.Sheet.Tabs.details": "Details",
   "VTTFORGE_EXAMPLE.Sheet.Tabs.description": "Description",
+
   "VTTFORGE_EXAMPLE.Sheet.Roll.label": "Roll",
   "VTTFORGE_EXAMPLE.Sheet.Roll.flavor": "{ability} check",
+  "VTTFORGE_EXAMPLE.Sheet.Drop.label": "Drop item to add",
   "VTTFORGE_EXAMPLE.Sheet.Drop.rejected": "Cannot drop {type} items on a character — only gear is accepted.",
 
   "VTTFORGE_EXAMPLE.Ability.str": "Strength",
@@ -34,5 +44,11 @@
   "VTTFORGE_EXAMPLE.Ability.cha": "Charisma",
 
   "VTTFORGE_EXAMPLE.Gear.Quantity": "Quantity",
-  "VTTFORGE_EXAMPLE.Gear.Weight": "Weight (lb)"
+  "VTTFORGE_EXAMPLE.Gear.Weight": "Weight (lb)",
+  "VTTFORGE_EXAMPLE.Gear.Kind.equipped": "equipped",
+  "VTTFORGE_EXAMPLE.Gear.Kind.valued": "valued",
+  "VTTFORGE_EXAMPLE.Gear.Kind.stowed": "stowed",
+
+  "VTTFORGE_EXAMPLE.Settings.showTutorial.name": "Show tutorial",
+  "VTTFORGE_EXAMPLE.Settings.showTutorial.hint": "Display the example-system tutorial banner on world load."
 }
