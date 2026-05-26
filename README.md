@@ -15,7 +15,7 @@
 
 ---
 
-> ⚠️ **Status:** Pre-release. `@vttforge/core` builds, typechecks, ships 100+ tests, and is validated end-to-end inside Foundry v13 via the bundled `examples/simple-system` (tabbed character sheet, drag-drop, migration runner). Not on npm yet — Trusted Publisher setup is pending. Watch this repo for the v0.1.0 release.
+> ⚠️ **Status:** Pre-release. `@vttforge/core` builds, typechecks, ships 100+ tests, and is validated end-to-end inside Foundry v13 via the bundled `examples/simple-system` (tabbed character sheet, drag-drop, migration runner). `@vttforge/styles` ships the full Forge design system (tokens, sheet primitives, preview page). The brand mark and landing page for `vttforge.dev` are in `brand/` and `apps/web/`. Not on npm yet — Trusted Publisher setup is pending. Watch this repo for the v0.1.0 release.
 
 ## Why VTTForge?
 
@@ -67,11 +67,21 @@ VTTForge eliminates **hundreds of lines of structural boilerplate** with zero fu
 | Package | What it does | Status |
 |---|---|---|
 | [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | Runtime utilities: `BaseTypeDataModel`, `BaseActorSheet`, `BaseItemSheet`, `SystemConfig`, `registerSystem`, `fields()`, `InferSchema<T>`, `createMigrationRunner`, `getErrorManifest`, `VttfError` | 🚧 v0.1 in progress |
-| `@vttforge/styles` | Base CSS layer: design tokens, sheet primitives, drag-drop affordances, opt-in themes (CSS Cascade Layers) | 🚧 v0.1 in progress |
+| `@vttforge/styles` | Design tokens (Forge theme, OKLCH, generated from W3C DTCG), sheet primitives, `.vttf-*` component classes (button, badge, input, code block, checkbox/radio/switch/range/segment, tabs, sheet primitives), opt-in themes via CSS Cascade Layers. Storybook-lite preview at `packages/styles/preview/`. | 🎨 v0.2 shipped |
 | [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | Vite plugin: HMR for `.hbs`, CSS pipeline (PostCSS), manifest sync | 📋 v0.2 planned |
 | [`@vttforge/cli`](https://www.npmjs.com/package/@vttforge/cli) | `vttforge init / dev / build` | 📋 v0.3 planned |
 | [`@vttforge/testing`](https://www.npmjs.com/package/@vttforge/testing) | Quench helpers for system/module tests | 📋 v1.0 planned |
 | [`@vttforge/types`](https://www.npmjs.com/package/@vttforge/types) | Shared TypeScript types | 📋 v1.0 planned |
+
+## Design system
+
+VTTForge ships its own design language — the **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` brand mark, and a 4-pt grid. The full system is documented in `packages/styles/` and previewed at `packages/styles/preview/index.html` (open the file in a browser; toggle dark / light / foundry / auto themes).
+
+- **Brand** — `brand/` ships the mark (full color, mono, plated favicon) at `logo.svg` / `logo-mono.svg` / `favicon.svg`, plus PNG rasters at 32 / 180 / 512 px. Usage rules live in `brand/README.md`.
+- **Tokens** — W3C Design Tokens source at `packages/styles/tokens.json` is compiled by Style Dictionary into `dist/tokens.css`. Three selector blocks: Forge default, `[data-theme="light"]`, and an opt-in `[data-theme="foundry"]` mapping that follows the GM's Theme V2 setting.
+- **Primitives** — buttons, badges, code block + syntax tokens, form controls, tabs, code-block, and the `.sh-*` sheet primitives (portrait, quick stats, items list, dropzone, foot strip) all consume only `--vttf-*` tokens. ARIA states drive variants; `:focus-visible` is owned by the base layer.
+- **Themes** — Forge is the default. Four documented recipe themes (Codex / Parchment / Grimdark / Neon) live in `examples/themes/` and re-theme everything by overriding `--vttf-*` tokens on a parent class.
+- **Reference Foundry sheet** — `examples/simple-system` renders the canonical reference sheet (HP / AC / SPD / INIT quick stats, four tabs, ability scores grid with roll buttons, items list with kind pills, drop affordance) using the Forge theme. Boot it via the Docker compose below to see the SDK + design system together.
 
 ## Try it today
 
@@ -85,7 +95,7 @@ cp .env.example .env                             # fill in FOUNDRY_LICENSE_KEY /
 docker compose -f docker-compose.dev.yml up      # → http://localhost:30000
 ```
 
-Inside Foundry: install **VTTForge Example System**, create a world, add a Character actor — the SDK-provided tabbed sheet renders with abilities/inventory/biography, drag-drop inventory, and the demo migration runs at world load.
+Inside Foundry: create a world on **VTTForge Example System**, add a Character actor. The sheet renders the canonical reference layout — header with HP / AC / SPD / INIT quick stats, four tabs (Abilities · Inventory · Spells · Biography), ability scores grid with roll buttons, items list with kind pills (`equipped` / `valued` / `stowed`), drop affordance, and the demo migration runs at world load.
 
 ## Quick start (v0.1.0)
 
@@ -114,9 +124,9 @@ vttforge build
 ## Roadmap
 
 - ✅ **v0.0** — Names reserved, repo created
-- 🏗️ **v0.1** — `@vttforge/core` runtime + first reference migration
-- 📦 **v0.2** — `@vttforge/vite-plugin` (HMR, manifest sync)
-- 🛠️ **v0.3** — `@vttforge/cli` scaffolding
+- 🏗️ **v0.1** — `@vttforge/core` runtime, `@vttforge/styles` design system (Forge theme, `.vttf-*` primitives), brand mark, reference Foundry system, landing page
+- 📦 **v0.2** — `@vttforge/vite-plugin` (HMR, manifest sync, CSS bundling)
+- 🛠️ **v0.3** — `@vttforge/cli` scaffolding, `vttforge.dev` docs site
 - 🚀 **v1.0** — Schema inference, decorators, stable API
 
 ## Contributing
