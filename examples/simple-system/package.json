@@ -18,7 +18,6 @@
     "@vttforge/vite-plugin": "workspace:*",
     "happy-dom": "catalog:",
     "typescript": "catalog:",
-    "unrun": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
   }
