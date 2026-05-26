@@ -90,7 +90,7 @@ The repo ships a working Foundry v13 system you can boot in one command. Require
 ```bash
 git clone https://github.com/vttforge/vttforge && cd vttforge
 corepack enable && pnpm install
-pnpm build                                       # builds @vttforge/core + bundles the example
+pnpm build                                       # bundles the example system via @vttforge/vite-plugin into examples/simple-system/dist/
 cp .env.example .env                             # fill in FOUNDRY_LICENSE_KEY / USERNAME / PASSWORD
 docker compose -f docker-compose.dev.yml up      # → http://localhost:30000
 ```
