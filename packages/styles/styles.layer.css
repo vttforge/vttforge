@@ -2,9 +2,9 @@
  * @vttforge/styles — styles.layer.css
  *
  * Mantine-style variant: wraps `index.css` inside an explicit `@layer vttforge`
- * for consumers that want a single namespaced layer instead of the four
+ * for consumers that want a single namespaced layer instead of the five
  * sub-layers (`vttforge.tokens`, `vttforge.reset`, `vttforge.base`,
- * `vttforge.components`).
+ * `vttforge.components`, `vttforge.themes`).
  *
  * Use this entry when you need to control VTTForge's cascade position relative
  * to your own layers; use the default `index.css` otherwise.
@@ -15,4 +15,5 @@
   @import "./reset.css";
   @import "./base.css";
   @import "./components.css";
+  @import "./themes/forge.css";
 }
