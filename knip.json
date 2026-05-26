@@ -1,21 +1,26 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
-    ".": {
-      "ignoreDependencies": []
-    },
+    ".": {},
     "packages/*": {
       "ignoreDependencies": ["@arethetypeswrong/cli"]
     },
+    "packages/styles": {
+      "entry": ["preview/index.html", "preview/preview.js"],
+      "project": ["preview/**/*.js"]
+    },
+    "packages/vite-plugin": {
+      "ignore": ["src/__tests__/fixtures/**"],
+      "ignoreDependencies": ["@arethetypeswrong/cli"]
+    },
     "examples/simple-system": {
-      "entry": ["scripts/main.mjs", "styles/example.css"],
-      "project": ["scripts/**/*.mjs", "styles/**/*.css"],
+      "entry": ["scripts/main.mjs"],
+      "project": ["scripts/**/*.mjs"],
       "ignoreDependencies": ["@vttforge/styles"]
     },
     "apps/web": {
-      "entry": ["index.html", "src/main.js"],
-      "project": ["src/**/*.{js,css}"]
+      "entry": ["index.html"],
+      "ignoreDependencies": ["@vttforge/styles"]
     }
-  },
-  "ignore": ["plans/**"]
+  }
 }
