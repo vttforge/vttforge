@@ -1,0 +1,13 @@
+# Files to copy into new git worktrees.
+#
+# Uses .gitignore syntax. Only matches files that are ALSO gitignored —
+# tracked files are already in the worktree via `git worktree add`.
+#
+# See ~/.claude/rules/git-worktrees.md for the convention.
+
+# Skills bundle: Foundry system guidance, Foundry module guidance
+# Pulled via skills-lock.json on the main checkout; needed by the
+# Skill tool in every worktree so agents can invoke them without
+# falling back to direct SKILL.md reads.
+.agents/
+.claude/skills/
