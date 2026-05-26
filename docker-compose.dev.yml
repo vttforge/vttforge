@@ -14,7 +14,10 @@ services:
       CONTAINER_PRESERVE_CONFIG: "true"
     volumes:
       - foundry-dev-data:/data
-      - ./examples/simple-system:/data/Data/systems/vttforge-example:ro
+      # Mount the built dist/ — produced by `pnpm -F @vttforge-examples/simple-system build`
+      # via @vttforge/vite-plugin. The plugin emits a fully Foundry-loadable
+      # tree (system.json + bundled main.mjs + bundled styles/ + lang/ + templates/).
+      - ./examples/simple-system/dist:/data/Data/systems/vttforge-example:ro
       - ./examples/simple-module:/data/Data/modules/vttforge-example-module:ro
     ports:
       - "30000:30000"
