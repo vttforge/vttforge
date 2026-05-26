@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" role="img" aria-label="VTTForge">
+  <title>VTTForge</title>
+  <path d="M11 7 C 9 7 8 8 8 11 L 8 14 C 8 15.5 7 16 6 16 C 7 16 8 16.5 8 18 L 8 21 C 8 24 9 25 11 25" stroke="#b1aba4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M21 7 C 23 7 24 8 24 11 L 24 14 C 24 15.5 25 16 26 16 C 25 16 24 16.5 24 18 L 24 21 C 24 24 23 25 21 25" stroke="#b1aba4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <polygon points="16,10 21.5,13 21.5,19 16,22 10.5,19 10.5,13" fill="#f57c33" stroke="#ffad67" stroke-width="0.9" stroke-linejoin="round"/>
+  <polygon points="13.5,14.5 18.5,14.5 18.5,17.5 13.5,17.5" fill="#b13c11" opacity="0.35"/>
+  <path d="M16 10 L13.5 14.5 M16 10 L18.5 14.5 M16 10 L10.5 13 M16 10 L21.5 13" stroke="#b13c11" stroke-width="0.55" opacity="0.7"/>
+  <path d="M16 22 L13.5 17.5 M16 22 L18.5 17.5 M16 22 L10.5 19 M16 22 L21.5 19" stroke="#b13c11" stroke-width="0.55" opacity="0.7"/>
+  <path d="M10.5 13 L13.5 14.5 M21.5 13 L18.5 14.5 M10.5 19 L13.5 17.5 M21.5 19 L18.5 17.5" stroke="#b13c11" stroke-width="0.55" opacity="0.55"/>
+</svg>
