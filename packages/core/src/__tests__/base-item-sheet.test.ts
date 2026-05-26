@@ -132,7 +132,9 @@ describe('BaseItemSheet', () => {
     (instance as { isEditable: boolean }).isEditable = true;
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(1);
-    const perms = dragDropBinds[0]!.config.permissions as {
+    const entry = dragDropBinds[0];
+    if (!entry) throw new Error('expected dragDropBinds[0] after length assertion');
+    const perms = entry.config.permissions as {
       dragstart: () => boolean;
       drop: () => boolean;
     };
