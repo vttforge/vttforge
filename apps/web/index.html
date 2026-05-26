@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VTTForge · Forge sheets, not boilerplate.</title>
+    <meta name="description" content="A modern SDK for building FoundryVTT v13+ systems and modules. Declarative APIs, schema-to-type inference, zero lock-in." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23130d0a'/><polygon points='16,10 21.5,13 21.5,19 16,22 10.5,19 10.5,13' fill='%23f57c33'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" />
+    <link rel="stylesheet" href="/src/styles.css" />
+
+    <!-- Inline brand symbols, referenced via <use href="#vttf-mark"> -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+      <symbol id="vttf-mark" viewBox="0 0 32 32" fill="none">
+        <path d="M11 7 C 9 7 8 8 8 11 L 8 14 C 8 15.5 7 16 6 16 C 7 16 8 16.5 8 18 L 8 21 C 8 24 9 25 11 25" stroke="#b1aba4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M21 7 C 23 7 24 8 24 11 L 24 14 C 24 15.5 25 16 26 16 C 25 16 24 16.5 24 18 L 24 21 C 24 24 23 25 21 25" stroke="#b1aba4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <polygon points="16,10 21.5,13 21.5,19 16,22 10.5,19 10.5,13" fill="#f57c33" stroke="#ffad67" stroke-width="0.9" stroke-linejoin="round"/>
+        <polygon points="13.5,14.5 18.5,14.5 18.5,17.5 13.5,17.5" fill="#b13c11" opacity="0.35"/>
+        <path d="M16 10 L13.5 14.5 M16 10 L18.5 14.5 M16 10 L10.5 13 M16 10 L21.5 13" stroke="#b13c11" stroke-width="0.55" opacity="0.7"/>
+        <path d="M16 22 L13.5 17.5 M16 22 L18.5 17.5 M16 22 L10.5 19 M16 22 L21.5 19" stroke="#b13c11" stroke-width="0.55" opacity="0.7"/>
+        <path d="M10.5 13 L13.5 14.5 M21.5 13 L18.5 14.5 M10.5 19 L13.5 17.5 M21.5 19 L18.5 17.5" stroke="#b13c11" stroke-width="0.55" opacity="0.55"/>
+      </symbol>
+    </svg>
+  </head>
+  <body>
+    <div class="forge-bg" aria-hidden="true"></div>
+
+    <header class="top">
+      <div class="shell row">
+        <a class="brand" href="#top">
+          <svg class="brand-mark" width="30" height="30" aria-hidden="true"><use href="#vttf-mark" /></svg>
+          <span class="brand-name"><span class="v">VTT</span>Forge</span>
+          <span class="ver-pill">v0.1 · pre-release</span>
+        </a>
+        <nav class="top-nav">
+          <a href="#why">Why</a>
+          <a href="#packages">Packages</a>
+          <a href="#try">Try it</a>
+          <a href="#roadmap">Roadmap</a>
+          <a href="/design-system">Design System</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme">
+          <span class="tt-icon" data-state="dark">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11 9.5A6 6 0 0 1 6 3a6 6 0 1 0 5 6.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="tt-icon" data-state="light" hidden>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.5v1.6M8 12.9v1.6M14.5 8h-1.6M3.1 8H1.5M12.6 3.4l-1.1 1.1M4.5 11.5l-1.1 1.1M12.6 12.6l-1.1-1.1M4.5 4.5L3.4 3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </span>
+          <span class="tt-icon" data-state="auto" hidden>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 2a6 6 0 0 1 0 12V2z" fill="currentColor"/></svg>
+          </span>
+          <span class="tt-label">dark</span>
+        </button>
+        <a href="https://github.com/vttforge/vttforge" class="top-cta">GitHub →</a>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="shell">
+          <span class="status-pill"><span class="blip"></span> v0.1 in development</span>
+          <h1 class="hero-title">Forge sheets,<br />not <em>boilerplate</em>.</h1>
+          <p class="hero-sub">
+            A modern SDK for building FoundryVTT v13+ systems and modules.
+            Declarative APIs, schema-to-type inference, zero lock-in.
+          </p>
+
+          <div class="hero-ctas">
+            <div class="install-cmd">
+              <span class="prompt">$</span>
+              <span id="install-text">npm i @vttforge/core</span>
+              <button class="copy-btn" id="copy-btn" type="button" aria-label="Copy install command">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="4" y="4" width="9" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 11V3a1 1 0 0 1 1-1h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <span class="lbl">copy</span>
+              </button>
+            </div>
+            <a class="btn-secondary" href="/design-system">Design System <span aria-hidden="true">→</span></a>
+          </div>
+
+          <dl class="hero-meta">
+            <div class="cell"><dt>Foundry target</dt><dd>v13.341+</dd></div>
+            <div class="cell"><dt>Layer prefix</dt><dd><span class="mono">vttforge.*</span></dd></div>
+            <div class="cell"><dt>Tests</dt><dd>100+ <span class="mono">+ end-to-end</span></dd></div>
+            <div class="cell"><dt>License</dt><dd>MIT</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="bk" id="why">
+        <div class="shell">
+          <div class="bk-head">
+            <span class="bk-eyebrow">The problem</span>
+            <h2 class="bk-title">Replace 100s of lines<br />with declarative classes.</h2>
+            <p class="bk-sub">
+              Every FoundryVTT sheet you've written has the same structural plumbing:
+              drag-drop handlers, <span class="mono">_prepareContext</span> ceremony,
+              <span class="mono">fromUuid</span> lookups, tab state machines. VTTForge
+              turns it into one declarative class.
+            </p>
+          </div>
+
+          <div class="ba-grid">
+            <div>
+              <div class="ba-label">
+                Without VTTForge
+                <span class="ba-stat"><b>~140</b> lines per sheet</span>
+              </div>
+              <div class="vttf-codeblock">
+                <div class="vttf-codeblock__head">
+                  <div class="vttf-codeblock__dots"><span></span><span></span><span></span></div>
+                  <span class="vttf-codeblock__file">character-sheet.mjs</span>
+                  <span class="vttf-codeblock__lang">javascript</span>
+                </div>
+<pre><span class="vttf-tk-kw">class</span> <span class="vttf-tk-ty">CharacterSheet</span> <span class="vttf-tk-kw">extends</span> <span class="vttf-tk-ty">ActorSheetV2</span> {
+
+  <span class="vttf-tk-com">// 36 lines of identical drag-drop wiring</span>
+  <span class="vttf-tk-fn">#createDragDropHandlers</span>() {
+    <span class="vttf-tk-kw">return</span> <span class="vttf-tk-kw">this</span>.<span class="vttf-tk-prop">options</span>.<span class="vttf-tk-prop">dragDrop</span>.<span class="vttf-tk-fn">map</span>(d <span class="vttf-tk-pun">=&gt;</span> {
+      d.<span class="vttf-tk-prop">callbacks</span> <span class="vttf-tk-pun">=</span> {
+        <span class="vttf-tk-prop">dragstart</span>: <span class="vttf-tk-kw">this</span>.<span class="vttf-tk-prop">_onDragStart</span>.<span class="vttf-tk-fn">bind</span>(<span class="vttf-tk-kw">this</span>),
+        <span class="vttf-tk-prop">drop</span>:      <span class="vttf-tk-kw">this</span>.<span class="vttf-tk-prop">_onDrop</span>.<span class="vttf-tk-fn">bind</span>(<span class="vttf-tk-kw">this</span>),
+      };
+      <span class="vttf-tk-kw">return</span> <span class="vttf-tk-kw">new</span> <span class="vttf-tk-ty">DragDrop</span>(d);
+    });
+  }
+
+  <span class="vttf-tk-kw">async</span> <span class="vttf-tk-fn">_prepareContext</span>(options) {
+    <span class="vttf-tk-kw">const</span> context <span class="vttf-tk-pun">=</span> <span class="vttf-tk-kw">await</span> <span class="vttf-tk-kw">super</span>.<span class="vttf-tk-fn">_prepareContext</span>(options);
+    context.<span class="vttf-tk-prop">tabs</span> <span class="vttf-tk-pun">=</span> {
+      <span class="vttf-tk-prop">primary</span>: <span class="vttf-tk-kw">this</span>.<span class="vttf-tk-fn">_prepareTabs</span>(<span class="vttf-tk-str">"primary"</span>),
+      <span class="vttf-tk-com">/* every group, every sheet… */</span>
+    };
+    <span class="vttf-tk-kw">return</span> context;
+  }
+
+  <span class="vttf-tk-kw">async</span> <span class="vttf-tk-fn">_onDropItem</span>(event, data) {
+    <span class="vttf-tk-kw">const</span> item <span class="vttf-tk-pun">=</span> <span class="vttf-tk-kw">await</span> <span class="vttf-tk-fn">fromUuid</span>(data.<span class="vttf-tk-prop">uuid</span>);
+    <span class="vttf-tk-kw">if</span> (!item) <span class="vttf-tk-kw">return</span>;
+    <span class="vttf-tk-com">// type-switching, validation, transfer…</span>
+  }
+}</pre>
+              </div>
+            </div>
+
+            <div class="ba-arrow" aria-hidden="true">→</div>
+
+            <div>
+              <div class="ba-label after">
+                With VTTForge
+                <span class="ba-stat"><b>12</b> lines · same behavior</span>
+              </div>
+              <div class="vttf-codeblock">
+                <div class="vttf-codeblock__head">
+                  <div class="vttf-codeblock__dots"><span></span><span></span><span></span></div>
+                  <span class="vttf-codeblock__file">character-sheet.ts</span>
+                  <span class="vttf-codeblock__lang">typescript</span>
+                </div>
+<pre><span class="vttf-tk-kw">import</span> { <span class="vttf-tk-prop">BaseActorSheet</span> } <span class="vttf-tk-kw">from</span> <span class="vttf-tk-str">"@vttforge/core"</span>;
+
+<span class="vttf-tk-kw">class</span> <span class="vttf-tk-ty">CharacterSheet</span> <span class="vttf-tk-kw">extends</span> <span class="vttf-tk-fn">BaseActorSheet</span>() {
+  <span class="vttf-tk-kw">static</span> <span class="vttf-tk-prop">PARTS</span> <span class="vttf-tk-pun">=</span> {
+    <span class="vttf-tk-prop">main</span>: { <span class="vttf-tk-prop">template</span>: <span class="vttf-tk-str">"systems/demo/sheet.hbs"</span> },
+  };
+  <span class="vttf-tk-kw">static</span> <span class="vttf-tk-prop">TABS</span> <span class="vttf-tk-pun">=</span> {
+    <span class="vttf-tk-prop">primary</span>: { <span class="vttf-tk-prop">tabs</span>: [<span class="vttf-tk-str">"abilities"</span>, <span class="vttf-tk-str">"inventory"</span>, <span class="vttf-tk-str">"bio"</span>] },
+  };
+  <span class="vttf-tk-kw">static</span> <span class="vttf-tk-prop">DRAG_DROP</span> <span class="vttf-tk-pun">=</span> [{ <span class="vttf-tk-prop">dragSelector</span>: <span class="vttf-tk-str">".item"</span> }];
+
+  <span class="vttf-tk-com">// fromUuid already resolved, just handle your domain.</span>
+  <span class="vttf-tk-kw">async</span> <span class="vttf-tk-fn">onDropItem</span>(item, event) {
+    <span class="vttf-tk-kw">await</span> <span class="vttf-tk-kw">this</span>.<span class="vttf-tk-prop">actor</span>.<span class="vttf-tk-fn">createEmbeddedDocuments</span>(<span class="vttf-tk-str">"Item"</span>, [item.<span class="vttf-tk-fn">toObject</span>()]);
+  }
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bk">
+        <div class="shell">
+          <div class="bk-head">
+            <span class="bk-eyebrow">What you get</span>
+            <h2 class="bk-title">Battle-tested<br />in production Foundry.</h2>
+            <p class="bk-sub">
+              Every API is validated against a production FoundryVTT system before it
+              ships. Where Foundry already does something well, we don't reinvent it.
+            </p>
+          </div>
+
+          <div class="feat-grid">
+            <article class="feat">
+              <div class="ico">{ }</div>
+              <h3>Declarative sheet bases</h3>
+              <p><span class="mono">BaseActorSheet</span> and <span class="mono">BaseItemSheet</span> handle drag-drop wiring, tab state, and <span class="mono">fromUuid</span> resolution. You write domain logic, not plumbing.</p>
+              <div class="nub">@vttforge/core</div>
+            </article>
+            <article class="feat">
+              <div class="ico">T</div>
+              <h3>Schema-to-type inference</h3>
+              <p>One <span class="mono">defineSchema()</span> drives both runtime validation and your TypeScript types via <span class="mono">InferSchema&lt;T&gt;</span>. Stop double-typing your data models.</p>
+              <div class="nub">@vttforge/core · @vttforge/types</div>
+            </article>
+            <article class="feat">
+              <div class="ico">≡</div>
+              <h3>Cascade-layer CSS</h3>
+              <p><span class="mono">@vttforge/styles</span> nests under Foundry's <span class="mono">system</span> layer with a vendored prefix, no specificity wars, no <span class="mono">!important</span>. Inherits Theme V2 for free.</p>
+              <div class="nub">@vttforge/styles</div>
+            </article>
+            <article class="feat">
+              <div class="ico">⟳</div>
+              <h3>Migration runner</h3>
+              <p><span class="mono">createMigrationRunner()</span> ships idempotent, versioned data migrations with a clean rollback story, runs once at world load, logs to chat.</p>
+              <div class="nub">@vttforge/core</div>
+            </article>
+            <article class="feat">
+              <div class="ico">⚡</div>
+              <h3>HMR for Handlebars</h3>
+              <p>The Vite plugin watches <span class="mono">.hbs</span> templates and hot-swaps them in a running Foundry world. Tweak markup without reloading a world.</p>
+              <div class="nub">@vttforge/vite-plugin · v0.2</div>
+            </article>
+            <article class="feat">
+              <div class="ico">↯</div>
+              <h3>Stable error registry</h3>
+              <p>Every runtime error carries a <span class="mono">VTTF-NNNN</span> code from an append-only registry. Codes are stable across majors, log scrapers and IDE tooltips resolve forever.</p>
+              <div class="nub">@vttforge/core</div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="bk" id="packages">
+        <div class="shell">
+          <div class="bk-head">
+            <span class="bk-eyebrow">Packages</span>
+            <h2 class="bk-title">Six packages,<br />one monorepo.</h2>
+            <p class="bk-sub">Cherry-pick what you need. <span class="mono">@vttforge/core</span> is enough for a system; the rest layer on top.</p>
+          </div>
+
+          <table class="pkg-table">
+            <thead>
+              <tr><th>package</th><th>what it does</th><th>status</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="pkg-name">@vttforge/core</td>
+                <td class="pkg-desc">Runtime: BaseActorSheet, BaseItemSheet, SystemConfig, registerSystem, fields(), InferSchema, createMigrationRunner, VttfError</td>
+                <td class="pkg-status s-wip"><span class="blip"></span>v0.1 in progress</td>
+              </tr>
+              <tr>
+                <td class="pkg-name">@vttforge/styles</td>
+                <td class="pkg-desc">Design tokens, sheet primitives, drag-drop affordances, opt-in themes via CSS cascade layers</td>
+                <td class="pkg-status s-wip"><span class="blip"></span>v0.1 in progress</td>
+              </tr>
+              <tr>
+                <td class="pkg-name">@vttforge/vite-plugin</td>
+                <td class="pkg-desc">Vite plugin: HMR for .hbs, CSS pipeline (PostCSS), manifest sync</td>
+                <td class="pkg-status s-plan"><span class="blip"></span>v0.2 planned</td>
+              </tr>
+              <tr>
+                <td class="pkg-name">@vttforge/cli</td>
+                <td class="pkg-desc">vttforge init / dev / build, scaffold systems and modules in TS or JS</td>
+                <td class="pkg-status s-plan"><span class="blip"></span>v0.3 planned</td>
+              </tr>
+              <tr>
+                <td class="pkg-name">@vttforge/testing</td>
+                <td class="pkg-desc">Quench helpers for system and module tests</td>
+                <td class="pkg-status s-plan"><span class="blip"></span>v1.0 planned</td>
+              </tr>
+              <tr>
+                <td class="pkg-name">@vttforge/types</td>
+                <td class="pkg-desc">Shared TypeScript types, full class-level inference, Drizzle-style $inferData</td>
+                <td class="pkg-status s-plan"><span class="blip"></span>v1.0 planned</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="bk" id="try">
+        <div class="shell">
+          <div class="bk-head">
+            <span class="bk-eyebrow">Try it today</span>
+            <h2 class="bk-title">Working example<br />in one command.</h2>
+            <p class="bk-sub">The repo ships a real Foundry v13 system you can boot in Docker, tabbed character sheet, drag-drop inventory, demo migration. Requires Docker + a foundryvtt.com license.</p>
+          </div>
+
+          <div class="try-grid">
+            <div class="try-card">
+              <h3>Boot the example world</h3>
+              <p>Clone the repo, fill in your Foundry license, run one compose command. The bundled <span class="mono">examples/simple-system</span> mounts read-only at <span class="mono">localhost:30000</span>.</p>
+              <div class="vttf-codeblock">
+                <div class="vttf-codeblock__head">
+                  <div class="vttf-codeblock__dots"><span></span><span></span><span></span></div>
+                  <span class="vttf-codeblock__file">terminal</span>
+                  <span class="vttf-codeblock__lang">bash</span>
+                </div>
+<pre><span class="vttf-tk-com"># clone &amp; install</span>
+<span class="vttf-tk-prop">git</span> clone https://github.com/vttforge/vttforge
+<span class="vttf-tk-prop">cd</span> vttforge
+<span class="vttf-tk-prop">corepack</span> enable <span class="vttf-tk-pun">&amp;&amp;</span> <span class="vttf-tk-prop">pnpm</span> install
+<span class="vttf-tk-prop">pnpm</span> build
+
+<span class="vttf-tk-com"># fill in your foundryvtt.com license</span>
+<span class="vttf-tk-prop">cp</span> .env.example .env
+
+<span class="vttf-tk-com"># boot Foundry v13 with the example system mounted</span>
+<span class="vttf-tk-prop">docker</span> compose -f docker-compose.dev.yml up
+<span class="vttf-tk-com"># http://localhost:30000</span></pre>
+              </div>
+            </div>
+
+            <div class="try-card">
+              <h3>Coming with v0.1</h3>
+              <p>Once <span class="mono">@vttforge/cli</span> ships in v0.3, scaffolding a new system or module takes one command. Dev server with HMR for Handlebars templates is in the v0.2 plugin.</p>
+              <div class="vttf-codeblock">
+                <div class="vttf-codeblock__head">
+                  <div class="vttf-codeblock__dots"><span></span><span></span><span></span></div>
+                  <span class="vttf-codeblock__file">terminal</span>
+                  <span class="vttf-codeblock__lang">bash</span>
+                </div>
+<pre><span class="vttf-tk-com"># scaffold a system, or a module</span>
+<span class="vttf-tk-prop">npx</span> @vttforge/cli init my-system <span class="vttf-tk-pun">\</span>
+  --type system --lang ts
+
+<span class="vttf-tk-prop">npx</span> @vttforge/cli init my-module <span class="vttf-tk-pun">\</span>
+  --type module --lang ts
+
+<span class="vttf-tk-prop">cd</span> my-system
+
+<span class="vttf-tk-com"># dev server with HMR for .hbs</span>
+<span class="vttf-tk-prop">vttforge</span> dev <span class="vttf-tk-pun">\</span>
+  --foundry-data ~/Library/Application\ Support/FoundryVTT/Data
+
+<span class="vttf-tk-com"># production build</span>
+<span class="vttf-tk-prop">vttforge</span> build</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bk" id="roadmap">
+        <div class="shell">
+          <div class="bk-head">
+            <span class="bk-eyebrow">Roadmap</span>
+            <h2 class="bk-title">Where we are now.<br />And the road to 1.0.</h2>
+          </div>
+
+          <div class="roadmap">
+            <div class="roadmap-track">
+              <div class="rm-step done"><div class="dot"></div><div class="ver">v0.0</div><div class="nm">Names reserved</div></div>
+              <div class="rm-step now"><div class="dot"></div><div class="ver">v0.1</div><div class="nm">Core runtime · sheet bases · styles · types</div></div>
+              <div class="rm-step"><div class="dot"></div><div class="ver">v0.2</div><div class="nm">Vite plugin · HMR · manifest sync</div></div>
+              <div class="rm-step"><div class="dot"></div><div class="ver">v0.3</div><div class="nm">CLI scaffolding · docs site</div></div>
+              <div class="rm-step"><div class="dot"></div><div class="ver">v1.0</div><div class="nm">Stable API · full inference · decorators</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="shell">
+          <div class="cta-strip">
+            <h2>Built one Foundry system the hard way?<br />Try building the next one with VTTForge.</h2>
+            <p>v0.1 lands soon. Star the repo, file an issue with the boilerplate patterns you'd like eliminated, or open the design system to see what's shipping.</p>
+            <div class="row">
+              <a href="https://github.com/vttforge/vttforge" class="top-cta">Star on GitHub →</a>
+              <a href="/design-system" class="btn-secondary">View design system</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bottom">
+      <div class="shell">
+        <div class="cols">
+          <div>
+            <h4>VTTForge</h4>
+            <p style="color: var(--vttf-text-muted); max-width: 32ch; font-size: 13px; margin: 0;">A modern SDK and CLI for building FoundryVTT v13+ systems and modules. MIT licensed, community first.</p>
+          </div>
+          <div>
+            <h4>Documentation</h4>
+            <ul>
+              <li><a href="/design-system">Design System</a></li>
+              <li><a href="/theme-recipes">Theme Recipes</a></li>
+              <li><a href="#packages">Packages</a></li>
+              <li><a href="#roadmap">Roadmap</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Community</h4>
+            <ul>
+              <li><a href="https://github.com/vttforge/vttforge">GitHub</a></li>
+              <li><a href="https://github.com/vttforge/vttforge/issues">Issues</a></li>
+              <li><a href="https://github.com/vttforge/vttforge/discussions">Discussions</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>npm</h4>
+            <ul>
+              <li><a href="https://www.npmjs.com/package/@vttforge/core">@vttforge/core</a></li>
+              <li><a href="https://www.npmjs.com/package/@vttforge/styles">@vttforge/styles</a></li>
+              <li><a href="https://www.npmjs.com/package/@vttforge/vite-plugin">@vttforge/vite-plugin</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="legal">
+          <span class="brand-mini">
+            <svg width="20" height="20" aria-hidden="true"><use href="#vttf-mark" /></svg>
+            <span><span class="v">VTT</span>Forge</span>
+          </span>
+          <span>Independent · Not affiliated with Foundry Gaming LLC · MIT &copy; 2026 Fabricio Cavalcante de Souza</span>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

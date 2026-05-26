@@ -11,6 +11,10 @@
       "entry": ["scripts/main.mjs", "styles/example.css"],
       "project": ["scripts/**/*.mjs", "styles/**/*.css"],
       "ignoreDependencies": ["@vttforge/styles"]
+    },
+    "apps/web": {
+      "entry": ["index.html", "src/main.js"],
+      "project": ["src/**/*.{js,css}"]
     }
   },
   "ignore": [".internal/**"]
