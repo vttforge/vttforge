@@ -1,0 +1,31 @@
+/*!
+ * examples/themes/codex.css — recipe theme · D&D 5e modern
+ *
+ * Burgundy + cream + serif. Apply by adding `.vttf-theme-codex` to a sheet root.
+ * Documented example only — Forge is the official theme; this file ships in
+ * examples/ to show how a consumer composes their own theme on top of
+ * `@vttforge/styles` by overriding `--vttf-*` tokens.
+ */
+
+.vttf-theme-codex {
+  --vttf-bg: #f5efe2;
+  --vttf-bg-elevated: #fbf7ec;
+  --vttf-bg-sunken: #ede4d0;
+  --vttf-surface: #fbf7ec;
+  --vttf-surface-2: #f0e8d2;
+  --vttf-border: #d6c8a8;
+  --vttf-border-strong: #b7a47a;
+  --vttf-text: #2a1a14;
+  --vttf-text-muted: #6b554a;
+  --vttf-text-faint: #8a7868;
+  --vttf-text-inverse: #fbf7ec;
+  --vttf-ember: #8a1a1f;
+  --vttf-ember-deep: #5a1115;
+  --vttf-ember-glow: #b03238;
+  --vttf-font-display: "Cinzel", "Times New Roman", serif;
+  --vttf-font-body: "Cormorant Garamond", "Times New Roman", serif;
+  --vttf-font-mono: "DM Mono", ui-monospace, monospace;
+  --vttf-radius-sm: 2px;
+  --vttf-radius-md: 3px;
+  --vttf-radius-lg: 4px;
+}
