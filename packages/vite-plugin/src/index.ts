@@ -309,7 +309,11 @@ export default function vttforge(options: VttforgeOptions): Plugin {
               },
               chunkFileNames: 'chunks/[name].mjs',
               assetFileNames: (asset) => {
-                const name = asset.name ?? 'asset';
+                // Rollup 4 surfaces every name an asset can take via `names`.
+                // `name` is kept as a deprecated alias to `names[0]`; we read
+                // `names[0]` directly so the callback stays correct when
+                // Rollup eventually removes the alias.
+                const name = asset.names[0] ?? 'asset';
                 if (name.endsWith('.css')) return 'styles/[name][extname]';
                 return 'assets/[name][extname]';
               },

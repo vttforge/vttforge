@@ -135,14 +135,17 @@ describe('@vttforge/vite-plugin', () => {
       expect(input['main.mjs']).toContain('scripts/main.mjs');
       const output = rollup.output as {
         entryFileNames: (info: { name: string }) => string;
-        assetFileNames: (info: { name?: string }) => string;
+        assetFileNames: (info: { names: string[] }) => string;
         chunkFileNames: string;
       };
       expect(output.entryFileNames({ name: 'main.mjs' })).toBe('main.mjs');
       expect(output.entryFileNames({ name: 'styles/main.css' })).toBe('[name]');
       expect(output.chunkFileNames).toBe('chunks/[name].mjs');
-      expect(output.assetFileNames({ name: 'whatever.css' })).toBe('styles/[name][extname]');
-      expect(output.assetFileNames({ name: 'image.png' })).toBe('assets/[name][extname]');
+      expect(output.assetFileNames({ names: ['whatever.css'] })).toBe('styles/[name][extname]');
+      expect(output.assetFileNames({ names: ['image.png'] })).toBe('assets/[name][extname]');
+      // An asset with no names falls back to the generic `assets/` bucket
+      // rather than throwing.
+      expect(output.assetFileNames({ names: [] })).toBe('assets/[name][extname]');
     });
 
     it('includes CSS entries from the manifest in rollup input under flat basename keys', async () => {
