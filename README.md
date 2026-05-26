@@ -15,7 +15,7 @@
 
 ---
 
-> ⚠️ **Status:** Pre-release. `@vttforge/core` builds, typechecks, ships 100+ tests, and is validated end-to-end inside Foundry v13 via the bundled `examples/simple-system` (tabbed character sheet, drag-drop, migration runner). `@vttforge/styles` ships the full Forge design system (tokens, sheet primitives, preview page). The brand mark and landing page for `vttforge.dev` are in `brand/` and `apps/web/`. Not on npm yet — Trusted Publisher setup is pending. Watch this repo for the v0.1.0 release.
+> ⚠️ **Status:** Pre-release. `@vttforge/core` builds, typechecks, ships 100+ tests, and is validated end-to-end inside Foundry v13 via the bundled `examples/simple-system` (tabbed character sheet, drag-drop, migration runner). `@vttforge/styles` ships the full Forge design system (tokens, sheet primitives, preview page). `@vttforge/vite-plugin` owns the build contract: one Vite config, one `pnpm build`, a deployable `dist/`. The brand mark and landing page for `vttforge.dev` are in `brand/` and `apps/web/`. Not on npm yet — Trusted Publisher setup is pending. Watch this repo for the v0.1.0 release.
 
 ## Why VTTForge?
 
@@ -68,7 +68,7 @@ VTTForge eliminates **hundreds of lines of structural boilerplate** with zero fu
 |---|---|---|
 | [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | Runtime utilities: `BaseTypeDataModel`, `BaseActorSheet`, `BaseItemSheet`, `SystemConfig`, `registerSystem`, `fields()`, `InferSchema<T>`, `createMigrationRunner`, `getErrorManifest`, `VttfError` | 🚧 v0.1 in progress |
 | `@vttforge/styles` | Design tokens (Forge theme, OKLCH, generated from W3C DTCG), sheet primitives, `.vttf-*` component classes (button, badge, input, code block, checkbox/radio/switch/range/segment, tabs, sheet primitives), opt-in themes via CSS Cascade Layers. Storybook-lite preview at `packages/styles/preview/`. | 🎨 v0.2 shipped |
-| [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | Vite plugin: HMR for `.hbs`, CSS pipeline (PostCSS), manifest sync | 📋 v0.2 planned |
+| [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | Vite plugin that bundles a Foundry v13+ system or module to a deployable `dist/`: browser-ESM entry (no hashing, `@vttforge/*` inlined), CSS bundle with `@import "@vttforge/styles"` resolved at build time, manifest copied under Foundry's canonical filename with `version` synced from `package.json` and `esmodules` / `styles` rewritten to the bundled output. | 🧰 v0.2 shipped |
 | [`@vttforge/cli`](https://www.npmjs.com/package/@vttforge/cli) | `vttforge init / dev / build` | 📋 v0.3 planned |
 | [`@vttforge/testing`](https://www.npmjs.com/package/@vttforge/testing) | Quench helpers for system/module tests | 📋 v1.0 planned |
 | [`@vttforge/types`](https://www.npmjs.com/package/@vttforge/types) | Shared TypeScript types | 📋 v1.0 planned |
@@ -125,8 +125,8 @@ vttforge build
 
 - ✅ **v0.0** — Names reserved, repo created
 - 🏗️ **v0.1** — `@vttforge/core` runtime, `@vttforge/styles` design system (Forge theme, `.vttf-*` primitives), brand mark, reference Foundry system, landing page
-- 📦 **v0.2** — `@vttforge/vite-plugin` (HMR, manifest sync, CSS bundling)
-- 🛠️ **v0.3** — `@vttforge/cli` scaffolding, `vttforge.dev` docs site
+- ✅ **v0.2** — `@vttforge/vite-plugin` (browser-ESM bundle, CSS pipeline, manifest sync). HMR ships in v0.3
+- 🛠️ **v0.3** — `@vttforge/cli` scaffolding, `vttforge.dev` docs site, Foundry-aware HMR
 - 🚀 **v1.0** — Schema inference, decorators, stable API
 
 ## Contributing
