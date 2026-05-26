@@ -62,6 +62,12 @@ export class CharacterSheet extends BaseActorSheet() {
           icon: 'fa-solid fa-sack',
         },
         {
+          id: 'spells',
+          group: 'primary',
+          label: 'VTTFORGE_EXAMPLE.Sheet.Tabs.spells',
+          icon: 'fa-solid fa-wand-magic-sparkles',
+        },
+        {
           id: 'biography',
           group: 'primary',
           label: 'VTTFORGE_EXAMPLE.Sheet.Tabs.biography',
@@ -74,8 +80,8 @@ export class CharacterSheet extends BaseActorSheet() {
 
   static DRAG_DROP = [
     {
-      dragSelector: '.item[draggable=true]',
-      dropSelector: '.sheet-body',
+      dragSelector: '.sh-item[draggable=true]',
+      dropSelector: '.sh-body',
     },
   ];
 
@@ -101,7 +107,17 @@ export class CharacterSheet extends BaseActorSheet() {
       value: data?.value ?? data,
       mod: data?.mod ?? 0,
     }));
-    context.gear = actor.items.filter((item) => item.type === 'gear');
+    context.gear = actor.items
+      .filter((item) => item.type === 'gear')
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        img: item.img,
+        kind: item.system?.kind ?? 'stowed',
+        quantity: item.system?.quantity ?? 1,
+        weight: item.system?.weight ?? 0,
+        description: item.system?.description ?? '',
+      }));
     context.enrichedBiography = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
       system.biography ?? '',
       { relativeTo: actor, secrets: actor.isOwner },
