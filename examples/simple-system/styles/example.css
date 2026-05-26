@@ -1,220 +1,495 @@
 @import "@vttforge/styles";
 
 /*
+ * vttforge-example styles — implements the .sh-* class system from the
+ * canonical Figma reference (character-sheet.jsx + Theme Explorations.html)
+ * on top of @vttforge/styles. Tokens come from the Forge theme; no other
+ * theme is hand-rolled here (consumers swap themes by overriding --vttf-*).
+ *
  * Per Foundry system guidance "Styling & Themes" rule #3, component CSS stays
  * UNLAYERED so it wins over Foundry's @layer applications without specificity
- * wars. Only token / variable definitions belong in @layer variables.
- *
- * Scoped under .vttforge-example (our system marker class) AND .vttforge
- * (the marker every BaseActorSheet/BaseItemSheet adds via VTTFORGE_SHEET_CLASS),
- * so nothing leaks into core Foundry UI.
+ * wars. Scoped under .vttforge-example so nothing leaks into core Foundry UI.
  */
 
-/* Force an opaque sheet background — without this, Foundry's ApplicationV2
- * default is transparent in many themes and the canvas bleeds through.
- * Falls back to a dark slate before Foundry's tokens load. */
+/* Opaque sheet bg — Foundry's ApplicationV2 default is transparent. */
 .vttforge-example.sheet,
 .vttforge-example .window-content {
-  background: var(--color-bg-primary, #1c1c22);
+  background: var(--vttf-bg);
   opacity: 1;
 }
 
 .vttforge-example.sheet {
+  color: var(--vttf-text);
+  font-family: var(--vttf-font-body, system-ui, sans-serif);
+}
+
+.vttforge-example.sheet form {
   display: flex;
   flex-direction: column;
-  gap: var(--vttf-space-4, 0.75rem);
-  padding: var(--vttf-space-4, 0.75rem);
-  color: var(--vttf-color-text, var(--color-text-primary));
-  font-family: var(--vttf-font-family, var(--font-primary));
+  min-height: 0;
+  height: 100%;
 }
 
-.vttforge-example .sheet-header {
+/* ════════ HEAD (.sh-head) ════════ */
+.vttforge-example .sh-head {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: var(--vttf-space-4, 0.75rem);
-  align-items: center;
-  padding-bottom: var(--vttf-space-3, 0.5rem);
-  border-bottom: 1px solid var(--vttf-color-border, var(--color-border));
+  grid-template-columns: 88px 1fr;
+  gap: var(--vttf-space-4);
+  padding: var(--vttf-space-4);
+  background: var(--vttf-surface);
+  border-bottom: 1px solid var(--vttf-border);
 }
 
-.vttforge-example .portrait {
-  width: 72px;
-  height: 72px;
-  border-radius: var(--vttf-radius-md, 6px);
+.vttforge-example .sh-portrait {
+  width: 88px;
+  height: 110px;
+  border-radius: var(--vttf-radius-md);
+  background: var(--vttf-surface-2);
   object-fit: cover;
   cursor: pointer;
 }
 
-.vttforge-example .title {
+.vttforge-example .sh-id {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  justify-content: space-between;
   min-width: 0;
 }
 
-.vttforge-example .title input[name="name"] {
-  font-size: 1.25rem;
-  font-weight: 600;
+.vttforge-example .sh-id-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vttforge-example .sh-name {
+  font-family: var(--vttf-font-display, var(--vttf-font-body));
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--vttf-text);
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
+  padding: 0;
 }
 
-.vttforge-example .title input[name="name"]:focus {
-  border-bottom-color: var(--vttf-color-border, var(--color-border));
+.vttforge-example .sh-name:focus {
+  border-bottom-color: var(--vttf-border-strong);
+  outline: none;
 }
 
-.vttforge-example .title-meta {
-  display: flex;
-  gap: var(--vttf-space-4, 0.75rem);
-  font-size: 0.85rem;
-  opacity: 0.85;
-}
-
-.vttforge-example .title-meta input {
-  width: 3rem;
-  text-align: center;
-}
-
-.vttforge-example .resources {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  align-items: end;
-}
-
-.vttforge-example .resource {
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.vttforge-example .resource .bar {
-  display: flex;
-  gap: 0.25rem;
-  align-items: center;
-}
-
-.vttforge-example .resource input[type="number"] {
-  width: 3.5rem;
-  text-align: center;
-}
-
-.vttforge-example .sheet-tabs {
-  display: flex;
-  gap: 0.25rem;
-  border-bottom: 1px solid var(--vttf-color-border, var(--color-border));
-}
-
-.vttforge-example .sheet-tabs .item {
+.vttforge-example .sh-sub {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.75rem;
+  gap: var(--vttf-space-2);
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vttf-text-muted);
+}
+
+.vttforge-example .sh-sub input {
+  width: 3.5rem;
+  text-align: center;
+  background: transparent;
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-sm);
+  color: var(--vttf-text);
+  font: inherit;
+  padding: 2px 6px;
+}
+
+.vttforge-example .sh-quick {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--vttf-space-3);
+}
+
+.vttforge-example .sh-quick .q {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vttforge-example .sh-quick .qv {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--vttf-font-display, var(--vttf-font-body));
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--vttf-ember-glow);
+}
+
+.vttforge-example .sh-quick .qv input {
+  width: 2.5rem;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.vttforge-example .sh-quick .qv-sep {
+  font-size: 14px;
+  color: var(--vttf-text-faint);
+}
+
+.vttforge-example .sh-quick .qv-max {
+  font-size: 14px;
+  color: var(--vttf-text-muted);
+}
+
+.vttforge-example .sh-quick .qk {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vttf-text-faint);
+}
+
+/* ════════ TABS (.sh-tabs) ════════ */
+.vttforge-example .sh-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 var(--vttf-space-4);
+  background: var(--vttf-bg-elevated);
+  border-bottom: 1px solid var(--vttf-border);
+}
+
+.vttforge-example .sh-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 14px;
   cursor: pointer;
+  color: var(--vttf-text-muted);
+  background: transparent;
+  border: none;
   border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-family: var(--vttf-font-body);
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
 }
 
-.vttforge-example .sheet-tabs .item.active {
-  border-bottom-color: var(--vttf-color-accent, var(--color-warm-2));
-  font-weight: 600;
+.vttforge-example .sh-tab:hover {
+  color: var(--vttf-text);
 }
 
-.vttforge-example .sheet-body {
+.vttforge-example .sh-tab.on,
+.vttforge-example .sh-tab.active {
+  color: var(--vttf-text);
+  border-bottom-color: var(--vttf-ember);
+}
+
+/* ════════ BODY (.sh-body) ════════ */
+.vttforge-example .sh-body {
   flex: 1;
   overflow: auto;
+  padding: var(--vttf-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vttf-space-4);
   min-height: 320px;
 }
 
-.vttforge-example .tab {
+.vttforge-example .sh-body .tab {
   display: none;
+  flex-direction: column;
+  gap: var(--vttf-space-3);
 }
 
-.vttforge-example .tab.active {
-  display: block;
+.vttforge-example .sh-body .tab.active {
+  display: flex;
 }
 
-/* abilities */
-.vttforge-example .ability-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--vttf-space-3, 0.5rem);
-}
-
-.vttforge-example .ability {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
-  gap: 0.4rem;
+.vttforge-example .sh-section-title {
+  display: inline-flex;
   align-items: center;
-  padding: 0.4rem;
-  background: var(--vttf-color-surface-alt, var(--color-bg-secondary));
-  border-radius: var(--vttf-radius-sm, 4px);
-}
-
-.vttforge-example .ability input {
-  width: 3rem;
-  text-align: center;
-}
-
-.vttforge-example .ability .mod {
+  gap: var(--vttf-space-3);
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vttf-text-faint);
   font-weight: 600;
-  min-width: 1.75rem;
-  text-align: center;
+  margin: 0;
 }
 
-.vttforge-example .ability-roll {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0.2rem;
+.vttforge-example .sh-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--vttf-border);
 }
 
-/* inventory */
-.vttforge-example .inventory-header {
+.vttforge-example .sh-section-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--vttf-space-3, 0.5rem);
+  gap: var(--vttf-space-3);
 }
 
-.vttforge-example .items-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.vttforge-example .sh-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--vttf-radius-sm);
+  background: var(--vttf-surface);
+  border: 1px solid var(--vttf-border-strong);
+  color: var(--vttf-text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vttforge-example .sh-action:hover {
+  background: var(--vttf-surface-2);
+}
+
+.vttforge-example .sh-action i {
+  color: var(--vttf-ember);
+}
+
+/* ─── Abilities ─── */
+.vttforge-example .sh-abilities {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--vttf-space-2);
+}
+
+.vttforge-example .sh-abil {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: var(--vttf-surface);
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-md);
 }
 
-.vttforge-example .items-list .item {
+.vttforge-example .sh-abil .lbl {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vttf-text-faint);
+  font-weight: 600;
+}
+
+.vttforge-example .sh-abil .val {
+  width: 100%;
+  text-align: center;
+  background: transparent;
+  border: none;
+  color: var(--vttf-text);
+  font-family: var(--vttf-font-display, var(--vttf-font-body));
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+}
+
+.vttforge-example .sh-abil .val:focus {
+  outline: 1px solid var(--vttf-ember);
+  border-radius: var(--vttf-radius-sm);
+}
+
+.vttforge-example .sh-abil .mod {
+  background: transparent;
+  border: none;
+  color: var(--vttf-ember-glow);
+  font-family: var(--vttf-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: var(--vttf-radius-full);
+}
+
+.vttforge-example .sh-abil .mod:hover {
+  background: color-mix(in oklch, var(--vttf-ember) 12%, transparent);
+}
+
+/* ─── Items ─── */
+.vttforge-example .sh-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vttforge-example .sh-item {
   display: grid;
-  grid-template-columns: auto 1fr auto auto auto;
-  gap: 0.5rem;
+  grid-template-columns: 32px 1fr auto auto auto;
+  gap: var(--vttf-space-3);
   align-items: center;
-  padding: 0.4rem 0.5rem;
-  background: var(--vttf-color-surface-alt, var(--color-bg-secondary));
-  border-radius: var(--vttf-radius-sm, 4px);
+  padding: 8px 10px;
+  background: var(--vttf-surface);
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-sm);
   cursor: grab;
 }
 
-.vttforge-example .items-list .item:active {
+.vttforge-example .sh-item:active {
   cursor: grabbing;
 }
 
-.vttforge-example .items-list .empty {
+.vttforge-example .sh-item-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--vttf-surface-2);
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-sm);
+  color: var(--vttf-text-muted);
+  font-size: 16px;
+  overflow: hidden;
+}
+
+.vttforge-example .sh-item-ico img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vttforge-example .sh-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vttf-text);
+}
+
+.vttforge-example .sh-item-meta {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 11px;
+  color: var(--vttf-text-faint);
+}
+
+.vttforge-example .sh-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: var(--vttf-radius-full);
+  background: color-mix(in oklch, var(--vttf-ember) 10%, transparent);
+  color: var(--vttf-ember);
+  border: 1px solid color-mix(in oklch, var(--vttf-ember) 40%, transparent);
+}
+
+.vttforge-example .sh-tag.muted {
+  background: var(--vttf-bg-sunken);
+  color: var(--vttf-text-muted);
+  border-color: var(--vttf-border);
+}
+
+.vttforge-example .sh-qty {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 12px;
+  color: var(--vttf-text-muted);
+}
+
+.vttforge-example .sh-item-delete {
+  background: transparent;
+  border: none;
+  color: var(--vttf-text-faint);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.vttforge-example .sh-item-delete:hover {
+  color: var(--vttf-rose);
+}
+
+.vttforge-example .sh-items-empty {
   text-align: center;
-  padding: var(--vttf-space-4, 0.75rem);
-  opacity: 0.6;
+  padding: var(--vttf-space-4);
+  color: var(--vttf-text-faint);
   font-style: italic;
 }
 
-/* gear sheet */
+/* ─── Drop affordance ─── */
+.vttforge-example .sh-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 20px;
+  border: 1.5px dashed var(--vttf-border-strong);
+  border-radius: var(--vttf-radius-md);
+  background: color-mix(in oklch, var(--vttf-ember) 6%, transparent);
+  text-align: center;
+}
+
+.vttforge-example .sh-drop .lbl {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vttf-text);
+}
+
+.vttforge-example .sh-drop .sub {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 11px;
+  color: var(--vttf-text-faint);
+}
+
+/* ─── Empty placeholder (Spells tab) ─── */
+.vttforge-example .sh-empty {
+  padding: var(--vttf-space-6);
+  text-align: center;
+  color: var(--vttf-text-faint);
+  font-style: italic;
+}
+
+/* ─── Biography (readonly fallback) ─── */
+.vttforge-example .sh-biography-readonly {
+  padding: var(--vttf-space-4);
+  background: var(--vttf-bg-sunken);
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-md);
+  color: var(--vttf-text-muted);
+  line-height: 1.6;
+}
+
+/* ════════ FOOT (.sh-foot) ════════ */
+.vttforge-example .sh-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--vttf-space-4);
+  padding: 12px var(--vttf-space-4);
+  background: var(--vttf-surface);
+  border-top: 1px solid var(--vttf-border);
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vttf-text-faint);
+}
+
+.vttforge-example .sh-foot .nm {
+  color: var(--vttf-ember);
+  font-weight: 600;
+}
+
+/* ════════ Gear sheet (unchanged structurally) ════════ */
 .vttforge-example.item .field {
   display: grid;
   grid-template-columns: 8rem 1fr;
-  gap: var(--vttf-space-3, 0.5rem);
+  gap: var(--vttf-space-3);
   align-items: center;
   padding: 0.35rem 0;
 }
