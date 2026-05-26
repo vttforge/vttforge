@@ -5,7 +5,8 @@
   "description": "Reference Foundry VTT system built on @vttforge/core + @vttforge/styles.",
   "type": "module",
   "scripts": {
-    "build": "tsdown",
+    "build": "vite build",
+    "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -14,10 +15,11 @@
     "@vttforge/styles": "workspace:*"
   },
   "devDependencies": {
+    "@vttforge/vite-plugin": "workspace:*",
     "happy-dom": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:",
     "unrun": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   }
 }

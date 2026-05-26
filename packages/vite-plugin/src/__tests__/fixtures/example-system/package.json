@@ -1,0 +1,6 @@
+{
+  "name": "@vttforge-fixtures/example-system",
+  "version": "9.9.9",
+  "private": true,
+  "type": "module"
+}
