@@ -1,0 +1,34 @@
+/*!
+ * examples/themes/neon.css — recipe theme · Shadowrun / Cyberpunk / sci-fi
+ *
+ * Deep blue + magenta + cyan + mono display. Apply by adding `.vttf-theme-neon`
+ * to a sheet root. Documented example only — see examples/themes/codex.css for
+ * context.
+ */
+
+.vttf-theme-neon {
+  --vttf-bg: #06080d;
+  --vttf-bg-elevated: #0e1320;
+  --vttf-bg-sunken: #02040a;
+  --vttf-surface: #0e1320;
+  --vttf-surface-2: #161e30;
+  --vttf-border: #2a3550;
+  --vttf-border-strong: #4a5878;
+  --vttf-text: #e8eaf0;
+  --vttf-text-muted: #8090b0;
+  --vttf-text-faint: #4a5878;
+  --vttf-text-inverse: #06080d;
+  --vttf-ember: #ff3aa8;
+  --vttf-ember-deep: #c01880;
+  --vttf-ember-glow: #ff70c0;
+  --vttf-steel: #00ffe6;
+  --vttf-mint: #00ffa0;
+  --vttf-gold: #ffd000;
+  --vttf-violet: #a040ff;
+  --vttf-font-display: "Major Mono Display", "Courier New", monospace;
+  --vttf-font-body: "Space Grotesk", system-ui, sans-serif;
+  --vttf-font-mono: "DM Mono", ui-monospace, monospace;
+  --vttf-radius-sm: 2px;
+  --vttf-radius-md: 4px;
+  --vttf-radius-lg: 6px;
+}
