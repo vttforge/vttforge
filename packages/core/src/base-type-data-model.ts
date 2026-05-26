@@ -5,9 +5,12 @@
  *
  * - `migrateData()` calls `super.migrateData(data)` (Foundry system guidance
  *   pitfall #8 — every TypeDataModel must do this).
- * - `_addDataFieldMigrations()` is a no-op stub so subclasses can override
- *   without needing to know that the base form exists.
- * - `prepareDerivedData()` is a no-op stub — override per type.
+ * - `prepareBaseData()` is a no-op stub — override to initialize fields that
+ *   Active Effects need to mutate (e.g. base max HP before AE bonus). Foundry
+ *   applies Active Effects between `prepareBaseData()` and `prepareDerivedData()`,
+ *   so anything you compute here is the input AEs see.
+ * - `prepareDerivedData()` is a no-op stub — override for computed values
+ *   that depend on AE-mutated state (modifiers, percentages, totals).
  *
  * Subclasses still own `defineSchema()` because there is no useful default —
  * we never invent a schema for you.
@@ -62,18 +65,25 @@ export function BaseTypeDataModel(): AnyConstructor {
     }
 
     /**
-     * No-op stub. Override to register field renames via
-     * `this._addDataFieldMigration("system.oldField", "system.newField")`.
+     * No-op stub. Override per type to initialize fields whose values Active
+     * Effects need to consume — base max HP, base AC, etc. Foundry calls this
+     * BEFORE applying Active Effects, so anything you set here is the input
+     * that AE changes (`ADD`, `MULTIPLY`, `OVERRIDE`, …) operate on.
+     *
+     * Use `prepareDerivedData()` instead for values that depend on the
+     * AE-mutated state (modifiers, percentages, totals).
+     *
+     * Never write to the database here — purely in-memory.
      */
-    static _addDataFieldMigrations(): void {
-      const superFn = (Base as { _addDataFieldMigrations?: () => void })._addDataFieldMigrations;
-      if (typeof superFn === 'function') {
-        superFn.call(VttforgeBaseTypeDataModel);
-      }
+    prepareBaseData(): void {
+      // override me
     }
 
     /**
-     * No-op stub. Override per type to compute derived values.
+     * No-op stub. Override per type to compute derived values from the
+     * AE-mutated state (modifiers, percentages, totals). Runs AFTER Active
+     * Effects apply; use `prepareBaseData()` for values that AEs need to read.
+     *
      * Never write to the database here — purely in-memory.
      */
     prepareDerivedData(): void {

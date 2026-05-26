@@ -4,13 +4,11 @@ import { VttfError } from '../errors/registry.js';
 
 class FakeFoundryTypeDataModel {
   static migrateData = vi.fn((data: Record<string, unknown>) => ({ ...data, _migrated: true }));
-  static _addDataFieldMigrations = vi.fn();
   prepareBaseData(): void {}
 }
 
 beforeEach(() => {
   FakeFoundryTypeDataModel.migrateData.mockClear();
-  FakeFoundryTypeDataModel._addDataFieldMigrations.mockClear();
   (globalThis as Record<string, unknown>).foundry = {
     abstract: { TypeDataModel: FakeFoundryTypeDataModel },
   };
@@ -42,10 +40,10 @@ describe('BaseTypeDataModel', () => {
     expect(out).toEqual({ foo: 1, _migrated: true });
   });
 
-  it('default _addDataFieldMigrations() delegates to super when it exists', () => {
+  it('default prepareBaseData() is a no-op that does not crash', () => {
     const Sub = BaseTypeDataModel();
-    (Sub as unknown as { _addDataFieldMigrations(): void })._addDataFieldMigrations();
-    expect(FakeFoundryTypeDataModel._addDataFieldMigrations).toHaveBeenCalledTimes(1);
+    const instance = new Sub();
+    expect(() => (instance as { prepareBaseData(): void }).prepareBaseData()).not.toThrow();
   });
 
   it('default prepareDerivedData() is a no-op that does not crash', () => {

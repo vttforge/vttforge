@@ -110,8 +110,7 @@ function resolveLogger(): MigrationLogger {
 }
 
 function lastVersion(migrations: ReadonlyArray<Migration>): string {
-  if (migrations.length === 0) return INITIAL_VERSION;
-  return migrations[migrations.length - 1]!.version;
+  return migrations.at(-1)?.version ?? INITIAL_VERSION;
 }
 
 function assertAscending(
@@ -119,12 +118,16 @@ function assertAscending(
   isNewer: (next: string, current: string) => boolean,
 ): void {
   for (let i = 1; i < migrations.length; i++) {
-    const prev = migrations[i - 1]!.version;
-    const next = migrations[i]!.version;
-    if (!isNewer(next, prev)) {
+    const prevMig = migrations[i - 1];
+    const nextMig = migrations[i];
+    // Loop bounds guarantee both indices are valid; the explicit guard
+    // exists to satisfy TypeScript's flow analysis without a non-null
+    // assertion.
+    if (prevMig === undefined || nextMig === undefined) continue;
+    if (!isNewer(nextMig.version, prevMig.version)) {
       throw new VttfError(
         'VTTF-0004',
-        `Migration list out of order: ${next} must be newer than ${prev}.`,
+        `Migration list out of order: ${nextMig.version} must be newer than ${prevMig.version}.`,
       );
     }
   }
