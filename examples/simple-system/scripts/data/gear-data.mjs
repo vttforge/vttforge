@@ -8,7 +8,7 @@
 
 import { BaseTypeDataModel, fields } from '@vttforge/core';
 
-export const GEAR_KINDS = /** @type {const} */ (['equipped', 'valued', 'stowed']);
+const GEAR_KINDS = /** @type {const} */ (['equipped', 'valued', 'stowed']);
 
 export class GearData extends BaseTypeDataModel() {
   static defineSchema() {
