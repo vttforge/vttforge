@@ -6,13 +6,14 @@
  *
  *   @import '@vttforge/styles';
  *
- * Layer order matches Foundry v13's outer layer: tokens → reset → base → components.
+ * Layer order matches Foundry v13's outer layer: tokens → reset → base → components → themes.
  * Foundry's own runtime wraps system CSS in its top-level `system` layer.
  */
 
-@layer vttforge.tokens, vttforge.reset, vttforge.base, vttforge.components;
+@layer vttforge.tokens, vttforge.reset, vttforge.base, vttforge.components, vttforge.themes;
 
 @import "./dist/tokens.css";
 @import "./reset.css";
 @import "./base.css";
 @import "./components.css";
+@import "./themes/forge.css";

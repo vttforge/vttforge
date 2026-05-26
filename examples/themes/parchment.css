@@ -1,0 +1,30 @@
+/*!
+ * examples/themes/parchment.css — recipe theme · OGL/OSR print-style
+ *
+ * Walnut ink on aged paper. Apply by adding `.vttf-theme-parchment` to a sheet
+ * root. Documented example only — see examples/themes/codex.css for context.
+ */
+
+.vttf-theme-parchment {
+  --vttf-bg: #e8dcb8;
+  --vttf-bg-elevated: #f0e4c0;
+  --vttf-bg-sunken: #d8caa0;
+  --vttf-surface: #f0e4c0;
+  --vttf-surface-2: #e0d2a8;
+  --vttf-border: #b8a878;
+  --vttf-border-strong: #8a7a4a;
+  --vttf-text: #2a200d;
+  --vttf-text-muted: #5a4a28;
+  --vttf-text-faint: #7a6a48;
+  --vttf-text-inverse: #f0e4c0;
+  --vttf-ember: #7a2d10;
+  --vttf-ember-deep: #4a1d08;
+  --vttf-ember-glow: #a04020;
+  --vttf-font-display: "IM Fell English SC", "Georgia", serif;
+  --vttf-font-body: "IM Fell English", "Georgia", serif;
+  --vttf-font-mono: "IM Fell English", ui-monospace, monospace;
+  --vttf-radius-sm: 0;
+  --vttf-radius-md: 0;
+  --vttf-radius-lg: 0;
+  --vttf-radius-xl: 0;
+}

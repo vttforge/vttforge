@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@vttforge/styles — preview</title>
+    <link rel="stylesheet" href="../index.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 32px;
+        max-width: 1100px;
+        margin-inline: auto;
+      }
+      .header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 32px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--vttf-border);
+      }
+      h1 {
+        font-family: var(--vttf-font-display);
+        font-size: 36px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 0;
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--vttf-ember);
+      }
+      .toggle {
+        font-family: var(--vttf-font-mono);
+        font-size: 12px;
+        padding: 6px 12px;
+        background: var(--vttf-surface);
+        border: 1px solid var(--vttf-border);
+        border-radius: var(--vttf-radius-md);
+        color: var(--vttf-text);
+        cursor: pointer;
+      }
+      .toggle:hover {
+        background: var(--vttf-surface-2);
+      }
+      section {
+        margin-bottom: 48px;
+      }
+      h2 {
+        font-family: var(--vttf-font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: var(--vttf-text-faint);
+        margin: 0 0 16px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+      .stack {
+        display: grid;
+        gap: 12px;
+      }
+    </style>
+  </head>
+  <body class="vttf-app">
+    <div class="header">
+      <h1><em>{</em> d20 <em>}</em> · @vttforge/styles</h1>
+      <button class="toggle" type="button" data-theme-toggle>
+        theme · <span data-theme-label>dark</span>
+      </button>
+    </div>
+
+    <section>
+      <h2>Buttons</h2>
+      <div class="row">
+        <button class="vttf-btn vttf-btn--primary" type="button">Primary <span class="vttf-kbd">⌘K</span></button>
+        <button class="vttf-btn vttf-btn--secondary" type="button">Secondary</button>
+        <button class="vttf-btn vttf-btn--ghost" type="button">Ghost</button>
+        <button class="vttf-btn vttf-btn--danger" type="button">Delete</button>
+        <button class="vttf-btn vttf-btn--primary" type="button" disabled>Disabled</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Badges</h2>
+      <div class="row">
+        <span class="vttf-badge vttf-badge--ember"><span class="vttf-badge__blip"></span>ember</span>
+        <span class="vttf-badge vttf-badge--steel"><span class="vttf-badge__blip"></span>steel</span>
+        <span class="vttf-badge vttf-badge--mint"><span class="vttf-badge__blip"></span>mint</span>
+        <span class="vttf-badge vttf-badge--gold"><span class="vttf-badge__blip"></span>gold</span>
+        <span class="vttf-badge vttf-badge--rose"><span class="vttf-badge__blip"></span>rose</span>
+        <span class="vttf-badge vttf-badge--violet"><span class="vttf-badge__blip"></span>violet</span>
+        <span class="vttf-badge vttf-badge--muted"><span class="vttf-badge__blip"></span>muted</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Forms</h2>
+      <div class="vttf-form-grid">
+        <div class="vttf-form-field">
+          <label>Character name</label>
+          <input class="vttf-input" type="text" value="Vex Halloran" />
+          <span class="vttf-hint">Visible in the sheet header.</span>
+        </div>
+        <div class="vttf-form-field">
+          <label>Class</label>
+          <select class="vttf-select">
+            <option>Rogue</option>
+            <option>Fighter</option>
+            <option>Wizard</option>
+          </select>
+        </div>
+        <div class="vttf-form-field">
+          <label>Notes</label>
+          <textarea class="vttf-textarea">Stealthy. Owes a favour to the harbourmaster.</textarea>
+        </div>
+        <div class="vttf-form-field">
+          <label>Invalid input</label>
+          <input class="vttf-input" type="text" aria-invalid="true" value="too long" />
+          <span class="vttf-hint">Aria-invalid demo.</span>
+        </div>
+        <div class="vttf-form-field">
+          <label>Toggles</label>
+          <div class="stack">
+            <label class="vttf-check"><input type="checkbox" checked /><span class="vttf-check__box"></span>Inspiration</label>
+            <label class="vttf-radio"><input type="radio" name="r" checked /><span class="vttf-radio__box"></span>Active</label>
+            <label class="vttf-switch"><input type="checkbox" checked /><span class="vttf-switch__track"></span>Auto-roll</label>
+          </div>
+        </div>
+        <div class="vttf-form-field">
+          <label>Range</label>
+          <input class="vttf-range" type="range" min="0" max="100" value="64" />
+        </div>
+        <div class="vttf-form-field">
+          <label>Segmented</label>
+          <div class="vttf-segment" role="tablist">
+            <button type="button" aria-pressed="true">Abilities</button>
+            <button type="button">Inventory</button>
+            <button type="button">Spells</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Code block</h2>
+      <div class="vttf-codeblock">
+        <div class="vttf-codeblock__head">
+          <div class="vttf-codeblock__dots"><span></span><span></span><span></span></div>
+          <span class="vttf-codeblock__file">character-sheet.ts</span>
+          <span class="vttf-codeblock__lang">TypeScript</span>
+        </div>
+        <pre><span class="vttf-tk-com">// Twelve lines, same behaviour.</span>
+<span class="vttf-tk-kw">export class</span> <span class="vttf-tk-ty">CharacterSheet</span> <span class="vttf-tk-kw">extends</span> <span class="vttf-tk-fn">BaseActorSheet</span>(<span class="vttf-tk-ty">CharacterData</span>) {
+  <span class="vttf-tk-prop">static</span> <span class="vttf-tk-prop">PARTS</span> = {
+    <span class="vttf-tk-prop">header</span>: { <span class="vttf-tk-prop">template</span>: <span class="vttf-tk-str">"systems/x/templates/header.hbs"</span> },
+    <span class="vttf-tk-prop">stats</span>:  { <span class="vttf-tk-prop">template</span>: <span class="vttf-tk-str">"systems/x/templates/stats.hbs"</span> },
+  };
+
+  <span class="vttf-tk-fn">prepareDerived</span>(<span class="vttf-tk-prop">data</span>) {
+    <span class="vttf-tk-prop">data</span>.<span class="vttf-tk-prop">mod</span> = <span class="vttf-tk-fn">Math</span>.<span class="vttf-tk-fn">floor</span>((<span class="vttf-tk-prop">data</span>.<span class="vttf-tk-prop">score</span> - <span class="vttf-tk-num">10</span>) / <span class="vttf-tk-num">2</span>);
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section>
+      <h2>Sheet primitive</h2>
+      <div class="vttf-sheet">
+        <div class="vttf-sheet__head">
+          <div class="vttf-portrait">img</div>
+          <div>
+            <div class="vttf-sheet__title">Vex Halloran</div>
+            <div class="vttf-sheet__sub">half-elf · rogue · level 4</div>
+          </div>
+          <div style="margin-left: auto; display: flex; gap: 8px;">
+            <span class="vttf-stat-pill"><span class="vttf-stat-pill__n">28</span><span class="vttf-stat-pill__label">HP</span></span>
+            <span class="vttf-stat-pill"><span class="vttf-stat-pill__n">15</span><span class="vttf-stat-pill__label">AC</span></span>
+          </div>
+        </div>
+        <div class="vttf-tabs" role="tablist">
+          <button class="vttf-tab" type="button" aria-selected="true">Abilities</button>
+          <button class="vttf-tab" type="button">Inventory <span class="vttf-tab__count">12</span></button>
+          <button class="vttf-tab" type="button">Spells</button>
+        </div>
+        <div class="vttf-sheet__body">
+          <div class="vttf-item-row">
+            <div class="vttf-item-row__grip">⋮</div>
+            <div class="vttf-item-row__thumb">⚔</div>
+            <div>
+              <div class="vttf-item-row__name">Shortsword +1</div>
+              <div class="vttf-item-row__meta">finesse · equipped</div>
+            </div>
+            <span class="vttf-badge vttf-badge--mint"><span class="vttf-badge__blip"></span>equipped</span>
+            <span class="vttf-item-row__meta">×1</span>
+          </div>
+          <div class="vttf-item-row">
+            <div class="vttf-item-row__grip">⋮</div>
+            <div class="vttf-item-row__thumb">◇</div>
+            <div>
+              <div class="vttf-item-row__name">Pouch of opals</div>
+              <div class="vttf-item-row__meta">valued · stowed</div>
+            </div>
+            <span class="vttf-badge vttf-badge--gold"><span class="vttf-badge__blip"></span>valued</span>
+            <span class="vttf-item-row__meta">×3</span>
+          </div>
+          <div class="vttf-dropzone">
+            <div class="vttf-dropzone__icon">+</div>
+            <div class="vttf-dropzone__title">Drop items here</div>
+            <div class="vttf-dropzone__sub">or click to browse</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script type="module" src="./preview.js"></script>
+  </body>
+</html>
