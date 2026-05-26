@@ -1,0 +1,21 @@
+{
+  "name": "@vttforge/web",
+  "version": "0.0.0",
+  "description": "Landing page for vttforge.dev.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host"
+  },
+  "dependencies": {
+    "@vttforge/styles": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  }
+}
