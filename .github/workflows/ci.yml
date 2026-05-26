@@ -98,7 +98,6 @@ jobs:
           name: dist
           path: |
             packages/*/dist/**
-            !packages/styles/dist
           if-no-files-found: warn
           retention-days: 7
 
