@@ -11,7 +11,7 @@
  */
 
 @layer vttforge {
-  @import "./tokens.css";
+  @import "./dist/tokens.css";
   @import "./reset.css";
   @import "./base.css";
   @import "./components.css";
