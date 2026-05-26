@@ -8,7 +8,7 @@
     "verified": "13.341"
   },
   "authors": [{ "name": "VTTForge Contributors" }],
-  "esmodules": ["dist/main.mjs"],
+  "esmodules": ["main.mjs"],
   "styles": ["styles/example.css"],
   "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
   "documentTypes": {

@@ -8,6 +8,5 @@ export default defineConfig({
   sourcemap: true,
   dts: true,
   clean: true,
-  external: ['vite', 'postcss', /^foundry/],
   outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
 });
