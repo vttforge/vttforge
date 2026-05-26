@@ -1,0 +1,4 @@
+{
+  "Actor": { "types": ["character"], "character": {} },
+  "Item": { "types": ["gear"], "gear": {} }
+}

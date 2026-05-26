@@ -1,0 +1,11 @@
+{
+  "id": "fixture-system",
+  "title": "Fixture System",
+  "description": "Fixture for @vttforge/vite-plugin tests.",
+  "version": "0.0.0",
+  "compatibility": { "minimum": "13", "verified": "13" },
+  "esmodules": ["scripts/main.mjs"],
+  "styles": ["styles/main.css"],
+  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "documentTypes": { "Actor": { "character": {} }, "Item": { "gear": {} } }
+}
