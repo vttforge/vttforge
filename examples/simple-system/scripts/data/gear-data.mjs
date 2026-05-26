@@ -1,12 +1,14 @@
 /**
  * GearData — typed schema for the `gear` Item type.
  *
- * Trivial schema (quantity, weight, description) — the point isn't the data
- * model but the drag-drop path: a `gear` Item can be dragged from the sidebar
- * onto a CharacterSheet, and the sheet's typed `onDropItem` accepts it.
+ * Carries a `kind` enum that drives the `.sh-tag` pill on the character sheet:
+ * `equipped` / `valued` render with the ember accent pill, `stowed` renders
+ * muted. Mirrors the items column in character-sheet.jsx.
  */
 
 import { BaseTypeDataModel, fields } from '@vttforge/core';
+
+export const GEAR_KINDS = /** @type {const} */ (['equipped', 'valued', 'stowed']);
 
 export class GearData extends BaseTypeDataModel() {
   static defineSchema() {
@@ -22,6 +24,11 @@ export class GearData extends BaseTypeDataModel() {
         required: true,
         min: 0,
         initial: 0,
+      }),
+      kind: new f.StringField({
+        required: true,
+        choices: GEAR_KINDS,
+        initial: 'stowed',
       }),
       description: new f.HTMLField(),
     };

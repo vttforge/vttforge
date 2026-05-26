@@ -1,14 +1,11 @@
 /**
  * CharacterData — typed schema for the `character` Actor type.
  *
- * Demonstrates @vttforge/core's `fields()` + `BaseTypeDataModel()` working
- * together: one `defineSchema()` call drives runtime validation,
- * `system.json` migration, AND the TypeScript `system` shape (via
- * `InferSchema<typeof CharacterData.defineSchema>` in any TS consumer).
+ * Schema mirrors the canonical Figma reference (character-sheet.jsx): quick
+ * stats are HP / AC / SPD / INIT, abilities are the six D&D-style scores,
+ * derived state (modifiers, max HP, AC, initiative) is computed in-memory.
  *
- * Derived state (ability modifiers, computed max HP, armor class) is computed
- * in-memory only — never persisted. Matches foundry-vtt-system-dev rule
- * "Never write to the database in prepareDerivedData()".
+ * Never write to the database in prepareDerivedData — only assign onto `this`.
  */
 
 import { BaseTypeDataModel, fields } from '@vttforge/core';
@@ -23,6 +20,12 @@ export class CharacterData extends BaseTypeDataModel() {
         min: 1,
         max: 20,
         initial: 1,
+      }),
+      speed: new f.NumberField({
+        required: true,
+        integer: true,
+        min: 0,
+        initial: 30,
       }),
       abilities: new f.SchemaField({
         str: new f.NumberField({ required: true, integer: true, min: 1, max: 30, initial: 10 }),
@@ -45,18 +48,18 @@ export class CharacterData extends BaseTypeDataModel() {
   }
 
   prepareDerivedData() {
-    // Ability modifiers: D&D 5e style.
     for (const [key, value] of Object.entries(this.abilities)) {
       const score = typeof value === 'number' ? value : (value?.value ?? 10);
       const mod = Math.floor((score - 10) / 2);
       this.abilities[key] = { value: score, mod };
     }
 
-    // Derived max HP: 10 + level + Constitution modifier.
     const conMod = this.abilities.con.mod;
     this.health.max = 10 + this.level + conMod;
 
-    // Armor class: 10 + Dex modifier.
     this.armorClass = 10 + this.abilities.dex.mod;
+
+    // INIT mirrors DEX modifier — matches the Figma reference (.qv +4 with DEX 18).
+    this.initiative = this.abilities.dex.mod;
   }
 }
