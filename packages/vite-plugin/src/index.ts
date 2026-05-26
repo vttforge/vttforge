@@ -100,6 +100,39 @@ function readJsonSafe(path: string): Record<string, unknown> | null {
   }
 }
 
+/**
+ * Foundry v13 accepts either a legacy string (`"styles/foo.css"`) or the
+ * canonical object form (`{ src: "styles/foo.css", layer?: "..." }`) in the
+ * manifest `styles` array. We accept both inputs and emit the object form,
+ * which is what Foundry expects natively in v13 (the string form auto-migrates
+ * with a deprecation warning). Any additional metadata declared on an object
+ * entry (e.g. `layer` for cascade layer placement) is preserved through the
+ * rewrite so consumers keep full control of stylesheet metadata.
+ */
+interface StyleEntry {
+  src: string;
+  [key: string]: unknown;
+}
+
+function normalizeStyleEntry(entry: unknown): StyleEntry | null {
+  if (typeof entry === 'string') return { src: entry };
+  if (entry && typeof entry === 'object' && 'src' in entry) {
+    const src = (entry as { src: unknown }).src;
+    if (typeof src === 'string') return { ...(entry as Record<string, unknown>), src };
+  }
+  return null;
+}
+
+function extractStyleEntries(rawStyles: unknown): StyleEntry[] {
+  if (!Array.isArray(rawStyles)) return [];
+  const result: StyleEntry[] = [];
+  for (const entry of rawStyles) {
+    const normalized = normalizeStyleEntry(entry);
+    if (normalized !== null) result.push(normalized);
+  }
+  return result;
+}
+
 async function copyStatic(opts: ResolvedOptions): Promise<void> {
   await mkdir(opts.outDir, { recursive: true });
   for (const entry of opts.staticAssets) {
@@ -164,12 +197,12 @@ function syncManifest(opts: ResolvedOptions, builtCssSources: Set<string>): Mani
     manifest.version = pkg.version;
   }
   manifest.esmodules = [JS_ENTRY_FILENAME];
-  const originalStyles = Array.isArray(manifest.styles) ? (manifest.styles as string[]) : [];
+  const originalStyles = extractStyleEntries(manifest.styles);
   const cssEntries: string[] = [];
-  const rewrittenStyles: string[] = [];
+  const rewrittenStyles: StyleEntry[] = [];
   const seenBasenames = new Set<string>();
-  for (const stylePath of originalStyles) {
-    if (typeof stylePath !== 'string') continue;
+  for (const styleEntry of originalStyles) {
+    const stylePath = styleEntry.src;
     const cssBasename = basename(stylePath);
     if (seenBasenames.has(cssBasename)) {
       throw new Error(
@@ -189,7 +222,9 @@ function syncManifest(opts: ResolvedOptions, builtCssSources: Set<string>): Mani
       continue;
     }
     cssEntries.push(stylePath);
-    rewrittenStyles.push(`styles/${cssBasename}`);
+    // Preserve any additional metadata (e.g. `layer`) declared on the source
+    // entry — only the path is rewritten to point at the bundled output.
+    rewrittenStyles.push({ ...styleEntry, src: `styles/${cssBasename}` });
   }
   manifest.styles = rewrittenStyles;
   writeFileSync(manifestDest, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
@@ -227,9 +262,7 @@ export default function vttforge(options: VttforgeOptions): Plugin {
       }
       const manifestAbs = resolve(root, resolved.manifest);
       const manifest = readJsonSafe(manifestAbs);
-      const originalStyles =
-        manifest && Array.isArray(manifest.styles) ? (manifest.styles as string[]) : [];
-      cssEntries = originalStyles.filter((s): s is string => typeof s === 'string');
+      cssEntries = extractStyleEntries(manifest?.styles).map((e) => e.src);
       const cssAbsInput = cssEntries.map((s) => resolve(root, s));
 
       // Use flat input keys so Rollup emits assets by their basename only.

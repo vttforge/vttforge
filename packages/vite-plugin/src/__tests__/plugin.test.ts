@@ -189,7 +189,10 @@ describe('@vttforge/vite-plugin', () => {
       ) as Record<string, unknown>;
       expect(manifest.version).toBe('9.9.9');
       expect(manifest.esmodules).toEqual(['main.mjs']);
-      expect(manifest.styles).toEqual(['styles/main.css']);
+      // Foundry v13 manifest uses the object form `{ src }` for styles. The
+      // plugin emits this canonical shape regardless of whether the source
+      // manifest used the legacy string form or the v13 object form.
+      expect(manifest.styles).toEqual([{ src: 'styles/main.css' }]);
     });
 
     it('throws when manifest id does not match plugin option', async () => {
@@ -257,7 +260,46 @@ describe('@vttforge/vite-plugin', () => {
       const written = JSON.parse(
         readFileSync(resolve(workdir, 'dist/system.json'), 'utf8'),
       ) as Record<string, unknown>;
-      expect(written.styles).toEqual(['styles/main.css']);
+      expect(written.styles).toEqual([{ src: 'styles/main.css' }]);
+    });
+
+    it('accepts the v13 object form `{ src }` as manifest input', async () => {
+      // Backward compat: the plugin should accept both the legacy string form
+      // and the canonical v13 object form. The fixture ships strings; this
+      // test rewrites the input to the object form before invoking the plugin.
+      const manifest = JSON.parse(readFileSync(resolve(workdir, 'system.json'), 'utf8')) as Record<
+        string,
+        unknown
+      >;
+      manifest.styles = [{ src: 'styles/main.css' }];
+      writeFileSync(resolve(workdir, 'system.json'), JSON.stringify(manifest, null, 2));
+      const plugin = vttforge(defaultOptions());
+      await invokeConfigHook(plugin, workdir);
+      await invokeHook(plugin, 'writeBundle');
+      const written = JSON.parse(
+        readFileSync(resolve(workdir, 'dist/system.json'), 'utf8'),
+      ) as Record<string, unknown>;
+      expect(written.styles).toEqual([{ src: 'styles/main.css' }]);
+    });
+
+    it('preserves additional stylesheet metadata (e.g. `layer`) through the rewrite', async () => {
+      // Foundry v13's manifest schema supports `{ src, layer }` so authors
+      // can pin a stylesheet to a named CSS cascade layer. The plugin only
+      // rewrites `src` to point at the bundled output; every other key on the
+      // source entry must survive the round trip.
+      const manifest = JSON.parse(readFileSync(resolve(workdir, 'system.json'), 'utf8')) as Record<
+        string,
+        unknown
+      >;
+      manifest.styles = [{ src: 'styles/main.css', layer: 'fixture-system' }];
+      writeFileSync(resolve(workdir, 'system.json'), JSON.stringify(manifest, null, 2));
+      const plugin = vttforge(defaultOptions());
+      await invokeConfigHook(plugin, workdir);
+      await invokeHook(plugin, 'writeBundle');
+      const written = JSON.parse(
+        readFileSync(resolve(workdir, 'dist/system.json'), 'utf8'),
+      ) as Record<string, unknown>;
+      expect(written.styles).toEqual([{ src: 'styles/main.css', layer: 'fixture-system' }]);
     });
 
     it('drops a stylesheet entry that was repointed mid-watch (same basename, new source)', async () => {
