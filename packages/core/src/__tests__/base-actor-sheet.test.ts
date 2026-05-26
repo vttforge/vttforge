@@ -208,7 +208,8 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     (instance as { isEditable: boolean }).isEditable = true;
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(2);
-    const first = dragDropBinds[0]!;
+    const first = dragDropBinds[0];
+    if (!first) throw new Error('expected dragDropBinds[0] after length assertion');
     expect(first.element).toBe(element);
     expect(first.config.dragSelector).toBe('.item[draggable]');
     const perms = first.config.permissions as { dragstart: () => boolean; drop: () => boolean };
@@ -236,7 +237,8 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     (instance as { isEditable: boolean }).isEditable = true;
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(1);
-    const entry = dragDropBinds[0]!;
+    const entry = dragDropBinds[0];
+    if (!entry) throw new Error('expected dragDropBinds[0] after length assertion');
     const perms = entry.config.permissions as { dragstart: () => boolean; drop: () => boolean };
     expect(perms.dragstart()).toBe(false);
     expect(perms.drop()).toBe(false);
@@ -253,7 +255,9 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     (instance as { element: HTMLElement }).element = document.createElement('div');
     (instance as { isEditable: boolean }).isEditable = false;
     instance._onRender({}, {});
-    const perms = dragDropBinds[0]!.config.permissions as {
+    const lockedEntry = dragDropBinds[0];
+    if (!lockedEntry) throw new Error('expected dragDropBinds[0]');
+    const perms = lockedEntry.config.permissions as {
       dragstart: () => boolean;
       drop: () => boolean;
     };

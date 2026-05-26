@@ -112,7 +112,9 @@ describe('createMigrationRunner — register()', () => {
     });
     runner.register();
     expect(settings.registerSpy).toHaveBeenCalledTimes(1);
-    const [namespace, key, config] = settings.registerSpy.mock.calls[0]!;
+    const call = settings.registerSpy.mock.calls[0];
+    if (!call) throw new Error('expected registerSpy to have been called');
+    const [namespace, key, config] = call;
     expect(namespace).toBe('my-system');
     expect(key).toBe('schemaVersion');
     expect((config as { scope: string; config: boolean; default: string }).scope).toBe('world');
@@ -131,7 +133,7 @@ describe('createMigrationRunner — register()', () => {
       isNewerVersion: FOUNDRY_NEWER,
     });
     runner.register();
-    expect(settings.registerSpy.mock.calls[0]![1]).toBe('dataVersion');
+    expect(settings.registerSpy.mock.calls[0]?.[1]).toBe('dataVersion');
   });
 });
 
