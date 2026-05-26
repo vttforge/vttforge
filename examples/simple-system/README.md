@@ -23,13 +23,19 @@ for tab navigation.
 
 ## Run inside Foundry
 
-The monorepo ships a `docker-compose.dev.yml` that mounts this directory
-read-only into a `felddy/foundryvtt:13` container. From the repo root:
+The monorepo ships a `docker-compose.dev.yml` that mounts the built `dist/`
+of this directory read-only into a `felddy/foundryvtt:13` container. From
+the repo root:
 
 ```bash
-cp .env.example .env       # fill in FOUNDRY_LICENSE_KEY + foundryvtt.com credentials
-docker compose -f docker-compose.dev.yml up
+cp .env.example .env                                  # fill in FOUNDRY_LICENSE_KEY + foundryvtt.com credentials
+pnpm install                                          # one-time
+pnpm -F @vttforge-examples/simple-system build        # bundles into examples/simple-system/dist/
+docker compose -f docker-compose.dev.yml up           # → http://localhost:30000
 ```
+
+Use `pnpm -F @vttforge-examples/simple-system dev` to rebuild on every source
+change (a Foundry refresh picks up the new bundle).
 
 Open <http://localhost:30000>, create a world using the **VTTForge Example
 System**, then make a Character actor. The sheet should render with the
