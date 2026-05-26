@@ -477,6 +477,7 @@
     color: var(--vttf-text-faint);
   }
 
+  /* biome-ignore lint/style/noDescendingSpecificity: this standalone `.mono` rule applies in body copy, code blocks, and pkg-table cells; the higher-specificity `.hero-meta dd .mono` above intentionally overrides only inside the hero meta block. Different scope, no actual cascade conflict. */
   .mono {
     font-family: var(--vttf-font-mono);
     font-size: 0.95em;
@@ -680,6 +681,7 @@
     max-width: 56ch;
     font-size: 17px;
   }
+  /* biome-ignore lint/style/noDescendingSpecificity: `.cta-strip .row` targets the CTA strip section; `header.top .row` above targets the sticky header. Same `.row` class, disjoint ancestor scopes — the cascade resolves correctly via context. */
   .cta-strip .row {
     margin-top: var(--vttf-space-6);
     display: flex;
