@@ -1,0 +1,30 @@
+/*!
+ * examples/themes/grimdark.css — recipe theme · Warhammer / Mörk Borg / CoC
+ *
+ * Near-black + dried-blood accent + condensed sans. Apply by adding
+ * `.vttf-theme-grimdark` to a sheet root. Documented example only — see
+ * examples/themes/codex.css for context.
+ */
+
+.vttf-theme-grimdark {
+  --vttf-bg: #0a0908;
+  --vttf-bg-elevated: #141210;
+  --vttf-bg-sunken: #050403;
+  --vttf-surface: #141210;
+  --vttf-surface-2: #1e1b18;
+  --vttf-border: #2a2520;
+  --vttf-border-strong: #4a4238;
+  --vttf-text: #d0c8b8;
+  --vttf-text-muted: #807868;
+  --vttf-text-faint: #4a4238;
+  --vttf-text-inverse: #0a0908;
+  --vttf-ember: #b8330d;
+  --vttf-ember-deep: #781f06;
+  --vttf-ember-glow: #d04818;
+  --vttf-font-display: "Oswald", "Impact", sans-serif;
+  --vttf-font-body: "Cormorant Unicase", "Georgia", serif;
+  --vttf-font-mono: "Special Elite", ui-monospace, monospace;
+  --vttf-radius-sm: 0;
+  --vttf-radius-md: 0;
+  --vttf-radius-lg: 0;
+}
