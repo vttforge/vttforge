@@ -29,7 +29,7 @@ describe('BaseTypeDataModel', () => {
     expect(Object.getPrototypeOf(Sub)).toBe(FakeFoundryTypeDataModel);
   });
 
-  it('default migrateData() delegates to super (Foundry system guidance pitfall #8)', () => {
+  it('default migrateData() delegates to super (chained-migration guard)', () => {
     const Sub = BaseTypeDataModel();
     const out = (
       Sub as unknown as { migrateData(d: Record<string, unknown>): Record<string, unknown> }

@@ -23,8 +23,8 @@ body:
     id: foundry-version
     attributes:
       label: FoundryVTT version
-      description: The full Foundry version (e.g. v13.341).
-      placeholder: "v13.341"
+      description: The full Foundry version (e.g. v13.x).
+      placeholder: "v13.x"
     validations:
       required: true
 

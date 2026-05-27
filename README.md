@@ -15,7 +15,7 @@
 
 ---
 
-> ⚠️ **Status:** Pre-release. The full v0.1 surface is shipped on `main` and validated end-to-end inside Foundry v13.341+. `@vttforge/core` ships `registerSystem`, `BaseTypeDataModel` + `InferSchema<T>`, `BaseActorSheet` / `BaseItemSheet`, `createMigrationRunner`, and the `VTTF-NNNN` error catalogue (100+ tests). `@vttforge/styles` ships the full Forge design system (tokens, sheet primitives, preview page). `@vttforge/vite-plugin` owns the build contract: one Vite config, one `pnpm build`, a deployable `dist/`. The brand mark and landing page for `vttforge.dev` are in `brand/` and `apps/web/`. **Not on npm yet** — npm Trusted Publisher is the only thing standing between the current `main` and the first public release.
+> ⚠️ **Status:** Pre-release. The full v0.1 surface is shipped on `main` and validated end-to-end inside Foundry v13+. `@vttforge/core` ships `registerSystem`, `BaseTypeDataModel` + `InferSchema<T>`, `BaseActorSheet` / `BaseItemSheet`, `createMigrationRunner`, and the `VTTF-NNNN` error catalogue (100+ tests). `@vttforge/styles` ships the full Forge design system (tokens, sheet primitives, preview page). `@vttforge/vite-plugin` owns the build contract: one Vite config, one `pnpm build`, a deployable `dist/`. The brand mark and landing page for `vttforge.dev` are in `brand/` and `apps/web/`. **Not on npm yet** — npm Trusted Publisher is the only thing standing between the current `main` and the first public release.
 
 ## Why VTTForge?
 
