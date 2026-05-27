@@ -26,7 +26,7 @@ export interface BuildOptions {
 }
 
 /** Files we copy into the zip at root when they exist at project root. */
-export const RELEASE_ZIP_EXTRAS = ['LICENSE', 'README.md', 'CHANGELOG.md'];
+const RELEASE_ZIP_EXTRAS = ['LICENSE', 'README.md', 'CHANGELOG.md'];
 
 /** Format a byte count as `12 B`, `4.3 KB`, or `1.2 MB`. */
 function formatBytes(n: number): string {
