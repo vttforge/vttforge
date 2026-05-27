@@ -44,10 +44,10 @@
   `listErrorEntries()`, wrapped in a typed `ErrorManifest` envelope with a
   stable `version: 1` field for future format migrations.
 
-  Plan deviation: the original `plans/v0.1-next-steps.md` PR 8 spec said
-  `prebuild`, but `postbuild` lets the script import the just-built ESM
-  directly instead of needing `tsx`/`unrun` to load the TS source.
-  Documented inline in the codegen script.
+  Plan deviation: the codegen runs as `postbuild` (not `prebuild`) so the
+  script imports the just-built ESM directly instead of needing
+  `tsx`/`unrun` to load the TS source. Documented inline in the codegen
+  script.
 
 - 0896bb0: Add `createMigrationRunner()` for declarative schema migrations, plus
   `onReady` lifecycle on `registerSystem()`.
