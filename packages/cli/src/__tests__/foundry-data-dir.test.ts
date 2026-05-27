@@ -165,6 +165,21 @@ describe('foundryPackagesDir', () => {
     expect(foundryPackagesDir(tmp, 'system')).toBe(join(tmp, 'systems'));
   });
 
+  it('detects "Data" folder names case-insensitively', async () => {
+    // macOS HFS+/APFS and Windows NTFS volumes are typically case-insensitive,
+    // so a user might type DATA or dAtA. We honor that.
+    for (const variant of ['DATA', 'dAtA', 'data']) {
+      const parent = mkdtempSync(join(tmpdir(), 'vttforge-data-case-'));
+      const dataPath = join(parent, variant);
+      try {
+        await mkdir(dataPath);
+        expect(foundryPackagesDir(dataPath, 'system')).toBe(join(dataPath, 'systems'));
+      } finally {
+        rmSync(parent, { recursive: true, force: true });
+      }
+    }
+  });
+
   it('returns canonical Data/<type>s/ when path has no Data hints (assumed user-data root)', () => {
     expect(foundryPackagesDir(tmp, 'system')).toBe(join(tmp, 'Data', 'systems'));
   });

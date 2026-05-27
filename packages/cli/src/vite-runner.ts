@@ -1,46 +1,65 @@
 /**
- * Spawn the user's project-local vite binary.
+ * Spawn the user's project-local `vite` through their package manager.
  *
- * We deliberately go through `node <node_modules/vite/bin/vite.js>` instead
- * of `node_modules/.bin/vite` so the dev/build commands work the same on
- * Windows (where `.bin/vite` is a `.cmd` shim with its own quoting rules)
- * as they do on POSIX. The user must have run their package manager's
- * install step before invoking `vttforge dev` or `vttforge build` —
- * vite is a project dependency, not bundled with the CLI.
+ * We deliberately go through `<pm> exec vite` instead of probing a
+ * `node_modules/vite/bin/vite.js` path: Yarn 4 Plug'n'Play stores
+ * dependencies in `.yarn/cache/` rather than `node_modules/`, and even
+ * within npm/pnpm projects PNP-style linkers may not materialize the
+ * binary on disk. The package-manager command always resolves the
+ * locally-installed vite correctly regardless of linker.
  */
 
 import { type ChildProcess, spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { detectProjectPackageManager, execInvocation } from './package-manager.js';
 
 export class ViteNotInstalledError extends Error {
-  constructor(public readonly entryPath: string) {
-    super(
-      `vite is not installed in this project. Run \`pnpm install\` (or your package manager's equivalent) inside the project before \`vttforge dev\` / \`vttforge build\`. Expected entry: ${entryPath}`,
-    );
+  constructor(message: string) {
+    super(message);
     this.name = 'ViteNotInstalledError';
   }
 }
 
-/** Absolute path to the user's project-local `vite/bin/vite.js`. */
-export function resolveViteEntry(cwd: string): string {
-  const path = join(cwd, 'node_modules', 'vite', 'bin', 'vite.js');
-  if (!existsSync(path)) {
-    throw new ViteNotInstalledError(path);
+/** Spawn args for invoking the user's vite (e.g. `["pnpm", ["exec", "vite"]]`). */
+export function resolveViteInvocation(cwd: string): [string, string[]] {
+  // Lightweight sanity check: the project must have a `package.json` so we
+  // know we're inside a real project root. We do NOT require
+  // `node_modules/vite/bin/vite.js` because Yarn PnP intentionally skips
+  // creating that file.
+  if (!existsSync(join(cwd, 'package.json'))) {
+    throw new ViteNotInstalledError(
+      `No package.json found at ${cwd}. Run \`vttforge dev\` / \`vttforge build\` from inside a scaffolded project.`,
+    );
   }
-  return path;
+  const pm = detectProjectPackageManager(cwd);
+  return execInvocation(pm, 'vite');
 }
 
 /** Run `vite build` once and wait for it to exit. Throws on non-zero exit. */
 export async function runViteBuildOnce(cwd: string): Promise<void> {
-  const entry = resolveViteEntry(cwd);
+  const [bin, baseArgs] = resolveViteInvocation(cwd);
   await new Promise<void>((resolveBuild, rejectBuild) => {
-    const child = spawn(process.execPath, [entry, 'build'], {
+    const child = spawn(bin, [...baseArgs, 'build'], {
       cwd,
       stdio: 'inherit',
       env: process.env,
+      // `shell: false` keeps the args list quoted; npx/pnpm/yarn/bun all
+      // accept bare argv without shell expansion.
+      shell: false,
     });
-    child.on('error', rejectBuild);
+    child.on('error', (err) => {
+      // Surface a friendlier message if the PM binary itself isn't on PATH.
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+        rejectBuild(
+          new Error(
+            `Could not invoke "${bin}". Is the project's package manager installed and on PATH?`,
+          ),
+        );
+      } else {
+        rejectBuild(err);
+      }
+    });
     child.on('exit', (code) => {
       if (code === 0) {
         resolveBuild();
@@ -57,10 +76,11 @@ export async function runViteBuildOnce(cwd: string): Promise<void> {
  * it on SIGINT).
  */
 export function spawnViteWatch(cwd: string): ChildProcess {
-  const entry = resolveViteEntry(cwd);
-  return spawn(process.execPath, [entry, 'build', '--watch'], {
+  const [bin, baseArgs] = resolveViteInvocation(cwd);
+  return spawn(bin, [...baseArgs, 'build', '--watch'], {
     cwd,
     stdio: 'inherit',
     env: process.env,
+    shell: false,
   });
 }

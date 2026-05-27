@@ -120,8 +120,10 @@ export async function saveConfig(cwd: string, config: VTTForgeConfig): Promise<v
  * root OR the `Data/` folder directly without us double-nesting `Data/Data`.
  */
 function isFoundryDataFolder(path: string): boolean {
-  const base = basename(path);
-  if (base === 'Data' || base === 'data') return true;
+  // basename match — case-insensitive so `DATA`, `data`, `Data` all work on
+  // macOS/Windows volumes that don't preserve case strictly. On Linux the
+  // folder is always "Data" exactly; case-insensitive compare is harmless.
+  if (basename(path).toLowerCase() === 'data') return true;
   return (
     existsSync(join(path, 'systems')) ||
     existsSync(join(path, 'modules')) ||

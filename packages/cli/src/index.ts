@@ -25,13 +25,18 @@ export {
 export type { FoundryManifest, PackageType } from './manifest.js';
 export { readManifest } from './manifest.js';
 export type { PackageManager } from './package-manager.js';
-export { detectPackageManager, installCommand } from './package-manager.js';
+export {
+  detectPackageManager,
+  detectProjectPackageManager,
+  execInvocation,
+  installCommand,
+} from './package-manager.js';
 export type { ScaffoldOptions, ScaffoldVars } from './scaffold.js';
 export { scaffold, substitute, templatesRoot } from './scaffold.js';
 export type { CreateLinkOptions } from './symlink.js';
 export { createLink, readLinkTarget, removeLink } from './symlink.js';
 export {
-  resolveViteEntry,
+  resolveViteInvocation,
   runViteBuildOnce,
   spawnViteWatch,
   ViteNotInstalledError,

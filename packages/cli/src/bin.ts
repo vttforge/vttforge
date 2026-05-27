@@ -71,17 +71,21 @@ const dev = defineCommand({
     description: 'Symlink dist/ into Foundry Data and run vite build --watch',
   },
   args: {
-    'data-dir': {
+    'foundry-data': {
       type: 'string',
+      alias: 'data-dir',
       description:
         'Override the Foundry user-data directory (skips env / config / first-run prompt)',
     },
   },
   async run({ args }) {
+    // Citty surfaces aliases under the canonical name. Belt-and-suspenders:
+    // accept either spelling so older docs and muscle memory keep working.
+    const explicit =
+      (typeof args['foundry-data'] === 'string' ? args['foundry-data'] : undefined) ??
+      (typeof args['data-dir'] === 'string' ? args['data-dir'] : undefined);
     try {
-      await runDev({
-        dataDir: typeof args['data-dir'] === 'string' ? args['data-dir'] : undefined,
-      });
+      await runDev({ dataDir: explicit });
     } catch (err) {
       console.error(err instanceof Error ? err.message : String(err));
       process.exit(1);
