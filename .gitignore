@@ -2,9 +2,10 @@
 node_modules/
 .internal/
 
-# Agent skills + skill manifest (local-only, not committed)
+# Agent skills + skill manifest + project CLAUDE.md (local-only, not committed)
 .agents/skills/
 .claude/skills/
+.claude/CLAUDE.md
 skills-lock.json
 
 # Build outputs
