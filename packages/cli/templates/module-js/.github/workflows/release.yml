@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: pnpm install
+
+      - name: Sync manifest version
+        run: |
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version='${{ steps.version.outputs.version }}';fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n');"
+
+      - run: pnpm build
+
+      - name: Inject release URLs into manifest
+        run: |
+          node -e "const fs=require('fs');const path='dist/module.json';const m=JSON.parse(fs.readFileSync(path,'utf8'));m.manifest='https://github.com/${{ github.repository }}/releases/latest/download/module.json';m.download='https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/{{ID}}-${{ steps.version.outputs.version }}.zip';fs.writeFileSync(path,JSON.stringify(m,null,2)+'\n');"
+
+      - name: Build release zip
+        run: |
+          cd dist
+          zip -r ../{{ID}}-${{ steps.version.outputs.version }}.zip .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            {{ID}}-${{ steps.version.outputs.version }}.zip
+            dist/module.json
+          generate_release_notes: true
+          body: |
+            ## Foundry installation
+
+            Install via Foundry's setup wizard with this manifest URL:
+
+            ```
+            https://github.com/${{ github.repository }}/releases/latest/download/module.json
+            ```

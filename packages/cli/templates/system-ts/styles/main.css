@@ -1,0 +1,495 @@
+@import "@vttforge/styles";
+
+/*
+ * {{ID}} styles — implements the .sh-* class system from the
+ * canonical Figma reference (character-sheet.jsx + Theme Explorations.html)
+ * on top of @vttforge/styles. Tokens come from the Forge theme; no other
+ * theme is hand-rolled here (consumers swap themes by overriding --vttf-*).
+ *
+ * Per foundry-vtt-system-dev "Styling & Themes" rule #3, component CSS stays
+ * UNLAYERED so it wins over Foundry's @layer applications without specificity
+ * wars. Scoped under .{{ID}} so nothing leaks into core Foundry UI.
+ */
+
+/* Opaque sheet bg — Foundry's ApplicationV2 default is transparent. */
+.{{ID}}.sheet,
+.{{ID}} .window-content {
+  background: var(--vttf-bg);
+  opacity: 1;
+}
+
+.{{ID}}.sheet {
+  color: var(--vttf-text);
+  font-family: var(--vttf-font-body, system-ui, sans-serif);
+}
+
+.{{ID}}.sheet form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+/* ════════ HEAD (.sh-head) ════════ */
+.{{ID}} .sh-head {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: var(--vttf-space-4);
+  padding: var(--vttf-space-4);
+  background: var(--vttf-surface);
+  border-bottom: 1px solid var(--vttf-border);
+}
+
+.{{ID}} .sh-portrait {
+  width: 88px;
+  height: 110px;
+  border-radius: var(--vttf-radius-md);
+  background: var(--vttf-surface-2);
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.{{ID}} .sh-id {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.{{ID}} .sh-id-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.{{ID}} .sh-name {
+  font-family: var(--vttf-font-display, var(--vttf-font-body));
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--vttf-text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 0;
+}
+
+.{{ID}} .sh-name:focus {
+  border-bottom-color: var(--vttf-border-strong);
+  outline: none;
+}
+
+.{{ID}} .sh-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vttf-space-2);
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vttf-text-muted);
+}
+
+.{{ID}} .sh-sub input {
+  width: 3.5rem;
+  text-align: center;
+  background: transparent;
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-sm);
+  color: var(--vttf-text);
+  font: inherit;
+  padding: 2px 6px;
+}
+
+.{{ID}} .sh-quick {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--vttf-space-3);
+}
+
+.{{ID}} .sh-quick .q {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.{{ID}} .sh-quick .qv {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--vttf-font-display, var(--vttf-font-body));
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--vttf-ember-glow);
+}
+
+.{{ID}} .sh-quick .qv input {
+  width: 2.5rem;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.{{ID}} .sh-quick .qv-sep {
+  font-size: 14px;
+  color: var(--vttf-text-faint);
+}
+
+.{{ID}} .sh-quick .qv-max {
+  font-size: 14px;
+  color: var(--vttf-text-muted);
+}
+
+.{{ID}} .sh-quick .qk {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vttf-text-faint);
+}
+
+/* ════════ TABS (.sh-tabs) ════════ */
+.{{ID}} .sh-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 var(--vttf-space-4);
+  background: var(--vttf-bg-elevated);
+  border-bottom: 1px solid var(--vttf-border);
+}
+
+.{{ID}} .sh-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 14px;
+  cursor: pointer;
+  color: var(--vttf-text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-family: var(--vttf-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.{{ID}} .sh-tab:hover {
+  color: var(--vttf-text);
+}
+
+.{{ID}} .sh-tab.on,
+.{{ID}} .sh-tab.active {
+  color: var(--vttf-text);
+  border-bottom-color: var(--vttf-ember);
+}
+
+/* ════════ BODY (.sh-body) ════════ */
+.{{ID}} .sh-body {
+  flex: 1;
+  overflow: auto;
+  padding: var(--vttf-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vttf-space-4);
+  min-height: 320px;
+}
+
+.{{ID}} .sh-body .tab {
+  display: none;
+  flex-direction: column;
+  gap: var(--vttf-space-3);
+}
+
+.{{ID}} .sh-body .tab.active {
+  display: flex;
+}
+
+.{{ID}} .sh-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vttf-space-3);
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vttf-text-faint);
+  font-weight: 600;
+  margin: 0;
+}
+
+.{{ID}} .sh-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--vttf-border);
+}
+
+.{{ID}} .sh-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--vttf-space-3);
+}
+
+.{{ID}} .sh-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--vttf-radius-sm);
+  background: var(--vttf-surface);
+  border: 1px solid var(--vttf-border-strong);
+  color: var(--vttf-text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.{{ID}} .sh-action:hover {
+  background: var(--vttf-surface-2);
+}
+
+.{{ID}} .sh-action i {
+  color: var(--vttf-ember);
+}
+
+/* ─── Abilities ─── */
+.{{ID}} .sh-abilities {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--vttf-space-2);
+}
+
+.{{ID}} .sh-abil {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: var(--vttf-surface);
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-md);
+}
+
+.{{ID}} .sh-abil .lbl {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vttf-text-faint);
+  font-weight: 600;
+}
+
+.{{ID}} .sh-abil .val {
+  width: 100%;
+  text-align: center;
+  background: transparent;
+  border: none;
+  color: var(--vttf-text);
+  font-family: var(--vttf-font-display, var(--vttf-font-body));
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+}
+
+.{{ID}} .sh-abil .val:focus {
+  outline: 1px solid var(--vttf-ember);
+  border-radius: var(--vttf-radius-sm);
+}
+
+.{{ID}} .sh-abil .mod {
+  background: transparent;
+  border: none;
+  color: var(--vttf-ember-glow);
+  font-family: var(--vttf-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: var(--vttf-radius-full);
+}
+
+.{{ID}} .sh-abil .mod:hover {
+  background: color-mix(in oklch, var(--vttf-ember) 12%, transparent);
+}
+
+/* ─── Items ─── */
+.{{ID}} .sh-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.{{ID}} .sh-item {
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto auto;
+  gap: var(--vttf-space-3);
+  align-items: center;
+  padding: 8px 10px;
+  background: var(--vttf-surface);
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-sm);
+  cursor: grab;
+}
+
+.{{ID}} .sh-item:active {
+  cursor: grabbing;
+}
+
+.{{ID}} .sh-item-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--vttf-surface-2);
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-sm);
+  color: var(--vttf-text-muted);
+  font-size: 16px;
+  overflow: hidden;
+}
+
+.{{ID}} .sh-item-ico img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.{{ID}} .sh-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vttf-text);
+}
+
+.{{ID}} .sh-item-meta {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 11px;
+  color: var(--vttf-text-faint);
+}
+
+.{{ID}} .sh-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: var(--vttf-radius-full);
+  background: color-mix(in oklch, var(--vttf-ember) 10%, transparent);
+  color: var(--vttf-ember);
+  border: 1px solid color-mix(in oklch, var(--vttf-ember) 40%, transparent);
+}
+
+.{{ID}} .sh-tag.muted {
+  background: var(--vttf-bg-sunken);
+  color: var(--vttf-text-muted);
+  border-color: var(--vttf-border);
+}
+
+.{{ID}} .sh-qty {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 12px;
+  color: var(--vttf-text-muted);
+}
+
+.{{ID}} .sh-item-delete {
+  background: transparent;
+  border: none;
+  color: var(--vttf-text-faint);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.{{ID}} .sh-item-delete:hover {
+  color: var(--vttf-rose);
+}
+
+.{{ID}} .sh-items-empty {
+  text-align: center;
+  padding: var(--vttf-space-4);
+  color: var(--vttf-text-faint);
+  font-style: italic;
+}
+
+/* ─── Drop affordance ─── */
+.{{ID}} .sh-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 20px;
+  border: 1.5px dashed var(--vttf-border-strong);
+  border-radius: var(--vttf-radius-md);
+  background: color-mix(in oklch, var(--vttf-ember) 6%, transparent);
+  text-align: center;
+}
+
+.{{ID}} .sh-drop .lbl {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vttf-text);
+}
+
+.{{ID}} .sh-drop .sub {
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 11px;
+  color: var(--vttf-text-faint);
+}
+
+/* ─── Empty placeholder (Spells tab) ─── */
+.{{ID}} .sh-empty {
+  padding: var(--vttf-space-6);
+  text-align: center;
+  color: var(--vttf-text-faint);
+  font-style: italic;
+}
+
+/* ─── Biography (readonly fallback) ─── */
+.{{ID}} .sh-biography-readonly {
+  padding: var(--vttf-space-4);
+  background: var(--vttf-bg-sunken);
+  border: 1px solid var(--vttf-border);
+  border-radius: var(--vttf-radius-md);
+  color: var(--vttf-text-muted);
+  line-height: 1.6;
+}
+
+/* ════════ FOOT (.sh-foot) ════════ */
+.{{ID}} .sh-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--vttf-space-4);
+  padding: 12px var(--vttf-space-4);
+  background: var(--vttf-surface);
+  border-top: 1px solid var(--vttf-border);
+  font-family: var(--vttf-font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vttf-text-faint);
+}
+
+.{{ID}} .sh-foot .nm {
+  color: var(--vttf-ember);
+  font-weight: 600;
+}
+
+/* ════════ Gear sheet (unchanged structurally) ════════ */
+.{{ID}}.item .field {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: var(--vttf-space-3);
+  align-items: center;
+  padding: 0.35rem 0;
+}

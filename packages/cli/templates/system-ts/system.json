@@ -1,0 +1,44 @@
+{
+  "id": "{{ID}}",
+  "title": "{{TITLE}}",
+  "description": "{{DESCRIPTION}}",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "{{FOUNDRY_MIN_VERSION}}",
+    "verified": "{{FOUNDRY_VERIFIED_VERSION}}"
+  },
+  "authors": [{ "name": "{{AUTHOR}}" }],
+  "esmodules": ["main.mjs"],
+  "styles": [{ "src": "styles/main.css" }],
+  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "documentTypes": {
+    "Actor": {
+      "character": {
+        "htmlFields": ["biography"]
+      }
+    },
+    "Item": {
+      "gear": {
+        "htmlFields": ["description"]
+      }
+    }
+  },
+  "grid": {
+    "type": 1,
+    "distance": 5,
+    "units": "ft",
+    "diagonals": 0
+  },
+  "primaryTokenAttribute": "health",
+  "secondaryTokenAttribute": "power",
+  "flags": {
+    "hotReload": {
+      "extensions": ["css", "hbs", "json"],
+      "paths": ["styles", "templates", "lang"]
+    },
+    "{{ID}}": {
+      "needsMigrationVersion": "0.1.0",
+      "compatibleMigrationVersion": "0.0.0"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "{{ID}}",
+  "title": "{{TITLE}}",
+  "description": "{{DESCRIPTION}}",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "{{FOUNDRY_MIN_VERSION}}",
+    "verified": "{{FOUNDRY_VERIFIED_VERSION}}"
+  },
+  "authors": [{ "name": "{{AUTHOR}}" }],
+  "esmodules": ["main.mjs"],
+  "styles": [{ "src": "styles/main.css" }],
+  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "flags": {
+    "hotReload": {
+      "extensions": ["css", "json"],
+      "paths": ["styles", "lang"]
+    }
+  }
+}
