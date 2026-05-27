@@ -16,7 +16,19 @@ jobs:
 
       - name: Resolve version from tag
         id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        env:
+          REF: ${{ github.ref_name }}
+        run: |
+          version="${REF#v}"
+          # Git allows surprising characters in tag names. Reject anything
+          # that isn't a strict semver-ish identifier so downstream node -e
+          # / shell interpolations can't be turned into command injection
+          # by a malicious tag push.
+          if ! [[ "$version" =~ ^[0-9A-Za-z._+-]+$ ]]; then
+            echo "Refusing tag with unsafe characters: $version" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - uses: pnpm/action-setup@v4
         with:
@@ -29,25 +41,45 @@ jobs:
       - run: pnpm install
 
       - name: Sync manifest version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version='${{ steps.version.outputs.version }}';fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n');"
+          node -e "const fs=require('node:fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.VERSION;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n');"
 
-      - run: pnpm build
+      # We invoke vite directly (not `pnpm build` → `vttforge build`) because
+      # the release workflow needs to:
+      #   1. Run vite build → emit dist/system.json
+      #   2. Patch manifest/download URLs into dist/system.json
+      #   3. Zip dist/ → release artifact (so the zipped manifest carries URLs)
+      # `vttforge build` zips at step 1, which would freeze the un-patched
+      # manifest. Eventually the vite-plugin will support env-driven URL
+      # injection and this dance disappears.
+      - run: pnpm exec vite build
 
       - name: Inject release URLs into manifest
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO: ${{ github.repository }}
+          PKG_ID: '{{ID}}'
         run: |
-          node -e "const fs=require('fs');const path='dist/system.json';const m=JSON.parse(fs.readFileSync(path,'utf8'));m.manifest='https://github.com/${{ github.repository }}/releases/latest/download/system.json';m.download='https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/{{ID}}-${{ steps.version.outputs.version }}.zip';fs.writeFileSync(path,JSON.stringify(m,null,2)+'\n');"
+          node -e "const fs=require('node:fs');const path='dist/system.json';const m=JSON.parse(fs.readFileSync(path,'utf8'));const r=process.env.REPO;const v=process.env.VERSION;const id=process.env.PKG_ID;m.manifest=\`https://github.com/\${r}/releases/latest/download/system.json\`;m.download=\`https://github.com/\${r}/releases/download/v\${v}/\${id}-\${v}.zip\`;fs.writeFileSync(path,JSON.stringify(m,null,2)+'\n');"
 
       - name: Build release zip
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          PKG_ID: '{{ID}}'
         run: |
           cd dist
-          zip -r ../{{ID}}-${{ steps.version.outputs.version }}.zip .
+          zip -r "../${PKG_ID}-${VERSION}.zip" .
 
       - name: Create GitHub Release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          PKG_ID: '{{ID}}'
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            {{ID}}-${{ steps.version.outputs.version }}.zip
+            ${{ env.PKG_ID }}-${{ env.VERSION }}.zip
             dist/system.json
           generate_release_notes: true
           body: |
