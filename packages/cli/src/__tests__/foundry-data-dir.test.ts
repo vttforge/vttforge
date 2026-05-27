@@ -1,7 +1,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   autoDetectFoundryDataDir,
@@ -138,18 +138,98 @@ describe('foundryPackagesDir', () => {
     rmSync(tmp, { recursive: true, force: true });
   });
 
-  it('prefers the canonical Data/<type>s layout when present', async () => {
+  it('returns Data/<type>s under a user-data root with sibling Data folder', async () => {
     await mkdir(join(tmp, 'Data', 'systems'), { recursive: true });
     expect(foundryPackagesDir(tmp, 'system')).toBe(join(tmp, 'Data', 'systems'));
   });
 
-  it('falls back to direct <type>s/ when no Data/ subdir exists', async () => {
-    await mkdir(join(tmp, 'modules'));
-    expect(foundryPackagesDir(tmp, 'module')).toBe(join(tmp, 'modules'));
+  it('treats a path whose basename is "Data" as the Data folder itself', async () => {
+    const dataPath = mkdtempSync(join(tmpdir(), 'vttforge-Data-'));
+    // Rename so the basename is literally "Data".
+    const renamed = join(dirname(dataPath), 'Data');
+    try {
+      rmSync(dataPath, { recursive: true, force: true });
+      await mkdir(renamed, { recursive: true });
+      // Crucially: NO systems/modules/worlds yet — pure fresh data folder.
+      expect(foundryPackagesDir(renamed, 'system')).toBe(join(renamed, 'systems'));
+      expect(foundryPackagesDir(renamed, 'module')).toBe(join(renamed, 'modules'));
+    } finally {
+      rmSync(renamed, { recursive: true, force: true });
+    }
   });
 
-  it('returns canonical Data/<type>s/ when neither layout exists yet', () => {
+  it('treats a path containing systems/modules/worlds as the Data folder', async () => {
+    // Path basename is not "Data" but it has a worlds/ subfolder, so it is
+    // unambiguously the Data folder. Avoid double-nesting Data/Data/.
+    await mkdir(join(tmp, 'worlds'));
+    expect(foundryPackagesDir(tmp, 'system')).toBe(join(tmp, 'systems'));
+  });
+
+  it('returns canonical Data/<type>s/ when path has no Data hints (assumed user-data root)', () => {
     expect(foundryPackagesDir(tmp, 'system')).toBe(join(tmp, 'Data', 'systems'));
+  });
+});
+
+describe('resolveFoundryDataDir — tilde expansion', () => {
+  let tmp: string;
+  let fakeHome: string;
+
+  beforeEach(async () => {
+    tmp = mkdtempSync(join(tmpdir(), 'vttforge-tilde-'));
+    fakeHome = mkdtempSync(join(tmpdir(), 'vttforge-home-'));
+    await mkdir(join(fakeHome, 'foundry-data'), { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(tmp, { recursive: true, force: true });
+    rmSync(fakeHome, { recursive: true, force: true });
+  });
+
+  it('expands `~/x` in the override flag', async () => {
+    const result = await resolveFoundryDataDir({
+      cwd: tmp,
+      override: '~/foundry-data',
+      home: fakeHome,
+    });
+    expect(result).toBe(join(fakeHome, 'foundry-data'));
+  });
+
+  it('expands `~/x` in FOUNDRY_DATA_DIR env', async () => {
+    const result = await resolveFoundryDataDir({
+      cwd: tmp,
+      env: { FOUNDRY_DATA_DIR: '~/foundry-data' },
+      home: fakeHome,
+    });
+    expect(result).toBe(join(fakeHome, 'foundry-data'));
+  });
+
+  it('expands `~/x` from the prompt', async () => {
+    const result = await resolveFoundryDataDir({
+      cwd: tmp,
+      env: {},
+      platform: 'darwin',
+      home: fakeHome,
+      prompt: async () => '~/foundry-data',
+    });
+    expect(result).toBe(join(fakeHome, 'foundry-data'));
+  });
+
+  it('treats bare `~` as the home directory itself', async () => {
+    const result = await resolveFoundryDataDir({
+      cwd: tmp,
+      override: '~',
+      home: fakeHome,
+    });
+    expect(result).toBe(fakeHome);
+  });
+
+  it('leaves paths without a leading tilde alone', async () => {
+    const result = await resolveFoundryDataDir({
+      cwd: tmp,
+      override: '/absolute/path',
+      home: fakeHome,
+    });
+    expect(result).toBe('/absolute/path');
   });
 });
 

@@ -22,7 +22,7 @@
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 
 /** Shape persisted to `<project>/.vttforge/config.json`. */
 export interface VTTForgeConfig {
@@ -109,6 +109,27 @@ export async function saveConfig(cwd: string, config: VTTForgeConfig): Promise<v
 }
 
 /**
+ * Heuristic: is `path` already Foundry's `Data/` folder (vs. its parent)?
+ * We treat the path as Data when:
+ *   - basename is "Data" (case-insensitive — macOS/Windows file systems
+ *     are case-insensitive by default), OR
+ *   - any of `systems/`, `modules/`, `worlds/` exists inside (proof that
+ *     Foundry has previously written package folders here).
+ *
+ * Used by `foundryPackagesDir` so users can supply EITHER the user-data
+ * root OR the `Data/` folder directly without us double-nesting `Data/Data`.
+ */
+function isFoundryDataFolder(path: string): boolean {
+  const base = basename(path);
+  if (base === 'Data' || base === 'data') return true;
+  return (
+    existsSync(join(path, 'systems')) ||
+    existsSync(join(path, 'modules')) ||
+    existsSync(join(path, 'worlds'))
+  );
+}
+
+/**
  * Resolve the packages directory (`Data/systems/` or `Data/modules/`) under
  * the given Foundry user-data root. Accepts the path Foundry itself runs
  * with (the user-data folder, which contains `Data/`) OR the `Data/` folder
@@ -119,15 +140,22 @@ export async function saveConfig(cwd: string, config: VTTForgeConfig): Promise<v
  */
 export function foundryPackagesDir(dataRoot: string, type: 'system' | 'module'): string {
   const subFolder = type === 'system' ? 'systems' : 'modules';
-  // Try canonical user-data layout first: <root>/Data/<type>s.
-  const dataChild = join(dataRoot, 'Data', subFolder);
-  if (existsSync(dataChild)) return dataChild;
-  // Then accept the Data/ folder itself: <root>/<type>s.
-  const direct = join(dataRoot, subFolder);
-  if (existsSync(direct)) return direct;
-  // Neither side resolved yet — assume canonical layout and let the symlink
-  // step create it.
-  return dataChild;
+  if (isFoundryDataFolder(dataRoot)) {
+    return join(dataRoot, subFolder);
+  }
+  return join(dataRoot, 'Data', subFolder);
+}
+
+/**
+ * Expand `~` / `~/` prefixes to the user's home directory. Shells do this
+ * automatically; Node's `path.resolve` does NOT, so a user who types the
+ * prompt's own example `~/Library/Application Support/FoundryVTT` would
+ * end up with a symlink under `<cwd>/~/Library/...` if we skipped this.
+ */
+function expandTilde(p: string, home: string): string {
+  if (p === '~') return home;
+  if (p.startsWith('~/') || p.startsWith('~\\')) return join(home, p.slice(2));
+  return p;
 }
 
 export interface ResolveDataDirOptions {
@@ -162,12 +190,12 @@ export async function resolveFoundryDataDir(opts: ResolveDataDirOptions): Promis
   const home = opts.home ?? homedir();
 
   if (typeof override === 'string' && override.length > 0) {
-    return resolve(override);
+    return resolve(expandTilde(override, home));
   }
 
   const envValue = env.FOUNDRY_DATA_DIR;
   if (typeof envValue === 'string' && envValue.length > 0) {
-    return resolve(envValue);
+    return resolve(expandTilde(envValue, home));
   }
 
   const config = await loadConfig(cwd);
@@ -182,7 +210,7 @@ export async function resolveFoundryDataDir(opts: ResolveDataDirOptions): Promis
     if (!choice) {
       throw new Error('No Foundry data directory selected — aborting.');
     }
-    const chosen = resolve(choice);
+    const chosen = resolve(expandTilde(choice, home));
     await saveConfig(cwd, { ...config, foundryDataDir: chosen });
     return chosen;
   }
