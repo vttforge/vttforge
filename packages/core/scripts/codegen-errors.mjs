@@ -13,9 +13,8 @@
  *      These are committed so the `docsUrl` resolves to a real page once
  *      the docs site goes live in v0.3.
  *
- * The plan in `.internal/v0.1-next-steps.md` originally said `prebuild`, but
- * `postbuild` is much simpler: we get to import the built ESM directly
- * instead of needing tsx / unrun to load the TS source.
+ * Runs as `postbuild` (not `prebuild`) so the script imports the built
+ * ESM directly instead of needing tsx / unrun to load the TS source.
  */
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
