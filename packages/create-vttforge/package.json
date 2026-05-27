@@ -1,0 +1,37 @@
+{
+  "name": "create-vttforge",
+  "version": "0.1.0",
+  "description": "Scaffold a Foundry VTT system or module with VTTForge. Thin wrapper around `@vttforge/cli init`.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/vttforge/vttforge#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vttforge/vttforge.git",
+    "directory": "packages/create-vttforge"
+  },
+  "bugs": "https://github.com/vttforge/vttforge/issues",
+  "keywords": [
+    "foundryvtt",
+    "vttforge",
+    "scaffold",
+    "create"
+  ],
+  "bin": {
+    "create-vttforge": "./bin.mjs"
+  },
+  "files": [
+    "bin.mjs",
+    "README.md"
+  ],
+  "dependencies": {
+    "@vttforge/cli": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  }
+}
