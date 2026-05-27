@@ -10,24 +10,17 @@ A Foundry VTT module built on [VTTForge](https://github.com/vttforge/vttforge) â
 
 ```bash
 pnpm install
-pnpm build         # bundles dist/ â€” the deployable artefact
-pnpm dev           # vite build --watch
+pnpm dev      # vite build --watch + auto-symlinks dist/ into Foundry's Data
+pnpm build    # one-shot build + emits {{ID}}-<version>.zip for foundryvtt.com
 ```
 
-Symlink `dist/` into your Foundry data directory:
+`pnpm dev` (`vttforge dev` under the hood) auto-detects your Foundry user-data
+directory on the first run, prompts you to confirm it, and saves the choice to
+`.vttforge/config.json` for next time. Override with `--data-dir <path>` or set
+`FOUNDRY_DATA_DIR` in your environment.
 
-```bash
-# macOS
-ln -s "$(pwd)/dist" "$HOME/Library/Application Support/FoundryVTT/Data/modules/{{ID}}"
-
-# Linux
-ln -s "$(pwd)/dist" "$HOME/.local/share/FoundryVTT/Data/modules/{{ID}}"
-
-# Windows (PowerShell, as admin)
-New-Item -ItemType SymbolicLink -Path "$env:APPDATA\FoundryVTT\Data\modules\{{ID}}" -Target "$(pwd)\dist"
-```
-
-Enable the module in any world.
+Run Foundry with `--hotReload` to pick up changes without refreshing the page.
+Then enable **{{TITLE}}** in any world.
 
 ## What's inside
 

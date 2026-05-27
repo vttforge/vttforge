@@ -2,11 +2,13 @@
 /**
  * vttforge bin — CLI entry.
  *
- * `vttforge init` is the only fully-implemented subcommand in this version.
- * `dev`, `build`, and `audit` are reserved so users get a discoverable error
- * pointing at the right workaround until the real implementations land.
+ * `init`, `dev`, and `build` are wired to their real implementations.
+ * `audit` is still reserved so users get a discoverable error pointing
+ * at the right workaround until that subcommand lands.
  */
 import { defineCommand, runMain } from 'citty';
+import { runBuild } from './commands/build.js';
+import { runDev } from './commands/dev.js';
 import { runInit, ScaffoldError } from './commands/init.js';
 import { VTTFORGE_CLI_VERSION } from './index.js';
 
@@ -66,27 +68,43 @@ const init = defineCommand({
 const dev = defineCommand({
   meta: {
     name: 'dev',
-    description:
-      'Run vite build --watch + symlink dist/ into Foundry Data (coming in a later release)',
+    description: 'Symlink dist/ into Foundry Data and run vite build --watch',
   },
-  run() {
-    console.error(
-      'vttforge dev is not implemented yet. For now: run `vite build --watch` from your project and symlink `dist/` into your Foundry Data/systems/<id>/ (or use the dev compose mount).',
-    );
-    process.exit(1);
+  args: {
+    'foundry-data': {
+      type: 'string',
+      alias: 'data-dir',
+      description:
+        'Override the Foundry user-data directory (skips env / config / first-run prompt)',
+    },
+  },
+  async run({ args }) {
+    // Citty surfaces aliases under the canonical name. Belt-and-suspenders:
+    // accept either spelling so older docs and muscle memory keep working.
+    const explicit =
+      (typeof args['foundry-data'] === 'string' ? args['foundry-data'] : undefined) ??
+      (typeof args['data-dir'] === 'string' ? args['data-dir'] : undefined);
+    try {
+      await runDev({ dataDir: explicit });
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
   },
 });
 
 const build = defineCommand({
   meta: {
     name: 'build',
-    description: 'Run vite build + emit a foundryvtt.com release zip (coming in a later release)',
+    description: 'Run vite build (production) and emit <id>-<version>.zip for foundryvtt.com',
   },
-  run() {
-    console.error(
-      'vttforge build is not implemented yet. For now: run `vite build`. The release workflow already shipped in your scaffold zips dist/ automatically on tag push.',
-    );
-    process.exit(1);
+  async run() {
+    try {
+      await runBuild();
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
   },
 });
 
