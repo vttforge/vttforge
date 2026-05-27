@@ -15,8 +15,8 @@
  * Also keeps a local manifest of registered keys so attempts to read an
  * unregistered key fail with VTTF-0003 instead of returning undefined.
  *
- * See Foundry module guidance skill, "Hooks & Settings" — registration must
- * happen during the `init` hook; reads can happen any time after.
+ * Registration must happen during the `init` hook; reads can happen any
+ * time after.
  */
 
 import { VttfError } from './errors/registry.js';

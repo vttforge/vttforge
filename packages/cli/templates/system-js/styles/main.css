@@ -6,9 +6,9 @@
  * on top of @vttforge/styles. Tokens come from the Forge theme; no other
  * theme is hand-rolled here (consumers swap themes by overriding --vttf-*).
  *
- * Per Foundry system guidance "Styling & Themes" rule #3, component CSS stays
- * UNLAYERED so it wins over Foundry's @layer applications without specificity
- * wars. Scoped under .{{ID}} so nothing leaks into core Foundry UI.
+ * Component CSS stays UNLAYERED so it wins over Foundry's
+ * @layer applications without specificity wars. Scoped under .{{ID}} so
+ * nothing leaks into core Foundry UI.
  */
 
 /* Opaque sheet bg — Foundry's ApplicationV2 default is transparent. */
