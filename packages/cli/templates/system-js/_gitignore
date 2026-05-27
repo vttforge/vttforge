@@ -4,3 +4,9 @@ dist
 .vscode
 .DS_Store
 *.log
+
+# vttforge dev — saved Foundry data-dir path
+.vttforge/
+
+# vttforge build — release artifact
+*.zip

@@ -45,10 +45,12 @@
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
+    "archiver": "catalog:",
     "citty": "catalog:"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
+    "@types/archiver": "catalog:",
     "@types/node": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",
