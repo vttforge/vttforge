@@ -48,7 +48,12 @@ export function detectProjectPackageManager(
   if (existsSync(join(cwd, 'yarn.lock'))) return 'yarn';
   // Bun text format (bun.lock) supersedes the older binary bun.lockb in 1.1+.
   if (existsSync(join(cwd, 'bun.lock')) || existsSync(join(cwd, 'bun.lockb'))) return 'bun';
-  if (existsSync(join(cwd, 'package-lock.json'))) return 'npm';
+  // npm supports both package-lock.json (common) and npm-shrinkwrap.json
+  // (published-package convention) — accept either as evidence of an npm
+  // project, otherwise we'd misclassify shrinkwrap projects as pnpm.
+  if (existsSync(join(cwd, 'package-lock.json')) || existsSync(join(cwd, 'npm-shrinkwrap.json'))) {
+    return 'npm';
+  }
   return detectPackageManager(env);
 }
 

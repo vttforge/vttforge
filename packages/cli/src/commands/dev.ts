@@ -156,7 +156,7 @@ export async function runDev(options: DevOptions = {}): Promise<void> {
   await new Promise<void>((resolveDev) => {
     const cleanup = async () => {
       try {
-        await removeLink(target);
+        await cleanupDevSymlink({ target, expectedSource: distDir });
       } catch {
         // best-effort — Foundry rediscovers the next time dev runs.
       }
@@ -197,4 +197,20 @@ export async function setupDevSymlink(opts: { cwd: string; dataRoot: string }): 
   const target = join(packagesDir, manifest.id);
   await createLink(target, distDir, { overwrite: true });
   return { target, manifest };
+}
+
+/**
+ * Tear down a dev symlink iff it still points at the expected source.
+ * Refuses to remove a symlink that another `vttforge dev` session (or a
+ * manual `ln -s`) has since redirected — that link doesn't belong to us
+ * and removing it would silently disconnect their setup.
+ */
+export async function cleanupDevSymlink(opts: {
+  target: string;
+  expectedSource: string;
+}): Promise<void> {
+  const current = await readLinkTarget(opts.target);
+  if (current === opts.expectedSource) {
+    await removeLink(opts.target);
+  }
 }

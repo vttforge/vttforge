@@ -9,7 +9,7 @@
 export type { BuildOptions } from './commands/build.js';
 export { emitReleaseZip, runBuild } from './commands/build.js';
 export type { DevOptions } from './commands/dev.js';
-export { runDev, setupDevSymlink } from './commands/dev.js';
+export { cleanupDevSymlink, runDev, setupDevSymlink } from './commands/dev.js';
 export type { InitOptions, ResolvedInitOptions, TemplateVariant } from './commands/init.js';
 export { runInit, ScaffoldError } from './commands/init.js';
 export type { ResolveDataDirOptions, VTTForgeConfig } from './foundry-data-dir.js';

@@ -93,6 +93,11 @@ describe('detectProjectPackageManager', () => {
     expect(detectProjectPackageManager(cwd, {})).toBe('npm');
   });
 
+  it('returns npm when npm-shrinkwrap.json is present (published-package convention)', async () => {
+    await writeFile(join(cwd, 'npm-shrinkwrap.json'), '{}', 'utf8');
+    expect(detectProjectPackageManager(cwd, {})).toBe('npm');
+  });
+
   it('falls back to user-agent detection when no lockfile is present', () => {
     expect(detectProjectPackageManager(cwd, { npm_config_user_agent: 'yarn/4.0.0 npm/?' })).toBe(
       'yarn',
