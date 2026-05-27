@@ -40,4 +40,4 @@ Initial functional release (v0.1 MVP slice).
 
 ### Pending
 
-- Real Foundry Theme V2 (`CONST.CSS_THEMES`) binding once we wire that surface in. Tracked in `.internal/TODO.md §3`.
+- Real Foundry Theme V2 (`CONST.CSS_THEMES`) binding once we wire that surface in.
