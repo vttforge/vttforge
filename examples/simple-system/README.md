@@ -2,7 +2,7 @@
 
 Reference Foundry v13 system built on `@vttforge/core` + `@vttforge/styles`. Doubles as the end-to-end smoke test for everything VTTForge v0.1 ships.
 
-> **Status:** v0.1.0 — runs inside Foundry v13.341+ with a real character + gear sheet, declarative migrations, and the full `VTTF-NNNN` error catalogue. This is where you'd hook up against `docker-compose.dev.yml` at the repo root.
+> **Status:** v0.1.0 — runs inside Foundry v13+ with a real character + gear sheet, declarative migrations, and the full `VTTF-NNNN` error catalogue. This is where you'd hook up against `docker-compose.dev.yml` at the repo root.
 
 ## What this exercises
 
@@ -15,11 +15,10 @@ Reference Foundry v13 system built on `@vttforge/core` + `@vttforge/styles`. Dou
 | `createMigrationRunner({ ..., compatibleVersion })` | `scripts/migrations.mjs` |
 | `VttfError.docsUrl` resolution (PR 8) | catch block in `scripts/main.mjs` |
 
-The Handlebars templates intentionally use the v13 idioms the
-foundry-vtt-system-dev skill recommends: `<img data-edit="img">` for the
-portrait (DocumentSheetV2's built-in `editImage` action), `<prose-mirror>` for
-rich text, `data-action="…"` for click handlers, and `data-tab`/`data-group`
-for tab navigation.
+The Handlebars templates intentionally use canonical v13 idioms:
+`<img data-edit="img">` for the portrait (DocumentSheetV2's built-in
+`editImage` action), `<prose-mirror>` for rich text, `data-action="…"`
+for click handlers, and `data-tab`/`data-group` for tab navigation.
 
 ## Run inside Foundry
 

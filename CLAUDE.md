@@ -12,9 +12,7 @@ Foundation work in progress. See `plans/PRD.md` for the full spec, `plans/TODO.m
 
 ## Foundry VTT Conventions
 
-- **Use the `foundry-vtt-system-dev` skill** for Foundry API reference (TypeDataModel, `defineSchema`, `foundry.data.fields`, dice, combat, migration, manifest, `documentTypes`, character sheets).
-- **Use the `foundry-vtt-module-dev` skill** for ApplicationV2, hooks lifecycle, settings, sockets, ActiveEffects, journal page types, custom enrichers.
-- Before writing any code that touches Foundry APIs, invoke the relevant skill above. Do not derive API shapes from memory.
+- Before writing any code that touches Foundry APIs, consult the project's Foundry guidance skills (loaded locally; see `.agents/skills/` after `pnpm install`). Do not derive API shapes from memory.
 - ES modules only (`import`/`export`), no CJS.
 - Target Foundry v13+ — v12 is an explicit non-goal.
 - Register data models on `CONFIG.Actor.dataModels` / `CONFIG.Item.dataModels` in the `init` hook.
