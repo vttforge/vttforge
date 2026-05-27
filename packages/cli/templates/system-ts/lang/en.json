@@ -1,0 +1,55 @@
+{
+  "TYPES.Actor.character": "Character",
+  "TYPES.Item.gear": "Gear",
+
+  "{{LOCALE_PREFIX}}.System.title": "{{TITLE}}",
+  "{{LOCALE_PREFIX}}.System.description": "{{DESCRIPTION}}",
+
+  "{{LOCALE_PREFIX}}.Sheet.Character.title": "Character",
+  "{{LOCALE_PREFIX}}.Sheet.Gear.title": "Gear",
+  "{{LOCALE_PREFIX}}.Sheet.NamePlaceholder": "Name…",
+  "{{LOCALE_PREFIX}}.Sheet.Level": "LV",
+  "{{LOCALE_PREFIX}}.Sheet.AbilityScores": "Ability scores",
+  "{{LOCALE_PREFIX}}.Sheet.Inventory": "Inventory",
+  "{{LOCALE_PREFIX}}.Sheet.Biography": "Biography",
+  "{{LOCALE_PREFIX}}.Sheet.NewGear": "New gear",
+  "{{LOCALE_PREFIX}}.Sheet.NewGearName": "New Gear",
+  "{{LOCALE_PREFIX}}.Sheet.NoGear": "No gear yet — drag items here or click New gear.",
+  "{{LOCALE_PREFIX}}.Sheet.Delete": "Delete",
+
+  "{{LOCALE_PREFIX}}.Sheet.Quick.HP": "HP",
+  "{{LOCALE_PREFIX}}.Sheet.Quick.AC": "AC",
+  "{{LOCALE_PREFIX}}.Sheet.Quick.SPD": "SPD",
+  "{{LOCALE_PREFIX}}.Sheet.Quick.INIT": "INIT",
+
+  "{{LOCALE_PREFIX}}.Sheet.Tabs.abilities": "Abilities",
+  "{{LOCALE_PREFIX}}.Sheet.Tabs.inventory": "Inventory",
+  "{{LOCALE_PREFIX}}.Sheet.Tabs.spells": "Spells",
+  "{{LOCALE_PREFIX}}.Sheet.Tabs.biography": "Biography",
+  "{{LOCALE_PREFIX}}.Sheet.Tabs.details": "Details",
+  "{{LOCALE_PREFIX}}.Sheet.Tabs.description": "Description",
+  "{{LOCALE_PREFIX}}.Sheet.Spells": "Spells",
+  "{{LOCALE_PREFIX}}.Sheet.SpellsEmpty": "Spells slot reserved for a follow-up release.",
+
+  "{{LOCALE_PREFIX}}.Sheet.Roll.label": "Roll",
+  "{{LOCALE_PREFIX}}.Sheet.Roll.flavor": "{ability} check",
+  "{{LOCALE_PREFIX}}.Sheet.Drop.label": "Drop item to add",
+  "{{LOCALE_PREFIX}}.Sheet.Drop.rejected": "Cannot drop {type} items here — only gear is accepted.",
+
+  "{{LOCALE_PREFIX}}.Ability.str": "Strength",
+  "{{LOCALE_PREFIX}}.Ability.dex": "Dexterity",
+  "{{LOCALE_PREFIX}}.Ability.con": "Constitution",
+  "{{LOCALE_PREFIX}}.Ability.int": "Intelligence",
+  "{{LOCALE_PREFIX}}.Ability.wis": "Wisdom",
+  "{{LOCALE_PREFIX}}.Ability.cha": "Charisma",
+
+  "{{LOCALE_PREFIX}}.Gear.Quantity": "Quantity",
+  "{{LOCALE_PREFIX}}.Gear.Weight": "Weight (lb)",
+  "{{LOCALE_PREFIX}}.Gear.Kind": "Kind",
+  "{{LOCALE_PREFIX}}.Gear.Kind.equipped": "equipped",
+  "{{LOCALE_PREFIX}}.Gear.Kind.valued": "valued",
+  "{{LOCALE_PREFIX}}.Gear.Kind.stowed": "stowed",
+
+  "{{LOCALE_PREFIX}}.Settings.showTutorial.name": "Show tutorial",
+  "{{LOCALE_PREFIX}}.Settings.showTutorial.hint": "Display the welcome banner on world load."
+}

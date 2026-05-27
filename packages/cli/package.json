@@ -43,6 +43,10 @@
     "publint": "publint",
     "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output \u2014 re-enable later'"
   },
+  "dependencies": {
+    "@clack/prompts": "catalog:",
+    "citty": "catalog:"
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
     "@types/node": "catalog:",

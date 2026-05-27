@@ -1,0 +1,16 @@
+/**
+ * {{TITLE}} stylesheet.
+ *
+ * Scope all rules under the `.{{ID}}` namespace so they don't leak into
+ * other modules or the host system's sheets. Foundry's CSS cascade is
+ * already layered, but namespacing makes intent explicit.
+ */
+.{{ID}}-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.15em 0.5em;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 0.8em;
+}

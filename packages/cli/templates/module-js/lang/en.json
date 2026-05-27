@@ -1,0 +1,11 @@
+{
+  "{{LOCALE_PREFIX}}": {
+    "Settings": {
+      "showWelcome": {
+        "name": "Show welcome notification",
+        "hint": "Display a one-shot toast when {{TITLE}} loads in a world."
+      }
+    },
+    "Welcome": "{{TITLE}} loaded — try `game.modules.get(\"{{ID}}\").api.greet(\"GM\")` in the console."
+  }
+}
