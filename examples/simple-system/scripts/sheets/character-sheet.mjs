@@ -139,7 +139,7 @@ export class CharacterSheet extends BaseActorSheet() {
   static async _onRollAbility(_event, target) {
     const key = target?.dataset?.ability;
     if (!key) return;
-    // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 action handlers are declared static but invoked with `this` bound to the sheet instance — see foundry-vtt-module-dev references/application-v2.md §"Actions System"
+    // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 action handlers are declared static but invoked with `this` bound to the sheet instance
     const actor = this.document;
     const mod = actor.system.abilities?.[key]?.mod ?? 0;
     const roll = new Roll(`1d20 + ${mod}`, actor.getRollData());

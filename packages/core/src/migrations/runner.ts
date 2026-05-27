@@ -2,17 +2,15 @@
  * `createMigrationRunner` — declarative schema migrations for Foundry systems.
  *
  * Replaces the copy-pasted "schemaVersion setting + Hooks.once('ready') +
- * isNewerVersion compare + sequential await" pattern documented in the
- * foundry-vtt-system-dev skill (§"Data Migration" and `references/data-migration.md`
- * §5 "Migration Registry"). The runner owns no hooks — call `register()` from
- * your `init` hook and `run()` from your `ready` hook (gated by
- * `game.user.isGM`).
+ * isNewerVersion compare + sequential await" pattern that every system
+ * eventually grows on its own. The runner owns no hooks — call
+ * `register()` from your `init` hook and `run()` from your `ready` hook
+ * (gated by `game.user.isGM`).
  *
- * Versions are semver strings, compared with `foundry.utils.isNewerVersion` —
- * the same comparator dnd5e uses for production migrations (see
- * `foundry-vtt-system-dev` `references/production-patterns.md` §8 "Migration
- * Versioning via System Flags"). This lines up cleanly with `system.json`'s
- * `flags.<systemId>.needsMigrationVersion` / `compatibleMigrationVersion`.
+ * Versions are semver strings, compared with `foundry.utils.isNewerVersion`.
+ * The data lives in a per-system world setting and lines up cleanly with
+ * `system.json`'s `flags.<systemId>.needsMigrationVersion` /
+ * `compatibleMigrationVersion`.
  *
  * Failures advance `schemaVersion` only past migrations that *completed* — a
  * mid-sequence throw leaves the world at the last successful version so the

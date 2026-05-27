@@ -2,8 +2,7 @@
  * registerSystem — one call that replaces the boilerplate `Hooks.once("init", ...)`
  * block in every Foundry system.
  *
- * Conforms to the staged-init pattern documented in foundry-vtt-system-dev
- * §"Production Architecture":
+ * Conforms to the canonical Foundry init lifecycle:
  *
  *   init       → CONFIG mutations (dataModels, documentClass, statusEffects)
  *   i18nInit   → translate CONFIG labels
@@ -155,7 +154,7 @@ function applyInit(config: SystemRegistration): void {
   }
 
   // Disable legacy Active Effect transferral by default — every modern v13
-  // system wants this off (per foundry-vtt-system-dev §"Initialization Lifecycle").
+  // system wants this off (the modern AE model is opt-in via this flag).
   const legacyTransferral = config.activeEffect?.legacyTransferral ?? false;
   CONFIG.ActiveEffect.legacyTransferral = legacyTransferral;
 
