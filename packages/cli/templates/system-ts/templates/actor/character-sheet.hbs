@@ -1,0 +1,168 @@
+{{!--
+  Character sheet — markup mirrors the canonical Figma reference
+  (character-sheet.jsx + Theme Explorations .sh-* classes).
+
+  Tabs nav uses `data-tab`/`data-group` + `data-action="vttforgeTab"` so
+  BaseActorSheet's default tab action routes clicks. `context.tabs.primary`
+  is auto-populated by BaseActorSheet's _prepareContext.
+
+  `<img data-edit="img">` is handled by DocumentSheetV2's built-in editImage
+  action. `<prose-mirror>` is the v13 rich text element for biography.
+--}}
+<form autocomplete="off">
+
+  {{!-- ════════ HEAD (.sh-head) ════════ --}}
+  <div class="sh-head">
+    <img class="sh-portrait" src="{{actor.img}}" alt="{{actor.name}}" data-edit="img" />
+    <div class="sh-id">
+      <div class="sh-id-top">
+        <input class="sh-name" type="text" name="name" value="{{actor.name}}"
+               placeholder="{{localize '{{LOCALE_PREFIX}}.Sheet.NamePlaceholder'}}" />
+        <div class="sh-sub">
+          <span>{{localize "{{LOCALE_PREFIX}}.Sheet.Level"}}</span>
+          <input type="number" name="system.level" value="{{system.level}}" min="1" max="20" />
+        </div>
+      </div>
+      <div class="sh-quick">
+        <div class="q">
+          <div class="qv">
+            <input type="number" name="system.health.value" value="{{system.health.value}}" min="0" />
+            <span class="qv-sep">/</span>
+            <span class="qv-max">{{system.health.max}}</span>
+          </div>
+          <div class="qk">{{localize "{{LOCALE_PREFIX}}.Sheet.Quick.HP"}}</div>
+        </div>
+        <div class="q">
+          <div class="qv">{{system.armorClass}}</div>
+          <div class="qk">{{localize "{{LOCALE_PREFIX}}.Sheet.Quick.AC"}}</div>
+        </div>
+        <div class="q">
+          <div class="qv">
+            <input type="number" name="system.speed" value="{{system.speed}}" min="0" />
+          </div>
+          <div class="qk">{{localize "{{LOCALE_PREFIX}}.Sheet.Quick.SPD"}}</div>
+        </div>
+        <div class="q">
+          <div class="qv">{{numberFormat system.initiative sign=true}}</div>
+          <div class="qk">{{localize "{{LOCALE_PREFIX}}.Sheet.Quick.INIT"}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{!-- ════════ TABS (.sh-tabs) ════════ --}}
+  <nav class="sh-tabs" data-group="primary">
+    {{#each tabs as |tab|}}
+      <button type="button" class="sh-tab {{#if tab.active}}on{{/if}}"
+              data-tab="{{tab.id}}"
+              data-group="primary"
+              data-action="vttforgeTab"
+              title="{{localize tab.label}}">
+        {{#if tab.icon}}<i class="{{tab.icon}}"></i>{{/if}}
+        <span>{{localize tab.label}}</span>
+      </button>
+    {{/each}}
+  </nav>
+
+  {{!-- ════════ BODY (.sh-body) ════════ --}}
+  <section class="sh-body">
+
+    {{!-- ABILITIES --}}
+    <section class="tab abilities {{tabs.abilities.cssClass}}"
+             data-tab="abilities" data-group="primary">
+      <h3 class="sh-section-title">{{localize "{{LOCALE_PREFIX}}.Sheet.AbilityScores"}}</h3>
+      <div class="sh-abilities">
+        {{#each abilities as |ability|}}
+          <div class="sh-abil">
+            <div class="lbl" title="{{ability.label}}">{{ability.key}}</div>
+            <input class="val" type="number"
+                   name="system.abilities.{{ability.key}}"
+                   value="{{ability.value}}" min="1" max="30" />
+            <button type="button" class="mod sh-abil-roll"
+                    data-action="rollAbility" data-ability="{{ability.key}}"
+                    title="{{localize '{{LOCALE_PREFIX}}.Sheet.Roll.label'}}">
+              {{numberFormat ability.mod sign=true}}
+            </button>
+          </div>
+        {{/each}}
+      </div>
+    </section>
+
+    {{!-- INVENTORY --}}
+    <section class="tab inventory {{tabs.inventory.cssClass}}"
+             data-tab="inventory" data-group="primary">
+      <header class="sh-section-head">
+        <h3 class="sh-section-title">{{localize "{{LOCALE_PREFIX}}.Sheet.Inventory"}}</h3>
+        <button type="button" class="sh-action" data-action="createGear"
+                title="{{localize '{{LOCALE_PREFIX}}.Sheet.NewGear'}}">
+          <i class="fa-solid fa-plus"></i>
+          <span>{{localize "{{LOCALE_PREFIX}}.Sheet.NewGear"}}</span>
+        </button>
+      </header>
+      <div class="sh-items">
+        {{#each gear as |item|}}
+          <div class="sh-item" data-item-id="{{item.id}}" draggable="true">
+            <div class="sh-item-ico">
+              {{#if item.img}}
+                <img src="{{item.img}}" alt="{{item.name}}" />
+              {{else}}
+                <i class="fa-solid fa-box"></i>
+              {{/if}}
+            </div>
+            <div>
+              <div class="sh-item-name">{{item.name}}</div>
+              <div class="sh-item-meta">{{numberFormat item.weight}} lb</div>
+            </div>
+            <span class="sh-tag {{#if (eq item.kind "stowed")}}muted{{/if}}">
+              {{localize (concat "{{LOCALE_PREFIX}}.Gear.Kind." item.kind)}}
+            </span>
+            <span class="sh-qty">×{{item.quantity}}</span>
+            <button type="button" class="sh-item-delete" data-action="deleteItem"
+                    title="{{localize '{{LOCALE_PREFIX}}.Sheet.Delete'}}">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        {{else}}
+          <div class="sh-items-empty">{{localize "{{LOCALE_PREFIX}}.Sheet.NoGear"}}</div>
+        {{/each}}
+      </div>
+
+      <div class="sh-drop">
+        <div class="lbl">{{localize "{{LOCALE_PREFIX}}.Sheet.Drop.label"}}</div>
+        <div class="sub">onDropItem(item, event)</div>
+      </div>
+    </section>
+
+    {{!-- SPELLS (placeholder) --}}
+    <section class="tab spells {{tabs.spells.cssClass}}"
+             data-tab="spells" data-group="primary">
+      <h3 class="sh-section-title">{{localize "{{LOCALE_PREFIX}}.Sheet.Spells"}}</h3>
+      <div class="sh-empty">{{localize "{{LOCALE_PREFIX}}.Sheet.SpellsEmpty"}}</div>
+    </section>
+
+    {{!-- BIOGRAPHY --}}
+    <section class="tab biography {{tabs.biography.cssClass}}"
+             data-tab="biography" data-group="primary">
+      <h3 class="sh-section-title">{{localize "{{LOCALE_PREFIX}}.Sheet.Biography"}}</h3>
+      {{#if isEditable}}
+        <prose-mirror name="system.biography"
+                      button="true"
+                      editable="{{isEditable}}"
+                      toggled="false"
+                      value="{{system.biography}}">
+          {{{enrichedBiography}}}
+        </prose-mirror>
+      {{else}}
+        <div class="sh-biography-readonly">{{{enrichedBiography}}}</div>
+      {{/if}}
+    </section>
+
+  </section>
+
+  {{!-- ════════ FOOT (.sh-foot) ════════ --}}
+  <footer class="sh-foot">
+    <span class="nm">VTTFORGE · FORGE</span>
+    <span>@vttforge/styles · v0.2</span>
+  </footer>
+
+</form>

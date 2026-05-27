@@ -1,0 +1,25 @@
+{
+  "name": "{{ID}}",
+  "version": "0.1.0",
+  "private": true,
+  "description": "{{DESCRIPTION}}",
+  "type": "module",
+  "license": "{{LICENSE}}",
+  "author": "{{AUTHOR}}",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vttforge/core": "^0.3.0"
+  },
+  "devDependencies": {
+    "@vttforge/vite-plugin": "^0.1.0",
+    "typescript": "^5.4.0",
+    "vite": "^6.3.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
