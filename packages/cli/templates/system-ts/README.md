@@ -10,22 +10,18 @@ Built on [VTTForge](https://github.com/vttforge/vttforge) — typed data models,
 
 ```bash
 pnpm install
-pnpm build         # bundles dist/ — the deployable artefact
-pnpm dev           # vite build --watch — rebuilds dist/ on every edit
+pnpm dev      # vite build --watch + auto-symlinks dist/ into Foundry's Data
+pnpm build    # one-shot build + emits {{ID}}-<version>.zip for foundryvtt.com
 ```
 
-Symlink the built `dist/` into your Foundry data directory:
+`pnpm dev` (`vttforge dev` under the hood) auto-detects your Foundry user-data
+directory on the first run, prompts you to confirm it, and saves the choice to
+`.vttforge/config.json` for next time. Override with `--data-dir <path>` or set
+`FOUNDRY_DATA_DIR` in your environment.
 
-```bash
-# macOS
-ln -s "$(pwd)/dist" "$HOME/Library/Application Support/FoundryVTT/Data/systems/{{ID}}"
-
-# Linux
-ln -s "$(pwd)/dist" "$HOME/.local/share/FoundryVTT/Data/systems/{{ID}}"
-
-# Windows (PowerShell, as admin)
-New-Item -ItemType SymbolicLink -Path "$env:APPDATA\FoundryVTT\Data\systems\{{ID}}" -Target "$(pwd)\dist"
-```
+Run Foundry with `--hotReload` so saved files reload the world without a page
+refresh — `dev` watches `dist/` for changes, and Foundry's built-in dispatcher
+swaps CSS / Handlebars / JSON on the fly.
 
 Then launch Foundry, create a world that uses **{{TITLE}}**, and open a character — the sheet is the `CharacterSheet` shipped in `scripts/sheets/`.
 
