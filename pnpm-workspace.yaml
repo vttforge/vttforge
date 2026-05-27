@@ -10,7 +10,7 @@ catalog:
   '@clack/prompts': ^0.11.0
   '@types/archiver': ^7.0.0
   '@types/node': ^25.9.1
-  archiver: ^8.0.0
+  archiver: ^7.0.1
   citty: ^0.1.6
   happy-dom: ^20.9.0
   knip: ^6.14.2
