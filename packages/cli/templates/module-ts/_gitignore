@@ -1,0 +1,6 @@
+node_modules
+dist
+.turbo
+.vscode
+.DS_Store
+*.log
