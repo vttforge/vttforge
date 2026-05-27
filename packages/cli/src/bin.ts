@@ -7,6 +7,7 @@
  * at the right workaround until that subcommand lands.
  */
 import { defineCommand, runMain } from 'citty';
+import { runAuditCommand } from './commands/audit.js';
 import { runBuild } from './commands/build.js';
 import { runDev } from './commands/dev.js';
 import { runInit, ScaffoldError } from './commands/init.js';
@@ -111,12 +112,41 @@ const build = defineCommand({
 const audit = defineCommand({
   meta: {
     name: 'audit',
-    description:
-      'Scan a system/module source tree for v13 manifest footguns (coming in a later release)',
+    description: 'Scan a system/module project for the seven v13 manifest + code footguns',
   },
-  run() {
-    console.error('vttforge audit is not implemented yet. Coming after the build pipeline lands.');
-    process.exit(1);
+  args: {
+    path: {
+      type: 'positional',
+      description: 'Project root to scan (defaults to the current directory)',
+      required: false,
+    },
+    json: {
+      type: 'boolean',
+      default: false,
+      description: 'Emit a machine-readable JSON report instead of markdown',
+    },
+    strict: {
+      type: 'boolean',
+      default: false,
+      description: 'Exit non-zero on any finding (default: only HIGH triggers a non-zero exit)',
+    },
+  },
+  async run({ args }) {
+    try {
+      const result = await runAuditCommand({
+        cwd: typeof args.path === 'string' ? args.path : undefined,
+        format: args.json === true ? 'json' : 'markdown',
+        strict: args.strict === true,
+      });
+      // Set exitCode instead of calling process.exit so any pending stdout
+      // writes (the JSON / markdown report) get flushed before the process
+      // tears down. process.exit(1) would truncate large reports on the
+      // exact runs CI needs them intact.
+      if (result.exitCode !== 0) process.exitCode = result.exitCode;
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exitCode = 1;
+    }
   },
 });
 

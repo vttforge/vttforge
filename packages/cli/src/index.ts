@@ -6,6 +6,15 @@
  * scaffolder (e.g. from another CLI, a test harness, or a custom tool).
  */
 
+export { runAudit } from './audit/index.js';
+export { runManifestRules } from './audit/manifest-rules.js';
+export type { ReportFormat } from './audit/reporter.js';
+export { formatReport } from './audit/reporter.js';
+export { runSourceRules } from './audit/source-rules.js';
+export type { AuditReport, RuleFn, RuleResult, Severity } from './audit/types.js';
+export { SEVERITY_RANK } from './audit/types.js';
+export type { AuditOptions, AuditResult } from './commands/audit.js';
+export { runAuditCommand } from './commands/audit.js';
 export type { BuildOptions } from './commands/build.js';
 export { emitReleaseZip, runBuild } from './commands/build.js';
 export type { DevOptions } from './commands/dev.js';
