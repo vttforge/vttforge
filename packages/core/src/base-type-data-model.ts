@@ -3,8 +3,8 @@
  *
  * Provides safe defaults that systems usually copy-paste anyway:
  *
- * - `migrateData()` calls `super.migrateData(data)` (foundry-vtt-system-dev
- *   pitfall #8 — every TypeDataModel must do this).
+ * - `migrateData()` calls `super.migrateData(data)` — every TypeDataModel
+ *   must do this so chained migrations from base classes still run.
  * - `prepareBaseData()` is a no-op stub — override to initialize fields that
  *   Active Effects need to mutate (e.g. base max HP before AE bonus). Foundry
  *   applies Active Effects between `prepareBaseData()` and `prepareDerivedData()`,

@@ -39,7 +39,7 @@ Three DX patterns locked in after verifying current ecosystem practice (Zod, Val
 
 - **CSS cascade layer naming corrected.** Foundry v13 already owns top-level layer names (`reset, variables, elements, blocks, applications, compatibility, layouts, system, modules, exceptions`) and auto-wraps consumer manifest CSS in the `system` layer. VTTForge's published CSS uses *only* a vendored sub-layer prefix: `@layer vttforge.reset, vttforge.tokens, vttforge.base, vttforge.components`. The previous draft's top-level `foundry` and `system` names would have been ignored or misordered by Foundry's runtime.
 - **Handlebars HMR plugin reference replaced.** The previously cited `nicktindall/vite-plugin-handlebars` does not exist (the GitHub user has no such repo). Replaced with `alexlafroscia/vite-plugin-handlebars` v2.0.3 (Apr 2026, claims Vite 5–8 support) plus a small custom plugin in `@vttforge/vite-plugin` for sheet-template re-render to compensate for known partial-HMR issues.
-- **`foundry-vtt-types` was renamed to `fvtt-types`.** Install via `fvtt-types@github:League-of-Foundry-Developers/foundry-vtt-types#<sha>` and pin a git SHA from `main` (last npm release v13.341.1 is 10 months stale).
+- **`foundry-vtt-types` was renamed to `fvtt-types`.** Install via `fvtt-types@github:League-of-Foundry-Developers/foundry-vtt-types#<sha>` and pin a git SHA from `main` (the npm release line is stale; pin a SHA instead).
 - **CI pipeline modernized:**
   - `pnpm/action-setup@v4` → `@v6` (v4 is two majors behind).
   - npm Trusted Publishing (OIDC) is GA since 2025-07-31 — drop `NPM_TOKEN` and the `--provenance` flag (auto-generated under OIDC). Configure trusted publisher per package on npmjs.com.

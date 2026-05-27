@@ -2,7 +2,7 @@
 
 CSS-only package: design tokens, scoped reset, base styles, sheet primitives, and opt-in themes. Built on [CSS Cascade Layers](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer) for predictable composition with Foundry v13's own layer order.
 
-> **Status:** v0.0.1 placeholder. Token contract finalizes in v0.1.0 once Foundry v13.341+ `CONST.CSS_THEMES` is inspected (`plans/TODO.md §3`).
+> **Status:** v0.0.1 placeholder. Token contract finalizes in v0.1.0 once Foundry v13+ `CONST.CSS_THEMES` is wired in.
 
 ## Usage
 
