@@ -12,5 +12,3 @@ Core runtime utilities for VTTForge — the modern SDK for building [FoundryVTT]
 - `registerSystem()` — one-call init that replaces the manual `Hooks.once("init", …)` block.
 - `createMigrationRunner` — declarative data migrations with version gates.
 - Error registry — `VttfError` + central `VTTF-NNNN` codes with `docsUrl` pointing at `vttforge.dev/errors/`.
-
-See [PRD §7](../../plans/PRD.md) for the full design (planning doc, not shipped publicly).
