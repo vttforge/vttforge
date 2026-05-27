@@ -5,6 +5,11 @@
     "packages/*": {
       "ignoreDependencies": ["@arethetypeswrong/cli"]
     },
+    "packages/cli": {
+      "ignore": ["templates/**"],
+      "ignoreDependencies": ["@arethetypeswrong/cli"]
+    },
+    "packages/create-vttforge": {},
     "packages/styles": {
       "entry": ["preview/index.html", "preview/preview.js"],
       "project": ["preview/**/*.js"]
