@@ -7,7 +7,7 @@ catalog:
   '@arethetypeswrong/cli': ^0.18.2
   '@biomejs/biome': ^2.4.15
   '@changesets/cli': ^2.31.0
-  '@clack/prompts': ^0.11.0
+  '@clack/prompts': ^1.5.0
   '@types/archiver': ^7.0.0
   '@types/node': ^25.9.1
   archiver: ^7.0.1
