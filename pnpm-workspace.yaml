@@ -11,7 +11,7 @@ catalog:
   '@types/archiver': ^7.0.0
   '@types/node': ^25.9.1
   archiver: ^7.0.1
-  citty: ^0.1.6
+  citty: ^0.2.2
   happy-dom: ^20.9.0
   knip: ^6.14.2
   lefthook: ^2.1.8
