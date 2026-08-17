@@ -18,7 +18,7 @@ jobs:
     runs-on: [self-hosted, linux, x64, gcp]
     if: github.repository == 'vttforge/vttforge'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -32,7 +32,7 @@ jobs:
         run: pnpm install --frozen-lockfile --force
 
       - name: Create Version PR (publishing happens in publish.yml under OIDC)
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
           version: pnpm changeset:version
           commit: 'chore(release): version packages'
