@@ -43,6 +43,9 @@ Thumbs.db
 # npm pack outputs
 *.tgz
 
+# Release zips written by `vttforge build`
+*.zip
+
 # Changeset working files (committed changesets stay tracked)
 # .changeset/*.md  ← intentionally NOT ignored
 
