@@ -1,5 +1,38 @@
 # @vttforge/core
 
+## 0.8.0
+
+### Minor Changes
+
+- 2227957: `BaseApplication` — a plain `ApplicationV2` window without the two traps.
+  
+  The document sheets already had a baseline. Everything else a package puts on screen — a config dialog, a picker, a reader — is a bare `ApplicationV2`, and writing one by hand means meeting both of these:
+  
+  - **`_replaceHTML` is easy to forget.** ApplicationV2 splits rendering in two, and implementing only `_renderHTML` leaves the class silently unrenderable. Foundry reports it at the moment something tries to open the window, as an error about abstract methods. Nearly every implementation of the second half is the same line, so this ships it.
+  - **A missing `_renderHTML` fails late.** This checks at construction and names the class, so it fails where the class is used rather than deep inside a render.
+  
+  Both were met while porting a real module onto the SDK.
+- 6483344: The base factories now report what they add.
+  
+  Every `Base*` factory returned `any`, which gave up on two things at once: a subclass could not write `override` on a member it really was overriding, and a call to a method that does not exist passed silently. Both happened while porting a real module onto the SDK — the second one shipped a broken call into a release.
+  
+  They now return the members they contribute, with the rest of the Foundry surface reachable through an index signature. A property the SDK knows about carries its real type; anything else behaves as before.
+  
+  This will surface `override` errors in subclasses that were previously allowed to omit the keyword. That is the point: TypeScript can see the member now.
+  
+  The index signature is what `@vttforge/types` replaces when it lands.
+
+### Patch Changes
+
+- 257614b: Error code pages are generated for the docs site as well as the repo.
+  
+  `codegen-errors.mjs` wrote one Markdown stub per code into `docs/errors/`. It now writes the same stubs into `apps/docs/errors/` too — one source, two destinations, so the page a reader lands on from GitHub and the page the site publishes cannot drift.
+- d015aee: Stop requiring Node 26 to install a browser package.
+  
+  Every package declared `engines.node: ">=26.0.0"`. Four of them — `core`, `styles`, `types` and `dev-module` — compile to ES2022 and run in the browser inside Foundry. They never touch Node, and the floor did nothing except stop anyone on Node 22 LTS from installing the SDK at all.
+  
+  Those four declare no engine now. `@vttforge/testing` drops to `>=22` — its Quench half runs in the browser too. `@vttforge/cli` and `@vttforge/vite-plugin` keep `>=26`, which is what they actually build against.
+
 ## 0.7.0
 
 ### Minor Changes
