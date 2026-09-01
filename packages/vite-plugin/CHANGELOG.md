@@ -1,5 +1,13 @@
 # @vttforge/vite-plugin
 
+## 0.3.1
+
+### Patch Changes
+
+- 33793d8: First real release. Only a `0.0.0` name placeholder was on npm until now, and every scaffolded project depends on this package — so `vttforge init` produced a project that could not install.
+  
+  No code change; the version bump is what publishes it.
+
 ## 0.3.0
 
 ### Minor Changes
