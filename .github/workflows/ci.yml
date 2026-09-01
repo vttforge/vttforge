@@ -142,7 +142,7 @@ jobs:
       - name: Publint
         run: pnpm publint
 
-      - name: Are The Types Wrong (currently stubbed)
+      - name: Are The Types Wrong
         run: pnpm attw
 
   knip:

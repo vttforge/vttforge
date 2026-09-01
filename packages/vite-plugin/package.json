@@ -38,7 +38,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "publint": "publint",
-    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output — re-enable later'"
+    "attw": "attw --pack . --profile esm-only"
   },
   "peerDependencies": {
     "vite": "catalog:"
