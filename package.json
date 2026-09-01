@@ -4,10 +4,10 @@
   "private": true,
   "description": "A modern SDK and CLI for building FoundryVTT v13+ systems and modules.",
   "type": "module",
-  "packageManager": "pnpm@10.34.5",
+  "packageManager": "pnpm@11.25.0",
   "engines": {
     "node": ">=26.0.0",
-    "pnpm": ">=10.0.0"
+    "pnpm": ">=11.0.0"
   },
   "scripts": {
     "build": "turbo run build",
@@ -29,21 +29,5 @@
     "syncpack": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
-  },
-  "pnpm": {
-    "supportedArchitectures": {
-      "os": [
-        "darwin",
-        "linux"
-      ],
-      "cpu": [
-        "x64",
-        "arm64"
-      ],
-      "libc": [
-        "glibc",
-        "musl"
-      ]
-    }
   }
 }
