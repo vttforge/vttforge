@@ -221,6 +221,14 @@ interface ConfigMapping {
   className: string;
 }
 
+/**
+ * One `<subtype>: <Class>` entry inside a dataModels object literal.
+ *
+ * The key is bare for a system (`character`) and quoted for a module
+ * (`'my-module.vehicle'`), because the module form contains a dot.
+ */
+const SUBTYPE_ENTRY_RE = /(?:['"]([^'"]+)['"]|(\w+))\s*:\s*(\w+)/g;
+
 /** Map a `registerSystem({ ...DataModels })` key to the document name. */
 const REGISTER_SYSTEM_KEYS: ReadonlyArray<{ key: string; doc: string }> = [
   { key: 'actorDataModels', doc: 'Actor' },
@@ -239,14 +247,25 @@ function findConfigMappings(content: string): ConfigMapping[] {
     out.push({ doc: m[1] ?? '', subtype: m[2] ?? '', className: m[3] ?? '' });
   }
 
+  // (1b) Bracket CONFIG.<Doc>.dataModels['<subtype>'] = <Class>
+  //
+  // Modules must use this form: Foundry registers their subtypes as
+  // `<moduleId>.<type>`, and a dot in the key rules out property access.
+  // Without this case module registrations are invisible, every module
+  // field falls through to the looser global check, and a genuinely
+  // undeclared path can hide behind a same-named one declared elsewhere.
+  const bracket = /CONFIG\.(\w+)\.dataModels\[\s*['"]([^'"]+)['"]\s*\]\s*=\s*(\w+)/g;
+  for (const m of content.matchAll(bracket)) {
+    out.push({ doc: m[1] ?? '', subtype: m[2] ?? '', className: m[3] ?? '' });
+  }
+
   // (2) Block CONFIG.<Doc>.dataModels = { <subtype>: <Class>, … }
   const block = /CONFIG\.(\w+)\.dataModels\s*=\s*\{([\s\S]*?)\}/g;
   for (const m of content.matchAll(block)) {
     const doc = m[1] ?? '';
     const body = m[2] ?? '';
-    const entries = body.matchAll(/(\w+)\s*:\s*(\w+)/g);
-    for (const e of entries) {
-      out.push({ doc, subtype: e[1] ?? '', className: e[2] ?? '' });
+    for (const e of body.matchAll(SUBTYPE_ENTRY_RE)) {
+      out.push({ doc, subtype: e[1] ?? e[2] ?? '', className: e[3] ?? '' });
     }
   }
 
@@ -274,8 +293,8 @@ function findConfigMappings(content: string): ConfigMapping[] {
       }
       if (endIdx < 0) continue;
       const body = content.slice(openIdx + 1, endIdx);
-      for (const pair of body.matchAll(/(\w+)\s*:\s*(\w+)/g)) {
-        out.push({ doc, subtype: pair[1] ?? '', className: pair[2] ?? '' });
+      for (const pair of body.matchAll(SUBTYPE_ENTRY_RE)) {
+        out.push({ doc, subtype: pair[1] ?? pair[2] ?? '', className: pair[3] ?? '' });
       }
     }
   }
@@ -374,6 +393,13 @@ interface DeclaredFields {
    * `system.` root.
    */
   perSubtype: Map<string, { html: Set<string>; filePath: Set<string> }>;
+  /**
+   * The manifest's own `id`. Modules declare subtypes under a bare key
+   * (`vehicle`) but Foundry registers them prefixed (`my-module.vehicle`),
+   * which is the form that appears in source. Stripping this prefix is
+   * what lets the two sides meet.
+   */
+  packageId: string | null;
   /** Union across every subtype — used as a fallback when class→subtype lookup fails. */
   globalHtml: Set<string>;
   globalFilePath: Set<string>;
@@ -387,6 +413,31 @@ interface DeclaredFields {
  */
 function normalizeDeclaredPath(path: string): string {
   return path.startsWith('system.') ? path.slice('system.'.length) : path;
+}
+
+/**
+ * Find one subtype's declarations, accounting for the module prefix.
+ *
+ * A system declares `character` in the manifest and registers `character`
+ * in source — the two match directly. A module declares `vehicle` but
+ * Foundry registers it as `my-module.vehicle`, and that prefixed form is
+ * what appears in source. Comparing the two verbatim reports every
+ * correctly declared module field as missing, so fall back to the bare key
+ * once the package's own prefix is stripped.
+ *
+ * Only this package's prefix is stripped. A subtype contributed by some
+ * other module is genuinely not ours to have declared.
+ */
+function lookupSubtype(
+  declared: DeclaredFields,
+  doc: string,
+  subtype: string,
+): { html: Set<string>; filePath: Set<string> } | undefined {
+  const direct = declared.perSubtype.get(`${doc}.${subtype}`);
+  if (direct) return direct;
+  const prefix = declared.packageId ? `${declared.packageId}.` : null;
+  if (!prefix || !subtype.startsWith(prefix)) return undefined;
+  return declared.perSubtype.get(`${doc}.${subtype.slice(prefix.length)}`);
 }
 
 /**
@@ -420,7 +471,7 @@ function rule004(
       // declared in `Actor.character` doesn't cover an undeclared
       // `profile.bio` in `Actor.npc`.
       const missing = mappings.filter((mapping) => {
-        const decl = declared.perSubtype.get(`${mapping.doc}.${mapping.subtype}`);
+        const decl = lookupSubtype(declared, mapping.doc, mapping.subtype);
         const bucket = usage.type === 'HTMLField' ? decl?.html : decl?.filePath;
         return !bucket?.has(sourcePath);
       });
@@ -478,13 +529,20 @@ async function rule007(
   manifestRaw: string | null,
   manifestParsed: Record<string, unknown> | null,
   sourceFiles: string[],
+  classToSubtypes: Map<string, ConfigMapping[]>,
 ): Promise<RuleResult[]> {
   if (!manifestPath || !manifestRaw || !manifestParsed) return [];
+  const actorClasses = new Set(
+    [...classToSubtypes.entries()]
+      .filter(([, mappings]) => mappings.some((m) => m.doc === 'Actor'))
+      .map(([className]) => className),
+  );
+
   const out: RuleResult[] = [];
   for (const key of ['primaryTokenAttribute', 'secondaryTokenAttribute'] as const) {
     const value = manifestParsed[key];
     if (typeof value !== 'string' || value.length === 0) continue;
-    const matched = await sourceHasValueMaxSchemaAtPath(sourceFiles, value);
+    const matched = await sourceHasValueMaxSchemaAtPath(sourceFiles, value, actorClasses);
     if (!matched) {
       out.push({
         ruleId: 'VTTF-AUDIT-007',
@@ -528,6 +586,7 @@ function lineOfInRaw(raw: string, key: string): number | undefined {
 async function sourceHasValueMaxSchemaAtPath(
   sourceFiles: string[],
   targetPath: string,
+  actorClasses: ReadonlySet<string>,
 ): Promise<boolean> {
   for (const file of sourceFiles) {
     let content: string;
@@ -536,8 +595,22 @@ async function sourceHasValueMaxSchemaAtPath(
     } catch {
       continue;
     }
+    const classes = findClassRanges(content);
     for (const decl of findAllSchemaFields(content)) {
       if (decl.path !== targetPath) continue;
+      // Token bars read `actor.system`, so only a schema registered as an
+      // Actor data model can satisfy the manifest. An Item model that
+      // happens to declare the same path does not — accepting it would
+      // pass the rule on a system whose token bars are in fact broken.
+      //
+      // This narrowing only applies when the registrations are known.
+      // With none found there is no ground truth to narrow by, so every
+      // declaration counts — same fallback rule 004 takes when it cannot
+      // resolve a class to its subtypes.
+      if (actorClasses.size > 0) {
+        const owner = classes.find((c) => decl.index > c.openIdx && decl.index < c.endIdx);
+        if (!owner || !actorClasses.has(owner.className)) continue;
+      }
       const topKeys = extractTopLevelKeys(decl.body);
       if (topKeys.has('value') && topKeys.has('max')) return true;
     }
@@ -554,6 +627,8 @@ async function sourceHasValueMaxSchemaAtPath(
 interface SchemaFieldDecl {
   path: string;
   body: string;
+  /** Offset of the declaration, used to find its enclosing class. */
+  index: number;
 }
 
 function findAllSchemaFields(content: string): SchemaFieldDecl[] {
@@ -579,6 +654,7 @@ function findAllSchemaFields(content: string): SchemaFieldDecl[] {
     out.push({
       path: buildSchemaPath(content, m.index, fieldName),
       body: content.slice(openIdx + 1, endIdx),
+      index: m.index,
     });
   }
   return out;
@@ -672,6 +748,7 @@ async function collectDeclaredRichFields(cwd: string): Promise<{
   let manifestPath: string | null = null;
   let manifestRaw: string | null = null;
   let manifestParsed: Record<string, unknown> | null = null;
+  let packageId: string | null = null;
 
   for (const file of ['system.json', 'module.json']) {
     const p = join(cwd, file);
@@ -693,6 +770,8 @@ async function collectDeclaredRichFields(cwd: string): Promise<{
       manifestPath = p;
       manifestRaw = raw;
       manifestParsed = parsed as Record<string, unknown>;
+      const id = (parsed as Record<string, unknown>).id;
+      packageId = typeof id === 'string' && id.length > 0 ? id : null;
     }
     const docTypes = (parsed as Record<string, unknown>).documentTypes;
     if (!docTypes || typeof docTypes !== 'object' || Array.isArray(docTypes)) continue;
@@ -715,25 +794,45 @@ async function collectDeclaredRichFields(cwd: string): Promise<{
             }
           }
         }
-        if (Array.isArray(sub.filePathFields)) {
-          for (const e of sub.filePathFields) {
-            if (typeof e === 'string') {
-              const normalized = normalizeDeclaredPath(e);
-              entry.filePath.add(normalized);
-              globalFilePath.add(normalized);
-            }
-          }
+        // `filePathFields` is an object, not an array: its KEYS are the
+        // field paths and each value lists the file categories allowed
+        // there. `htmlFields` above really is a flat array — the two
+        // differ, and reading both as arrays drops every correctly
+        // declared path.
+        for (const declaredPath of declaredFilePathKeys(sub.filePathFields)) {
+          const normalized = normalizeDeclaredPath(declaredPath);
+          entry.filePath.add(normalized);
+          globalFilePath.add(normalized);
         }
         perSubtype.set(key, entry);
       }
     }
   }
   return {
-    declared: { perSubtype, globalHtml, globalFilePath },
+    declared: { perSubtype, packageId, globalHtml, globalFilePath },
     manifestPath,
     manifestRaw,
     manifestParsed,
   };
+}
+
+/**
+ * Read the declared file-path keys off one subtype's `filePathFields`.
+ *
+ * The manifest shape is an object keyed by field path, whose values name
+ * the permitted file categories. Older hand-written manifests sometimes
+ * carry a bare array instead; that shape does not validate, but reading it
+ * costs nothing and avoids reporting a field as undeclared when the author
+ * plainly declared it.
+ */
+function declaredFilePathKeys(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((e): e is string => typeof e === 'string');
+  }
+  if (value && typeof value === 'object') {
+    return Object.keys(value as Record<string, unknown>);
+  }
+  return [];
 }
 
 /**
@@ -793,7 +892,9 @@ export async function runSourceRules(cwd: string): Promise<RuleResult[]> {
     results.push(...rule006(file, content));
     results.push(...rule004(file, content, declared, classToSubtypes));
   }
-  results.push(...(await rule007(manifestPath, manifestRaw, manifestParsed, sourceFiles)));
+  results.push(
+    ...(await rule007(manifestPath, manifestRaw, manifestParsed, sourceFiles, classToSubtypes)),
+  );
   return results;
 }
 
