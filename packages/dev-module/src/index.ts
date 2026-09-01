@@ -9,7 +9,7 @@
  * Development only. Nothing here belongs in a shipped world.
  */
 
-export { bootstrap, MODULE_ID, resolveServerUrl } from './bootstrap.js';
+export { bootstrap, DEFAULT_PORT, MODULE_ID, resolveServerUrl } from './bootstrap.js';
 export type { ClientOptions, Connection, SocketLike } from './client.js';
 export { connect, parsePayload } from './client.js';
 export type { FoundryEnv, HotReloadData, ReloadOutcome } from './reload.js';

@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
+    "@types/node": "catalog:",
     "happy-dom": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",

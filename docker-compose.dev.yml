@@ -19,6 +19,9 @@ services:
       # tree (system.json + bundled main.mjs + bundled styles/ + lang/ + templates/).
       - ./examples/simple-system/dist:/data/Data/systems/vttforge-example:ro
       - ./examples/simple-module:/data/Data/modules/vttforge-example-module:ro
+      # The hot reload companion. A container cannot follow the symlink
+      # `vttforge dev` drops on the host, so it is mounted instead.
+      - ./packages/dev-module:/data/Data/modules/vttforge-dev:ro
     ports:
       - "30000:30000"
 
