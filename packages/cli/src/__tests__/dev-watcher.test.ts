@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -107,19 +107,43 @@ describe('watchDist', () => {
       packageId: 'my-system',
       packageType: 'system',
       onPayload,
-      debounceMs: 40,
+      debounceMs: 60,
+    });
+
+    // Written synchronously and back to back: this is what an editor's save
+    // looks like — write, truncate, rename — not three separate edits. An
+    // awaited loop would space them out and stop being a burst at all.
+    const file = join(dist, 'styles', 'main.css');
+    for (const value of ['a', 'b', 'c']) {
+      writeFileSync(file, `body{content:"${value}"}`, 'utf8');
+    }
+    await settle(200);
+    watcher.close();
+
+    expect(onPayload).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(onPayload.mock.calls[0]?.[0] as string).content).toContain('"c"');
+  });
+
+  it('sends again for a later, separate edit', async () => {
+    const onPayload = vi.fn();
+    const watcher = watchDist({
+      distDir: dist,
+      packageId: 'my-system',
+      packageType: 'system',
+      onPayload,
+      debounceMs: 20,
     });
 
     const file = join(dist, 'styles', 'main.css');
-    for (const value of ['a', 'b', 'c']) {
-      await writeFile(file, `body{content:"${value}"}`, 'utf8');
-    }
-    await settle(150);
+    writeFileSync(file, 'body{content:"first"}', 'utf8');
+    await settle(120);
+    writeFileSync(file, 'body{content:"second"}', 'utf8');
+    await settle(120);
     watcher.close();
 
-    // An editor save is a burst of events; the developer changed the file once.
-    expect(onPayload).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(onPayload.mock.calls[0]?.[0] as string).content).toContain('"c"');
+    // Debouncing must not swallow the next edit — it only merges one burst.
+    expect(onPayload.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(JSON.parse(onPayload.mock.calls.at(-1)?.[0] as string).content).toContain('"second"');
   });
 
   it('emits nothing more once closed', async () => {

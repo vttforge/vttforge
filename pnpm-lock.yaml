@@ -202,6 +202,9 @@ importers:
       '@arethetypeswrong/cli':
         specifier: 'catalog:'
         version: 0.18.5
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.4.0
       happy-dom:
         specifier: 'catalog:'
         version: 20.12.0
