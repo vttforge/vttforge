@@ -24,6 +24,8 @@ export const VTTFORGE_CORE_VERSION = '0.2.0';
 export {
   BaseActorSheet,
   type DragDropConfig,
+  type SheetBaseCtor,
+  type SheetBaseStatics,
   VTTFORGE_SHEET_CLASS,
 } from './base-actor-sheet.js';
 export { BaseItemSheet } from './base-item-sheet.js';
