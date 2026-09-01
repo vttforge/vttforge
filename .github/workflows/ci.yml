@@ -16,7 +16,7 @@ concurrency:
 # Self-hosted GCP runner from fcsouza/infra (gcp/runners/).
 # Node is pinned via actions/setup-node rather than taken from the runner image,
 # so the version CI validates on is the one the packages declare in `engines`.
-# Corepack ships with Node — we activate pnpm@10.34.5 via `corepack prepare`.
+# Corepack ships with Node — we activate pnpm@11.25.0 via `corepack prepare`.
 
 jobs:
   lint:
@@ -33,7 +33,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.34.5
+          corepack install -g pnpm@11.25.0
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -55,7 +55,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.34.5
+          corepack install -g pnpm@11.25.0
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -77,7 +77,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.34.5
+          corepack install -g pnpm@11.25.0
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -99,7 +99,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.34.5
+          corepack install -g pnpm@11.25.0
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -131,7 +131,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.34.5
+          corepack install -g pnpm@11.25.0
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -160,7 +160,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.34.5
+          corepack install -g pnpm@11.25.0
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
