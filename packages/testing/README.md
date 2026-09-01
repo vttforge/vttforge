@@ -34,13 +34,9 @@ a test pass while the real thing drops every sibling key.
 
 ### Naming the globals
 
-A test that reads `game.settings` gets "Cannot find name 'game'". Add the
-ambient declarations:
-
-```jsonc
-// tsconfig.json
-{ "compilerOptions": { "types": ["@vttforge/testing/globals"] } }
-```
+A test that reads `game.settings` would otherwise get "Cannot find name
+'game'". Importing from this entry declares them, so there is nothing to
+configure — the import a test already writes is what brings them.
 
 ## `@vttforge/testing/quench`
 
