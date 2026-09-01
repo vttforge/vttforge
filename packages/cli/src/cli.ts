@@ -33,6 +33,35 @@ export const init = defineCommand({
       type: 'string',
       description: 'Language: ts | js',
     },
+    id: {
+      type: 'string',
+      description: 'Manifest id (defaults to a slug of the directory name)',
+    },
+    title: {
+      type: 'string',
+      description: 'Human-readable title shown in Foundry setup screens',
+    },
+    description: {
+      type: 'string',
+      description: 'One-line description for the manifest',
+    },
+    author: {
+      type: 'string',
+      description: 'Author name for the manifest (defaults to the git author)',
+    },
+    license: {
+      type: 'string',
+      description: 'SPDX license id (default MIT)',
+    },
+    // Without a terminal there is nothing for a prompt to read, so it waits
+    // forever. This flag takes the defaults instead — and the scaffolder
+    // also assumes it when stdin is not a TTY, so CI need not pass it.
+    yes: {
+      type: 'boolean',
+      alias: 'y',
+      default: false,
+      description: 'Accept defaults for anything not passed, without prompting',
+    },
     // Citty parses `--no-X` as `args.X === false`, so define affirmative
     // flags with a true default. `--no-install` then yields `install: false`
     // which we forward as `noInstall: true`.
@@ -53,6 +82,12 @@ export const init = defineCommand({
         name: typeof args.name === 'string' ? args.name : undefined,
         type: typeof args.type === 'string' ? (args.type as 'system' | 'module') : undefined,
         lang: typeof args.lang === 'string' ? (args.lang as 'ts' | 'js') : undefined,
+        id: typeof args.id === 'string' ? args.id : undefined,
+        title: typeof args.title === 'string' ? args.title : undefined,
+        description: typeof args.description === 'string' ? args.description : undefined,
+        author: typeof args.author === 'string' ? args.author : undefined,
+        license: typeof args.license === 'string' ? args.license : undefined,
+        yes: args.yes === true,
         noInstall: args.install === false,
         noGit: args.git === false,
       });

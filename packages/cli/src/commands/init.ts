@@ -18,13 +18,33 @@ export interface InitOptions {
   name?: string;
   type?: 'system' | 'module';
   lang?: 'ts' | 'js';
+  /** Manifest id. Defaults to a slug of the directory name. */
+  id?: string;
+  /** Human-readable title shown in Foundry's setup screens. */
+  title?: string;
+  /** One-line description for the manifest. */
+  description?: string;
+  /** Author name for the manifest. Defaults to the local git author. */
+  author?: string;
+  /** SPDX license id written to package.json. */
+  license?: string;
+  /**
+   * Take the default for anything not supplied instead of asking.
+   *
+   * Required to scaffold without a terminal — a prompt with nothing to read
+   * from waits forever, which is no way to fail.
+   */
+  yes?: boolean;
   noInstall?: boolean;
   noGit?: boolean;
   /** Override the working directory (test hook). Defaults to `process.cwd()`. */
   cwd?: string;
 }
 
-export interface ResolvedInitOptions extends Required<Omit<InitOptions, 'cwd'>> {
+export interface ResolvedInitOptions
+  extends Required<
+    Omit<InitOptions, 'cwd' | 'id' | 'title' | 'description' | 'author' | 'license' | 'yes'>
+  > {
   cwd: string;
   dest: string;
   id: string;
@@ -125,16 +145,33 @@ function titleCase(input: string): string {
     .join(' ');
 }
 
+/**
+ * Whether we may ask the user anything at all.
+ *
+ * Clack reads from stdin. With no terminal attached there is nothing to read,
+ * and the prompt simply hangs — so a run that cannot ask has to be told every
+ * answer up front, or be given `--yes` and take the defaults.
+ */
+function canPrompt(yes: boolean | undefined): boolean {
+  return yes !== true && Boolean(process.stdin.isTTY);
+}
+
 function templateVariantFor(type: 'system' | 'module', lang: 'ts' | 'js'): TemplateVariant {
   return `${type}-${lang}` as TemplateVariant;
 }
 
 export async function runInit(options: InitOptions = {}): Promise<void> {
   const cwd = options.cwd ?? process.cwd();
+  const interactive = canPrompt(options.yes);
   p.intro('🜲 vttforge init — scaffold a Foundry v13+ system or module');
 
   // --- name ------------------------------------------------------------------
   let name = options.name?.trim();
+  if (!name && !interactive) {
+    bail(
+      'A directory name is required when running without prompts. Pass it as the first argument: `vttforge init my-module --yes`.',
+    );
+  }
   if (!name) {
     const answer = await p.text({
       message: 'Directory name (also the default manifest id)',
@@ -162,6 +199,9 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
 
   // --- type ------------------------------------------------------------------
   let type = options.type;
+  if (type !== 'system' && type !== 'module' && !interactive) {
+    type = 'system';
+  }
   if (type !== 'system' && type !== 'module') {
     const answer = await p.select({
       message: 'What are you building?',
@@ -180,6 +220,9 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
 
   // --- lang ------------------------------------------------------------------
   let lang = options.lang;
+  if (lang !== 'ts' && lang !== 'js' && !interactive) {
+    lang = 'ts';
+  }
   if (lang !== 'ts' && lang !== 'js') {
     const answer = await p.select({
       message: 'Language',
@@ -194,31 +237,67 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   }
 
   // --- id / title / description / author ------------------------------------
+  /**
+   * Resolve one metadata field: an explicit flag wins, otherwise ask, and
+   * when asking is impossible take the default.
+   */
+  const resolveField = async (
+    provided: string | undefined,
+    fallback: string,
+    ask: () => Promise<unknown>,
+    validate: (value: string) => string | undefined,
+  ): Promise<string> => {
+    if (provided !== undefined) {
+      const trimmed = provided.trim();
+      const failure = validate(trimmed);
+      if (failure !== undefined) bail(`${failure} (got ${JSON.stringify(provided)})`);
+      return trimmed;
+    }
+    if (!interactive) return fallback;
+    const answer = await ask();
+    if (isCancelled(answer)) bail('Scaffold cancelled.');
+    const value = String(answer).trim();
+    return value.length > 0 ? value : fallback;
+  };
+
   const defaultId = slugify(name);
-  const idAnswer = await p.text({
-    message: 'Package id (used as the folder Foundry serves under /<systems|modules>/<id>/)',
-    initialValue: defaultId,
-    validate: validatePackageId,
-  });
-  if (isCancelled(idAnswer)) bail('Scaffold cancelled.');
-  const id = String(idAnswer);
+  const id = await resolveField(
+    options.id,
+    defaultId,
+    () =>
+      p.text({
+        message: 'Package id (used as the folder Foundry serves under /<systems|modules>/<id>/)',
+        initialValue: defaultId,
+        validate: validatePackageId,
+      }),
+    validatePackageId,
+  );
 
-  const titleAnswer = await p.text({
-    message: 'Title (human-readable, shown in Foundry setup screens)',
-    initialValue: titleCase(id),
-    validate: validateRequiredMetadata,
-  });
-  if (isCancelled(titleAnswer)) bail('Scaffold cancelled.');
-  const title = String(titleAnswer).trim();
+  const title = await resolveField(
+    options.title,
+    titleCase(id),
+    () =>
+      p.text({
+        message: 'Title (human-readable, shown in Foundry setup screens)',
+        initialValue: titleCase(id),
+        validate: validateRequiredMetadata,
+      }),
+    validateRequiredMetadata,
+  );
 
-  const descriptionAnswer = await p.text({
-    message: 'One-line description',
-    placeholder: 'A Foundry v13+ system built with VTTForge',
-    initialValue: `A Foundry v13+ ${type} built with VTTForge`,
-    validate: validateMetadata,
-  });
-  if (isCancelled(descriptionAnswer)) bail('Scaffold cancelled.');
-  const description = String(descriptionAnswer);
+  const defaultDescription = `A Foundry v13+ ${type} built with VTTForge`;
+  const description = await resolveField(
+    options.description,
+    defaultDescription,
+    () =>
+      p.text({
+        message: 'One-line description',
+        placeholder: defaultDescription,
+        initialValue: defaultDescription,
+        validate: validateMetadata,
+      }),
+    validateMetadata,
+  );
 
   const rawDetectedAuthor = await readGitAuthorName();
   // The git fallback bypasses Clack validation, so apply the same metadata
@@ -229,27 +308,35 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
     rawDetectedAuthor && validateMetadata(rawDetectedAuthor) === undefined
       ? rawDetectedAuthor
       : undefined;
-  const authorAnswer = await p.text({
-    message: 'Author name (used in the manifest)',
-    placeholder: detectedAuthor ?? 'Your Name',
-    initialValue: detectedAuthor ?? '',
-    validate: validateMetadata,
-  });
-  if (isCancelled(authorAnswer)) bail('Scaffold cancelled.');
-  const author = String(authorAnswer).trim() || (detectedAuthor ?? 'Anonymous');
+  const author = await resolveField(
+    options.author,
+    detectedAuthor ?? 'Anonymous',
+    () =>
+      p.text({
+        message: 'Author name (used in the manifest)',
+        placeholder: detectedAuthor ?? 'Your Name',
+        initialValue: detectedAuthor ?? '',
+        validate: validateMetadata,
+      }),
+    validateMetadata,
+  );
 
-  const licenseAnswer = await p.select({
-    message: 'License',
-    options: [
-      { value: 'MIT', label: 'MIT (recommended for Foundry community packages)' },
-      { value: 'Apache-2.0', label: 'Apache-2.0' },
-      { value: 'GPL-3.0-or-later', label: 'GPL-3.0-or-later' },
-      { value: 'UNLICENSED', label: 'UNLICENSED (private use only)' },
-    ],
-    initialValue: 'MIT',
-  });
-  if (isCancelled(licenseAnswer)) bail('Scaffold cancelled.');
-  const license = String(licenseAnswer);
+  const license = await resolveField(
+    options.license,
+    'MIT',
+    () =>
+      p.select({
+        message: 'License',
+        options: [
+          { value: 'MIT', label: 'MIT (recommended for Foundry community packages)' },
+          { value: 'Apache-2.0', label: 'Apache-2.0' },
+          { value: 'GPL-3.0-or-later', label: 'GPL-3.0-or-later' },
+          { value: 'UNLICENSED', label: 'UNLICENSED (private use only)' },
+        ],
+        initialValue: 'MIT',
+      }),
+    validateRequiredMetadata,
+  );
 
   const foundryMinVersion = '13';
   const foundryVerifiedVersion = '13.341';
@@ -289,7 +376,7 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   // the working tree stays clean after scaffold.
   const pm = detectPackageManager();
   let shouldInstall = !options.noInstall;
-  if (shouldInstall) {
+  if (shouldInstall && interactive) {
     const confirm = await p.confirm({
       message: `Install dependencies now with ${pm}?`,
       initialValue: true,
