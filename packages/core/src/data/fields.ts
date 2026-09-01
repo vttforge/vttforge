@@ -24,9 +24,11 @@ import type {
   BooleanFieldOptions,
   ColorFieldOptions,
   FilePathFieldOptions,
+  ForeignDocumentFieldOptions,
   HTMLFieldOptions,
   NumberFieldOptions,
   SchemaFieldOptions,
+  SetFieldOptions,
   StringFieldOptions,
 } from './field-options.js';
 
@@ -87,6 +89,42 @@ export interface ArrayFieldInstance<
   readonly options: O;
 }
 
+/**
+ * A `SetField` holds a `Set`, not an array.
+ *
+ * It extends `ArrayField` and validates the same way, but `initialize`
+ * wraps the result in `new Set(...)` — so a schema that declares one and
+ * types it as an array gets `.push` and index access from the compiler on a
+ * value that has neither.
+ */
+export interface SetFieldInstance<
+  Inner extends FieldInstance = FieldInstance,
+  O extends SetFieldOptions = SetFieldOptions,
+> extends FieldInstance {
+  readonly [BRAND]: 'set';
+  readonly element: Inner;
+  readonly options: O;
+}
+
+/**
+ * A reference to another document, stored as its id.
+ *
+ * What you read back depends on `idOnly`. With it, the id string. Without
+ * it, the document itself: the field resolves to a getter, so reading the
+ * property looks the document up in its collection and hands back the
+ * instance — or `null` when it is gone or lives in a compendium.
+ *
+ * The field is nullable by default, so both shapes admit `null`.
+ */
+export interface ForeignDocumentFieldInstance<
+  Doc extends DocumentClass = DocumentClass,
+  O extends ForeignDocumentFieldOptions = ForeignDocumentFieldOptions,
+> extends FieldInstance {
+  readonly [BRAND]: 'foreignDocument';
+  readonly model: Doc;
+  readonly options: O;
+}
+
 export interface SchemaFieldInstance<
   S extends Record<string, FieldInstance> = Record<string, FieldInstance>,
   O extends SchemaFieldOptions = SchemaFieldOptions,
@@ -129,6 +167,32 @@ export interface ArrayFieldCtor {
   ): ArrayFieldInstance<Inner, O>;
 }
 
+export interface SetFieldCtor {
+  new <Inner extends FieldInstance, O extends SetFieldOptions = SetFieldOptions>(
+    element: Inner,
+    options?: O,
+  ): SetFieldInstance<Inner, O>;
+}
+
+/**
+ * Any document class — what `ForeignDocumentField` takes as its first
+ * argument. Declared structurally so the inference surface stays free of a
+ * dependency on a Foundry type package.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: a constructor bound must accept
+// the argument list of whatever document class the caller passes.
+export type DocumentClass = abstract new (...args: any[]) => object;
+
+export interface ForeignDocumentFieldCtor {
+  new <
+    Doc extends DocumentClass,
+    O extends ForeignDocumentFieldOptions = ForeignDocumentFieldOptions,
+  >(
+    model: Doc,
+    options?: O,
+  ): ForeignDocumentFieldInstance<Doc, O>;
+}
+
 export interface SchemaFieldCtor {
   new <S extends Record<string, FieldInstance>, O extends SchemaFieldOptions = SchemaFieldOptions>(
     fields: S,
@@ -149,6 +213,8 @@ export interface FieldsApi {
   readonly ColorField: ColorFieldCtor;
   readonly FilePathField: FilePathFieldCtor;
   readonly ArrayField: ArrayFieldCtor;
+  readonly SetField: SetFieldCtor;
+  readonly ForeignDocumentField: ForeignDocumentFieldCtor;
   readonly SchemaField: SchemaFieldCtor;
 }
 
