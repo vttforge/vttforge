@@ -40,7 +40,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "publint": "publint",
-    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output (filename undefined) — re-enable once upstream issue is fixed'"
+    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output (filename undefined) \u2014 re-enable once upstream issue is fixed'"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
@@ -52,7 +52,7 @@
     "vitest": "catalog:"
   },
   "engines": {
-    "node": ">=22.14.0"
+    "node": ">=26.0.0"
   },
   "publishConfig": {
     "access": "public",
