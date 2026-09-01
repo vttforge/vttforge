@@ -83,8 +83,7 @@ export type TypedTypeDataModel<S extends Record<string, FieldInstance>> = InferS
   };
 
 export interface TypedTypeDataModelCtor<S extends Record<string, FieldInstance>> {
-  // biome-ignore lint/suspicious/noExplicitAny: a subclass declaring its own
-  // constructor has to pass Foundry's (data, context) pair through to super.
+  // biome-ignore lint/suspicious/noExplicitAny: a subclass with its own constructor passes Foundry's (data, context) through to super
   new (...args: any[]): TypedTypeDataModel<S>;
   defineSchema(): S;
   migrateData(data: Record<string, unknown>): Record<string, unknown>;

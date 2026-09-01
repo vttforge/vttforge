@@ -12,10 +12,7 @@ import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'vites
 import { BaseApplication } from '../base-application.js';
 import { VttfError } from '../errors/registry.js';
 
-class FakeApplicationV2 {
-  // biome-ignore lint/suspicious/noExplicitAny: stands in for Foundry's own constructor
-  constructor(..._args: any[]) {}
-}
+class FakeApplicationV2 {}
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).foundry = {

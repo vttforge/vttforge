@@ -64,8 +64,7 @@ export interface DragDropConfig {
  * into it, and pinning ours would reject the merge.
  */
 export interface SheetBaseStatics {
-  // biome-ignore lint/suspicious/noExplicitAny: a subclass merges arbitrary
-  // ApplicationV2 options into this; a narrower type would reject the merge.
+  // biome-ignore lint/suspicious/noExplicitAny: a subclass merges arbitrary ApplicationV2 options in; a narrower type would reject the merge
   readonly DEFAULT_OPTIONS: Record<string, any>;
   readonly DRAG_DROP: ReadonlyArray<DragDropConfig>;
 }
@@ -99,8 +98,7 @@ export interface SheetBaseMembers {
 }
 
 export interface SheetBaseCtor extends SheetBaseStatics {
-  // biome-ignore lint/suspicious/noExplicitAny: mirrors ApplicationV2's own
-  // constructor arity, which subclasses pass straight through.
+  // biome-ignore lint/suspicious/noExplicitAny: mirrors ApplicationV2's constructor arity, which subclasses pass straight through
   new (...args: any[]): SheetBaseMembers & UntypedFoundryMembers;
 }
 
