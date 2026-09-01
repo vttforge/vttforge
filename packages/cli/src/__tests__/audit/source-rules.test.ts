@@ -606,3 +606,184 @@ describe('_internal.lastSegment', () => {
     expect(_internal.lastSegment('biography')).toBe('biography');
   });
 });
+
+/**
+ * The three soundness gaps that shipped documented rather than fixed.
+ * Each case fails against the original implementation, so the fix has
+ * evidence rather than a claim.
+ */
+describe('audit soundness gaps', () => {
+  let cwd: string;
+
+  beforeEach(() => {
+    cwd = mkdtempSync(join(tmpdir(), 'vttforge-audit-gaps-'));
+  });
+
+  afterEach(() => {
+    rmSync(cwd, { recursive: true, force: true });
+  });
+
+  describe('filePathFields declared as an object', () => {
+    it('honours the object shape, whose keys are the field paths', async () => {
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({
+          id: 'my-system',
+          version: '1.0.0',
+          documentTypes: {
+            Actor: {
+              character: { filePathFields: { 'portrait.src': ['IMAGE'] } },
+            },
+          },
+        }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `class CharacterData extends TypeDataModel {
+  static defineSchema() {
+    return { portrait: new fields.SchemaField({ src: new fields.FilePathField() }) };
+  }
+}
+CONFIG.Actor.dataModels.character = CharacterData;`,
+        'utf8',
+      );
+      const four = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-004');
+      expect(four).toEqual([]);
+    });
+
+    it('still flags a path the object does not declare', async () => {
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({
+          id: 'my-system',
+          version: '1.0.0',
+          documentTypes: {
+            Actor: { character: { filePathFields: { 'portrait.src': ['IMAGE'] } } },
+          },
+        }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `class CharacterData extends TypeDataModel {
+  static defineSchema() {
+    return { banner: new fields.FilePathField() };
+  }
+}
+CONFIG.Actor.dataModels.character = CharacterData;`,
+        'utf8',
+      );
+      const four = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-004');
+      expect(four).toHaveLength(1);
+    });
+  });
+
+  describe('module-prefixed subtype keys', () => {
+    it('matches a bare manifest key against the prefixed registration', async () => {
+      await writeFile(
+        join(cwd, 'module.json'),
+        JSON.stringify({
+          id: 'my-module',
+          version: '1.0.0',
+          documentTypes: { Actor: { vehicle: { htmlFields: ['notes'] } } },
+        }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `class VehicleData extends TypeDataModel {
+  static defineSchema() {
+    return { notes: new fields.HTMLField() };
+  }
+}
+CONFIG.Actor.dataModels['my-module.vehicle'] = VehicleData;`,
+        'utf8',
+      );
+      const four = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-004');
+      expect(four).toEqual([]);
+    });
+
+    it('does not strip a prefix belonging to a different package', async () => {
+      await writeFile(
+        join(cwd, 'module.json'),
+        JSON.stringify({
+          id: 'my-module',
+          version: '1.0.0',
+          documentTypes: { Actor: { vehicle: { htmlFields: ['notes'] } } },
+        }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `class VehicleData extends TypeDataModel {
+  static defineSchema() {
+    return { notes: new fields.HTMLField() };
+  }
+}
+CONFIG.Actor.dataModels['other-module.vehicle'] = VehicleData;`,
+        'utf8',
+      );
+      const four = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-004');
+      expect(four).toHaveLength(1);
+    });
+  });
+
+  describe('rule 007 actor scoping', () => {
+    it('does not accept an Item model as the token attribute source', async () => {
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({ id: 'my-system', version: '1.0.0', primaryTokenAttribute: 'health' }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `class CharacterData extends TypeDataModel {
+  static defineSchema() {
+    return { level: new fields.NumberField() };
+  }
+}
+class PotionData extends TypeDataModel {
+  static defineSchema() {
+    return {
+      health: new fields.SchemaField({
+        value: new fields.NumberField(),
+        max: new fields.NumberField(),
+      }),
+    };
+  }
+}
+CONFIG.Actor.dataModels.character = CharacterData;
+CONFIG.Item.dataModels.potion = PotionData;`,
+        'utf8',
+      );
+      const seven = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-007');
+      expect(seven).toHaveLength(1);
+    });
+
+    it('accepts the same schema once it is registered as an Actor model', async () => {
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({ id: 'my-system', version: '1.0.0', primaryTokenAttribute: 'health' }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `class CharacterData extends TypeDataModel {
+  static defineSchema() {
+    return {
+      health: new fields.SchemaField({
+        value: new fields.NumberField(),
+        max: new fields.NumberField(),
+      }),
+    };
+  }
+}
+CONFIG.Actor.dataModels.character = CharacterData;`,
+        'utf8',
+      );
+      const seven = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-007');
+      expect(seven).toEqual([]);
+    });
+  });
+});
