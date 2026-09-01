@@ -42,3 +42,14 @@ updates:
     groups:
       actions:
         patterns: ['*']
+    ignore:
+      # changesets/action v2 renames every input the release workflow passes
+      # (version, commit, title) and reads the token from a `github-token`
+      # input rather than the environment. It also requires Changesets CLI v3,
+      # which changes `changeset version` to exit non-zero when there is
+      # nothing to release — and our `changeset:version` script chains on
+      # `&&`. Taking the tag alone stops the version PR being generated, and
+      # nothing catches it: the release workflow only runs on push to main.
+      # Lift this once the workflow inputs and the CLI move together.
+      - dependency-name: changesets/action
+        update-types: [version-update:semver-major]
