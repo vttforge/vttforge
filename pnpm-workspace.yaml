@@ -16,7 +16,7 @@ catalog:
   knip: ^6.34.0
   lefthook: ^2.1.12
   publint: ^0.3.24
-  style-dictionary: ^4.3.0
+  style-dictionary: ^5.5.2
   syncpack: ^15.3.3
   tsdown: ^0.22.14
   unrun: ^0.3.1
