@@ -8,9 +8,9 @@ catalog:
   '@biomejs/biome': ^2.5.11
   '@changesets/cli': ^2.31.0
   '@clack/prompts': ^0.11.0
-  '@types/archiver': ^7.0.0
+  '@types/archiver': ^8.0.0
   '@types/node': ^25.9.1
-  archiver: ^7.0.1
+  archiver: ^8.0.0
   citty: ^0.1.6
   happy-dom: ^20.12.0
   knip: ^6.34.0
