@@ -28,6 +28,7 @@ export {
   type SheetBaseStatics,
   VTTFORGE_SHEET_CLASS,
 } from './base-actor-sheet.js';
+export { BaseApplication } from './base-application.js';
 export { BaseItemSheet } from './base-item-sheet.js';
 export {
   BaseTypeDataModel,
