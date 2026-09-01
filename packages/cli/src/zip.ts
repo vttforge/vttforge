@@ -14,7 +14,7 @@
 import { createWriteStream, existsSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 
 export interface EmitZipOptions {
   /** Directory whose contents go into the zip at root. */
@@ -43,7 +43,7 @@ export async function emitZip(opts: EmitZipOptions): Promise<EmitZipResult> {
 
   await new Promise<void>((resolveZip, rejectZip) => {
     const output = createWriteStream(outFile);
-    const archive = archiver('zip', { zlib: { level: 9 } });
+    const archive = new ZipArchive({ zlib: { level: 9 } });
 
     output.on('close', () => resolveZip());
     output.on('error', rejectZip);
