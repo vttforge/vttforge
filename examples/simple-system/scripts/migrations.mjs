@@ -17,7 +17,7 @@ const SYSTEM_ID = 'vttforge-example';
  * survive the rename.
  */
 async function migrateToV0_1_0() {
-  const actors = game.actors?.filter((a) => a.type === 'character') ?? [];
+  const actors = game.actors?.filter(/** @param {any} a */ (a) => a.type === 'character') ?? [];
   for (const actor of actors) {
     const legacy = actor.system?.bio;
     if (typeof legacy !== 'string') continue;

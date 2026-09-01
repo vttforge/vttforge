@@ -4,6 +4,8 @@ import {
   type ArrayFieldInstance,
   type BooleanFieldInstance,
   type ColorFieldInstance,
+  type EmbeddedDataFieldInstance,
+  type EmbeddedDocumentFieldInstance,
   type FilePathFieldInstance,
   type ForeignDocumentFieldInstance,
   fields,
@@ -12,6 +14,7 @@ import {
   type SchemaFieldInstance,
   type SetFieldInstance,
   type StringFieldInstance,
+  type TypedSchemaFieldInstance,
 } from '../data/fields.js';
 import type { InferField, InferSchema } from '../data/infer-schema.js';
 import { VttfError } from '../errors/registry.js';
@@ -26,6 +29,9 @@ class FakeArrayField {}
 class FakeSetField {}
 class FakeForeignDocumentField {}
 class FakeSchemaField {}
+class FakeEmbeddedDataField {}
+class FakeEmbeddedDocumentField {}
+class FakeTypedSchemaField {}
 
 /** Stands in for a document class in the reference-field cases. */
 declare class FakeActor {
@@ -37,6 +43,13 @@ declare class FakeActor {
  * arguments, and an overload. The `DocumentClass` bound has to accept these
  * or it only works against the synthetic case above.
  */
+/** A nested data model: schema value plus something derived from it. */
+declare class Wounds {
+  readonly value: number;
+  /** Derived, so it exists on the instance but not in the schema. */
+  readonly isBleeding: boolean;
+}
+
 declare class FakeItem {
   constructor(data: { name: string }, context?: { parent?: FakeActor });
   readonly name: string;
@@ -57,6 +70,9 @@ beforeEach(() => {
         SetField: FakeSetField,
         ForeignDocumentField: FakeForeignDocumentField,
         SchemaField: FakeSchemaField,
+        EmbeddedDataField: FakeEmbeddedDataField,
+        EmbeddedDocumentField: FakeEmbeddedDocumentField,
+        TypedSchemaField: FakeTypedSchemaField,
       },
     },
   };
@@ -89,6 +105,9 @@ describe('fields()', () => {
     expect(f.SetField).toBe(FakeSetField);
     expect(f.ForeignDocumentField).toBe(FakeForeignDocumentField);
     expect(f.SchemaField).toBe(FakeSchemaField);
+    expect(f.EmbeddedDataField).toBe(FakeEmbeddedDataField);
+    expect(f.EmbeddedDocumentField).toBe(FakeEmbeddedDocumentField);
+    expect(f.TypedSchemaField).toBe(FakeTypedSchemaField);
   });
 });
 
@@ -358,5 +377,64 @@ describe('DocumentClass — the bound accepts real document shapes', () => {
     type T = InferField<ForeignDocumentFieldInstance<typeof FakeItem, { nullable: false }>>;
     expectTypeOf<T>().toHaveProperty('parent');
     expectTypeOf<T>().not.toEqualTypeOf<typeof FakeItem>();
+  });
+});
+
+describe('InferField<F> — embedded models', () => {
+  it('EmbeddedDataField is the model instance, not a plain object', () => {
+    // The field builds a SchemaField from the model's own defineSchema, but
+    // initialize constructs the model — so derived data and methods are there.
+    type T = InferField<EmbeddedDataFieldInstance<typeof Wounds>>;
+    expectTypeOf<T>().toEqualTypeOf<Wounds>();
+    expectTypeOf<T>().toHaveProperty('isBleeding');
+  });
+
+  it('EmbeddedDataField is required, so it is never absent', () => {
+    expectTypeOf<InferField<EmbeddedDataFieldInstance<typeof Wounds>>>().not.toEqualTypeOf<
+      Wounds | undefined
+    >();
+  });
+
+  it('EmbeddedDocumentField is nullable out of the box', () => {
+    type T = InferField<EmbeddedDocumentFieldInstance<typeof Wounds>>;
+    expectTypeOf<T>().toEqualTypeOf<Wounds | null>();
+  });
+
+  it('EmbeddedDocumentField drops the null when the schema says so', () => {
+    type T = InferField<EmbeddedDocumentFieldInstance<typeof Wounds, { nullable: false }>>;
+    expectTypeOf<T>().toEqualTypeOf<Wounds>();
+  });
+});
+
+describe('InferField<F> — TypedSchemaField', () => {
+  type Str = StringFieldInstance<{ required: true }>;
+  type Num = NumberFieldInstance<{ required: true; nullable: false; initial: 0 }>;
+
+  type Attack = TypedSchemaFieldInstance<{
+    melee: { reach: Num };
+    ranged: { range: Num; ammo: Str };
+  }>;
+
+  it('is a union of one shape per entry', () => {
+    expectTypeOf<InferField<Attack>>().toEqualTypeOf<
+      { reach: number; type: 'melee' } | { range: number; ammo: string; type: 'ranged' }
+    >();
+  });
+
+  it('carries the key as the discriminant, so narrowing works', () => {
+    // The field adds a `type` string validated to equal the key when the
+    // entry does not declare one. That is what makes this narrowable.
+    const attack = {} as InferField<Attack>;
+    if (attack.type === 'ranged') {
+      expectTypeOf(attack.ammo).toEqualTypeOf<string>();
+    } else {
+      expectTypeOf(attack.reach).toEqualTypeOf<number>();
+    }
+  });
+
+  it('is required, so it is never absent', () => {
+    expectTypeOf<InferField<Attack>>().not.toEqualTypeOf<
+      { reach: number; type: 'melee' } | undefined
+    >();
   });
 });

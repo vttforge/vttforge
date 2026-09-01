@@ -78,3 +78,12 @@ export interface ForeignDocumentFieldOptions extends DataFieldOptions {
    */
   readonly idOnly?: boolean;
 }
+
+/** `EmbeddedDataField` builds a SchemaField from the model's own schema. */
+export type EmbeddedDataFieldOptions = SchemaFieldOptions;
+
+/** `EmbeddedDocumentField` is the same, but nullable out of the box. */
+export type EmbeddedDocumentFieldOptions = SchemaFieldOptions;
+
+/** `TypedSchemaField` is required by default and takes no options of its own. */
+export type TypedSchemaFieldOptions = DataFieldOptions;

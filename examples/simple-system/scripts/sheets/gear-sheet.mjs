@@ -11,6 +11,7 @@ import { BaseItemSheet } from '@vttforge/core';
 const SYSTEM_ID = 'vttforge-example';
 
 export class GearSheet extends BaseItemSheet() {
+  /** @override */
   static DEFAULT_OPTIONS = foundry.utils.mergeObject(
     super.DEFAULT_OPTIONS,
     {
@@ -51,7 +52,10 @@ export class GearSheet extends BaseItemSheet() {
     },
   };
 
-  /** @override */
+  /**
+   * @param {Record<string, unknown>} options
+   * @returns {Promise<Record<string, unknown>>}
+   */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const item = this.document;

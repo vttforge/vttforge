@@ -23,6 +23,8 @@ import type {
   BooleanFieldInstance,
   ColorFieldInstance,
   DocumentClass,
+  EmbeddedDataFieldInstance,
+  EmbeddedDocumentFieldInstance,
   FieldInstance,
   FilePathFieldInstance,
   ForeignDocumentFieldInstance,
@@ -31,6 +33,7 @@ import type {
   SchemaFieldInstance,
   SetFieldInstance,
   StringFieldInstance,
+  TypedSchemaFieldInstance,
 } from './fields.js';
 
 /**
@@ -150,6 +153,18 @@ type ForeignDocumentValue<Doc extends DocumentClass, O> = Presence<
 >;
 
 /**
+ * What a `TypedSchemaField` holds: one shape per entry, each carrying the
+ * key it was filed under as its `type`.
+ *
+ * The field supplies that `type` when an entry does not declare one — a
+ * required string validated to equal the key — so narrowing on `type` picks
+ * exactly one branch.
+ */
+type TypedSchemaValue<T extends Record<string, Record<string, FieldInstance>>> = {
+  [K in keyof T]: Prettify<InferSchema<T[K]> & { type: K }>;
+}[keyof T];
+
+/**
  * Map a single field instance to its runtime TypeScript type. `never` for
  * shapes we don't recognise — the v1.0 `@vttforge/types` package will widen
  * this matrix to the remaining Foundry fields.
@@ -175,7 +190,13 @@ export type InferField<F> =
                     ? Presence<O, Set<InferField<Inner>>, ContainerDefaults>
                     : F extends SchemaFieldInstance<infer S, infer O>
                       ? Presence<O, InferSchema<S>, ContainerDefaults>
-                      : never;
+                      : F extends EmbeddedDocumentFieldInstance<infer Doc, infer O>
+                        ? Presence<O, InstanceType<Doc>, ReferenceDefaults>
+                        : F extends EmbeddedDataFieldInstance<infer Model, infer O>
+                          ? Presence<O, InstanceType<Model>, ContainerDefaults>
+                          : F extends TypedSchemaFieldInstance<infer T, infer O>
+                            ? Presence<O, TypedSchemaValue<T>, ContainerDefaults>
+                            : never;
 
 /**
  * Map a `defineSchema()` return value to the corresponding `system` shape.
