@@ -51,6 +51,34 @@ export interface DragDropConfig {
   readonly callbacks?: Record<string, (...args: any[]) => unknown>;
 }
 
+/**
+ * The statics a VTTForge sheet base carries.
+ *
+ * The factory used to return a bare constructor, so a subclass writing
+ * `super.DEFAULT_OPTIONS` — the pattern the docs show and every sheet needs —
+ * failed to compile. TypeScript cannot see a static through an untyped
+ * constructor. The example system never caught it because it is JavaScript.
+ *
+ * `DEFAULT_OPTIONS` is deliberately loose: a subclass merges its own shape
+ * into it, and pinning ours would reject the merge.
+ */
+export interface SheetBaseStatics {
+  // biome-ignore lint/suspicious/noExplicitAny: a subclass merges arbitrary
+  // ApplicationV2 options into this; a narrower type would reject the merge.
+  readonly DEFAULT_OPTIONS: Record<string, any>;
+  readonly DRAG_DROP: ReadonlyArray<DragDropConfig>;
+}
+
+/**
+ * What the factory hands back: something you can `extend`, whose statics the
+ * compiler can see.
+ */
+export interface SheetBaseCtor extends SheetBaseStatics {
+  // biome-ignore lint/suspicious/noExplicitAny: mirrors ApplicationV2's own
+  // constructor arity, which subclasses pass straight through.
+  new (...args: any[]): any;
+}
+
 interface DragDropInstance {
   bind(element: HTMLElement): void;
 }
@@ -148,7 +176,7 @@ export const VTTFORGE_SHEET_CLASS = 'vttforge';
  * }
  * ```
  */
-export function BaseActorSheet(): AnyConstructor {
+export function BaseActorSheet(): SheetBaseCtor {
   const { Base, mixin } = resolveBases();
   const Mixed = mixin(Base);
 
@@ -357,5 +385,5 @@ export function BaseActorSheet(): AnyConstructor {
     }
   }
 
-  return VttforgeBaseActorSheet as unknown as AnyConstructor;
+  return VttforgeBaseActorSheet as unknown as SheetBaseCtor;
 }

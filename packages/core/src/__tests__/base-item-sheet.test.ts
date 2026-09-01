@@ -125,7 +125,7 @@ describe('BaseItemSheet', () => {
   it('binds DragDrop entries declared via static DRAG_DROP', () => {
     const Base = BaseItemSheet();
     class Sheet extends Base {
-      static DRAG_DROP = [{ dragSelector: '.item' }];
+      static override DRAG_DROP = [{ dragSelector: '.item' }];
     }
     const instance = new Sheet();
     (instance as { element: HTMLElement }).element = document.createElement('div');

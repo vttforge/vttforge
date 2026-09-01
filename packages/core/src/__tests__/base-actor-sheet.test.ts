@@ -197,7 +197,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
   it('binds one DragDrop per static DRAG_DROP entry with default permissions and callbacks', () => {
     const Base = BaseActorSheet();
     class Sheet extends Base {
-      static DRAG_DROP: ReadonlyArray<DragDropConfig> = [
+      static override DRAG_DROP: ReadonlyArray<DragDropConfig> = [
         { dragSelector: '.item[draggable]' },
         { dropSelector: '.inventory' },
       ];
@@ -224,7 +224,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     const Base = BaseActorSheet();
     const customDrag = vi.fn();
     class Sheet extends Base {
-      static DRAG_DROP: ReadonlyArray<DragDropConfig> = [
+      static override DRAG_DROP: ReadonlyArray<DragDropConfig> = [
         {
           dragSelector: '.x',
           permissions: { dragstart: () => false, drop: () => false },
@@ -249,7 +249,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
   it('isEditable false locks dragstart and drop', () => {
     const Base = BaseActorSheet();
     class Sheet extends Base {
-      static DRAG_DROP: ReadonlyArray<DragDropConfig> = [{ dragSelector: '.item' }];
+      static override DRAG_DROP: ReadonlyArray<DragDropConfig> = [{ dragSelector: '.item' }];
     }
     const instance = new Sheet();
     (instance as { element: HTMLElement }).element = document.createElement('div');
