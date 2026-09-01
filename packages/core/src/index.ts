@@ -33,6 +33,11 @@ export {
   BaseApplication,
   type BaseApplicationMembers,
 } from './base-application.js';
+export {
+  BaseDocumentSheet,
+  type BaseDocumentSheetMembers,
+  type DocumentSheetKind,
+} from './base-document-sheet.js';
 export { BaseItemSheet } from './base-item-sheet.js';
 export {
   BaseTypeDataModel,
