@@ -49,7 +49,7 @@
     "vitest": "catalog:"
   },
   "engines": {
-    "node": ">=22.14.0"
+    "node": ">=26.0.0"
   },
   "publishConfig": {
     "access": "public",
