@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { applyHotReload, type FoundryEnv, type HotReloadData } from '../reload.js';
+import { type AppV2Like, applyHotReload, type FoundryEnv, type HotReloadData } from '../reload.js';
 
 const NOW = 1_700_000_000_000;
 
 function makeEnv(overrides: Partial<FoundryEnv> = {}): FoundryEnv {
-  const rendered: Array<{ render: () => void }> = [];
+  const rendered: AppV2Like[] = [];
   return {
     Handlebars: {
       compile: vi.fn((input: string) => ({ compiled: input })),
@@ -223,5 +223,124 @@ describe('language files', () => {
 
     expect(applyHotReload(data, env)).toEqual({ applied: false, reason: 'parse-error' });
     expect(env.mergeObject).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Scoped re-render. A template change should redraw the sheets that use it
+ * and leave the rest alone — redrawing everything loses scroll position and
+ * focus in windows the edit never touched.
+ */
+describe('scoped re-render', () => {
+  const CHANGED = 'systems/my-system/templates/actor/character-sheet.hbs';
+
+  /** An open AppV2 whose class declares `parts`. */
+  function sheet(parts: Record<string, { template?: string; templates?: string[] }>) {
+    const render = vi.fn();
+    return { app: { render, constructor: { PARTS: parts } }, render };
+  }
+
+  it('renders only the sheet that declares the template', () => {
+    const match = sheet({ body: { template: CHANGED } });
+    const other = sheet({ body: { template: 'systems/my-system/templates/item/gear.hbs' } });
+    const env = makeEnv({ applicationInstances: () => [match.app, other.app] });
+
+    const result = applyHotReload(
+      payload({ extension: 'hbs', content: '<p></p>', path: CHANGED }),
+      env,
+    );
+
+    expect(result).toEqual({ applied: true, kind: 'html', scoped: 1 });
+    expect(match.render).toHaveBeenCalledOnce();
+    expect(other.render).not.toHaveBeenCalled();
+  });
+
+  it('renders only the affected part, not the whole sheet', () => {
+    const match = sheet({
+      header: { template: 'systems/my-system/templates/actor/header.hbs' },
+      body: { template: CHANGED },
+    });
+    const env = makeEnv({ applicationInstances: () => [match.app] });
+
+    applyHotReload(payload({ extension: 'hbs', content: '<p></p>', path: CHANGED }), env);
+
+    // Redrawing the header too would throw away its scroll and focus.
+    expect(match.render).toHaveBeenCalledWith({ parts: ['body'] });
+  });
+
+  it('matches a template listed under a part’s `templates`, where partials appear', () => {
+    const match = sheet({ body: { template: 'other.hbs', templates: [CHANGED] } });
+    const env = makeEnv({ applicationInstances: () => [match.app] });
+
+    const result = applyHotReload(
+      payload({ extension: 'hbs', content: '<p></p>', path: CHANGED }),
+      env,
+    );
+
+    expect(result).toMatchObject({ scoped: 1 });
+    expect(match.render).toHaveBeenCalledWith({ parts: ['body'] });
+  });
+
+  it('renders every sheet that uses the template, not just the first', () => {
+    const a = sheet({ body: { template: CHANGED } });
+    const b = sheet({ main: { template: CHANGED } });
+    const env = makeEnv({ applicationInstances: () => [a.app, b.app] });
+
+    const result = applyHotReload(
+      payload({ extension: 'hbs', content: '<p></p>', path: CHANGED }),
+      env,
+    );
+
+    expect(result).toMatchObject({ scoped: 2 });
+    expect(a.render).toHaveBeenCalledOnce();
+    expect(b.render).toHaveBeenCalledOnce();
+  });
+
+  it('falls back to redrawing everything when nothing claims the file', () => {
+    // A partial reached through `{{> x}}` appears in no part descriptor.
+    // Leaving the screen stale would be worse than redrawing too much.
+    const unrelated = sheet({ body: { template: 'systems/my-system/templates/item/gear.hbs' } });
+    const v1 = { render: vi.fn() };
+    const env = makeEnv({
+      ui: { windows: { 1: v1 } },
+      applicationInstances: () => [unrelated.app],
+    });
+
+    const result = applyHotReload(
+      payload({
+        extension: 'hbs',
+        content: '<p></p>',
+        path: 'systems/my-system/templates/_partial.hbs',
+      }),
+      env,
+    );
+
+    expect(result).toEqual({ applied: true, kind: 'html' });
+    expect(unrelated.render).toHaveBeenCalledOnce();
+    expect(v1.render).toHaveBeenCalledOnce();
+  });
+
+  it('matches an older application on its options.template', () => {
+    const v1 = { render: vi.fn(), options: { template: CHANGED } };
+    const env = makeEnv({ ui: { windows: { 1: v1 } }, applicationInstances: () => [] });
+
+    const result = applyHotReload(
+      payload({ extension: 'hbs', content: '<p></p>', path: CHANGED }),
+      env,
+    );
+
+    expect(result).toMatchObject({ scoped: 1 });
+    expect(v1.render).toHaveBeenCalledWith(true);
+  });
+
+  it('survives a sheet class with no PARTS at all', () => {
+    const bare = { render: vi.fn() };
+    const env = makeEnv({ applicationInstances: () => [bare] });
+
+    expect(() =>
+      applyHotReload(payload({ extension: 'hbs', content: '<p></p>', path: CHANGED }), env),
+    ).not.toThrow();
+    // Nothing claimed it, so the fallback redraws — including this one.
+    expect(bare.render).toHaveBeenCalled();
   });
 });

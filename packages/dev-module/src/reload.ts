@@ -26,7 +26,12 @@ export interface HotReloadData {
 
 /** What a reload attempt did, so callers can log something truthful. */
 export type ReloadOutcome =
-  | { applied: true; kind: 'css' | 'html' | 'json' }
+  | {
+      applied: true;
+      kind: 'css' | 'html' | 'json';
+      /** How many applications were targeted, when the change could be attributed. */
+      scoped?: number;
+    }
   | { applied: false; reason: 'vetoed' | 'unsupported-extension' | 'no-match' | 'parse-error' };
 
 /**
@@ -87,6 +92,14 @@ function reloadHtml(data: HotReloadData, env: FoundryEnv): ReloadOutcome {
     return { applied: false, reason: 'parse-error' };
   }
   env.Handlebars.registerPartial(data.path, template);
+
+  const targets = findRenderTargets(data.path, env);
+  if (targets.length > 0) {
+    for (const target of targets) target.render();
+    return { applied: true, kind: 'html', scoped: targets.length };
+  }
+  // Nothing claimed the file. It may be a partial nobody declares, so redraw
+  // everything rather than leave a stale sheet on screen.
   renderOpenApplications(env);
   return { applied: true, kind: 'html' };
 }
@@ -115,6 +128,69 @@ function reloadJson(data: HotReloadData, env: FoundryEnv): ReloadOutcome {
   return { applied: true, kind: 'json' };
 }
 
+/**
+ * One open window of either generation. Only the shape this module reads.
+ */
+export interface AppV1Like {
+  render: (force?: boolean) => void;
+  options?: { template?: string };
+}
+
+export interface AppV2Like {
+  render: (options?: { parts?: string[] }) => void;
+}
+
+/** One entry of a sheet's `static PARTS`, as far as this module reads it. */
+interface PartDescriptor {
+  template?: string;
+  templates?: string[];
+}
+
+/** An open application and, when known, the parts the change touched. */
+interface RenderTarget {
+  render: () => void;
+}
+
+/**
+ * Find the applications a changed template actually feeds.
+ *
+ * A sheet declares its templates in `static PARTS`, so the mapping is right
+ * there on the open window — no build-time graph needed. Each part names a
+ * primary `template` and may list further `templates`, which is where a
+ * partial it pulls in shows up.
+ *
+ * Returns an empty array when nothing claims the file. That is not a failure:
+ * a template can be reached through `{{> partial}}` without any part naming
+ * it, and the caller falls back to re-rendering everything rather than
+ * quietly updating nothing.
+ */
+export function findRenderTargets(path: string, env: FoundryEnv): RenderTarget[] {
+  const targets: RenderTarget[] = [];
+
+  for (const app of Object.values(env.ui?.windows ?? {})) {
+    if (app.options?.template === path) targets.push({ render: () => app.render(true) });
+  }
+
+  for (const app of env.applicationInstances()) {
+    // PARTS is a static on the sheet class and may be absent — it is probed,
+    // not required, so it stays out of the interface above, which describes
+    // only what this module calls.
+    const parts =
+      (app as { constructor?: { PARTS?: Record<string, PartDescriptor> } }).constructor?.PARTS ??
+      {};
+    const affected = Object.entries(parts)
+      .filter(([, part]) => part?.template === path || part?.templates?.includes(path))
+      .map(([id]) => id);
+    if (affected.length > 0) {
+      // Re-render only the parts that changed. Redrawing the whole sheet
+      // would throw away scroll position and focus in every other part.
+      targets.push({ render: () => app.render({ parts: affected }) });
+    }
+  }
+
+  return targets;
+}
+
 /** Re-render every open window, both application generations. */
 function renderOpenApplications(env: FoundryEnv): void {
   for (const app of Object.values(env.ui?.windows ?? {})) app.render();
@@ -140,8 +216,8 @@ export interface FoundryEnv {
       get: (id: string) => { languages?: Array<{ path: string; lang: string }> } | undefined;
     };
   };
-  ui?: { windows?: Record<string, { render: () => void }> };
-  applicationInstances: () => Iterable<{ render: () => void }>;
+  ui?: { windows?: Record<string, AppV1Like> };
+  applicationInstances: () => Iterable<AppV2Like>;
   mergeObject: (target: object, source: object) => object;
   /** Fires the veto hook; a `false` return cancels the reload. */
   callHook: (name: string, data: HotReloadData) => boolean;
