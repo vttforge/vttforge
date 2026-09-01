@@ -5,10 +5,12 @@ import {
   type BooleanFieldInstance,
   type ColorFieldInstance,
   type FilePathFieldInstance,
+  type ForeignDocumentFieldInstance,
   fields,
   type HTMLFieldInstance,
   type NumberFieldInstance,
   type SchemaFieldInstance,
+  type SetFieldInstance,
   type StringFieldInstance,
 } from '../data/fields.js';
 import type { InferField, InferSchema } from '../data/infer-schema.js';
@@ -21,7 +23,14 @@ class FakeHTMLField {}
 class FakeColorField {}
 class FakeFilePathField {}
 class FakeArrayField {}
+class FakeSetField {}
+class FakeForeignDocumentField {}
 class FakeSchemaField {}
+
+/** Stands in for a document class in the reference-field cases. */
+declare class FakeActor {
+  readonly name: string;
+}
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).foundry = {
@@ -34,6 +43,8 @@ beforeEach(() => {
         ColorField: FakeColorField,
         FilePathField: FakeFilePathField,
         ArrayField: FakeArrayField,
+        SetField: FakeSetField,
+        ForeignDocumentField: FakeForeignDocumentField,
         SchemaField: FakeSchemaField,
       },
     },
@@ -64,6 +75,8 @@ describe('fields()', () => {
     expect(f.ColorField).toBe(FakeColorField);
     expect(f.FilePathField).toBe(FakeFilePathField);
     expect(f.ArrayField).toBe(FakeArrayField);
+    expect(f.SetField).toBe(FakeSetField);
+    expect(f.ForeignDocumentField).toBe(FakeForeignDocumentField);
     expect(f.SchemaField).toBe(FakeSchemaField);
   });
 });
@@ -240,5 +253,62 @@ describe('presence and nullability', () => {
       ArrayFieldInstance<StringFieldInstance<{ required: false }>, { required: true }>
     >;
     expectTypeOf<Tags>().toEqualTypeOf<(string | undefined)[]>();
+  });
+});
+
+describe('InferField<F> — SetField', () => {
+  it('is a Set, not an array', () => {
+    type T = InferField<SetFieldInstance<StringFieldInstance>>;
+    expectTypeOf<T>().toEqualTypeOf<Set<string>>();
+    // The distinction is the whole point: a Set has no push and no index
+    // access, so typing one as an array hands the author two methods that
+    // throw at runtime.
+    expectTypeOf<T>().not.toEqualTypeOf<string[]>();
+  });
+
+  it('carries the element type through', () => {
+    expectTypeOf<InferField<SetFieldInstance<NumberFieldInstance>>>().toEqualTypeOf<Set<number>>();
+  });
+
+  it('applies presence to the element and to the set', () => {
+    type T = InferField<
+      SetFieldInstance<StringFieldInstance<{ required: false }>, { nullable: true }>
+    >;
+    expectTypeOf<T>().toEqualTypeOf<Set<string | undefined> | null>();
+  });
+
+  it('holds a set of objects when the element is a SchemaField', () => {
+    type T = InferField<SetFieldInstance<SchemaFieldInstance<{ id: StringFieldInstance }>>>;
+    expectTypeOf<T>().toEqualTypeOf<Set<{ id: string }>>();
+  });
+});
+
+describe('InferField<F> — ForeignDocumentField', () => {
+  it('resolves to the document, because the data model installs a getter', () => {
+    type T = InferField<ForeignDocumentFieldInstance<typeof FakeActor>>;
+    expectTypeOf<T>().toEqualTypeOf<FakeActor | null>();
+  });
+
+  it('is the id string under idOnly', () => {
+    type T = InferField<ForeignDocumentFieldInstance<typeof FakeActor, { idOnly: true }>>;
+    expectTypeOf<T>().toEqualTypeOf<string | null>();
+  });
+
+  it('drops null when the schema declares the field non-nullable', () => {
+    type T = InferField<ForeignDocumentFieldInstance<typeof FakeActor, { nullable: false }>>;
+    expectTypeOf<T>().toEqualTypeOf<FakeActor>();
+  });
+
+  it('is never the getter function itself', () => {
+    type T = InferField<ForeignDocumentFieldInstance<typeof FakeActor>>;
+    expectTypeOf<T>().not.toEqualTypeOf<(() => FakeActor | null) | null>();
+  });
+
+  it('reads as a document inside a schema', () => {
+    type T = InferSchema<{
+      owner: ForeignDocumentFieldInstance<typeof FakeActor>;
+      ownerId: ForeignDocumentFieldInstance<typeof FakeActor, { idOnly: true }>;
+    }>;
+    expectTypeOf<T>().toEqualTypeOf<{ owner: FakeActor | null; ownerId: string | null }>();
   });
 });
