@@ -44,6 +44,37 @@ describe('init args', () => {
     expect(parse(init, []).name).toBeUndefined();
   });
 
+  it('defaults yes to false, so a bare run still prompts', () => {
+    expect(parse(init, ['my-sys']).yes).toBe(false);
+  });
+
+  it.each([['--yes'], ['-y']])('%s turns off prompting', (flag) => {
+    expect(parse(init, ['my-sys', flag]).yes).toBe(true);
+  });
+
+  it('reads every metadata flag', () => {
+    const args = parse(init, [
+      'my-sys',
+      '--id',
+      'pdf-character-sheet',
+      '--title',
+      'PDF Character Sheet',
+      '--description',
+      'Form-fillable PDFs as sheets',
+      '--author',
+      'Fabricio Cavalcante',
+      '--license',
+      'Apache-2.0',
+    ]);
+    expect(args).toMatchObject({
+      id: 'pdf-character-sheet',
+      title: 'PDF Character Sheet',
+      description: 'Form-fillable PDFs as sheets',
+      author: 'Fabricio Cavalcante',
+      license: 'Apache-2.0',
+    });
+  });
+
   it.each([
     [['my-sys', '--type', 'module', '--lang', 'js']],
     [['my-sys', '--type=module', '--lang=js']],
