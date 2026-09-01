@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/vitest/index.ts', 'src/quench/index.ts'],
   format: 'esm',
   platform: 'neutral',
   target: 'es2022',
