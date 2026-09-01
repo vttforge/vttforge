@@ -30,10 +30,7 @@
       "types": "./dist/quench/index.d.mts",
       "import": "./dist/quench/index.mjs"
     },
-    "./package.json": "./package.json",
-    "./globals": {
-      "types": "./dist/globals.d.mts"
-    }
+    "./package.json": "./package.json"
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
@@ -45,7 +42,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsdown && node -e \"require('node:fs').copyFileSync('src/globals.d.ts','dist/globals.d.mts')\"",
+    "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "publint": "publint",
