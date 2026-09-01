@@ -1,5 +1,38 @@
 # @vttforge/cli
 
+## 0.5.0
+
+### Minor Changes
+
+- 3eb8c96: `vttforge init` can now run without a terminal.
+  
+  Five values — id, title, description, author, license — were always asked for, with no flag to supply them. Clack prompts read from stdin, so with none attached the scaffolder hung: no error, no output, nothing to debug. That ruled out CI and scripts, and meant nothing could test the scaffolder through its own entry point.
+  
+  Each now has a flag, and `--yes` (`-y`) takes the default for anything not passed. A run with no terminal assumes `--yes`, so CI needs no extra flag.
+  
+  ```bash
+  vttforge init pdf-character-sheet --type module --lang ts \
+    --title "PDF Character Sheet" --license Apache-2.0 --yes
+  ```
+  
+  The directory name is the one thing with no sensible default. Without a terminal to ask, the run stops and says so.
+
+### Patch Changes
+
+- 11187a0: Say what the scaffolded schemas mean.
+  
+  The generated number fields declared `required: true` but left `nullable` alone, so they still accepted `null` — and now that the types say so, that shows up as an error the author has to think about. They set `nullable: false`.
+  
+  The six ability scores share one spec instead of repeating it six times.
+- 353633c: Build each ability score from a factory rather than one shared options object.
+  
+  A field keeps a reference to the options it was handed, and some field classes write back into that object. Six fields sharing one object is safe for the field this template uses, but it is not a habit to teach in code people copy and adapt.
+- c24b2e9: Point the templates at the core version this release publishes.
+  
+  The `ColorField` and presence fixes take `@vttforge/core` to 0.6.0, and a
+  caret pins the minor on a 0.x version, so the templates' `^0.5.0` would not
+  have matched.
+
 ## 0.4.0
 
 ### Minor Changes
