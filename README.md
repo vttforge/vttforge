@@ -83,6 +83,8 @@ VTTForge ships its own design language — the **Forge theme**: warm-dark surfac
 - **Themes** — Forge is the default. Four documented recipe themes (Codex / Parchment / Grimdark / Neon) live in `examples/themes/` and re-theme everything by overriding `--vttf-*` tokens on a parent class.
 - **Reference Foundry sheet** — `examples/simple-system` renders the canonical reference sheet (HP / AC / SPD / INIT quick stats, four tabs, ability scores grid with roll buttons, items list with kind pills, drop affordance) using the Forge theme. Boot it via the Docker compose below to see the SDK + design system together.
 
+Stability, versioning and Node support: [STABILITY.md](STABILITY.md).
+
 ## Try it today
 
 The repo ships a working Foundry v13 system you can boot in one command. Requires Docker + a [foundryvtt.com](https://foundryvtt.com) license:
