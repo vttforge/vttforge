@@ -7,7 +7,7 @@
  * Foundry mounts, so a file's position inside it is its position under
  * `/systems/<id>/`.
  */
-import { type FSWatcher, watch } from 'node:fs';
+import { existsSync, type FSWatcher, watch } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname, join, posix, sep } from 'node:path';
 
@@ -80,6 +80,14 @@ export function watchDist(options: WatchOptions): DistWatcher {
       }),
     );
   };
+
+  // Platforms disagree about a missing directory: macOS throws from `watch`,
+  // Linux hands back a watcher that reports nothing at all. Checking first
+  // gives the same answer everywhere instead of relying on either.
+  if (!existsSync(options.distDir)) {
+    options.onError?.(`Cannot watch ${options.distDir} — the directory does not exist.`);
+    return { close: () => undefined };
+  }
 
   let watcher: FSWatcher;
   try {
