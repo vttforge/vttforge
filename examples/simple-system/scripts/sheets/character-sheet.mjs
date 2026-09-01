@@ -21,6 +21,7 @@ import { BaseActorSheet } from '@vttforge/core';
 const SYSTEM_ID = 'vttforge-example';
 
 export class CharacterSheet extends BaseActorSheet() {
+  /** @override */
   static DEFAULT_OPTIONS = foundry.utils.mergeObject(
     super.DEFAULT_OPTIONS,
     {
@@ -78,6 +79,7 @@ export class CharacterSheet extends BaseActorSheet() {
     },
   };
 
+  /** @override */
   static DRAG_DROP = [
     {
       dragSelector: '.sh-item[draggable=true]',
@@ -85,7 +87,10 @@ export class CharacterSheet extends BaseActorSheet() {
     },
   ];
 
-  /** @override */
+  /**
+   * @param {Record<string, unknown>} options
+   * @returns {Promise<Record<string, unknown>>}
+   */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const actor = this.document;
@@ -103,21 +108,23 @@ export class CharacterSheet extends BaseActorSheet() {
     context.isEditable = this.isEditable;
     context.abilities = Object.entries(system.abilities ?? {}).map(([key, data]) => ({
       key,
-      label: game.i18n.localize(abilityLabels[key] ?? key),
+      label: game.i18n.localize(/** @type {Record<string, string>} */ (abilityLabels)[key] ?? key),
       value: data?.value ?? data,
       mod: data?.mod ?? 0,
     }));
     context.gear = actor.items
-      .filter((item) => item.type === 'gear')
-      .map((item) => ({
-        id: item.id,
-        name: item.name,
-        img: item.img,
-        kind: item.system?.kind ?? 'stowed',
-        quantity: item.system?.quantity ?? 1,
-        weight: item.system?.weight ?? 0,
-        description: item.system?.description ?? '',
-      }));
+      .filter(/** @param {any} item */ (item) => item.type === 'gear')
+      .map(
+        /** @param {any} item */ (item) => ({
+          id: item.id,
+          name: item.name,
+          img: item.img,
+          kind: item.system?.kind ?? 'stowed',
+          quantity: item.system?.quantity ?? 1,
+          weight: item.system?.weight ?? 0,
+          description: item.system?.description ?? '',
+        }),
+      );
     context.enrichedBiography = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
       system.biography ?? '',
       { relativeTo: actor, secrets: actor.isOwner },
@@ -126,6 +133,10 @@ export class CharacterSheet extends BaseActorSheet() {
   }
 
   /** Reject non-gear drops with a notification; let gear fall through to Foundry. */
+  /**
+   * @param {any} item
+   * @param {any} _event
+   */
   async onDropItem(item, _event) {
     if (item?.type !== 'gear') {
       ui.notifications?.warn(
@@ -136,6 +147,12 @@ export class CharacterSheet extends BaseActorSheet() {
     return undefined;
   }
 
+  /**
+   * @this {CharacterSheet} ApplicationV2 declares action handlers static but
+   *   calls them with `this` bound to the sheet instance.
+   * @param {any} _event
+   * @param {any} target
+   */
   static async _onRollAbility(_event, target) {
     const key = target?.dataset?.ability;
     if (!key) return;
@@ -152,6 +169,11 @@ export class CharacterSheet extends BaseActorSheet() {
     });
   }
 
+  /**
+   * @this {CharacterSheet} Bound to the sheet instance, not the class.
+   * @param {any} _event
+   * @param {any} _target
+   */
   static async _onCreateGear(_event, _target) {
     const cls = CONFIG.Item.documentClass;
     // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time
@@ -162,6 +184,11 @@ export class CharacterSheet extends BaseActorSheet() {
     );
   }
 
+  /**
+   * @this {CharacterSheet} Bound to the sheet instance, not the class.
+   * @param {any} _event
+   * @param {any} target
+   */
   static async _onDeleteItem(_event, target) {
     const row = target?.closest('[data-item-id]');
     const id = row?.dataset?.itemId;

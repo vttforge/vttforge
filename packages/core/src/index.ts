@@ -40,6 +40,8 @@ export type {
   BooleanFieldOptions,
   ColorFieldOptions,
   DataFieldOptions,
+  EmbeddedDataFieldOptions,
+  EmbeddedDocumentFieldOptions,
   FilePathFieldOptions,
   ForeignDocumentFieldOptions,
   HTMLFieldOptions,
@@ -47,6 +49,7 @@ export type {
   SchemaFieldOptions,
   SetFieldOptions,
   StringFieldOptions,
+  TypedSchemaFieldOptions,
 } from './data/field-options.js';
 export {
   type ArrayFieldCtor,
@@ -55,7 +58,12 @@ export {
   type BooleanFieldInstance,
   type ColorFieldCtor,
   type ColorFieldInstance,
+  type DataModelClass,
   type DocumentClass,
+  type EmbeddedDataFieldCtor,
+  type EmbeddedDataFieldInstance,
+  type EmbeddedDocumentFieldCtor,
+  type EmbeddedDocumentFieldInstance,
   type FieldInstance,
   type FieldsApi,
   type FilePathFieldCtor,
@@ -73,6 +81,8 @@ export {
   type SetFieldInstance,
   type StringFieldCtor,
   type StringFieldInstance,
+  type TypedSchemaFieldCtor,
+  type TypedSchemaFieldInstance,
 } from './data/fields.js';
 export type { InferField, InferSchema, Prettify } from './data/infer-schema.js';
 export {
