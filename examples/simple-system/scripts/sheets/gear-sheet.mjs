@@ -53,6 +53,7 @@ export class GearSheet extends BaseItemSheet() {
   };
 
   /**
+   * @override
    * @param {Record<string, unknown>} options
    * @returns {Promise<Record<string, unknown>>}
    */

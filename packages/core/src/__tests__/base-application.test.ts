@@ -8,14 +8,11 @@
  * "the class is not renderable", pointing at Foundry rather than at the line
  * that was wrong.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 import { BaseApplication } from '../base-application.js';
 import { VttfError } from '../errors/registry.js';
 
-class FakeApplicationV2 {
-  // biome-ignore lint/suspicious/noExplicitAny: stands in for Foundry's own constructor
-  constructor(..._args: any[]) {}
-}
+class FakeApplicationV2 {}
 
 beforeEach(() => {
   (globalThis as Record<string, unknown>).foundry = {
@@ -54,10 +51,9 @@ describe('BaseApplication', () => {
       _renderHTML() {
         return document.createElement('div');
       }
-      // No `override` keyword: the factory returns an untyped constructor,
-      // so TypeScript cannot see the member being replaced. That is the next
-      // thing a typed base would fix.
-      _replaceHTML(result: HTMLElement, content: HTMLElement): void {
+      // `override` is required, not merely allowed: the factory reports what
+      // it adds, so TypeScript can see the member being replaced.
+      override _replaceHTML(result: HTMLElement, content: HTMLElement): void {
         content.append(result);
       }
     }
@@ -84,5 +80,33 @@ describe('BaseApplication', () => {
   it('names the offending class in the message', () => {
     class PdfConfig extends BaseApplication() {}
     expect(() => new PdfConfig()).toThrow(/PdfConfig/);
+  });
+});
+
+describe('what the factory reports', () => {
+  it('types the members it adds', () => {
+    class Window extends BaseApplication() {
+      _renderHTML() {
+        return document.createElement('div');
+      }
+    }
+    expectTypeOf<Window['_replaceHTML']>().toEqualTypeOf<
+      (result: HTMLElement, content: HTMLElement) => void
+    >();
+  });
+
+  it('still reaches the Foundry members it does not describe', () => {
+    // The Foundry half is typed by @vttforge/types, not here. Until then it
+    // has to stay reachable, or every real subclass fails to compile.
+    class Window extends BaseApplication() {
+      _renderHTML() {
+        return document.createElement('div');
+      }
+      probe(): void {
+        void this.element;
+        void this.options;
+      }
+    }
+    expect(typeof Window).toBe('function');
   });
 });

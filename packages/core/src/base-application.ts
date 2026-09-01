@@ -20,6 +20,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
+import type { VttforgeClass } from './foundry-base.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: Foundry's ApplicationV2 shape lives in fvtt-types (deferred to @vttforge/types v1.0)
 type AnyConstructor = new (...args: any[]) => any;
@@ -60,7 +61,18 @@ function resolveApplicationV2(): AnyConstructor {
  * `_replaceHTML` is provided. `_renderHTML` is yours, and omitting it throws
  * when the class is constructed rather than when someone opens the window.
  */
-export function BaseApplication(): AnyConstructor {
+/** What `BaseApplication` adds on top of Foundry's `ApplicationV2`. */
+export interface BaseApplicationMembers {
+  /**
+   * Put the rendered content in the window.
+   *
+   * Provided because it is the half people forget. Override it for a window
+   * that updates in place rather than swapping its whole content.
+   */
+  _replaceHTML(result: HTMLElement, content: HTMLElement): void;
+}
+
+export function BaseApplication(): VttforgeClass<BaseApplicationMembers> {
   const Base = resolveApplicationV2();
 
   class VttforgeBaseApplication extends Base {
@@ -87,5 +99,5 @@ export function BaseApplication(): AnyConstructor {
     }
   }
 
-  return VttforgeBaseApplication as unknown as AnyConstructor;
+  return VttforgeBaseApplication as unknown as VttforgeClass<BaseApplicationMembers>;
 }

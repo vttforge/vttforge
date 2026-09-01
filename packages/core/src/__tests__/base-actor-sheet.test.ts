@@ -189,7 +189,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
   it('does nothing when DRAG_DROP is empty', () => {
     const Sub = BaseActorSheet();
     const instance = new Sub();
-    (instance as { element: HTMLElement }).element = document.createElement('div');
+    instance.element = document.createElement('div');
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(0);
   });
@@ -204,8 +204,8 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     }
     const instance = new Sheet();
     const element = document.createElement('div');
-    (instance as { element: HTMLElement }).element = element;
-    (instance as { isEditable: boolean }).isEditable = true;
+    instance.element = element;
+    instance.isEditable = true;
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(2);
     const first = dragDropBinds[0];
@@ -233,8 +233,8 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
       ];
     }
     const instance = new Sheet();
-    (instance as { element: HTMLElement }).element = document.createElement('div');
-    (instance as { isEditable: boolean }).isEditable = true;
+    instance.element = document.createElement('div');
+    instance.isEditable = true;
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(1);
     const entry = dragDropBinds[0];
@@ -252,8 +252,8 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
       static override DRAG_DROP: ReadonlyArray<DragDropConfig> = [{ dragSelector: '.item' }];
     }
     const instance = new Sheet();
-    (instance as { element: HTMLElement }).element = document.createElement('div');
-    (instance as { isEditable: boolean }).isEditable = false;
+    instance.element = document.createElement('div');
+    instance.isEditable = false;
     instance._onRender({}, {});
     const lockedEntry = dragDropBinds[0];
     if (!lockedEntry) throw new Error('expected dragDropBinds[0]');
@@ -270,8 +270,8 @@ describe('BaseActorSheet — default _onDragStart', () => {
   it('serializes the item identified by data-item-id', () => {
     const Sub = BaseActorSheet();
     const instance = new Sub();
-    (instance as { document: { items: { get(id: string): { uuid: string } } } }).document = {
-      items: { get: (id) => ({ uuid: `Item.${id}` }) },
+    instance.document = {
+      items: { get: (id: string) => ({ uuid: `Item.${id}` }) },
     };
     const setData = vi.fn();
     const target = document.createElement('li');
@@ -312,7 +312,7 @@ describe('BaseActorSheet — typed drop dispatch', () => {
     const Base = BaseActorSheet();
     const onDropItem = vi.fn().mockResolvedValue('subclass-handled');
     class Sheet extends Base {
-      onDropItem = onDropItem;
+      override onDropItem = onDropItem;
     }
     const instance = new Sheet();
     const event = {} as DragEvent;
@@ -325,7 +325,7 @@ describe('BaseActorSheet — typed drop dispatch', () => {
     setupFromUuid('Item.y', { id: 'y' });
     const Base = BaseActorSheet();
     class Sheet extends Base {
-      onDropItem = vi.fn().mockResolvedValue(undefined);
+      override onDropItem = vi.fn().mockResolvedValue(undefined);
     }
     const instance = new Sheet();
     const result = await instance._onDropItem({} as DragEvent, { uuid: 'Item.y' });
@@ -336,7 +336,7 @@ describe('BaseActorSheet — typed drop dispatch', () => {
     setupFromUuid('Item.missing', null);
     const Base = BaseActorSheet();
     class Sheet extends Base {
-      onDropItem = vi.fn();
+      override onDropItem = vi.fn();
     }
     const instance = new Sheet();
     const result = await instance._onDropItem({} as DragEvent, { uuid: 'Other.id' });
@@ -350,9 +350,9 @@ describe('BaseActorSheet — typed drop dispatch', () => {
     const onFolder = vi.fn().mockResolvedValue('folder-ok');
     const onEffect = vi.fn().mockResolvedValue('effect-ok');
     class Sheet extends Base {
-      onDropActor = onActor;
-      onDropFolder = onFolder;
-      onDropActiveEffect = onEffect;
+      override onDropActor = onActor;
+      override onDropFolder = onFolder;
+      override onDropActiveEffect = onEffect;
     }
     const instance = new Sheet();
     const evt = {} as DragEvent;
