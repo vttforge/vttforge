@@ -13,6 +13,7 @@
  * still need real-world validation against shipped systems.
  */
 
+import type { Color } from './color.js';
 import type {
   ArrayFieldInstance,
   BooleanFieldInstance,
@@ -32,7 +33,48 @@ import type {
  */
 export type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
-type ApplyNullability<O, T> = O extends { nullable: true } ? T | null : T;
+/**
+ * Whether a field's options gave an explicit `initial`.
+ *
+ * A field with an initial is always populated, so it never widens to
+ * `undefined` no matter what `required` says. Presence of the key is the
+ * question, not its value — `{ initial: undefined }` is not an initial.
+ */
+type HasInitial<O> = O extends { initial: unknown } ? true : false;
+
+/**
+ * Widen a field's base type by what its options allow it to be.
+ *
+ * Two independent widenings, derived from how a field resolves a value:
+ *
+ * - `nullable: true` admits `null`, and a required nullable field with no
+ *   initial resolves to `null`.
+ * - `required: false` with no explicit initial resolves to `undefined`.
+ *
+ * They compose: a field that is neither required nor nullable, with no
+ * initial, is `T | undefined`; add `nullable` and it is `T | null | undefined`.
+ */
+type ApplyPresence<O, T> =
+  | T
+  | (O extends { nullable: true } ? null : never)
+  | (O extends { required: false } ? (HasInitial<O> extends true ? never : undefined) : never);
+
+/**
+ * What a `ColorField` holds once the model is initialized.
+ *
+ * Not a string. The field casts its stored value to a CSS string, but
+ * `initialize` hands back a `Color` instance — so `system.tint` is an object
+ * with `.css`, `.rgb`, `.hex` and friends, and typing it as `string` makes
+ * every property access on it a lie the compiler accepts.
+ *
+ * It is also nullable by default, unlike every other string-backed field:
+ * the field's own defaults set `nullable: true, initial: null`. Writing
+ * `new fields.ColorField()` and reading `.css` off it crashes on a fresh
+ * document, which is exactly what this type now refuses.
+ */
+type ColorFieldValue<O> = O extends { nullable: false }
+  ? ApplyPresence<O, Color>
+  : ApplyPresence<O, Color> | null;
 
 /**
  * Map a single field instance to its runtime TypeScript type. `never` for
@@ -41,21 +83,21 @@ type ApplyNullability<O, T> = O extends { nullable: true } ? T | null : T;
  */
 export type InferField<F> =
   F extends NumberFieldInstance<infer O>
-    ? ApplyNullability<O, number>
+    ? ApplyPresence<O, number>
     : F extends StringFieldInstance<infer O>
-      ? ApplyNullability<O, string>
+      ? ApplyPresence<O, string>
       : F extends BooleanFieldInstance<infer O>
-        ? ApplyNullability<O, boolean>
+        ? ApplyPresence<O, boolean>
         : F extends HTMLFieldInstance<infer O>
-          ? ApplyNullability<O, string>
+          ? ApplyPresence<O, string>
           : F extends ColorFieldInstance<infer O>
-            ? ApplyNullability<O, string>
+            ? ColorFieldValue<O>
             : F extends FilePathFieldInstance<infer O>
-              ? ApplyNullability<O, string>
+              ? ApplyPresence<O, string>
               : F extends ArrayFieldInstance<infer Inner, infer O>
-                ? ApplyNullability<O, InferField<Inner>[]>
+                ? ApplyPresence<O, InferField<Inner>[]>
                 : F extends SchemaFieldInstance<infer S, infer O>
-                  ? ApplyNullability<O, InferSchema<S>>
+                  ? ApplyPresence<O, InferSchema<S>>
                   : never;
 
 /**

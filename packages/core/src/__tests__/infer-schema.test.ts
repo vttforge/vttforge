@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
+import type { Color } from '../data/color.js';
 import {
   type ArrayFieldInstance,
   type BooleanFieldInstance,
@@ -84,8 +85,18 @@ describe('InferField<F> — scalar fields', () => {
     expectTypeOf<InferField<HTMLFieldInstance>>().toEqualTypeOf<string>();
   });
 
-  it('ColorField → string', () => {
-    expectTypeOf<InferField<ColorFieldInstance>>().toEqualTypeOf<string>();
+  it('ColorField → Color | null, because it is neither a string nor non-null by default', () => {
+    // The field stores a CSS string but initializes into a Color instance,
+    // and its own defaults are `nullable: true, initial: null` — so reading
+    // `.css` off a fresh document is a real crash the old `string` typing
+    // let through.
+    expectTypeOf<InferField<ColorFieldInstance>>().toEqualTypeOf<Color | null>();
+  });
+
+  it('ColorField drops the null once nullable is turned off', () => {
+    expectTypeOf<
+      InferField<ColorFieldInstance<{ required: true; nullable: false }>>
+    >().toEqualTypeOf<Color>();
   });
 
   it('FilePathField → string', () => {
@@ -173,5 +184,61 @@ describe('InferSchema<S>', () => {
       name: StringFieldInstance;
     }>;
     expectTypeOf<T>().toEqualTypeOf<{ hp: number | null; name: string }>();
+  });
+});
+
+/**
+ * How a field's options widen its type.
+ *
+ * Taken from how a field resolves a missing value: an explicit `initial`
+ * always wins; otherwise a non-required field resolves to `undefined`, and a
+ * required nullable one to `null`. Validation then admits `null` only when
+ * nullable and `undefined` only when not required. So the two widenings are
+ * independent and compose.
+ */
+describe('presence and nullability', () => {
+  it('required and non-nullable is just the type', () => {
+    expectTypeOf<
+      InferField<NumberFieldInstance<{ required: true; nullable: false }>>
+    >().toEqualTypeOf<number>();
+  });
+
+  it('nullable admits null', () => {
+    expectTypeOf<
+      InferField<NumberFieldInstance<{ required: true; nullable: true }>>
+    >().toEqualTypeOf<number | null>();
+  });
+
+  it('not required, with no initial, admits undefined', () => {
+    expectTypeOf<InferField<NumberFieldInstance<{ required: false }>>>().toEqualTypeOf<
+      number | undefined
+    >();
+  });
+
+  it('an explicit initial keeps undefined out, even when not required', () => {
+    // The field always resolves to the initial, so the value is never absent.
+    expectTypeOf<
+      InferField<NumberFieldInstance<{ required: false; initial: 0 }>>
+    >().toEqualTypeOf<number>();
+  });
+
+  it('neither required nor non-nullable admits both', () => {
+    expectTypeOf<
+      InferField<NumberFieldInstance<{ required: false; nullable: true }>>
+    >().toEqualTypeOf<number | null | undefined>();
+  });
+
+  it('applies the same rule through a SchemaField', () => {
+    type Nested = InferField<
+      SchemaFieldInstance<{ hp: NumberFieldInstance<{ required: false }> }, { nullable: true }>
+    >;
+    expectTypeOf<Nested>().toEqualTypeOf<{ hp: number | undefined } | null>();
+  });
+
+  it('applies it to an array’s element type as well as the array', () => {
+    type Tags = InferField<
+      ArrayFieldInstance<StringFieldInstance<{ required: false }>, { required: true }>
+    >;
+    expectTypeOf<Tags>().toEqualTypeOf<(string | undefined)[]>();
   });
 });
