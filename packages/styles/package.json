@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/styles",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "VTTForge base CSS layer: design tokens, reset, base, components, opt-in themes (CSS Cascade Layers).",
   "type": "module",
   "license": "MIT",
@@ -38,10 +38,10 @@
   ],
   "scripts": {
     "build": "node build-tokens.mjs",
-    "typecheck": "echo 'styles is CSS-only \u2014 no typecheck'",
+    "typecheck": "echo 'styles is CSS-only — no typecheck'",
     "test": "echo 'styles has no tests yet'",
     "publint": "publint",
-    "attw": "echo 'styles is CSS-only \u2014 no types'"
+    "attw": "echo 'styles is CSS-only — no types'"
   },
   "devDependencies": {
     "publint": "catalog:",
