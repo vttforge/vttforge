@@ -32,6 +32,17 @@ declare class FakeActor {
   readonly name: string;
 }
 
+/**
+ * A document class shaped more like a real one: a constructor that takes
+ * arguments, and an overload. The `DocumentClass` bound has to accept these
+ * or it only works against the synthetic case above.
+ */
+declare class FakeItem {
+  constructor(data: { name: string }, context?: { parent?: FakeActor });
+  readonly name: string;
+  readonly parent: FakeActor | null;
+}
+
 beforeEach(() => {
   (globalThis as Record<string, unknown>).foundry = {
     data: {
@@ -81,20 +92,30 @@ describe('fields()', () => {
   });
 });
 
-describe('InferField<F> — scalar fields', () => {
-  it('NumberField → number', () => {
-    expectTypeOf<InferField<NumberFieldInstance>>().toEqualTypeOf<number>();
+describe('InferField<F> — scalar fields, with nothing declared', () => {
+  // Each field class picks its own defaults, and they disagree. These cases
+  // pin what an author gets from `new fields.X()` with no options — the
+  // shape that used to be typed as the bare scalar across the board.
+
+  it('NumberField is optional and nullable, so it is neither', () => {
+    expectTypeOf<InferField<NumberFieldInstance>>().toEqualTypeOf<number | null | undefined>();
   });
 
-  it('StringField → string', () => {
-    expectTypeOf<InferField<StringFieldInstance>>().toEqualTypeOf<string>();
+  it('NumberField becomes a plain number once the schema says so', () => {
+    expectTypeOf<
+      InferField<NumberFieldInstance<{ required: true; nullable: false; initial: 0 }>>
+    >().toEqualTypeOf<number>();
   });
 
-  it('BooleanField → boolean', () => {
+  it('StringField is optional, but not nullable', () => {
+    expectTypeOf<InferField<StringFieldInstance>>().toEqualTypeOf<string | undefined>();
+  });
+
+  it('BooleanField is required and starts at false', () => {
     expectTypeOf<InferField<BooleanFieldInstance>>().toEqualTypeOf<boolean>();
   });
 
-  it('HTMLField → string', () => {
+  it('HTMLField is required and blank-friendly, so it is always a string', () => {
     expectTypeOf<InferField<HTMLFieldInstance>>().toEqualTypeOf<string>();
   });
 
@@ -112,74 +133,81 @@ describe('InferField<F> — scalar fields', () => {
     >().toEqualTypeOf<Color>();
   });
 
-  it('FilePathField → string', () => {
-    expectTypeOf<InferField<FilePathFieldInstance>>().toEqualTypeOf<string>();
+  it('FilePathField starts at null, like ColorField', () => {
+    expectTypeOf<InferField<FilePathFieldInstance>>().toEqualTypeOf<string | null>();
+  });
+
+  it('FilePathField drops the null once nullable is turned off', () => {
+    expectTypeOf<InferField<FilePathFieldInstance<{ nullable: false }>>>().toEqualTypeOf<string>();
   });
 });
 
 describe('InferField<F> — composite fields', () => {
-  it('ArrayField of NumberField → number[]', () => {
+  it('ArrayField is required and builds its own empty array', () => {
+    // The container is never absent. Its elements still carry whatever the
+    // element field's own defaults allow.
     type T = InferField<ArrayFieldInstance<NumberFieldInstance>>;
-    expectTypeOf<T>().toEqualTypeOf<number[]>();
+    expectTypeOf<T>().toEqualTypeOf<(number | null | undefined)[]>();
   });
 
-  it('ArrayField of StringField → string[]', () => {
-    type T = InferField<ArrayFieldInstance<StringFieldInstance>>;
+  it('ArrayField of a declared StringField → string[]', () => {
+    type T = InferField<ArrayFieldInstance<StringFieldInstance<{ required: true }>>>;
     expectTypeOf<T>().toEqualTypeOf<string[]>();
   });
 
   it('SchemaField → recursive object', () => {
     type T = InferField<
       SchemaFieldInstance<{
-        value: NumberFieldInstance;
-        max: NumberFieldInstance;
+        value: NumberFieldInstance<{ required: true; nullable: false; initial: 0 }>;
+        max: NumberFieldInstance<{ required: true; nullable: false; initial: 0 }>;
       }>
     >;
     expectTypeOf<T>().toEqualTypeOf<{ value: number; max: number }>();
   });
 
   it('SchemaField nested inside ArrayField → object[]', () => {
-    type T = InferField<ArrayFieldInstance<SchemaFieldInstance<{ name: StringFieldInstance }>>>;
+    type T = InferField<
+      ArrayFieldInstance<SchemaFieldInstance<{ name: StringFieldInstance<{ required: true }> }>>
+    >;
     expectTypeOf<T>().toEqualTypeOf<{ name: string }[]>();
   });
 });
 
-describe('InferField<F> — nullability (v0.1 single rule)', () => {
-  it('nullable: true → T | null', () => {
-    type T = InferField<NumberFieldInstance<{ nullable: true }>>;
+describe('InferField<F> — what the schema declares beats the default', () => {
+  it('nullable: true admits null', () => {
+    type T = InferField<NumberFieldInstance<{ required: true; nullable: true }>>;
     expectTypeOf<T>().toEqualTypeOf<number | null>();
   });
 
-  it('nullable: false (default) → T', () => {
-    type T = InferField<NumberFieldInstance<{ nullable: false }>>;
+  it('nullable: false takes it away, even from a field that defaults to nullable', () => {
+    type T = InferField<NumberFieldInstance<{ required: true; nullable: false }>>;
     expectTypeOf<T>().toEqualTypeOf<number>();
   });
 
-  it('no nullable option → T', () => {
-    type T = InferField<StringFieldInstance>;
-    expectTypeOf<T>().toEqualTypeOf<string>();
+  it('required: false takes it away from a field that defaults to required', () => {
+    type T = InferField<BooleanFieldInstance<{ required: false }>>;
+    // The initial is the field's own, not the schema's, so it still applies.
+    expectTypeOf<T>().toEqualTypeOf<boolean>();
   });
 });
 
 describe('InferSchema<S>', () => {
   it('flat schema of three scalar fields', () => {
     type T = InferSchema<{
-      level: NumberFieldInstance;
-      name: StringFieldInstance;
+      level: NumberFieldInstance<{ required: true; nullable: false; initial: 1 }>;
+      name: StringFieldInstance<{ required: true }>;
       active: BooleanFieldInstance;
     }>;
     expectTypeOf<T>().toEqualTypeOf<{ level: number; name: string; active: boolean }>();
   });
 
   it('character-shaped schema with nested SchemaField and ArrayField', () => {
+    type Score = NumberFieldInstance<{ required: true; nullable: false; initial: 0 }>;
     type T = InferSchema<{
-      level: NumberFieldInstance;
-      health: SchemaFieldInstance<{
-        value: NumberFieldInstance;
-        max: NumberFieldInstance;
-      }>;
+      level: NumberFieldInstance<{ required: true; nullable: false; initial: 1 }>;
+      health: SchemaFieldInstance<{ value: Score; max: Score }>;
       biography: HTMLFieldInstance;
-      nicknames: ArrayFieldInstance<StringFieldInstance>;
+      nicknames: ArrayFieldInstance<StringFieldInstance<{ required: true }>>;
       portrait: FilePathFieldInstance;
     }>;
     expectTypeOf<T>().toEqualTypeOf<{
@@ -187,14 +215,14 @@ describe('InferSchema<S>', () => {
       health: { value: number; max: number };
       biography: string;
       nicknames: string[];
-      portrait: string;
+      portrait: string | null;
     }>();
   });
 
   it('propagates nullability through the schema', () => {
     type T = InferSchema<{
-      hp: NumberFieldInstance<{ nullable: true }>;
-      name: StringFieldInstance;
+      hp: NumberFieldInstance<{ required: true; nullable: true }>;
+      name: StringFieldInstance<{ required: true }>;
     }>;
     expectTypeOf<T>().toEqualTypeOf<{ hp: number | null; name: string }>();
   });
@@ -223,15 +251,15 @@ describe('presence and nullability', () => {
   });
 
   it('not required, with no initial, admits undefined', () => {
-    expectTypeOf<InferField<NumberFieldInstance<{ required: false }>>>().toEqualTypeOf<
-      number | undefined
-    >();
+    expectTypeOf<
+      InferField<NumberFieldInstance<{ required: false; nullable: false }>>
+    >().toEqualTypeOf<number | undefined>();
   });
 
   it('an explicit initial keeps undefined out, even when not required', () => {
     // The field always resolves to the initial, so the value is never absent.
     expectTypeOf<
-      InferField<NumberFieldInstance<{ required: false; initial: 0 }>>
+      InferField<NumberFieldInstance<{ required: false; nullable: false; initial: 0 }>>
     >().toEqualTypeOf<number>();
   });
 
@@ -243,7 +271,10 @@ describe('presence and nullability', () => {
 
   it('applies the same rule through a SchemaField', () => {
     type Nested = InferField<
-      SchemaFieldInstance<{ hp: NumberFieldInstance<{ required: false }> }, { nullable: true }>
+      SchemaFieldInstance<
+        { hp: NumberFieldInstance<{ required: false; nullable: false }> },
+        { nullable: true }
+      >
     >;
     expectTypeOf<Nested>().toEqualTypeOf<{ hp: number | undefined } | null>();
   });
@@ -258,7 +289,7 @@ describe('presence and nullability', () => {
 
 describe('InferField<F> — SetField', () => {
   it('is a Set, not an array', () => {
-    type T = InferField<SetFieldInstance<StringFieldInstance>>;
+    type T = InferField<SetFieldInstance<StringFieldInstance<{ required: true }>>>;
     expectTypeOf<T>().toEqualTypeOf<Set<string>>();
     // The distinction is the whole point: a Set has no push and no index
     // access, so typing one as an array hands the author two methods that
@@ -267,7 +298,9 @@ describe('InferField<F> — SetField', () => {
   });
 
   it('carries the element type through', () => {
-    expectTypeOf<InferField<SetFieldInstance<NumberFieldInstance>>>().toEqualTypeOf<Set<number>>();
+    expectTypeOf<
+      InferField<SetFieldInstance<NumberFieldInstance<{ required: true; nullable: false }>>>
+    >().toEqualTypeOf<Set<number>>();
   });
 
   it('applies presence to the element and to the set', () => {
@@ -278,7 +311,9 @@ describe('InferField<F> — SetField', () => {
   });
 
   it('holds a set of objects when the element is a SchemaField', () => {
-    type T = InferField<SetFieldInstance<SchemaFieldInstance<{ id: StringFieldInstance }>>>;
+    type T = InferField<
+      SetFieldInstance<SchemaFieldInstance<{ id: StringFieldInstance<{ required: true }> }>>
+    >;
     expectTypeOf<T>().toEqualTypeOf<Set<{ id: string }>>();
   });
 });
@@ -310,5 +345,18 @@ describe('InferField<F> — ForeignDocumentField', () => {
       ownerId: ForeignDocumentFieldInstance<typeof FakeActor, { idOnly: true }>;
     }>;
     expectTypeOf<T>().toEqualTypeOf<{ owner: FakeActor | null; ownerId: string | null }>();
+  });
+});
+
+describe('DocumentClass — the bound accepts real document shapes', () => {
+  it('takes a class whose constructor has parameters', () => {
+    type T = InferField<ForeignDocumentFieldInstance<typeof FakeItem>>;
+    expectTypeOf<T>().toEqualTypeOf<FakeItem | null>();
+  });
+
+  it('resolves to the instance type, not the class', () => {
+    type T = InferField<ForeignDocumentFieldInstance<typeof FakeItem, { nullable: false }>>;
+    expectTypeOf<T>().toHaveProperty('parent');
+    expectTypeOf<T>().not.toEqualTypeOf<typeof FakeItem>();
   });
 });

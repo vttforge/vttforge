@@ -37,39 +37,71 @@ export type Prettify<T> = { [K in keyof T]: T[K] } & {};
 /**
  * Whether a field's options gave an explicit `initial`.
  *
- * A field with an initial is always populated, so it never widens to
- * `undefined` no matter what `required` says. Presence of the key is the
- * question, not its value — `{ initial: undefined }` is not an initial.
+ * Presence of the key is the question, not its value — `{ initial: undefined }`
+ * is not an initial.
  */
 type HasInitial<O> = O extends { initial: unknown } ? true : false;
 
 /**
- * Widen a field's base type by what its options allow it to be.
+ * What a field class decides on its own behalf, for the options a schema
+ * leaves out.
  *
- * Two independent widenings, derived from how a field resolves a value:
- *
- * - `nullable: true` admits `null`, and a required nullable field with no
- *   initial resolves to `null`.
- * - `required: false` with no explicit initial resolves to `undefined`.
- *
- * They compose: a field that is neither required nor nullable, with no
- * initial, is `T | undefined`; add `nullable` and it is `T | null | undefined`.
+ * Every field type sets its own defaults, and they disagree. A number field
+ * is optional and nullable out of the box; a boolean field is required and
+ * starts at `false`. Reading a schema without knowing which defaults apply
+ * gets the shape wrong for exactly the fields people write most.
  */
-type ApplyPresence<O, T> =
-  | T
-  | (O extends { nullable: true } ? null : never)
-  | (O extends { required: false } ? (HasInitial<O> extends true ? never : undefined) : never);
+interface FieldDefaults {
+  /** Whether the field is required when the schema does not say. */
+  required: boolean;
+  /** Whether the field admits `null` when the schema does not say. */
+  nullable: boolean;
+  /** Whether the field supplies a value when the schema gives no `initial`. */
+  populated: boolean;
+}
+
+/** Read an option the schema may have set, falling back to the field's default. */
+type Resolve<O, Key extends string, Fallback extends boolean> =
+  O extends Record<Key, true> ? true : O extends Record<Key, false> ? false : Fallback;
 
 /**
- * Presence for a field whose own defaults already admit `null`.
+ * Widen a field's base type by what it can actually hold.
  *
- * Most fields are non-nullable until the schema asks otherwise. A few invert
- * that — they hold `null` out of the box, and only an explicit
- * `nullable: false` takes it away.
+ * Two independent widenings:
+ *
+ * - nullable admits `null`.
+ * - not required, with nothing to fall back on, admits `undefined`: cleaning
+ *   asks the field for an initial value and keeps whatever it gets, which is
+ *   `undefined` when there is no initial to give.
+ *
+ * A required field never widens to `undefined`. It would fail validation
+ * before the document existed, so there is no state to type.
  */
-type PresenceNullableByDefault<O, T> = O extends { nullable: false }
-  ? ApplyPresence<O, T>
-  : ApplyPresence<O, T> | null;
+type Presence<O, T, D extends FieldDefaults> =
+  | T
+  | (Resolve<O, 'nullable', D['nullable']> extends true ? null : never)
+  | (Resolve<O, 'required', D['required']> extends true
+      ? never
+      : HasInitial<O> extends true
+        ? never
+        : D['populated'] extends true
+          ? never
+          : undefined);
+
+/** Optional, nullable, nothing to fall back on. */
+type NumberDefaults = { required: false; nullable: true; populated: false };
+/** Optional and non-nullable, so an unset one is simply absent. */
+type StringDefaults = { required: false; nullable: false; populated: false };
+/** Required, and starts at `false`. */
+type BooleanDefaults = { required: true; nullable: false; populated: true };
+/** Required and blank-friendly, so an unset one is the empty string. */
+type HTMLDefaults = { required: true; nullable: false; populated: true };
+/** Optional and nullable, but starts at `null` rather than absent. */
+type NullStartDefaults = { required: false; nullable: true; populated: true };
+/** Required, and builds its own empty value. */
+type ContainerDefaults = { required: true; nullable: false; populated: true };
+/** Required but nullable — an id that points at nothing is `null`. */
+type ReferenceDefaults = { required: true; nullable: true; populated: false };
 
 /**
  * What a `ColorField` holds once the model is initialized.
@@ -79,11 +111,10 @@ type PresenceNullableByDefault<O, T> = O extends { nullable: false }
  * with `.css`, `.rgb`, `.hex` and friends, and typing it as `string` makes
  * every property access on it a lie the compiler accepts.
  *
- * It is also nullable by default, unlike every other string-backed field.
- * Writing `new fields.ColorField()` and reading `.css` off it crashes on a
- * fresh document, which is exactly what this type now refuses.
+ * It starts at `null`, so reading `.css` off a fresh document crashes unless
+ * the schema gives it an initial. That is what this type refuses.
  */
-type ColorFieldValue<O> = PresenceNullableByDefault<O, Color>;
+type ColorFieldValue<O> = Presence<O, Color, NullStartDefaults>;
 
 /**
  * What a `ForeignDocumentField` holds once the model is initialized.
@@ -94,18 +125,22 @@ type ColorFieldValue<O> = PresenceNullableByDefault<O, Color>;
  * `null` when the id points at nothing, or when the parent lives in a
  * compendium.
  *
- * Nullable by default, so `null` is in both shapes unless the schema says
- * otherwise.
+ * Two caveats this does not encode, both narrow enough to document rather
+ * than type:
  *
- * One caveat this does not encode: on the server the field keeps the id
- * string in both cases, because there are no collections to resolve against.
- * System code runs on both sides, and typing that union would put a string
- * check in front of every read of a document reference. The client shape is
- * the one worth typing.
+ * - On the server the field keeps the id string in both cases, because there
+ *   are no collections to resolve against. System code runs on both sides,
+ *   but typing that union would put a string check in front of every read of
+ *   a document reference.
+ * - Under `readonly: true` the data model takes the read-only branch before
+ *   the getter branch, so the property keeps the resolver function itself.
+ *   The field turns that flag off by default and no schema has reason to
+ *   turn it back on.
  */
-type ForeignDocumentValue<Doc extends DocumentClass, O> = PresenceNullableByDefault<
+type ForeignDocumentValue<Doc extends DocumentClass, O> = Presence<
   O,
-  O extends { idOnly: true } ? string : InstanceType<Doc>
+  O extends { idOnly: true } ? string : InstanceType<Doc>,
+  ReferenceDefaults
 >;
 
 /**
@@ -115,25 +150,25 @@ type ForeignDocumentValue<Doc extends DocumentClass, O> = PresenceNullableByDefa
  */
 export type InferField<F> =
   F extends NumberFieldInstance<infer O>
-    ? ApplyPresence<O, number>
+    ? Presence<O, number, NumberDefaults>
     : F extends StringFieldInstance<infer O>
-      ? ApplyPresence<O, string>
+      ? Presence<O, string, StringDefaults>
       : F extends BooleanFieldInstance<infer O>
-        ? ApplyPresence<O, boolean>
+        ? Presence<O, boolean, BooleanDefaults>
         : F extends HTMLFieldInstance<infer O>
-          ? ApplyPresence<O, string>
+          ? Presence<O, string, HTMLDefaults>
           : F extends ColorFieldInstance<infer O>
             ? ColorFieldValue<O>
             : F extends FilePathFieldInstance<infer O>
-              ? ApplyPresence<O, string>
+              ? Presence<O, string, NullStartDefaults>
               : F extends ForeignDocumentFieldInstance<infer Doc, infer O>
                 ? ForeignDocumentValue<Doc, O>
                 : F extends ArrayFieldInstance<infer Inner, infer O>
-                  ? ApplyPresence<O, InferField<Inner>[]>
+                  ? Presence<O, InferField<Inner>[], ContainerDefaults>
                   : F extends SetFieldInstance<infer Inner, infer O>
-                    ? ApplyPresence<O, Set<InferField<Inner>>>
+                    ? Presence<O, Set<InferField<Inner>>, ContainerDefaults>
                     : F extends SchemaFieldInstance<infer S, infer O>
-                      ? ApplyPresence<O, InferSchema<S>>
+                      ? Presence<O, InferSchema<S>, ContainerDefaults>
                       : never;
 
 /**
