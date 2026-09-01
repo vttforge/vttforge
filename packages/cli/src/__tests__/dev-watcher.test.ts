@@ -146,6 +146,52 @@ describe('watchDist', () => {
     expect(JSON.parse(onPayload.mock.calls.at(-1)?.[0] as string).content).toContain('"second"');
   });
 
+  it('stays quiet when a rebuild rewrites a file without changing it', async () => {
+    // Vite rewrites its whole output every build. Without this, one edited
+    // template would also resend the language file, and the JSON path
+    // redraws every open window — undoing the scoped re-render entirely.
+    const file = join(dist, 'styles', 'main.css');
+    writeFileSync(file, 'body{color:red}', 'utf8');
+
+    const onPayload = vi.fn();
+    const watcher = watchDist({
+      distDir: dist,
+      packageId: 'my-system',
+      packageType: 'system',
+      onPayload,
+      debounceMs: 20,
+    });
+    await settle(80);
+
+    writeFileSync(file, 'body{color:red}', 'utf8');
+    await settle(120);
+    watcher.close();
+
+    expect(onPayload).not.toHaveBeenCalled();
+  });
+
+  it('still sends when the content really changed', async () => {
+    const file = join(dist, 'styles', 'main.css');
+    writeFileSync(file, 'body{color:red}', 'utf8');
+
+    const onPayload = vi.fn();
+    const watcher = watchDist({
+      distDir: dist,
+      packageId: 'my-system',
+      packageType: 'system',
+      onPayload,
+      debounceMs: 20,
+    });
+    await settle(80);
+
+    writeFileSync(file, 'body{color:blue}', 'utf8');
+    await settle(120);
+    watcher.close();
+
+    expect(onPayload).toHaveBeenCalled();
+    expect(JSON.parse(onPayload.mock.calls.at(-1)?.[0] as string).content).toContain('blue');
+  });
+
   it('emits nothing more once closed', async () => {
     const onPayload = vi.fn();
     const watcher = watchDist({
