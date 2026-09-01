@@ -11,7 +11,11 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
+  # write, not read: this workflow pushes the version tags and opens the
+  # GitHub releases. Nothing else did — changesets/action creates those as
+  # part of its publish step, and publishing moved here for OIDC without the
+  # tagging coming along.
+  contents: write
   id-token: write # required for npm OIDC trusted publishing
 
 concurrency:
@@ -68,3 +72,21 @@ jobs:
       # Corepack-managed pnpm 10.33+ ships a compatible npm bundle.
       - name: Publish
         run: pnpm publish -r --access public --no-git-checks
+
+      # `changeset git-tag` reads the versions already in package.json and creates
+      # one git tag per package that does not have one yet. Safe to re-run: it
+      # skips tags that already exist.
+      - name: Tag the published versions
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          pnpm exec changeset git-tag
+          git push --tags
+
+      # One GitHub release per new tag, with the notes taken from that
+      # package's CHANGELOG section for that version — the same text the
+      # changeset author wrote, rather than a generated diff summary.
+      - name: Open a GitHub release per tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/create-releases.mjs
