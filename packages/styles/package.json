@@ -38,17 +38,14 @@
   ],
   "scripts": {
     "build": "node build-tokens.mjs",
-    "typecheck": "echo 'styles is CSS-only — no typecheck'",
+    "typecheck": "echo 'styles is CSS-only \u2014 no typecheck'",
     "test": "echo 'styles has no tests yet'",
     "publint": "publint",
-    "attw": "echo 'styles is CSS-only — no types'"
+    "attw": "echo 'styles is CSS-only \u2014 no types'"
   },
   "devDependencies": {
     "publint": "catalog:",
     "style-dictionary": "catalog:"
-  },
-  "engines": {
-    "node": ">=26.0.0"
   },
   "publishConfig": {
     "access": "public",

@@ -52,9 +52,6 @@
     "vitest": "catalog:",
     "@vttforge/testing": "workspace:*"
   },
-  "engines": {
-    "node": ">=26.0.0"
-  },
   "publishConfig": {
     "access": "public",
     "provenance": false
