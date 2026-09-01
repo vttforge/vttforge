@@ -15,6 +15,10 @@ Hooks.once('ready', () => {
     location: globalThis.location,
     createSocket: (url) => new WebSocket(url),
     setTimer: (fn, ms) => globalThis.setTimeout(fn, ms),
+    // The console is this module's only interface. A developer watching for
+    // "reloaded …" has nowhere else to look, and a dev-only module has no
+    // reason to route it through Foundry's notifications.
+    // biome-ignore lint/suspicious/noConsole: the console is the output here
     log: (message, ...rest) => console.info(PREFIX, message, ...rest),
     override: typeof override === 'string' ? override : null,
   });
