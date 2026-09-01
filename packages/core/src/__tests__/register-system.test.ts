@@ -109,7 +109,8 @@ describe('registerSystem', () => {
       onAfterInit: after,
     });
 
-    (hooks.once.mock.calls[0]?.[1] as () => void)();
+    const initCallback = hooks.once.mock.calls[0]?.[1] as () => void;
+    initCallback();
     expect(before).toHaveBeenCalledOnce();
     expect(after).toHaveBeenCalledOnce();
     expect(calls).toEqual(['before', 'after']);
