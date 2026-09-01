@@ -4,6 +4,7 @@
  * v0.1 surface:
  *
  *   - registerSystem()             — one-call init, replaces Hooks.once("init")
+ *   - registerModule()             — the same for modules, with namespaced sub-types
  *   - SystemConfig                 — typed wrapper around game.settings
  *   - BaseTypeDataModel()          — TypeDataModel with safe migrateData default
  *   - BaseActorSheet()             — ActorSheetV2 + HandlebarsApplicationMixin
@@ -103,5 +104,10 @@ export type {
   MigrationRunner,
   MigrationRunnerOptions,
 } from './migrations/types.js';
+export {
+  type ModuleRegistration,
+  moduleSubType,
+  registerModule,
+} from './register-module.js';
 export { registerSystem, type SystemRegistration } from './register-system.js';
 export { SystemConfig } from './system-config.js';
