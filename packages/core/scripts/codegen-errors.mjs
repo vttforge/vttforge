@@ -42,7 +42,20 @@ async function loadEntries() {
   return mod.listErrorEntries();
 }
 
-function renderStub(entry, pkgVersion) {
+/**
+ * The stub deliberately carries no package version.
+ *
+ * These pages are tracked in git, so stamping the version in would rewrite
+ * every one of them on each release — and the release step bumps
+ * package.json without running a build, so they would name the previous
+ * version until someone rebuilt by hand. It also meant any build on any
+ * branch dirtied five tracked files for reasons unrelated to the change.
+ *
+ * The version still travels with the package in `dist/errors-manifest.json`,
+ * which is published and not tracked. A reader who needs it looks there, or
+ * at the docs site, which knows the version it was built from.
+ */
+function renderStub(entry) {
   const lines = [
     `# ${entry.code} — ${entry.name}`,
     '',
@@ -53,7 +66,7 @@ function renderStub(entry, pkgVersion) {
     '|---|---|',
     `| Code | \`${entry.code}\` |`,
     `| Name | \`${entry.name}\` |`,
-    `| Package | \`@vttforge/core@${pkgVersion}\` |`,
+    '| Package | `@vttforge/core` |',
     `| Source | [\`${SOURCE_RELATIVE}\`](${SOURCE_URL}) |`,
   ];
   if (entry.deprecated) {
@@ -99,12 +112,12 @@ async function writeManifest(entries, pkgVersion) {
   return manifest;
 }
 
-async function writeStubs(entries, pkgVersion) {
+async function writeStubs(entries) {
   await mkdir(DOCS_DIR, { recursive: true });
   for (const entry of entries) {
     const path = resolve(DOCS_DIR, `${entry.code}.md`);
     await mkdir(dirname(path), { recursive: true });
-    await writeFile(path, renderStub(entry, pkgVersion), 'utf8');
+    await writeFile(path, renderStub(entry), 'utf8');
   }
 }
 
@@ -114,7 +127,7 @@ async function main() {
     throw new Error('Error registry is empty — refusing to overwrite docs/errors with nothing.');
   }
   const manifest = await writeManifest(entries, pkgVersion);
-  await writeStubs(entries, pkgVersion);
+  await writeStubs(entries);
   console.warn(
     `[codegen-errors] wrote ${entries.length} entries → dist/errors-manifest.json + docs/errors/`,
   );
