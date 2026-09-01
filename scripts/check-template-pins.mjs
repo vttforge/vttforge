@@ -19,11 +19,10 @@
  * changesets' own logic and mutates nothing. Packages with no pending release
  * fall back to their current version.
  */
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import getReleasePlan from '@changesets/get-release-plan';
 import semver from 'semver';
 
 // This is a command-line check. Its console output is the whole point — there
@@ -53,43 +52,35 @@ function currentVersions() {
 /**
  * What the next release publishes, per package.
  *
- * Runs changesets rather than reimplementing its bump rules — getting those
- * subtly wrong would make this check lie in the same direction as the bug it
- * exists to catch.
+ * Calls changesets' own release-plan rather than reimplementing its bump
+ * rules — getting those subtly wrong would make this check lie in the same
+ * direction as the bug it exists to catch.
+ *
+ * The plan API is used instead of `changeset status` on purpose. That command
+ * additionally works out where HEAD diverged from the base branch, which needs
+ * a full clone and fails on CI's shallow checkout — and that step answers a
+ * question this check never asks.
+ *
+ * The version here deliberately matches the one `@changesets/cli` depends on,
+ * so this computes the same plan the real release will. Bumping it ahead of
+ * the CLI would defeat the point.
  */
-function plannedVersions() {
-  const dir = mkdtempSync(join(tmpdir(), 'vttforge-pins-'));
-  const file = join(dir, 'plan.json');
+async function plannedVersions() {
+  const fn = getReleasePlan.default ?? getReleasePlan;
   try {
-    execFileSync(
-      join(repoRoot, 'node_modules', '.bin', 'changeset'),
-      ['status', '--output', file],
-      {
-        cwd: repoRoot,
-        stdio: 'pipe',
-      },
-    );
-    const plan = readJson(file);
+    const plan = await fn(repoRoot);
     return new Map((plan.releases ?? []).map((r) => [r.name, r.newVersion]));
   } catch (err) {
-    // A broken plan must not pass silently as "nothing pending" — that would
-    // make this check report success precisely when it cannot see anything.
-    // Print what the tool actually said: swallowing its stderr once already
-    // turned a one-line CI failure into a guessing game.
-    console.error('Could not read the release plan from changesets.');
-    const stderr = err?.stderr?.toString().trim();
-    const stdout = err?.stdout?.toString().trim();
-    if (stderr) console.error(stderr);
-    if (stdout) console.error(stdout);
-    console.error(err instanceof Error ? err.message : String(err));
+    // A plan that cannot be read must not pass as "nothing pending" — that
+    // would report success precisely when nothing can be seen.
+    console.error('Could not compute the release plan.');
+    console.error(err instanceof Error ? (err.stack ?? err.message) : String(err));
     process.exit(1);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
   }
 }
 
 const current = currentVersions();
-const planned = plannedVersions();
+const planned = await plannedVersions();
 const problems = [];
 
 for (const entry of readdirSync(templatesDir, { withFileTypes: true })) {

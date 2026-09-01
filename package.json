@@ -24,6 +24,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@changesets/cli": "catalog:",
+    "@changesets/get-release-plan": "catalog:",
     "knip": "catalog:",
     "lefthook": "catalog:",
     "semver": "catalog:",
