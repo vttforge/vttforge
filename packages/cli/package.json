@@ -52,6 +52,7 @@
     "@arethetypeswrong/cli": "catalog:",
     "@types/archiver": "catalog:",
     "@types/node": "catalog:",
+    "@vttforge/dev-module": "workspace:*",
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",

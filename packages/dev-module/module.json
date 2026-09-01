@@ -1,14 +1,18 @@
 {
   "id": "vttforge-dev",
   "title": "VTTForge Dev",
-  "description": "Applies changes from `vttforge dev` without a page reload. Development only — do not enable in a world you care about.",
+  "description": "Applies changes from `vttforge dev` without a page reload. Development only \u2014 do not enable in a world you care about.",
   "version": "0.0.0",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
   },
-  "authors": [{ "name": "VTTForge" }],
-  "esmodules": ["main.mjs"],
+  "authors": [
+    {
+      "name": "VTTForge"
+    }
+  ],
+  "esmodules": ["dist/main.mjs"],
   "url": "https://github.com/vttforge/vttforge",
   "license": "https://github.com/vttforge/vttforge/blob/main/LICENSE",
   "manifest": "https://github.com/vttforge/vttforge/releases/latest/download/module.json",
