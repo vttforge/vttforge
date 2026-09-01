@@ -58,6 +58,37 @@ describe('watchDist', () => {
 
   const settle = (ms = 120) => new Promise((r) => setTimeout(r, ms));
 
+  /**
+   * Give a freshly created watcher a moment to register.
+   *
+   * A recursive `fs.watch` is not listening the instant it returns, and a
+   * write in the same tick is simply missed. That is what made these tests
+   * flaky: not a sleep too short to cover the debounce, but a payload that
+   * never came. It also made the negative cases pass for the wrong reason —
+   * a watcher that is not yet listening stays quiet about everything.
+   */
+  const ready = () => settle(80);
+
+  /**
+   * Wait until a payload count is reached, or give up.
+   *
+   * A fixed sleep is the wrong tool for "the watcher should have fired by
+   * now": it has to cover a filesystem event plus a debounce, and under a
+   * loaded parallel suite that budget runs out. Polling returns as soon as
+   * the event lands and tolerates a slow machine.
+   *
+   * Cases that assert a payload never arrives still sleep — there is nothing
+   * to poll for, and the wait is the test.
+   */
+  const waitForCalls = async (fn: { mock: { calls: unknown[] } }, count = 1, timeoutMs = 3000) => {
+    const deadline = Date.now() + timeoutMs;
+    while (fn.mock.calls.length < count) {
+      if (Date.now() > deadline) return false;
+      await settle(10);
+    }
+    return true;
+  };
+
   it('emits a payload the dev module can read', async () => {
     const onPayload = vi.fn();
     const watcher = watchDist({
@@ -67,12 +98,12 @@ describe('watchDist', () => {
       onPayload,
       debounceMs: 10,
     });
+    await ready();
 
     await writeFile(join(dist, 'styles', 'main.css'), 'body { color: red; }', 'utf8');
-    await settle();
+    expect(await waitForCalls(onPayload)).toBe(true);
     watcher.close();
 
-    expect(onPayload).toHaveBeenCalled();
     const frame = JSON.parse(onPayload.mock.calls.at(-1)?.[0] as string);
     expect(frame).toMatchObject({
       packageType: 'system',
@@ -92,6 +123,7 @@ describe('watchDist', () => {
       onPayload,
       debounceMs: 10,
     });
+    await ready();
 
     await writeFile(join(dist, 'main.mjs'), 'export {};', 'utf8');
     await settle();
@@ -109,6 +141,7 @@ describe('watchDist', () => {
       onPayload,
       debounceMs: 60,
     });
+    await ready();
 
     // Written synchronously and back to back: this is what an editor's save
     // looks like — write, truncate, rename — not three separate edits. An
@@ -117,7 +150,10 @@ describe('watchDist', () => {
     for (const value of ['a', 'b', 'c']) {
       writeFileSync(file, `body{content:"${value}"}`, 'utf8');
     }
-    await settle(200);
+    expect(await waitForCalls(onPayload)).toBe(true);
+    // One debounce window past the first payload: anything the burst failed
+    // to merge would have arrived by now.
+    await settle(140);
     watcher.close();
 
     expect(onPayload).toHaveBeenCalledTimes(1);
@@ -133,12 +169,13 @@ describe('watchDist', () => {
       onPayload,
       debounceMs: 20,
     });
+    await ready();
 
     const file = join(dist, 'styles', 'main.css');
     writeFileSync(file, 'body{content:"first"}', 'utf8');
-    await settle(120);
+    expect(await waitForCalls(onPayload)).toBe(true);
     writeFileSync(file, 'body{content:"second"}', 'utf8');
-    await settle(120);
+    expect(await waitForCalls(onPayload, 2)).toBe(true);
     watcher.close();
 
     // Debouncing must not swallow the next edit — it only merges one burst.
@@ -185,10 +222,9 @@ describe('watchDist', () => {
     await settle(80);
 
     writeFileSync(file, 'body{color:blue}', 'utf8');
-    await settle(120);
+    expect(await waitForCalls(onPayload)).toBe(true);
     watcher.close();
 
-    expect(onPayload).toHaveBeenCalled();
     expect(JSON.parse(onPayload.mock.calls.at(-1)?.[0] as string).content).toContain('blue');
   });
 
@@ -201,6 +237,9 @@ describe('watchDist', () => {
       onPayload,
       debounceMs: 10,
     });
+    // Let it come up first: closing a watcher that was never listening
+    // would satisfy this test without testing close() at all.
+    await ready();
     watcher.close();
 
     await writeFile(join(dist, 'styles', 'main.css'), 'body{}', 'utf8');
