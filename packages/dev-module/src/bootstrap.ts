@@ -5,7 +5,7 @@
  * reach, what counts as a usable global — can be tested without a browser.
  */
 import { type Connection, connect, type SocketLike } from './client.js';
-import type { FoundryEnv } from './reload.js';
+import type { AppV2Like, FoundryEnv } from './reload.js';
 
 export const MODULE_ID = 'vttforge-dev';
 
@@ -69,7 +69,8 @@ export function buildEnv(deps: BootstrapDeps): FoundryEnv | null {
     Handlebars,
     game,
     ui: g.ui as FoundryEnv['ui'],
-    applicationInstances: () => foundry?.applications?.instances?.values() ?? [],
+    applicationInstances: (): Iterable<AppV2Like> =>
+      foundry?.applications?.instances?.values() ?? [],
     mergeObject,
     callHook: (name, data) => Hooks.call(name, data),
     document: doc,
