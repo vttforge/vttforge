@@ -7,6 +7,7 @@ catalog:
   '@arethetypeswrong/cli': ^0.18.5
   '@biomejs/biome': ^2.5.11
   '@changesets/cli': ^3.0.1
+  '@changesets/get-release-plan': ^4.0.16
   '@clack/prompts': ^1.7.0
   '@types/archiver': ^8.0.0
   '@types/node': ^26.4.0
@@ -16,6 +17,7 @@ catalog:
   knip: ^6.34.0
   lefthook: ^2.1.12
   publint: ^0.3.24
+  semver: ^7.8.5
   style-dictionary: ^5.5.2
   syncpack: ^15.3.3
   tsdown: ^0.22.14

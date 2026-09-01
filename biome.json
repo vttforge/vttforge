@@ -51,9 +51,23 @@
       "suspicious": {
         "noConsole": {
           "level": "warn",
-          "options": { "allow": ["error", "warn"] }
+          "options": {
+            "allow": ["error", "warn"]
+          }
         }
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["scripts/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    }
+  ]
 }
