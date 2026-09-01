@@ -42,7 +42,11 @@ export type TemplateVariant = 'system-ts' | 'system-js' | 'module-ts' | 'module-
 const PACKAGE_ID_RE = /^[a-z][a-z0-9-]*$/;
 const UNSAFE_METADATA_CHARS_RE = /["\\\r\n\t]/;
 
-function validateMetadata(value: string): string | undefined {
+// Clack hands validators `string | undefined` — the prompt calls them before
+// anything is typed. Blank metadata is allowed here; only the `Required`
+// variant below rejects it.
+export function validateMetadata(value: string | undefined): string | undefined {
+  if (!value) return undefined;
   // Reject characters that would break JSON string contexts in the
   // generated manifests/i18n catalogues. Apostrophes are fine — every JS
   // string literal in the templates is double-quoted, every JSON value is
@@ -61,11 +65,21 @@ function validateMetadata(value: string): string | undefined {
   return undefined;
 }
 
-function validateRequiredMetadata(value: string): string | undefined {
+export function validateRequiredMetadata(value: string | undefined): string | undefined {
   if (!value || value.trim().length === 0) {
     return 'Required — Foundry rejects packages with a blank title.';
   }
   return validateMetadata(value);
+}
+
+export function validatePackageId(value: string | undefined): string | undefined {
+  // Coalesce before the test. `PACKAGE_ID_RE.test(undefined)` coerces to the
+  // string "undefined", which matches the pattern and would let a missing id
+  // through.
+  if (!PACKAGE_ID_RE.test(value ?? '')) {
+    return 'Package id must start with a letter and contain only lowercase letters, digits, dashes';
+  }
+  return undefined;
 }
 
 /**
@@ -125,7 +139,7 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
     const answer = await p.text({
       message: 'Directory name (also the default manifest id)',
       placeholder: 'my-system',
-      validate: (value: string) => {
+      validate: (value: string | undefined) => {
         const trimmed = value?.trim() ?? '';
         if (trimmed.length === 0) return 'Name is required';
         if (!PACKAGE_ID_RE.test(trimmed)) {
@@ -184,12 +198,7 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   const idAnswer = await p.text({
     message: 'Package id (used as the folder Foundry serves under /<systems|modules>/<id>/)',
     initialValue: defaultId,
-    validate: (value: string) => {
-      if (!PACKAGE_ID_RE.test(value)) {
-        return 'Package id must start with a letter and contain only lowercase letters, digits, dashes';
-      }
-      return undefined;
-    },
+    validate: validatePackageId,
   });
   if (isCancelled(idAnswer)) bail('Scaffold cancelled.');
   const id = String(idAnswer);

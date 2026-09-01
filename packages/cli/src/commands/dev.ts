@@ -62,7 +62,7 @@ function createDataDirPrompt(): NonNullable<ResolveDataDirOptions['prompt']> {
       message:
         'Foundry user-data directory (the folder that contains Data/, e.g. ~/Library/Application Support/FoundryVTT)',
       placeholder: autoDetected ?? '/path/to/FoundryVTT',
-      validate: (value: string) => {
+      validate: (value: string | undefined) => {
         if (!value || value.trim().length === 0) return 'A path is required';
         return undefined;
       },
