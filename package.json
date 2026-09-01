@@ -15,7 +15,7 @@
     "test": "turbo run test",
     "publint": "turbo run publint",
     "attw": "turbo run attw",
-    "lint": "biome ci . --colors=off && syncpack lint",
+    "lint": "biome ci . --colors=off && syncpack lint && node scripts/check-template-pins.mjs",
     "format": "biome check --write . --colors=off",
     "knip": "knip",
     "changeset": "changeset",
@@ -26,6 +26,7 @@
     "@changesets/cli": "catalog:",
     "knip": "catalog:",
     "lefthook": "catalog:",
+    "semver": "catalog:",
     "syncpack": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"

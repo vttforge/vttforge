@@ -42,6 +42,9 @@ catalogs:
     publint:
       specifier: ^0.3.24
       version: 0.3.24
+    semver:
+      specifier: ^7.8.5
+      version: 7.8.5
     style-dictionary:
       specifier: ^5.5.2
       version: 5.5.2
@@ -83,6 +86,9 @@ importers:
       lefthook:
         specifier: 'catalog:'
         version: 2.1.12
+      semver:
+        specifier: 'catalog:'
+        version: 7.8.5
       syncpack:
         specifier: 'catalog:'
         version: 15.3.3
