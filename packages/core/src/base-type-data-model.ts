@@ -20,6 +20,8 @@
  * exists by the time this module runs (we are loaded from system esmodules).
  */
 
+import type { FieldInstance } from './data/fields.js';
+import type { InferSchema } from './data/infer-schema.js';
 import { VttfError } from './errors/registry.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: we mix into Foundry's TypeDataModel whose shape lives in fvtt-types (deferred to @vttforge/types v1.0)
@@ -46,7 +48,86 @@ function resolveTypeDataModelClass(): AnyConstructor {
  * globals may not exist yet (test boot, ESM hoist). Calling `BaseTypeDataModel()`
  * lazy-resolves the global at the moment of subclassing.
  */
-export function BaseTypeDataModel(): AnyConstructor {
+/** The two hooks this base fills in, so a subclass can omit either. */
+export interface TypeDataModelHooks {
+  prepareBaseData(): void;
+  prepareDerivedData(): void;
+}
+
+/**
+ * What an instance looks like when the schema is known.
+ *
+ * The schema's fields ARE the instance properties — inside
+ * `prepareDerivedData()` you read `this.level`, not `this.system.level`, and
+ * `actor.system` is this instance.
+ *
+ * Derived values are not in the schema, so they are not here either. Declare
+ * them on the subclass:
+ *
+ * ```ts
+ * declare armorClass: number;
+ * ```
+ */
+export type TypedTypeDataModel<S extends Record<string, FieldInstance>> = InferSchema<S> &
+  TypeDataModelHooks & {
+    /**
+     * Phantom property carrying the schema's inferred shape. Never assigned,
+     * never present at runtime — it exists so the type has a name:
+     *
+     * ```ts
+     * type CharacterSystem = CharacterData['$inferData'];
+     * ```
+     */
+    readonly $inferData: InferSchema<S>;
+  };
+
+export interface TypedTypeDataModelCtor<S extends Record<string, FieldInstance>> {
+  // biome-ignore lint/suspicious/noExplicitAny: a subclass declaring its own
+  // constructor has to pass Foundry's (data, context) pair through to super.
+  new (...args: any[]): TypedTypeDataModel<S>;
+  defineSchema(): S;
+  migrateData(data: Record<string, unknown>): Record<string, unknown>;
+}
+
+/**
+ * Build a base class with no knowledge of the schema.
+ *
+ * `this` inside the hooks is untyped. Pass your schema function instead to
+ * get the fields typed.
+ */
+export function BaseTypeDataModel(): AnyConstructor;
+/**
+ * Build a base class that knows its schema.
+ *
+ * Hand it the function that returns your fields and it implements
+ * `static defineSchema()` for you, so the schema is written once:
+ *
+ * ```ts
+ * const defineCharacterSchema = () => {
+ *   const f = fields();
+ *   return { level: new f.NumberField({ required: true, nullable: false, initial: 1 }) };
+ * };
+ *
+ * class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {
+ *   declare armorClass: number;
+ *   prepareDerivedData() {
+ *     this.armorClass = 10 + this.level; // this.level is number
+ *   }
+ * }
+ * ```
+ *
+ * It has to be a function, not an object: `fields()` reads a Foundry global
+ * that does not exist when the module is first evaluated.
+ *
+ * A subclass may still declare its own `static defineSchema()`; that one wins,
+ * the same as any other static.
+ */
+export function BaseTypeDataModel<S extends Record<string, FieldInstance>>(
+  defineSchema: () => S,
+): TypedTypeDataModelCtor<S>;
+export function BaseTypeDataModel(
+  defineSchema?: () => Record<string, FieldInstance>,
+): AnyConstructor {
   const Base = resolveTypeDataModelClass();
 
   class VttforgeBaseTypeDataModel extends Base {
@@ -89,6 +170,17 @@ export function BaseTypeDataModel(): AnyConstructor {
     prepareDerivedData(): void {
       // override me
     }
+  }
+
+  if (defineSchema !== undefined) {
+    // Assigned rather than declared in the class body so the no-argument form
+    // keeps inheriting Foundry's own defineSchema instead of shadowing it
+    // with one that returns nothing.
+    Object.defineProperty(VttforgeBaseTypeDataModel, 'defineSchema', {
+      value: defineSchema,
+      writable: true,
+      configurable: true,
+    });
   }
 
   return VttforgeBaseTypeDataModel as unknown as AnyConstructor;
