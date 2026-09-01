@@ -246,9 +246,7 @@ export interface ForeignDocumentFieldCtor {
 }
 
 /** Any DataModel subclass — what the embedded fields take as their type. */
-// biome-ignore lint/suspicious/noExplicitAny: a constructor bound must accept
-// the argument list of whatever model class the caller passes.
-export type DataModelClass = abstract new (...args: any[]) => object;
+export type DataModelClass = abstract new (...args: never[]) => object;
 
 export interface EmbeddedDataFieldCtor {
   new <Model extends DataModelClass, O extends EmbeddedDataFieldOptions = EmbeddedDataFieldOptions>(

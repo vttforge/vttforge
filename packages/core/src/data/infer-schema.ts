@@ -22,7 +22,6 @@ import type {
   ArrayFieldInstance,
   BooleanFieldInstance,
   ColorFieldInstance,
-  DataModelClass,
   DocumentClass,
   EmbeddedDataFieldInstance,
   EmbeddedDocumentFieldInstance,
