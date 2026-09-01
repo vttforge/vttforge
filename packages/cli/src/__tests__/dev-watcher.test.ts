@@ -162,7 +162,7 @@ describe('watchDist', () => {
     expect(onPayload).not.toHaveBeenCalled();
   });
 
-  it('reports a missing directory instead of throwing', () => {
+  it('reports a missing directory instead of throwing', async () => {
     const onError = vi.fn();
     const watcher = watchDist({
       distDir: join(dist, 'does-not-exist'),
@@ -171,6 +171,10 @@ describe('watchDist', () => {
       onPayload: vi.fn(),
       onError,
     });
+    // macOS throws from `watch`; Linux emits `error` on the next tick. Give
+    // the asynchronous path a moment before asserting, so this means the same
+    // thing on both.
+    await settle(60);
     expect(onError).toHaveBeenCalled();
     expect(() => watcher.close()).not.toThrow();
   });

@@ -15,7 +15,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createLink, readLinkTarget } from './symlink.js';
 
-export const DEV_MODULE_ID = 'vttforge-dev';
+const DEV_MODULE_ID = 'vttforge-dev';
 
 export interface InstallResult {
   /** Where the module now lives, from Foundry's point of view. */

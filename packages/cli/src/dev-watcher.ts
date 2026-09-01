@@ -100,6 +100,14 @@ export function watchDist(options: WatchOptions): DistWatcher {
     return { close: () => undefined };
   }
 
+  // Platforms disagree about how a bad path surfaces: macOS throws from
+  // `watch` itself, Linux hands back a watcher that emits `error` a tick
+  // later. Handling only the throw means a missing dist/ fails silently on
+  // Linux — which is where CI runs.
+  watcher.on('error', (err: unknown) => {
+    options.onError?.(err instanceof Error ? err.message : String(err));
+  });
+
   return {
     close: () => {
       for (const timer of pending.values()) clearTimeout(timer);

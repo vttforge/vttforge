@@ -42,7 +42,13 @@ export interface DevOptions {
   hmrPort?: number;
 }
 
-/** Matches the default the dev module dials. */
+/**
+ * Where the bridge listens.
+ *
+ * `@vttforge/dev-module` dials this same number. If the two drift apart the
+ * module retries a port nobody is listening on, forever and quietly — so a
+ * test asserts they still agree.
+ */
 export const DEFAULT_HMR_PORT = 31_313;
 
 interface BridgeOptions {

@@ -151,6 +151,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.4.0
+      '@vttforge/dev-module':
+        specifier: workspace:*
+        version: link:../dev-module
       publint:
         specifier: 'catalog:'
         version: 0.3.24
