@@ -23,6 +23,7 @@
 import type { FieldInstance } from './data/fields.js';
 import type { InferSchema } from './data/infer-schema.js';
 import { VttfError } from './errors/registry.js';
+import type { VttforgeClass } from './foundry-base.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: we mix into Foundry's TypeDataModel whose shape lives in fvtt-types (deferred to @vttforge/types v1.0)
 type AnyConstructor = new (...args: any[]) => any;
@@ -92,10 +93,10 @@ export interface TypedTypeDataModelCtor<S extends Record<string, FieldInstance>>
 /**
  * Build a base class with no knowledge of the schema.
  *
- * `this` inside the hooks is untyped. Pass your schema function instead to
- * get the fields typed.
+ * The hooks are typed; the schema's own fields are not, since nothing said
+ * what they are. Pass your schema function instead to get those too.
  */
-export function BaseTypeDataModel(): AnyConstructor;
+export function BaseTypeDataModel(): VttforgeClass<TypeDataModelHooks>;
 /**
  * Build a base class that knows its schema.
  *

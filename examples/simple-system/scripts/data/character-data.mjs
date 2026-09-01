@@ -85,6 +85,7 @@ export class CharacterData extends BaseTypeDataModel() {
     };
   }
 
+  /** @override */
   prepareDerivedData() {
     for (const [key, value] of Object.entries(this.abilities)) {
       const score = typeof value === 'number' ? value : (value?.value ?? 10);

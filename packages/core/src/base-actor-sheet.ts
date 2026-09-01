@@ -30,6 +30,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
+import type { UntypedFoundryMembers } from './foundry-base.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: Foundry's ActorSheetV2 shape lives in fvtt-types (deferred to @vttforge/types v1.0)
 type AnyConstructor = new (...args: any[]) => any;
@@ -73,10 +74,34 @@ export interface SheetBaseStatics {
  * What the factory hands back: something you can `extend`, whose statics the
  * compiler can see.
  */
+/**
+ * What the sheet factories add on top of Foundry's own sheet.
+ *
+ * Only the members a subclass actually reaches for. The rest of the Foundry
+ * surface stays reachable and untyped until `@vttforge/types` describes it —
+ * see `UntypedFoundryMembers`.
+ */
+export interface SheetBaseMembers {
+  /** Fills in `context.tabs` for every group in `static TABS`. */
+  _prepareContext(options: unknown): Promise<Record<string, unknown>>;
+  /** Binds the `static DRAG_DROP` entries. */
+  _onRender(context: unknown, options: unknown): void;
+  _onDragStart(event: DragEvent): void;
+
+  /**
+   * The typed drop hooks. Override the one you want; returning `undefined`
+   * hands the drop back to Foundry's own handling.
+   */
+  onDropItem(item: unknown, event: DragEvent): Promise<unknown>;
+  onDropActor(actor: unknown, event: DragEvent): Promise<unknown>;
+  onDropFolder(folder: unknown, event: DragEvent): Promise<unknown>;
+  onDropActiveEffect(effect: unknown, event: DragEvent): Promise<unknown>;
+}
+
 export interface SheetBaseCtor extends SheetBaseStatics {
   // biome-ignore lint/suspicious/noExplicitAny: mirrors ApplicationV2's own
   // constructor arity, which subclasses pass straight through.
-  new (...args: any[]): any;
+  new (...args: any[]): SheetBaseMembers & UntypedFoundryMembers;
 }
 
 interface DragDropInstance {
