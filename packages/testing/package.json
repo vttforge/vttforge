@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/testing",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Quench-compatible test helpers and Foundry mocks for VTTForge systems and modules.",
   "type": "module",
   "license": "MIT",
@@ -38,7 +38,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "publint": "publint",
-    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output \u2014 re-enable later'"
+    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output — re-enable later'"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",

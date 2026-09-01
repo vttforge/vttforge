@@ -1,5 +1,13 @@
 # @vttforge-examples/simple-system
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [9462144]
+  - @vttforge/core@0.5.0
+  - @vttforge/styles@0.3.0
+
 ## 0.1.3
 
 ### Patch Changes
