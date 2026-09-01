@@ -131,7 +131,7 @@ function reloadJson(data: HotReloadData, env: FoundryEnv): ReloadOutcome {
 /**
  * One open window of either generation. Only the shape this module reads.
  */
-export interface AppV1Like {
+interface AppV1Like {
   render: (force?: boolean) => void;
   options?: { template?: string };
 }
@@ -164,7 +164,7 @@ interface RenderTarget {
  * it, and the caller falls back to re-rendering everything rather than
  * quietly updating nothing.
  */
-export function findRenderTargets(path: string, env: FoundryEnv): RenderTarget[] {
+function findRenderTargets(path: string, env: FoundryEnv): RenderTarget[] {
   const targets: RenderTarget[] = [];
 
   for (const app of Object.values(env.ui?.windows ?? {})) {
