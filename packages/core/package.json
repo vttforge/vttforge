@@ -49,8 +49,7 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "unrun": "catalog:",
-    "vitest": "catalog:",
-    "@vttforge/testing": "workspace:*"
+    "vitest": "catalog:"
   },
   "publishConfig": {
     "access": "public",
