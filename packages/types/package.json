@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/types",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shared TypeScript types for VTTForge \u2014 full schema-to-TS inference, Foundry v13+ typing helpers.",
   "type": "module",
   "license": "MIT",

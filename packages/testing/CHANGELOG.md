@@ -1,5 +1,34 @@
 # @vttforge/testing
 
+## 0.2.0
+
+### Minor Changes
+
+- 6a39f2a: First real release. It was a three-line placeholder.
+  
+  Two entry points, because the two kinds of test run in different places.
+  
+  `@vttforge/testing/vitest` installs the Foundry globals a package reaches for and hands back a handle that records what your code registered — hooks, settings, notifications — so a test can assert on what happened rather than only on what did not throw. Every `@vttforge/core` test built this by hand, differently each time; that is the problem it solves.
+  
+  `@vttforge/testing/quench` registers a batch inside a live world, for what a mock cannot answer: a sheet that really draws, a socket with two clients, a document that round-trips through the database.
+  
+  Also ships ambient declarations for the globals, since a test that mocks Foundry then reads `game.settings` otherwise gets "Cannot find name 'game'".
+
+### Patch Changes
+
+- 9305156: The ambient globals now arrive with the import.
+  
+  They shipped as a separate `@vttforge/testing/globals` export, documented for `compilerOptions.types`. That does not work: `types` entries resolve against package roots, not subpath exports, and a consumer following the README got `Cannot find type definition file`.
+  
+  Importing from `@vttforge/testing/vitest` declares them instead — the import a test already writes is the moment it needs them, and there is nothing to configure.
+  
+  Found by using the package from `@vttforge/core`.
+- d015aee: Stop requiring Node 26 to install a browser package.
+  
+  Every package declared `engines.node: ">=26.0.0"`. Four of them — `core`, `styles`, `types` and `dev-module` — compile to ES2022 and run in the browser inside Foundry. They never touch Node, and the floor did nothing except stop anyone on Node 22 LTS from installing the SDK at all.
+  
+  Those four declare no engine now. `@vttforge/testing` drops to `>=22` — its Quench half runs in the browser too. `@vttforge/cli` and `@vttforge/vite-plugin` keep `>=26`, which is what they actually build against.
+
 ## 0.1.0
 
 ### Minor Changes
