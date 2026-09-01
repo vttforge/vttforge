@@ -25,3 +25,32 @@ catalog:
   vite: ^8.2.2
   vitest: ^4.1.11
 
+# pnpm 11 reads settings from here, not .npmrc — .npmrc keeps registry and auth
+# only. It does not warn when it finds them in the old place, so anything left
+# behind silently stops applying.
+autoInstallPeers: true
+strictPeerDependencies: false
+preferWorkspacePackages: true
+saveWorkspaceProtocol: rolling
+
+supportedArchitectures:
+  os:
+    - darwin
+    - linux
+  cpu:
+    - x64
+    - arm64
+  libc:
+    - glibc
+    - musl
+# pnpm 11 refuses to install anything published in the last 24h
+# (minimumReleaseAge defaults to 1440). knip 6.34.0 was published hours before
+# this landed. The exemption is pinned to that exact version, so it stops
+# applying the moment knip bumps — drop the block then rather than growing it.
+minimumReleaseAgeExclude:
+  - knip@6.34.0
+
+# pnpm 11 turns an ignored build script into a hard error. lefthook needs its
+# postinstall to write the git hooks.
+allowBuilds:
+  lefthook: true
