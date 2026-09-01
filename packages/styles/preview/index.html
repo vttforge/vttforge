@@ -104,29 +104,29 @@
       <h2>Forms</h2>
       <div class="vttf-form-grid">
         <div class="vttf-form-field">
-          <label>Character name</label>
-          <input class="vttf-input" type="text" value="Vex Halloran" />
+          <label for="f-name">Character name</label>
+          <input id="f-name" class="vttf-input" type="text" value="Vex Halloran" />
           <span class="vttf-hint">Visible in the sheet header.</span>
         </div>
         <div class="vttf-form-field">
-          <label>Class</label>
-          <select class="vttf-select">
+          <label for="f-class">Class</label>
+          <select id="f-class" class="vttf-select">
             <option>Rogue</option>
             <option>Fighter</option>
             <option>Wizard</option>
           </select>
         </div>
         <div class="vttf-form-field">
-          <label>Notes</label>
-          <textarea class="vttf-textarea">Stealthy. Owes a favour to the harbourmaster.</textarea>
+          <label for="f-notes">Notes</label>
+          <textarea id="f-notes" class="vttf-textarea">Stealthy. Owes a favour to the harbourmaster.</textarea>
         </div>
         <div class="vttf-form-field">
-          <label>Invalid input</label>
-          <input class="vttf-input" type="text" aria-invalid="true" value="too long" />
+          <label for="f-invalid">Invalid input</label>
+          <input id="f-invalid" class="vttf-input" type="text" aria-invalid="true" value="too long" />
           <span class="vttf-hint">Aria-invalid demo.</span>
         </div>
         <div class="vttf-form-field">
-          <label>Toggles</label>
+          <span class="vttf-field-label">Toggles</span>
           <div class="stack">
             <label class="vttf-check"><input type="checkbox" checked /><span class="vttf-check__box"></span>Inspiration</label>
             <label class="vttf-radio"><input type="radio" name="r" checked /><span class="vttf-radio__box"></span>Active</label>
@@ -134,15 +134,15 @@
           </div>
         </div>
         <div class="vttf-form-field">
-          <label>Range</label>
-          <input class="vttf-range" type="range" min="0" max="100" value="64" />
+          <label for="f-range">Range</label>
+          <input id="f-range" class="vttf-range" type="range" min="0" max="100" value="64" />
         </div>
         <div class="vttf-form-field">
-          <label>Segmented</label>
-          <div class="vttf-segment" role="tablist">
-            <button type="button" aria-pressed="true">Abilities</button>
-            <button type="button">Inventory</button>
-            <button type="button">Spells</button>
+          <span class="vttf-field-label">Segmented</span>
+          <div class="vttf-segment" role="tablist" aria-label="Segmented">
+            <button type="button" role="tab" aria-selected="true">Abilities</button>
+            <button type="button" role="tab" aria-selected="false">Inventory</button>
+            <button type="button" role="tab" aria-selected="false">Spells</button>
           </div>
         </div>
       </div>
@@ -184,10 +184,10 @@
             <span class="vttf-stat-pill"><span class="vttf-stat-pill__n">15</span><span class="vttf-stat-pill__label">AC</span></span>
           </div>
         </div>
-        <div class="vttf-tabs" role="tablist">
-          <button class="vttf-tab" type="button" aria-selected="true">Abilities</button>
-          <button class="vttf-tab" type="button">Inventory <span class="vttf-tab__count">12</span></button>
-          <button class="vttf-tab" type="button">Spells</button>
+        <div class="vttf-tabs" role="tablist" aria-label="Sheet sections">
+          <button class="vttf-tab" type="button" role="tab" aria-selected="true">Abilities</button>
+          <button class="vttf-tab" type="button" role="tab" aria-selected="false">Inventory <span class="vttf-tab__count">12</span></button>
+          <button class="vttf-tab" type="button" role="tab" aria-selected="false">Spells</button>
         </div>
         <div class="vttf-sheet__body">
           <div class="vttf-item-row">

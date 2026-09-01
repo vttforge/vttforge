@@ -25,30 +25,28 @@ const VARS: ScaffoldVars = {
   YEAR: '2026',
 };
 
-describe.each([
-  'system-ts',
-  'system-js',
-  'module-ts',
-  'module-js',
-])('audit clean against %s template', (variant) => {
-  let dest: string;
+describe.each(['system-ts', 'system-js', 'module-ts', 'module-js'])(
+  'audit clean against %s template',
+  (variant) => {
+    let dest: string;
 
-  beforeEach(async () => {
-    dest = mkdtempSync(join(tmpdir(), `vttforge-audit-${variant}-`));
-    await scaffold({
-      templateDir: join(templatesRoot(), variant),
-      destDir: dest,
-      vars: VARS,
+    beforeEach(async () => {
+      dest = mkdtempSync(join(tmpdir(), `vttforge-audit-${variant}-`));
+      await scaffold({
+        templateDir: join(templatesRoot(), variant),
+        destDir: dest,
+        vars: VARS,
+      });
     });
-  });
 
-  afterEach(() => {
-    rmSync(dest, { recursive: true, force: true });
-  });
+    afterEach(() => {
+      rmSync(dest, { recursive: true, force: true });
+    });
 
-  it('emits zero findings', async () => {
-    const report = await runAudit({ cwd: dest });
-    expect(report.findings).toEqual([]);
-    expect(report.counts).toEqual({ HIGH: 0, MEDIUM: 0, LOW: 0 });
-  });
-});
+    it('emits zero findings', async () => {
+      const report = await runAudit({ cwd: dest });
+      expect(report.findings).toEqual([]);
+      expect(report.counts).toEqual({ HIGH: 0, MEDIUM: 0, LOW: 0 });
+    });
+  },
+);
