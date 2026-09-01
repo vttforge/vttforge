@@ -15,17 +15,18 @@ import { BaseTypeDataModel, fields } from '@vttforge/core';
 export class CharacterData extends BaseTypeDataModel() {
   static defineSchema() {
     const f = fields();
-    // The six ability scores share one spec, so it is written once. The
-    // `as const` matters: without it `nullable: false` widens to `boolean`
-    // and the inferred type falls back to the field's own nullable default.
-    const score = {
-      required: true,
-      nullable: false,
-      integer: true,
-      min: 1,
-      max: 30,
-      initial: 10,
-    } as const;
+    // The six ability scores are written once, as a factory rather than a
+    // shared options object: a field keeps the options it was handed, and
+    // some field classes write back into them.
+    const score = () =>
+      new f.NumberField({
+        required: true,
+        nullable: false,
+        integer: true,
+        min: 1,
+        max: 30,
+        initial: 10,
+      });
     return {
       level: new f.NumberField({
         required: true,
@@ -43,12 +44,12 @@ export class CharacterData extends BaseTypeDataModel() {
         initial: 30,
       }),
       abilities: new f.SchemaField({
-        str: new f.NumberField(score),
-        dex: new f.NumberField(score),
-        con: new f.NumberField(score),
-        int: new f.NumberField(score),
-        wis: new f.NumberField(score),
-        cha: new f.NumberField(score),
+        str: score(),
+        dex: score(),
+        con: score(),
+        int: score(),
+        wis: score(),
+        cha: score(),
       }),
       health: new f.SchemaField({
         value: new f.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
