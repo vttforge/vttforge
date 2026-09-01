@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/core",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "VTTForge core runtime: BaseTypeDataModel, BaseActorSheet, SystemConfig, registerSystem, error registry.",
   "type": "module",
   "license": "MIT",
