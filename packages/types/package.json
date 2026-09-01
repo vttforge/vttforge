@@ -1,7 +1,7 @@
 {
   "name": "@vttforge/types",
-  "version": "0.0.1",
-  "description": "Shared TypeScript types for VTTForge \u2014 full schema-to-TS inference, Foundry v13+ typing helpers.",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types for VTTForge — full schema-to-TS inference, Foundry v13+ typing helpers.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/vttforge/vttforge#readme",
@@ -38,7 +38,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "publint": "publint",
-    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output \u2014 re-enable later'"
+    "attw": "echo '@arethetypeswrong/cli crashes on tsdown ESM-only output — re-enable later'"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
