@@ -19,7 +19,7 @@
     "@vttforge/cli": "^0.1.0",
     "@vttforge/vite-plugin": "^0.1.0",
     "typescript": "^5.4.0",
-    "vite": "^6.3.0"
+    "vite": "^8.2.2"
   },
   "engines": {
     "node": ">=22"
