@@ -21,6 +21,9 @@ import type { ChildProcess } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import * as p from '@clack/prompts';
+import { composeMountLine, installDevModule, resolveDevModuleDir } from '../dev-module-install.js';
+import { startDevServer } from '../dev-server.js';
+import { watchDist } from '../dev-watcher.js';
 import {
   foundryPackagesDir,
   type ResolveDataDirOptions,
@@ -35,6 +38,91 @@ export interface DevOptions {
   cwd?: string;
   /** `--data-dir` flag value. Skips env/config/prompt lookup when set. */
   dataDir?: string;
+  /** Port for the hot reload bridge. */
+  hmrPort?: number;
+}
+
+/** Matches the default the dev module dials. */
+export const DEFAULT_HMR_PORT = 31_313;
+
+interface BridgeOptions {
+  cwd: string;
+  distDir: string;
+  dataRoot: string;
+  manifest: Awaited<ReturnType<typeof readManifest>>;
+  port: number;
+}
+
+interface Bridge {
+  close: () => Promise<void>;
+}
+
+/**
+ * Stand up the hot reload bridge: install the companion module, open the
+ * socket, watch the build output.
+ *
+ * Every failure here returns null rather than throwing. A busy port or a
+ * missing companion package should cost the developer hot reload, not the
+ * dev loop — the build and the symlink are the load-bearing parts, and they
+ * already succeeded by the time this runs.
+ */
+async function startHotReloadBridge(opts: BridgeOptions): Promise<Bridge | null> {
+  const packageDir = resolveDevModuleDir(opts.cwd);
+  if (!packageDir) {
+    p.note(
+      'Could not find @vttforge/dev-module. Install it to reload saves in place:\n  pnpm add -D @vttforge/dev-module',
+      'Hot reload unavailable',
+    );
+    return null;
+  }
+
+  let server: Awaited<ReturnType<typeof startDevServer>>;
+  try {
+    server = await startDevServer({ port: opts.port });
+  } catch {
+    p.note(
+      `Port ${opts.port} is in use — another \`vttforge dev\` is probably running.\nPass --hmr-port to use a different one.`,
+      'Hot reload unavailable',
+    );
+    return null;
+  }
+
+  const modulesDir = foundryPackagesDir(opts.dataRoot, 'module');
+  try {
+    const install = await installDevModule(modulesDir, packageDir);
+    p.note(
+      [
+        `Companion module linked → ${install.target}`,
+        'Enable "VTTForge Dev" in the world, once.',
+        '',
+        'Foundry in a container cannot follow that link. Mount it instead:',
+        `  ${composeMountLine(packageDir)}`,
+      ].join('\n'),
+      'Hot reload',
+    );
+  } catch (err) {
+    await server.close();
+    p.note(
+      `Could not install the companion module: ${err instanceof Error ? err.message : String(err)}`,
+      'Hot reload unavailable',
+    );
+    return null;
+  }
+
+  const watcher = watchDist({
+    distDir: opts.distDir,
+    packageId: opts.manifest.id,
+    packageType: opts.manifest.type,
+    onPayload: (frame) => server.broadcast(frame),
+    onError: (message) => p.note(message, 'Watch error'),
+  });
+
+  return {
+    close: async () => {
+      watcher.close();
+      await server.close();
+    },
+  };
 }
 
 /**
@@ -144,12 +232,24 @@ export async function runDev(options: DevOptions = {}): Promise<void> {
     `Linked dist/ → ${target}\nFoundry serves the package under /${manifest.type}s/${manifest.id}/.`,
     'Symlinked',
   );
+  // 5. Hot reload bridge. Failing to start it must not cost the developer
+  //    the whole dev loop — the build and the symlink are the load-bearing
+  //    parts, and a busy port should degrade to "no hot reload", not to
+  //    "vttforge dev does not run".
+  const bridge = await startHotReloadBridge({
+    cwd,
+    distDir,
+    dataRoot,
+    manifest,
+    port: options.hmrPort ?? DEFAULT_HMR_PORT,
+  });
+
   p.note(
-    'Run Foundry with `--hotReload` so file saves reload the world without a page refresh.\nCtrl-C to stop.',
+    `${bridge ? 'Saves apply in place — no page refresh.' : 'Hot reload is off; saves need a page refresh.'}\nCtrl-C to stop.`,
     'Watching',
   );
 
-  // 5. Spawn watcher
+  // 6. Spawn watcher
   const watcher = spawnViteWatch(cwd);
 
   // 6. Block until SIGINT/SIGTERM
@@ -160,6 +260,7 @@ export async function runDev(options: DevOptions = {}): Promise<void> {
       } catch {
         // best-effort — Foundry rediscovers the next time dev runs.
       }
+      await bridge?.close();
       if (!watcher.killed) watcher.kill('SIGINT');
       uninstall();
       resolveDev();

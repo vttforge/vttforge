@@ -79,6 +79,10 @@ export const dev = defineCommand({
       description:
         'Override the Foundry user-data directory (skips env / config / first-run prompt)',
     },
+    'hmr-port': {
+      type: 'string',
+      description: 'Port for the hot reload bridge (default 31313)',
+    },
   },
   async run({ args }) {
     // Citty surfaces aliases under the canonical name. Belt-and-suspenders:
@@ -86,8 +90,16 @@ export const dev = defineCommand({
     const explicit =
       (typeof args['foundry-data'] === 'string' ? args['foundry-data'] : undefined) ??
       (typeof args['data-dir'] === 'string' ? args['data-dir'] : undefined);
+    // A non-numeric port is the user's typo, not a reason to fall back to a
+    // port they did not ask for — say so and stop.
+    const rawPort = typeof args['hmr-port'] === 'string' ? args['hmr-port'] : undefined;
+    const hmrPort = rawPort === undefined ? undefined : Number(rawPort);
+    if (hmrPort !== undefined && !Number.isInteger(hmrPort)) {
+      console.error(`--hmr-port expects a whole number, got \`${rawPort}\`.`);
+      process.exit(1);
+    }
     try {
-      await runDev({ dataDir: explicit });
+      await runDev({ dataDir: explicit, hmrPort });
     } catch (err) {
       console.error(err instanceof Error ? err.message : String(err));
       process.exit(1);
