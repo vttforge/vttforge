@@ -22,7 +22,7 @@ describe('encodeTextFrame', () => {
     const frame = encodeTextFrame('hi');
     expect(frame[0]).toBe(0x81);
     // High bit of byte 1 is the mask flag; a server must never set it.
-    expect((frame[1]! & 0x80) === 0).toBe(true);
+    expect(frame.at(1)).toBeLessThan(0x80);
   });
 
   it('writes a short payload length inline', () => {

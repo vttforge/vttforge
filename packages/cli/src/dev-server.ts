@@ -77,7 +77,8 @@ export function encodeTextFrame(message: string): Buffer {
 
 /** Is this inbound frame a close? That is the only opcode worth reading. */
 export function isCloseFrame(chunk: Buffer): boolean {
-  return chunk.length > 0 && (chunk[0]! & 0x0f) === OPCODE_CLOSE;
+  const first = chunk.at(0);
+  return first !== undefined && (first & 0x0f) === OPCODE_CLOSE;
 }
 
 export interface StartOptions {
