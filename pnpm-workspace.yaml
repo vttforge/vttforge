@@ -9,7 +9,7 @@ catalog:
   '@changesets/cli': ^2.31.0
   '@clack/prompts': ^1.7.0
   '@types/archiver': ^8.0.0
-  '@types/node': ^25.9.1
+  '@types/node': ^26.4.0
   archiver: ^8.0.0
   citty: ^0.1.6
   happy-dom: ^20.12.0
