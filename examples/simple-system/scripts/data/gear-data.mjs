@@ -16,12 +16,14 @@ export class GearData extends BaseTypeDataModel() {
     return {
       quantity: new f.NumberField({
         required: true,
+        nullable: false,
         integer: true,
         min: 0,
         initial: 1,
       }),
       weight: new f.NumberField({
         required: true,
+        nullable: false,
         min: 0,
         initial: 0,
       }),

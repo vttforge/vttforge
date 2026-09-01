@@ -10,6 +10,12 @@
  * Document-level fields — ownership, the `_stats` block — are deliberately
  * absent. They live on the document, never inside the schema a type data
  * model defines, so they cannot appear in what this maps.
+ *
+ * One thing to know when writing schemas: this reads the literal types of
+ * the options you pass. Hand a field an options object held in a variable
+ * and `nullable: false` widens to `boolean`, which says nothing, so the
+ * field's own default applies instead. Pin such an object with `as const`
+ * (or `/** @type {const} *\/` in JavaScript) and the declared values count.
  */
 import type { Color } from './color.js';
 import type {
