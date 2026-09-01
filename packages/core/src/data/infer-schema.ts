@@ -2,27 +2,28 @@
  * `InferSchema<T>` — derive the runtime shape of `actor.system` (or
  * `item.system`) from a `defineSchema()` return value.
  *
- * v0.1 scope (PRD §7): the eight field brands in `./fields.ts`. Recurses
- * through `ArrayField` and `SchemaField`. Out of scope until v1.0 (moves to
- * `@vttforge/types`): `EmbeddedDataField`, `EmbeddedDocumentField`,
- * `TypedSchemaField`, and the full required×initial nullability matrix.
+ * v0.1 scope (PRD §7): the field brands in `./fields.ts`. Recurses through
+ * `ArrayField`, `SetField` and `SchemaField`. Out of scope until v1.0 (moves
+ * to `@vttforge/types`): `EmbeddedDataField`, `EmbeddedDocumentField` and
+ * `TypedSchemaField`.
  *
- * The single nullability rule honoured here is `nullable: true` → `T | null`.
- * Combinations like `required: false, initial: undefined` → `T | undefined`
- * are intentionally out of scope; documenting them would lock semantics that
- * still need real-world validation against shipped systems.
+ * Document-level fields — ownership, the `_stats` block — are deliberately
+ * absent. They live on the document, never inside the schema a type data
+ * model defines, so they cannot appear in what this maps.
  */
-
 import type { Color } from './color.js';
 import type {
   ArrayFieldInstance,
   BooleanFieldInstance,
   ColorFieldInstance,
+  DocumentClass,
   FieldInstance,
   FilePathFieldInstance,
+  ForeignDocumentFieldInstance,
   HTMLFieldInstance,
   NumberFieldInstance,
   SchemaFieldInstance,
+  SetFieldInstance,
   StringFieldInstance,
 } from './fields.js';
 
@@ -60,6 +61,17 @@ type ApplyPresence<O, T> =
   | (O extends { required: false } ? (HasInitial<O> extends true ? never : undefined) : never);
 
 /**
+ * Presence for a field whose own defaults already admit `null`.
+ *
+ * Most fields are non-nullable until the schema asks otherwise. A few invert
+ * that — they hold `null` out of the box, and only an explicit
+ * `nullable: false` takes it away.
+ */
+type PresenceNullableByDefault<O, T> = O extends { nullable: false }
+  ? ApplyPresence<O, T>
+  : ApplyPresence<O, T> | null;
+
+/**
  * What a `ColorField` holds once the model is initialized.
  *
  * Not a string. The field casts its stored value to a CSS string, but
@@ -67,14 +79,34 @@ type ApplyPresence<O, T> =
  * with `.css`, `.rgb`, `.hex` and friends, and typing it as `string` makes
  * every property access on it a lie the compiler accepts.
  *
- * It is also nullable by default, unlike every other string-backed field:
- * the field's own defaults set `nullable: true, initial: null`. Writing
- * `new fields.ColorField()` and reading `.css` off it crashes on a fresh
- * document, which is exactly what this type now refuses.
+ * It is also nullable by default, unlike every other string-backed field.
+ * Writing `new fields.ColorField()` and reading `.css` off it crashes on a
+ * fresh document, which is exactly what this type now refuses.
  */
-type ColorFieldValue<O> = O extends { nullable: false }
-  ? ApplyPresence<O, Color>
-  : ApplyPresence<O, Color> | null;
+type ColorFieldValue<O> = PresenceNullableByDefault<O, Color>;
+
+/**
+ * What a `ForeignDocumentField` holds once the model is initialized.
+ *
+ * With `idOnly`, the stored id string. Without it the field resolves to a
+ * getter, and the data model installs it as one — so reading the property
+ * gives the document instance, not the function that fetched it. It yields
+ * `null` when the id points at nothing, or when the parent lives in a
+ * compendium.
+ *
+ * Nullable by default, so `null` is in both shapes unless the schema says
+ * otherwise.
+ *
+ * One caveat this does not encode: on the server the field keeps the id
+ * string in both cases, because there are no collections to resolve against.
+ * System code runs on both sides, and typing that union would put a string
+ * check in front of every read of a document reference. The client shape is
+ * the one worth typing.
+ */
+type ForeignDocumentValue<Doc extends DocumentClass, O> = PresenceNullableByDefault<
+  O,
+  O extends { idOnly: true } ? string : InstanceType<Doc>
+>;
 
 /**
  * Map a single field instance to its runtime TypeScript type. `never` for
@@ -94,11 +126,15 @@ export type InferField<F> =
             ? ColorFieldValue<O>
             : F extends FilePathFieldInstance<infer O>
               ? ApplyPresence<O, string>
-              : F extends ArrayFieldInstance<infer Inner, infer O>
-                ? ApplyPresence<O, InferField<Inner>[]>
-                : F extends SchemaFieldInstance<infer S, infer O>
-                  ? ApplyPresence<O, InferSchema<S>>
-                  : never;
+              : F extends ForeignDocumentFieldInstance<infer Doc, infer O>
+                ? ForeignDocumentValue<Doc, O>
+                : F extends ArrayFieldInstance<infer Inner, infer O>
+                  ? ApplyPresence<O, InferField<Inner>[]>
+                  : F extends SetFieldInstance<infer Inner, infer O>
+                    ? ApplyPresence<O, Set<InferField<Inner>>>
+                    : F extends SchemaFieldInstance<infer S, infer O>
+                      ? ApplyPresence<O, InferSchema<S>>
+                      : never;
 
 /**
  * Map a `defineSchema()` return value to the corresponding `system` shape.
