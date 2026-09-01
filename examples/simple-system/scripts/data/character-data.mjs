@@ -13,9 +13,21 @@ import { BaseTypeDataModel, fields } from '@vttforge/core';
 export class CharacterData extends BaseTypeDataModel() {
   static defineSchema() {
     const f = fields();
+    // The six ability scores share one spec, so it is written once. The
+    // `const` matters: without it `nullable: false` widens to `boolean` and
+    // the inferred type falls back to the field's own nullable default.
+    const score = /** @type {const} */ ({
+      required: true,
+      nullable: false,
+      integer: true,
+      min: 1,
+      max: 30,
+      initial: 10,
+    });
     return {
       level: new f.NumberField({
         required: true,
+        nullable: false,
         integer: true,
         min: 1,
         max: 20,
@@ -23,25 +35,50 @@ export class CharacterData extends BaseTypeDataModel() {
       }),
       speed: new f.NumberField({
         required: true,
+        nullable: false,
         integer: true,
         min: 0,
         initial: 30,
       }),
       abilities: new f.SchemaField({
-        str: new f.NumberField({ required: true, integer: true, min: 1, max: 30, initial: 10 }),
-        dex: new f.NumberField({ required: true, integer: true, min: 1, max: 30, initial: 10 }),
-        con: new f.NumberField({ required: true, integer: true, min: 1, max: 30, initial: 10 }),
-        int: new f.NumberField({ required: true, integer: true, min: 1, max: 30, initial: 10 }),
-        wis: new f.NumberField({ required: true, integer: true, min: 1, max: 30, initial: 10 }),
-        cha: new f.NumberField({ required: true, integer: true, min: 1, max: 30, initial: 10 }),
+        str: new f.NumberField(score),
+        dex: new f.NumberField(score),
+        con: new f.NumberField(score),
+        int: new f.NumberField(score),
+        wis: new f.NumberField(score),
+        cha: new f.NumberField(score),
       }),
       health: new f.SchemaField({
-        value: new f.NumberField({ required: true, integer: true, min: 0, initial: 10 }),
-        max: new f.NumberField({ required: true, integer: true, min: 0, initial: 10 }),
+        value: new f.NumberField({
+          required: true,
+          nullable: false,
+          integer: true,
+          min: 0,
+          initial: 10,
+        }),
+        max: new f.NumberField({
+          required: true,
+          nullable: false,
+          integer: true,
+          min: 0,
+          initial: 10,
+        }),
       }),
       power: new f.SchemaField({
-        value: new f.NumberField({ required: true, integer: true, min: 0, initial: 5 }),
-        max: new f.NumberField({ required: true, integer: true, min: 0, initial: 5 }),
+        value: new f.NumberField({
+          required: true,
+          nullable: false,
+          integer: true,
+          min: 0,
+          initial: 5,
+        }),
+        max: new f.NumberField({
+          required: true,
+          nullable: false,
+          integer: true,
+          min: 0,
+          initial: 5,
+        }),
       }),
       biography: new f.HTMLField(),
     };
