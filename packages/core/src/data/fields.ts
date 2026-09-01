@@ -23,6 +23,8 @@ import type {
   ArrayFieldOptions,
   BooleanFieldOptions,
   ColorFieldOptions,
+  EmbeddedDataFieldOptions,
+  EmbeddedDocumentFieldOptions,
   FilePathFieldOptions,
   ForeignDocumentFieldOptions,
   HTMLFieldOptions,
@@ -30,6 +32,7 @@ import type {
   SchemaFieldOptions,
   SetFieldOptions,
   StringFieldOptions,
+  TypedSchemaFieldOptions,
 } from './field-options.js';
 
 declare const BRAND: unique symbol;
@@ -125,6 +128,57 @@ export interface ForeignDocumentFieldInstance<
   readonly options: O;
 }
 
+/**
+ * A nested data model.
+ *
+ * It is a `SchemaField` built from the model class's own `defineSchema()`, so
+ * the value is an instance of that model — not a plain object. Reading it
+ * gives you the model's derived data and methods too.
+ */
+export interface EmbeddedDataFieldInstance<
+  Model extends DataModelClass = DataModelClass,
+  O extends EmbeddedDataFieldOptions = EmbeddedDataFieldOptions,
+> extends FieldInstance {
+  readonly [BRAND]: 'embeddedData';
+  readonly model: Model;
+  readonly options: O;
+}
+
+/**
+ * A single embedded document, stored inline.
+ *
+ * Like `EmbeddedDataField` but for a Document class, and nullable by default:
+ * the field's own defaults turn `nullable` on, so an absent one reads `null`.
+ */
+export interface EmbeddedDocumentFieldInstance<
+  Doc extends DataModelClass = DataModelClass,
+  O extends EmbeddedDocumentFieldOptions = EmbeddedDocumentFieldOptions,
+> extends FieldInstance {
+  readonly [BRAND]: 'embeddedDocument';
+  readonly model: Doc;
+  readonly options: O;
+}
+
+/**
+ * One of several shapes, told apart by a `type` property.
+ *
+ * Each entry becomes its own SchemaField. When an entry does not declare a
+ * `type` field, the field adds one — a required string whose value must equal
+ * that entry's key — which is what makes the result a discriminated union you
+ * can narrow on.
+ */
+export interface TypedSchemaFieldInstance<
+  T extends Record<string, Record<string, FieldInstance>> = Record<
+    string,
+    Record<string, FieldInstance>
+  >,
+  O extends TypedSchemaFieldOptions = TypedSchemaFieldOptions,
+> extends FieldInstance {
+  readonly [BRAND]: 'typedSchema';
+  readonly types: T;
+  readonly options: O;
+}
+
 export interface SchemaFieldInstance<
   S extends Record<string, FieldInstance> = Record<string, FieldInstance>,
   O extends SchemaFieldOptions = SchemaFieldOptions,
@@ -191,6 +245,38 @@ export interface ForeignDocumentFieldCtor {
   ): ForeignDocumentFieldInstance<Doc, O>;
 }
 
+/** Any DataModel subclass — what the embedded fields take as their type. */
+// biome-ignore lint/suspicious/noExplicitAny: a constructor bound must accept
+// the argument list of whatever model class the caller passes.
+export type DataModelClass = abstract new (...args: any[]) => object;
+
+export interface EmbeddedDataFieldCtor {
+  new <Model extends DataModelClass, O extends EmbeddedDataFieldOptions = EmbeddedDataFieldOptions>(
+    model: Model,
+    options?: O,
+  ): EmbeddedDataFieldInstance<Model, O>;
+}
+
+export interface EmbeddedDocumentFieldCtor {
+  new <
+    Doc extends DataModelClass,
+    O extends EmbeddedDocumentFieldOptions = EmbeddedDocumentFieldOptions,
+  >(
+    model: Doc,
+    options?: O,
+  ): EmbeddedDocumentFieldInstance<Doc, O>;
+}
+
+export interface TypedSchemaFieldCtor {
+  new <
+    T extends Record<string, Record<string, FieldInstance>>,
+    O extends TypedSchemaFieldOptions = TypedSchemaFieldOptions,
+  >(
+    types: T,
+    options?: O,
+  ): TypedSchemaFieldInstance<T, O>;
+}
+
 export interface SchemaFieldCtor {
   new <S extends Record<string, FieldInstance>, O extends SchemaFieldOptions = SchemaFieldOptions>(
     fields: S,
@@ -214,6 +300,9 @@ export interface FieldsApi {
   readonly SetField: SetFieldCtor;
   readonly ForeignDocumentField: ForeignDocumentFieldCtor;
   readonly SchemaField: SchemaFieldCtor;
+  readonly EmbeddedDataField: EmbeddedDataFieldCtor;
+  readonly EmbeddedDocumentField: EmbeddedDocumentFieldCtor;
+  readonly TypedSchemaField: TypedSchemaFieldCtor;
 }
 
 interface FoundryDataNamespace {
