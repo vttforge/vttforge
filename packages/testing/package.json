@@ -22,7 +22,18 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
-    "./package.json": "./package.json"
+    "./vitest": {
+      "types": "./dist/vitest/index.d.mts",
+      "import": "./dist/vitest/index.mjs"
+    },
+    "./quench": {
+      "types": "./dist/quench/index.d.mts",
+      "import": "./dist/quench/index.mjs"
+    },
+    "./package.json": "./package.json",
+    "./globals": {
+      "types": "./dist/globals.d.mts"
+    }
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
@@ -34,7 +45,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && node -e \"require('node:fs').copyFileSync('src/globals.d.ts','dist/globals.d.mts')\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "publint": "publint",
