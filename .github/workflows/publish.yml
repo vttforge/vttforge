@@ -21,7 +21,12 @@ concurrency:
 jobs:
   publish:
     name: Verify + publish (OIDC)
-    runs-on: [self-hosted, linux, x64, gcp]
+    # GitHub-hosted on purpose, unlike CI. npm attaches sigstore provenance to
+    # public packages and refuses it from a self-hosted runner — only
+    # github-hosted ones are accepted. This surfaced the moment the repository
+    # went public: while it was private, pnpm could not determine visibility
+    # and skipped provenance, so the self-hosted runner worked by accident.
+    runs-on: ubuntu-latest
     environment: npm-publish
     steps:
       - uses: actions/checkout@v7
