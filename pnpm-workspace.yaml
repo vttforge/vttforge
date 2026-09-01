@@ -4,6 +4,8 @@ packages:
   - 'apps/*'
 
 catalog:
+  vitepress: ^1.6.4
+  pagefind: ^1.5.2
   '@arethetypeswrong/cli': ^0.18.5
   '@biomejs/biome': ^2.5.11
   '@changesets/cli': ^3.0.1
@@ -55,4 +57,7 @@ minimumReleaseAgeExclude:
 # pnpm 11 turns an ignored build script into a hard error. lefthook needs its
 # postinstall to write the git hooks.
 allowBuilds:
+  # esbuild's postinstall links the platform binary it cannot work without.
+  # Pulled in by vitepress for the docs site; nothing ships it to consumers.
+  esbuild: true
   lefthook: true

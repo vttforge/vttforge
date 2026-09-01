@@ -1,0 +1,15 @@
+{
+  "name": "@vttforge/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev .",
+    "build": "vitepress build . && pagefind --site .vitepress/dist",
+    "preview": "vitepress preview ."
+  },
+  "devDependencies": {
+    "pagefind": "catalog:",
+    "vitepress": "catalog:"
+  }
+}
