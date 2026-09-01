@@ -72,8 +72,15 @@ function plannedVersions() {
     const plan = readJson(file);
     return new Map((plan.releases ?? []).map((r) => [r.name, r.newVersion]));
   } catch (err) {
-    // A broken plan must not pass silently as "nothing pending".
+    // A broken plan must not pass silently as "nothing pending" — that would
+    // make this check report success precisely when it cannot see anything.
+    // Print what the tool actually said: swallowing its stderr once already
+    // turned a one-line CI failure into a guessing game.
     console.error('Could not read the release plan from changesets.');
+    const stderr = err?.stderr?.toString().trim();
+    const stdout = err?.stdout?.toString().trim();
+    if (stderr) console.error(stderr);
+    if (stdout) console.error(stdout);
     console.error(err instanceof Error ? err.message : String(err));
     process.exit(1);
   } finally {
