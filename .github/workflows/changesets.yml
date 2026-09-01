@@ -36,10 +36,9 @@ jobs:
         run: pnpm install --frozen-lockfile --force
 
       - name: Create Version PR (publishing happens in publish.yml under OIDC)
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          version: pnpm changeset:version
-          commit: 'chore(release): version packages'
-          title: 'chore(release): version packages'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version-script: pnpm changeset:version
+          commit-message: 'chore(release): version packages'
+          pr-title: 'chore(release): version packages'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
