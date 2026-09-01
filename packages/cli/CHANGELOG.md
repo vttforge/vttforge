@@ -1,5 +1,55 @@
 # @vttforge/cli
 
+## 0.3.0
+
+### Minor Changes
+
+- 5b72b4b: `vttforge dev` now applies saves in place, without a page refresh.
+  
+  It opens a small WebSocket, links `@vttforge/dev-module` into Foundry's
+  modules directory, and watches the build output — sending a payload per
+  changed CSS, template or language file.
+  
+  The socket is hand-written rather than pulled from a package. The CLI ships
+  to every consumer, so each dependency is one they install too, and what is
+  needed here is a narrow slice of the protocol: accept the upgrade, send
+  unmasked text frames, notice when a client leaves.
+  
+  Watching `dist/` rather than hooking into Vite keeps this correct across
+  bundler versions, and gives the served path directly — `dist/` is what
+  Foundry mounts.
+  
+  Failing to start the bridge costs hot reload, not the dev loop. A busy port
+  or a missing companion package prints why and carries on watching.
+  
+  New: `--hmr-port` to move the bridge off 31313.
+
+### Patch Changes
+
+- 1fb967d: Close the three soundness gaps `vttforge audit` shipped with, and a fourth
+  found while fixing them.
+  
+  - `filePathFields` is an object whose keys are the field paths, not a flat
+    array. Reading it as an array dropped every correctly declared path, so
+    rule 004 reported declared fields as missing.
+  - Modules register subtypes as `<moduleId>.<type>` while the manifest
+    declares the bare key. The two were compared verbatim, so no module
+    registration ever matched its own declaration.
+  - Rule 007 searched every schema in the project for the token attribute.
+    Token bars read `actor.system`, so an Item model declaring the same path
+    satisfied the check on a system whose bars were in fact broken. The
+    narrowing applies only when Actor registrations are known; with none
+    found the rule falls back to the previous behaviour.
+  - Registrations through bracket notation were invisible to the scanner
+    entirely — which is the only form modules can use, since a dot in the key
+    rules out property access.
+- c90357e: Point the templates at the CLI version this release publishes.
+  
+  The templates asked for `@vttforge/cli@^0.2.0` while the release takes it to
+  0.3.0. A caret pins the minor on a 0.x version, so that range would not have
+  matched — every project scaffolded after the release would ask for a version
+  the release had just superseded.
+
 ## 0.2.0
 
 ### Minor Changes
