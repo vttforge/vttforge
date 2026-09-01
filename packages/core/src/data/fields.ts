@@ -179,9 +179,7 @@ export interface SetFieldCtor {
  * argument. Declared structurally so the inference surface stays free of a
  * dependency on a Foundry type package.
  */
-// biome-ignore lint/suspicious/noExplicitAny: a constructor bound must accept
-// the argument list of whatever document class the caller passes.
-export type DocumentClass = abstract new (...args: any[]) => object;
+export type DocumentClass = abstract new (...args: never[]) => object;
 
 export interface ForeignDocumentFieldCtor {
   new <
