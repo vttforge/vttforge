@@ -15,7 +15,7 @@ concurrency:
 
 # Self-hosted GCP runner from fcsouza/infra (gcp/runners/).
 # Pre-installed: Node 22.11, Bun 1.3.14, gh CLI, actionlint, Chrome, Playwright.
-# Corepack ships with Node — we activate pnpm@10.33.4 via `corepack prepare`.
+# Corepack ships with Node — we activate pnpm@10.34.5 via `corepack prepare`.
 # Node 24 matrix testing is parked until the runner image ships Node 24.
 
 jobs:
@@ -29,7 +29,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.33.4
+          corepack install -g pnpm@10.34.5
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -47,7 +47,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.33.4
+          corepack install -g pnpm@10.34.5
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -65,7 +65,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.33.4
+          corepack install -g pnpm@10.34.5
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -83,7 +83,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.33.4
+          corepack install -g pnpm@10.34.5
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -111,7 +111,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.33.4
+          corepack install -g pnpm@10.34.5
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
@@ -136,7 +136,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.33.4
+          corepack install -g pnpm@10.34.5
 
       - name: Install
         run: pnpm install --frozen-lockfile --force
