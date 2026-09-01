@@ -26,7 +26,12 @@ export {
   VTTFORGE_SHEET_CLASS,
 } from './base-actor-sheet.js';
 export { BaseItemSheet } from './base-item-sheet.js';
-export { BaseTypeDataModel } from './base-type-data-model.js';
+export {
+  BaseTypeDataModel,
+  type TypeDataModelHooks,
+  type TypedTypeDataModel,
+  type TypedTypeDataModelCtor,
+} from './base-type-data-model.js';
 export type {
   ArrayFieldOptions,
   BooleanFieldOptions,
