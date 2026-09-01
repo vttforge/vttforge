@@ -9,7 +9,8 @@
  *      package (the `files: ["dist"]` whitelist in package.json carries it
  *      into the tarball).
  *
- *   2. `<repo-root>/docs/errors/VTTF-NNNN.md` — one Markdown stub per code.
+ *   2. `docs/errors/VTTF-NNNN.md` and `apps/docs/errors/VTTF-NNNN.md` — one
+ *      Markdown stub per code, for GitHub and for the docs site.
  *      These are committed so the `docsUrl` resolves to a real page once
  *      the docs site goes live in v0.3.
  *
@@ -25,7 +26,13 @@ const PKG_DIR = resolve(import.meta.dirname, '..');
 const REPO_ROOT = resolve(PKG_DIR, '..', '..');
 const DIST = resolve(PKG_DIR, 'dist');
 const MANIFEST_PATH = resolve(DIST, 'errors-manifest.json');
-const DOCS_DIR = resolve(REPO_ROOT, 'docs', 'errors');
+// Two destinations, one source. The repo copy is what a reader browsing
+// GitHub lands on; the docs copy is what the site publishes. Generating both
+// keeps them from drifting, which a manual copy would not.
+const DOCS_DIRS = [
+  resolve(REPO_ROOT, 'docs', 'errors'),
+  resolve(REPO_ROOT, 'apps', 'docs', 'errors'),
+];
 const MANIFEST_VERSION = 1;
 const SOURCE_RELATIVE = 'packages/core/src/errors/registry.ts';
 const SOURCE_URL = `https://github.com/vttforge/vttforge/blob/main/${SOURCE_RELATIVE}`;
@@ -113,11 +120,13 @@ async function writeManifest(entries, pkgVersion) {
 }
 
 async function writeStubs(entries) {
-  await mkdir(DOCS_DIR, { recursive: true });
-  for (const entry of entries) {
-    const path = resolve(DOCS_DIR, `${entry.code}.md`);
-    await mkdir(dirname(path), { recursive: true });
-    await writeFile(path, renderStub(entry), 'utf8');
+  for (const dir of DOCS_DIRS) {
+    await mkdir(dir, { recursive: true });
+    for (const entry of entries) {
+      const path = resolve(dir, `${entry.code}.md`);
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, renderStub(entry), 'utf8');
+    }
   }
 }
 
@@ -129,7 +138,7 @@ async function main() {
   const manifest = await writeManifest(entries, pkgVersion);
   await writeStubs(entries);
   console.warn(
-    `[codegen-errors] wrote ${entries.length} entries → dist/errors-manifest.json + docs/errors/`,
+    `[codegen-errors] wrote ${entries.length} entries → dist/errors-manifest.json + docs/errors/ + apps/docs/errors/`,
   );
   return manifest;
 }
