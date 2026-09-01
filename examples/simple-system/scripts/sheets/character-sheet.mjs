@@ -88,6 +88,7 @@ export class CharacterSheet extends BaseActorSheet() {
   ];
 
   /**
+   * @override
    * @param {Record<string, unknown>} options
    * @returns {Promise<Record<string, unknown>>}
    */
@@ -134,6 +135,7 @@ export class CharacterSheet extends BaseActorSheet() {
 
   /** Reject non-gear drops with a notification; let gear fall through to Foundry. */
   /**
+   * @override
    * @param {any} item
    * @param {any} _event
    */

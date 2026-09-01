@@ -128,8 +128,8 @@ describe('BaseItemSheet', () => {
       static override DRAG_DROP = [{ dragSelector: '.item' }];
     }
     const instance = new Sheet();
-    (instance as { element: HTMLElement }).element = document.createElement('div');
-    (instance as { isEditable: boolean }).isEditable = true;
+    instance.element = document.createElement('div');
+    instance.isEditable = true;
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(1);
     const entry = dragDropBinds[0];

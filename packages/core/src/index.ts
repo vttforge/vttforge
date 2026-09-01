@@ -25,10 +25,14 @@ export {
   BaseActorSheet,
   type DragDropConfig,
   type SheetBaseCtor,
+  type SheetBaseMembers,
   type SheetBaseStatics,
   VTTFORGE_SHEET_CLASS,
 } from './base-actor-sheet.js';
-export { BaseApplication } from './base-application.js';
+export {
+  BaseApplication,
+  type BaseApplicationMembers,
+} from './base-application.js';
 export { BaseItemSheet } from './base-item-sheet.js';
 export {
   BaseTypeDataModel,
@@ -99,6 +103,7 @@ export {
   type VttfErrorCode,
   type VttfErrorEntry,
 } from './errors/registry.js';
+export type { UntypedFoundryMembers, VttforgeClass } from './foundry-base.js';
 export type {
   ActiveEffectConfig,
   CombatConfig,
