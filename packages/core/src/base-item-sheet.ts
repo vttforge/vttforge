@@ -14,7 +14,7 @@
  * built-in on `DocumentSheetV2` (parent of `ItemSheetV2`).
  */
 
-import type { DragDropConfig } from './base-actor-sheet.js';
+import type { DragDropConfig, SheetBaseCtor } from './base-actor-sheet.js';
 import { VTTFORGE_SHEET_CLASS } from './base-actor-sheet.js';
 import { VttfError } from './errors/registry.js';
 
@@ -93,7 +93,7 @@ function resolveDragDrop(): DragDropCtor | undefined {
  * }
  * ```
  */
-export function BaseItemSheet(): AnyConstructor {
+export function BaseItemSheet(): SheetBaseCtor {
   const { Base, mixin } = resolveBases();
   const Mixed = mixin(Base);
 
@@ -198,5 +198,5 @@ export function BaseItemSheet(): AnyConstructor {
     }
   }
 
-  return VttforgeBaseItemSheet as unknown as AnyConstructor;
+  return VttforgeBaseItemSheet as unknown as SheetBaseCtor;
 }
