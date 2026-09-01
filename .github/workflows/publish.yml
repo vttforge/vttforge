@@ -30,7 +30,7 @@ jobs:
         run: |
           npm install -g corepack@latest
           corepack enable
-          corepack install -g pnpm@10.33.4
+          corepack install -g pnpm@10.34.5
 
       - name: Configure npm registry (OIDC handles auth)
         run: |
