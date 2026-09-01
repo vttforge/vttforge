@@ -2,12 +2,9 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     ".": {},
-    "packages/*": {
-      "ignoreDependencies": ["@arethetypeswrong/cli"]
-    },
+    "packages/*": {},
     "packages/cli": {
-      "ignore": ["templates/**"],
-      "ignoreDependencies": ["@arethetypeswrong/cli"]
+      "ignore": ["templates/**"]
     },
     "packages/create-vttforge": {},
     "packages/styles": {
@@ -15,8 +12,7 @@
       "project": ["preview/**/*.js"]
     },
     "packages/vite-plugin": {
-      "ignore": ["src/__tests__/fixtures/**"],
-      "ignoreDependencies": ["@arethetypeswrong/cli"]
+      "ignore": ["src/__tests__/fixtures/**"]
     },
     "examples/simple-system": {
       "entry": ["scripts/main.mjs"],
