@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/vite-plugin",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Vite plugin for VTTForge: HMR for .hbs templates, manifest sync, CSS pipeline (PostCSS, optional Sass).",
   "type": "module",
   "license": "MIT",

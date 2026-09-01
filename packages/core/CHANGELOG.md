@@ -1,5 +1,83 @@
 # @vttforge/core
 
+## 0.6.0
+
+### Minor Changes
+
+- c24b2e9: Fix two things `InferSchema` got wrong about a field's runtime type.
+  
+  `ColorField` inferred as `string`. It stores a CSS string but initializes
+  into a `Color` instance, so `system.tint` is an object with `.css`, `.rgb`
+  and friends — and the old typing made every property access on it a lie the
+  compiler accepted. It is also nullable by default, unlike the other
+  string-backed fields: the field's own defaults are `nullable: true,
+  initial: null`, so reading `.css` off a fresh document was a real crash the
+  types allowed. It now infers as `Color | null`, and drops the null when
+  `nullable: false` is set.
+  
+  Presence was half-implemented. Only `nullable: true` widened the type;
+  `required: false` did not. A field that resolves to `undefined` when absent
+  was typed as always present. The rule now follows how a field actually
+  resolves a missing value: an explicit `initial` always fills, so it never
+  widens; otherwise `required: false` admits `undefined` and `nullable: true`
+  admits `null`, and the two compose.
+  
+  `Color` is described structurally rather than imported, so the inference
+  surface still carries no dependency on a Foundry type package.
+- 3f09683: Add `registerModule()` for modules that contribute document sub-types.
+  
+  Foundry files a module's sub-type under `<module-id>.<type>`. Register the bare name and there is no error — the type just never appears. `registerModule()` adds the prefix, and `moduleSubType(id, type)` gives you the same string wherever else you need it (registering the sheet, checking `actor.type`, writing `documentTypes` in the manifest).
+  
+  ```ts
+  registerModule({
+    id: 'pdf-character-sheet',
+    itemDataModels: { pdf: PdfItemData }, // → CONFIG.Item.dataModels['pdf-character-sheet.pdf']
+  });
+  ```
+  
+  `registerSystem()` was the only option before, and it is the wrong shape for a module: it writes bare keys and also replaces the document classes, the initiative formula, and the status-effect array — all of which belong to the system. There is no option to replace them here, and `statusEffects` appends instead of assigning.
+- 98b742c: Give each field its own defaults when inferring a schema.
+  
+  Every field class picks its own defaults, and they disagree. The inference treated them as if they agreed, so three fields were typed as shapes they cannot hold:
+  
+  - `NumberField` is optional and nullable out of the box. `new fields.NumberField()` is `number | null | undefined`, not `number`.
+  - `StringField` is optional. A bare one is `string | undefined`.
+  - `FilePathField` starts at `null`, the way `ColorField` does. A bare one is `string | null`.
+  
+  The rest were already right, for reasons worth naming: booleans and HTML fields are required and supply their own initial; arrays, sets and schemas are required and build their own empty value; document references are required but nullable.
+  
+  This will surface errors in schemas that leave the options off. The fix is to declare what you meant — `{ required: true, nullable: false, initial: 0 }` — which is what the field needed all along.
+- 8657721: Let `BaseTypeDataModel` learn your schema.
+  
+  Hand it the function that returns your fields and it implements `static defineSchema()` for you. The schema is written once, and `this` inside `prepareDerivedData()` knows its own fields:
+  
+  ```ts
+  class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {
+    declare armorClass: number;
+    prepareDerivedData() {
+      this.armorClass = 10 + this.level; // this.level is number
+    }
+  }
+  
+  type CharacterSystem = CharacterData['$inferData'];
+  ```
+  
+  Derived values are not in the schema, so declare them on the subclass.
+  
+  Calling `BaseTypeDataModel()` with no arguments works exactly as before.
+- f11b1f4: Type `SetField` and `ForeignDocumentField` in `InferSchema`.
+  
+  A `SetField` holds a `Set`, not an array. Inferring it as an array handed you `push` and index access on a value that has neither, and the compiler agreed.
+  
+  A `ForeignDocumentField` reads back as the document itself — the data model installs the field as a getter, so the property gives you the instance, not the function that fetched it. Under `idOnly` it stays the id string. Both admit `null` unless the schema sets `nullable: false`.
+  
+  Also exported: `SetFieldInstance`, `SetFieldCtor`, `SetFieldOptions`, `ForeignDocumentFieldInstance`, `ForeignDocumentFieldCtor`, `ForeignDocumentFieldOptions`, and `DocumentClass`.
+- 74c4126: Type the statics on `BaseActorSheet()` and `BaseItemSheet()`.
+  
+  Both returned a bare constructor, so a subclass writing `super.DEFAULT_OPTIONS` — the pattern the docs show and every sheet needs — failed to compile. TypeScript cannot see a static through an untyped constructor. The example system is JavaScript, so nothing caught it.
+  
+  They now return `SheetBaseCtor`, which carries `DEFAULT_OPTIONS` and `DRAG_DROP`. A subclass declaring either needs the `override` modifier, which is TypeScript correctly seeing the inherited static.
+
 ## 0.5.0
 
 ### Minor Changes
