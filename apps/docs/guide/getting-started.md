@@ -3,11 +3,13 @@
 ## Scaffold
 
 ```bash
-npx @vttforge/cli init my-system --type system --lang ts
+pnpm create vttforge my-system --type system --lang ts
 cd my-system
-npm install
-npm run build
+pnpm build
 ```
+
+`create` installs for you, so there is no separate install step. If you would
+rather not go through it, `npx @vttforge/cli init` takes the same arguments.
 
 That produces a Foundry-loadable tree in `dist/` and a release zip with the
 manifest at the root, which is what foundryvtt.com expects.
