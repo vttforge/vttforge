@@ -1,12 +1,23 @@
 {
   "name": "@vttforge-examples/simple-module",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Reference Foundry VTT module built on @vttforge/core + @vttforge/vite-plugin.",
   "type": "module",
   "scripts": {
-    "build": "echo 'simple-module: scaffolding lands in v0.2.0'",
-    "typecheck": "echo 'simple-module: typecheck lands in v0.2.0'",
-    "test": "echo 'simple-module: no tests yet'"
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@vttforge/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@vttforge/vite-plugin": "workspace:*",
+    "happy-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }
