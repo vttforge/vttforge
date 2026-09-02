@@ -144,7 +144,7 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 - ✅ **Design system** — tokens, primitives, themes, brand
 - ✅ **Published** — every package on npm under OIDC trusted publishing, with provenance
 - ✅ **Documentation** — [vttforge.dev](https://vttforge.dev) carries the guide, the recipes, the error catalogue and the design system
-- 🛠️ **Now** — widening `@vttforge/types` so the base factories stop returning `any`
+- 🛠️ **Now** — the base factories declare the Foundry members they stand on (`ApplicationV2Members`, `DocumentSheetV2Members`); widening that surface as adopters hit gaps, then moving it into `@vttforge/types`
 - 🚀 **v1.0** — a stable API, decorators once the toolchain allows them, and enough adopters to know which of the remaining gaps are real
 
 ## Contributing
