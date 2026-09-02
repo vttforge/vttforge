@@ -1,11 +1,7 @@
 # @vttforge/types
 
-Shared TypeScript types for VTTForge — full class-level `InferSchema<T>` and Foundry v13+ typing helpers (built on top of `fvtt-types`).
+Shared TypeScript types for [VTTForge](https://vttforge.dev).
 
-> **Status:** v0.0.1 placeholder. Real type surface lands in v1.0.0 — gated on `fvtt-types` v13 stabilisation.
+Today the package exports a version constant and nothing else. The Foundry members the sheet and application bases stand on — `ApplicationV2Members`, `DocumentSheetV2Members`, `VttforgeClass` — live in `@vttforge/core` for now, because that is where they are used.
 
-## Planned scope (v1.0.0)
-
-- Full `InferSchema<T>` including `EmbeddedDataField`, `EmbeddedDocumentField`, `TypedSchemaField`.
-- Drizzle-style `$inferData` accessor on `BaseTypeDataModel`.
-- `Prettify<T>` IDE perf helpers applied at every public boundary.
+This package is where the shared Foundry surface moves once it is wide enough to be worth a package of its own, and once `fvtt-types` for v13 settles enough to build on. Until then, depend on `@vttforge/core`.

@@ -40,6 +40,12 @@ does not exist when your module is first evaluated.
 how you say "this exists after `prepareDerivedData` runs", and it reads as
 documentation of the derived surface rather than a workaround.
 
+In JavaScript there is no `declare`, and a plain class field would emit and
+reset the property to `undefined` after every data preparation. Put derived
+values in the schema instead — a `NumberField` with `initial: 0` — and
+assign them in `prepareDerivedData`. The scaffold's JavaScript template does
+this for the ability modifiers.
+
 ## Say what you mean about null
 
 This is the part that surprises people, so it is worth being blunt about it.

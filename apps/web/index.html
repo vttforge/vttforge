@@ -235,8 +235,8 @@
         <div class="shell">
           <div class="bk-head">
             <span class="bk-eyebrow">Packages</span>
-            <h2 class="bk-title">Six packages,<br />one monorepo.</h2>
-            <p class="bk-sub">Cherry-pick what you need. <span class="mono">@vttforge/core</span> is enough for a system; the rest layer on top.</p>
+            <h2 class="bk-title">Seven packages,<br />one monorepo.</h2>
+            <p class="bk-sub">Cherry-pick what you need. <span class="mono">@vttforge/core</span> is enough for a system; the rest layer on top. All on npm, with provenance.</p>
           </div>
 
           <table class="pkg-table">
@@ -246,33 +246,43 @@
             <tbody>
               <tr>
                 <td class="pkg-name">@vttforge/core</td>
-                <td class="pkg-desc">Runtime: BaseActorSheet, BaseItemSheet, SystemConfig, registerSystem, fields(), InferSchema, createMigrationRunner, VttfError</td>
-                <td class="pkg-status s-wip"><span class="blip"></span>v0.1 in progress</td>
-              </tr>
-              <tr>
-                <td class="pkg-name">@vttforge/styles</td>
-                <td class="pkg-desc">Design tokens, sheet primitives, drag-drop affordances, opt-in themes via CSS cascade layers</td>
-                <td class="pkg-status s-wip"><span class="blip"></span>v0.1 in progress</td>
-              </tr>
-              <tr>
-                <td class="pkg-name">@vttforge/vite-plugin</td>
-                <td class="pkg-desc">Vite plugin: HMR for .hbs, CSS pipeline (PostCSS), manifest sync</td>
-                <td class="pkg-status s-plan"><span class="blip"></span>v0.2 planned</td>
+                <td class="pkg-desc">Runtime: registerSystem / registerModule, sheet and enricher registration, BaseTypeDataModel with inference, BaseActorSheet / BaseItemSheet / BaseDocumentSheet / BaseApplication, SystemConfig, createMigrationRunner, VttfError</td>
+                <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
               </tr>
               <tr>
                 <td class="pkg-name">@vttforge/cli</td>
-                <td class="pkg-desc">vttforge init / dev / build, scaffold systems and modules in TS or JS</td>
-                <td class="pkg-status s-plan"><span class="blip"></span>v0.3 planned</td>
+                <td class="pkg-desc">vttforge init / dev / build / audit — four templates, the symlink-and-watch dev loop, the release zip, a v13 manifest and source linter</td>
+                <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
+              </tr>
+              <tr>
+                <td class="pkg-name">create-vttforge</td>
+                <td class="pkg-desc">pnpm create vttforge — the scaffolder as a create package</td>
+                <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
+              </tr>
+              <tr>
+                <td class="pkg-name">@vttforge/vite-plugin</td>
+                <td class="pkg-desc">The build contract: browser ESM, no hashing, class names kept, CSS bundled, manifest copied with version synced</td>
+                <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
+              </tr>
+              <tr>
+                <td class="pkg-name">@vttforge/styles</td>
+                <td class="pkg-desc">The Forge design system: DTCG tokens compiled to CSS, sheet primitives, opt-in themes over cascade layers</td>
+                <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
               </tr>
               <tr>
                 <td class="pkg-name">@vttforge/testing</td>
-                <td class="pkg-desc">Quench helpers for system and module tests</td>
-                <td class="pkg-status s-plan"><span class="blip"></span>v1.0 planned</td>
+                <td class="pkg-desc">withMockFoundry for Vitest — sheets and enrichers recorded — and a Quench half for a real world</td>
+                <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
+              </tr>
+              <tr>
+                <td class="pkg-name">@vttforge/dev-module</td>
+                <td class="pkg-desc">The in-world half of the dev loop; vttforge dev installs it</td>
+                <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
               </tr>
               <tr>
                 <td class="pkg-name">@vttforge/types</td>
-                <td class="pkg-desc">Shared TypeScript types, full class-level inference, Drizzle-style $inferData</td>
-                <td class="pkg-status s-plan"><span class="blip"></span>v1.0 planned</td>
+                <td class="pkg-desc">Shared types. A stub today — the Foundry surface the bases declare lives in core until it is worth a package</td>
+                <td class="pkg-status s-wip"><span class="blip"></span>stub</td>
               </tr>
             </tbody>
           </table>
@@ -313,28 +323,27 @@
             </div>
 
             <div class="try-card">
-              <h3>Coming with v0.1</h3>
-              <p>Once <span class="mono">@vttforge/cli</span> ships in v0.3, scaffolding a new system or module takes one command. Dev server with HMR for Handlebars templates is in the v0.2 plugin.</p>
+              <h3>Scaffold one in a minute</h3>
+              <p>One command writes a system or a module you can open in Foundry: typed data models, a sheet with tabs and drag-drop, a migration runner, a release workflow. Then <span class="mono">vttforge dev</span> reloads templates and styles in place.</p>
               <div class="vttf-codeblock">
                 <div class="vttf-codeblock__head">
                   <div class="vttf-codeblock__dots"><span></span><span></span><span></span></div>
                   <span class="vttf-codeblock__file">terminal</span>
                   <span class="vttf-codeblock__lang">bash</span>
                 </div>
-<pre><span class="vttf-tk-com"># scaffold a system, or a module</span>
-<span class="vttf-tk-prop">npx</span> @vttforge/cli init my-system <span class="vttf-tk-pun">\</span>
+<pre><span class="vttf-tk-com"># a system, or a module</span>
+<span class="vttf-tk-prop">pnpm</span> create vttforge my-system <span class="vttf-tk-pun">\</span>
   --type system --lang ts
-
-<span class="vttf-tk-prop">npx</span> @vttforge/cli init my-module <span class="vttf-tk-pun">\</span>
-  --type module --lang ts
 
 <span class="vttf-tk-prop">cd</span> my-system
 
-<span class="vttf-tk-com"># dev server with HMR for .hbs</span>
-<span class="vttf-tk-prop">vttforge</span> dev <span class="vttf-tk-pun">\</span>
-  --foundry-data ~/Library/Application\ Support/FoundryVTT/Data
+<span class="vttf-tk-com"># link into Foundry, watch, reload in place</span>
+<span class="vttf-tk-prop">vttforge</span> dev
 
-<span class="vttf-tk-com"># production build</span>
+<span class="vttf-tk-com"># lint the manifest and source for v13 breakages</span>
+<span class="vttf-tk-prop">vttforge</span> audit
+
+<span class="vttf-tk-com"># dist/ plus the release zip</span>
 <span class="vttf-tk-prop">vttforge</span> build</pre>
               </div>
             </div>
@@ -346,15 +355,16 @@
         <div class="shell">
           <div class="bk-head">
             <span class="bk-eyebrow">Roadmap</span>
-            <h2 class="bk-title">Where we are now.<br />And the road to 1.0.</h2>
+            <h2 class="bk-title">What shipped.<br />And the road to 1.0.</h2>
           </div>
 
           <div class="roadmap">
             <div class="roadmap-track">
               <div class="rm-step done"><div class="dot"></div><div class="ver">v0.0</div><div class="nm">Names reserved</div></div>
-              <div class="rm-step now"><div class="dot"></div><div class="ver">v0.1</div><div class="nm">Core runtime · sheet bases · styles · types</div></div>
-              <div class="rm-step"><div class="dot"></div><div class="ver">v0.2</div><div class="nm">Vite plugin · HMR · manifest sync</div></div>
-              <div class="rm-step"><div class="dot"></div><div class="ver">v0.3</div><div class="nm">CLI scaffolding · docs site</div></div>
+              <div class="rm-step done"><div class="dot"></div><div class="ver">v0.1</div><div class="nm">Core runtime · sheet bases · styles</div></div>
+              <div class="rm-step done"><div class="dot"></div><div class="ver">v0.2</div><div class="nm">Vite plugin · dev loop · manifest sync</div></div>
+              <div class="rm-step done"><div class="dot"></div><div class="ver">v0.3</div><div class="nm">CLI · four templates · audit · docs site</div></div>
+              <div class="rm-step now"><div class="dot"></div><div class="ver">now</div><div class="nm">Typed Foundry surface · adopters · the gaps they find</div></div>
               <div class="rm-step"><div class="dot"></div><div class="ver">v1.0</div><div class="nm">Stable API · full inference · decorators</div></div>
             </div>
           </div>
