@@ -1,5 +1,11 @@
 # @vttforge/testing
 
+## 0.3.2
+
+### Patch Changes
+
+- 9b8ca8c: Export the option and config interfaces that public functions already took: `MockDocumentOptions` and `MockFoundryOptions` from `@vttforge/testing`, `ActorConfig` and `ItemConfig` from `@vttforge/core`. They were reachable through the functions but could not be named.
+
 ## 0.3.1
 
 ### Patch Changes
