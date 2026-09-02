@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/testing",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Quench-compatible test helpers and Foundry mocks for VTTForge systems and modules.",
   "type": "module",
   "license": "MIT",
