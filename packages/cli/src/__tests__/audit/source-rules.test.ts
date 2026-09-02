@@ -145,6 +145,31 @@ class BData extends TypeDataModel {}`,
   });
 
   describe('VTTF-AUDIT-004 — HTMLField / FilePathField not declared', () => {
+    it('attributes a factory schema to its class for the per-subtype check', async () => {
+      // `biography` is declared for `Actor.character` but the factory
+      // schema is registered under `Actor.npc` too. Without factory
+      // ownership the rule would fall back to the global union and pass.
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({
+          id: 'my-system',
+          version: '1.0.0',
+          documentTypes: { Actor: { character: { htmlFields: ['biography'] }, npc: {} } },
+        }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `const defineSchema = () => ({ biography: new fields.HTMLField() });
+class PersonData extends BaseTypeDataModel(defineSchema) {}
+registerSystem({ id: 'my-system', actorDataModels: { character: PersonData, npc: PersonData } });`,
+        'utf8',
+      );
+      const four = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-004');
+      expect(four).toHaveLength(1);
+      expect(four[0]?.message).toContain('Actor.npc');
+    });
+
     it('flags HTMLField that is missing from manifest documentTypes', async () => {
       await writeFile(
         join(cwd, 'system.json'),
@@ -379,6 +404,77 @@ class BData extends TypeDataModel {}`,
   });
 
   describe('VTTF-AUDIT-007 — token attribute SchemaField', () => {
+    it('resolves a schema declared in a named factory handed to BaseTypeDataModel()', async () => {
+      // The typed factory keeps the schema in a function outside the class.
+      // With the class registered as an Actor model, the rule scopes to
+      // Actor classes — and must still find the field through the factory.
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({ id: 'my-system', version: '1.0.0', primaryTokenAttribute: 'health' }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `const defineCharacterSchema = () => {
+  const f = fields();
+  return {
+    health: new f.SchemaField({
+      value: new f.NumberField(),
+      max: new f.NumberField(),
+    }),
+  };
+};
+export class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {}
+registerSystem({ id: 'my-system', actorDataModels: { character: CharacterData } });`,
+        'utf8',
+      );
+      expect(await runSourceRules(cwd)).toEqual([]);
+    });
+
+    it('reads a factory with a return type and a brace inside a string', async () => {
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({ id: 'my-system', version: '1.0.0', primaryTokenAttribute: 'health' }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `const defineCharacterSchema = (): Record<string, unknown> => {
+  const label = 'closes: }'; // and a comment with }
+  return {
+    health: new fields.SchemaField({ value: new fields.NumberField(), max: new fields.NumberField() }),
+  };
+};
+export class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {}
+registerSystem({ id: 'my-system', actorDataModels: { character: CharacterData } });`,
+        'utf8',
+      );
+      expect(await runSourceRules(cwd)).toEqual([]);
+    });
+
+    it('still scopes a factory schema to the class that owns it', async () => {
+      // The factory belongs to an Item model; token bars read actor.system.
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({ id: 'my-system', version: '1.0.0', primaryTokenAttribute: 'health' }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `function defineGearSchema() {
+  return {
+    health: new fields.SchemaField({ value: new fields.NumberField(), max: new fields.NumberField() }),
+  };
+}
+class GearData extends BaseTypeDataModel(defineGearSchema) {}
+class CharacterData extends BaseTypeDataModel(() => ({})) {}
+registerSystem({ id: 'my-system', actorDataModels: { character: CharacterData }, itemDataModels: { gear: GearData } });`,
+        'utf8',
+      );
+      const seven = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-007');
+      expect(seven).toHaveLength(1);
+    });
+
     it('passes when health resolves to {value, max} SchemaField', async () => {
       await writeFile(
         join(cwd, 'system.json'),

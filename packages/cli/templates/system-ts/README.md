@@ -2,55 +2,73 @@
 
 {{DESCRIPTION}}
 
-Built on [VTTForge](https://github.com/vttforge/vttforge) — typed data models, declarative sheet boilerplate, migration runner, error catalogue, and a Vite-based build pipeline.
-
-> **Note** — VTTForge is currently in pre-release and not yet published to npm. The dependencies in `package.json` (`@vttforge/core`, `@vttforge/styles`, `@vttforge/vite-plugin`) will resolve once VTTForge ships its first public release. Until then, work from a local checkout: `pnpm link --global` from each VTTForge package, then `pnpm link --global @vttforge/core @vttforge/styles @vttforge/vite-plugin` here.
+A Foundry VTT v13+ system built on [VTTForge](https://vttforge.dev): typed
+data models, sheet bases that already know their tabs and drops, a migration
+runner, and a build that produces what foundryvtt.com expects.
 
 ## Quick start
 
 ```bash
 pnpm install
-pnpm dev      # vite build --watch + auto-symlinks dist/ into Foundry's Data
-pnpm build    # one-shot build + emits {{ID}}-<version>.zip for foundryvtt.com
+pnpm dev      # build, link dist/ into Foundry's data dir, watch
+pnpm build    # dist/ plus {{ID}}-<version>.zip
 ```
 
-`pnpm dev` (`vttforge dev` under the hood) auto-detects your Foundry user-data
-directory on the first run, prompts you to confirm it, and saves the choice to
-`.vttforge/config.json` for next time. Override with `--data-dir <path>` or set
-`FOUNDRY_DATA_DIR` in your environment.
+`pnpm dev` asks where Foundry keeps its data on the first run and remembers
+the answer in `.vttforge/config.json`. Override with `--foundry-data <path>`
+or `FOUNDRY_DATA_DIR`. If Foundry runs in a container it cannot follow the
+symlink, and the command prints the compose mount to use instead.
 
-Run Foundry with `--hotReload` so saved files reload the world without a page
-refresh — `dev` watches `dist/` for changes, and Foundry's built-in dispatcher
-swaps CSS / Handlebars / JSON on the fly.
+Save a template and the open sheet redraws in place; save a stylesheet and the
+CSS swaps. Enable **VTTForge Dev** in the world once — `pnpm dev` links it in.
 
-Then launch Foundry, create a world that uses **{{TITLE}}**, and open a character — the sheet is the `CharacterSheet` shipped in `scripts/sheets/`.
+Then create a world on **{{TITLE}}** and open a character.
 
 ## What's inside
 
 | Path | Purpose |
 |---|---|
-| `system.json` | Manifest (id, compatibility, document types, manifest-side sanitization paths) |
-| `template.json` | Foundry document type declarations (Actor + Item subtypes) |
-| `scripts/main.ts` | Entry point — one call to `registerSystem` from `@vttforge/core` |
-| `scripts/data/*.ts` | Typed data models (`BaseTypeDataModel()` from `@vttforge/core`) |
-| `scripts/sheets/*.ts` | Sheet boilerplate eliminators (`BaseActorSheet()` / `BaseItemSheet()`) |
-| `scripts/migrations.ts` | `createMigrationRunner()` — versioned data migrations |
-| `templates/` | Handlebars templates for sheets |
-| `styles/main.css` | Stylesheet — imports `@vttforge/styles` as the design system base |
-| `lang/en.json` | Localization strings |
+| `system.json` | Manifest — types, `htmlFields`, hot-reload paths, migration flags |
+| `template.json` | The type names Foundry expects to see declared |
+| `scripts/main.ts` | One `registerSystem` call: models, sheets, initiative, settings, migrations |
+| `scripts/data/*.ts` | Data models. The schema is a function handed to `BaseTypeDataModel`, which is what makes `this.level` a `number` |
+| `scripts/sheets/*.ts` | Sheets on `BaseActorSheet` / `BaseItemSheet` — `static TABS`, `static DRAG_DROP`, typed `onDropItem` |
+| `scripts/migrations.ts` | `createMigrationRunner` — versioned, idempotent, GM-gated |
+| `templates/` | Handlebars, using v13's own elements (`<prose-mirror>`, `data-action`) |
+| `styles/main.css` | Imports `@vttforge/styles` and scopes your rules under `.{{ID}}` |
+| `lang/en.json` | Strings, under the `{{LOCALE_PREFIX}}` prefix |
 
-## Releasing to Foundry
+## Two things worth knowing before you edit
 
-Tag-push triggers `.github/workflows/release.yml`, which builds the system, zips `dist/`, and attaches both `{{ID}}-<version>.zip` and `dist/system.json` to a GitHub Release.
+**Sheets are registered by id, not by class name.** `registerSystem({ sheets })`
+pins each sheet under `{{ID}}.<id>`. Foundry saves that key on every actor
+whose owner picked the sheet, and derives it from the class name unless told
+otherwise — which a bundler renames between builds. Keep the ids; renaming one
+loses the sheet choice on every document already using it.
+
+**`this.document` is `unknown` on the sheet bases.** Which document a sheet is
+for is yours to know. Each sheet here narrows it once in a getter (`actor`,
+`item`) and everything below reads typed.
+
+## Checks
+
+```bash
+pnpm typecheck        # tsc against the real @vttforge/core types
+npx vttforge audit    # manifest + source against the v13 list of quiet breakages
+```
+
+## Releasing
+
+Push a tag and `.github/workflows/release.yml` builds, zips, and attaches
+`{{ID}}-<version>.zip` plus `system.json` to a GitHub Release:
 
 ```bash
 git tag v0.1.0
 git push --tags
 ```
 
-Foundry installs from the `system.json` URL on the Release — point users at the `latest/download/system.json` URL in the release notes so they auto-update on every tag.
-
-For foundryvtt.com submissions, submit the same manifest URL pattern.
+Point Foundry — and foundryvtt.com — at the release's
+`latest/download/system.json`, so installs auto-update on every tag.
 
 ## License
 

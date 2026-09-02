@@ -1,4 +1,11 @@
 {
+  "TYPES": {
+    "Item": {
+      "{{ID}}": {
+        "note": "Note"
+      }
+    }
+  },
   "{{LOCALE_PREFIX}}": {
     "Settings": {
       "showWelcome": {
@@ -6,6 +13,17 @@
         "hint": "Display a one-shot toast when {{TITLE}} loads in a world."
       }
     },
-    "Welcome": "{{TITLE}} loaded — try `game.modules.get(\"{{ID}}\").api.greet(\"GM\")` in the console."
+    "Welcome": "{{TITLE}} loaded — create a Note from the Items sidebar, or try `game.modules.get(\"{{ID}}\").api.createNote(\"Hello\")` in the console.",
+    "Sheet": {
+      "NamePlaceholder": "Name",
+      "Note": {
+        "title": "Note"
+      }
+    },
+    "Note": {
+      "NewName": "New Note",
+      "Pinned": "Pinned",
+      "ReferenceHint": "Paste this in any text field to link here."
+    }
   }
 }

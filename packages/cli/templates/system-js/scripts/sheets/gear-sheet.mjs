@@ -1,7 +1,7 @@
 /**
- * GearSheet — minimal Item sheet built on `BaseItemSheet()` from
- * `@vttforge/core`. Single PART, single TABS group, no DRAG_DROP — exercises
- * the mirror surface of BaseActorSheet on ItemSheetV2.
+ * GearSheet — the `gear` Item sheet on `BaseItemSheet()`.
+ *
+ * Single part, one tab group, no drag-drop: the smallest useful sheet.
  */
 import { BaseItemSheet } from '@vttforge/core';
 
@@ -23,9 +23,7 @@ export class GearSheet extends BaseItemSheet() {
   );
 
   static PARTS = {
-    sheet: {
-      template: `systems/${SYSTEM_ID}/templates/item/gear-sheet.hbs`,
-    },
+    sheet: { template: `systems/${SYSTEM_ID}/templates/item/gear-sheet.hbs` },
   };
 
   static TABS = {
@@ -48,18 +46,22 @@ export class GearSheet extends BaseItemSheet() {
     },
   };
 
+  /** @returns {any} */
+  get item() {
+    return this.document;
+  }
+
   /** @override */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const item = this.document;
+    const { item } = this;
     context.item = item;
     context.system = item.system;
     context.isEditable = this.isEditable;
-    context.enrichedDescription =
-      await foundry.applications.ux.TextEditor.implementation.enrichHTML(
-        item.system?.description ?? '',
-        { relativeTo: item, secrets: item.isOwner },
-      );
+    context.enrichedDescription = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+      item.system.description,
+      { relativeTo: item, secrets: item.isOwner },
+    );
     return context;
   }
 }

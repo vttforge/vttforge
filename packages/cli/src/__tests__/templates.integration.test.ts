@@ -3,11 +3,40 @@
  * the basic shape of the generated project. Catches template drift early
  * (missing files, broken JSON syntax, unresolved placeholders, etc.).
  */
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { type ScaffoldVars, scaffold, templatesRoot } from '../scaffold.js';
+
+const require = createRequire(import.meta.url);
+
+/**
+ * The TypeScript variants are typechecked against the workspace's own
+ * `@vttforge/core` source, so a template that stops matching the SDK fails
+ * here rather than on the first `pnpm typecheck` a user runs.
+ */
+const CORE_SOURCE = join(templatesRoot(), '..', '..', 'core', 'src', 'index.ts');
+
+/** `tsc.js` sits next to the package's main entry; the `bin` path is not exported. */
+const TSC = join(dirname(require.resolve('typescript')), 'tsc.js');
+
+function typecheck(projectDir: string): string {
+  const tsconfig = join(projectDir, 'tsconfig.typecheck.json');
+  writeFileSync(
+    tsconfig,
+    JSON.stringify({
+      extends: './tsconfig.json',
+      compilerOptions: { paths: { '@vttforge/core': [CORE_SOURCE] } },
+    }),
+  );
+  const result = spawnSync(process.execPath, [TSC, '--noEmit', '-p', tsconfig], {
+    encoding: 'utf8',
+  });
+  return `${result.stdout}${result.stderr}`.trim();
+}
 
 const VARS: ScaffoldVars = {
   ID: 'my-pack',
@@ -24,6 +53,7 @@ const VARS: ScaffoldVars = {
 const SYSTEM_VARIANTS = ['system-ts', 'system-js'] as const;
 const MODULE_VARIANTS = ['module-ts', 'module-js'] as const;
 const ALL_VARIANTS = [...SYSTEM_VARIANTS, ...MODULE_VARIANTS];
+const TS_VARIANTS = ['system-ts', 'module-ts'] as const;
 
 describe('scaffolded templates', () => {
   let destDir: string;
@@ -133,7 +163,7 @@ describe('scaffolded templates', () => {
 
   for (const variant of MODULE_VARIANTS) {
     describe(`${variant} (module-specific)`, () => {
-      it('produces a v13-shaped module.json without documentTypes', async () => {
+      it('produces a v13-shaped module.json that declares its sub-type', async () => {
         await scaffold({
           templateDir: join(templatesRoot(), variant),
           destDir,
@@ -144,11 +174,36 @@ describe('scaffolded templates', () => {
         expect(manifest.title).toBe('My Pack');
         expect(manifest.styles).toEqual([{ src: 'styles/main.css' }]);
         expect(manifest.flags.hotReload).toEqual({
-          extensions: ['css', 'json'],
-          paths: ['styles', 'lang'],
+          extensions: ['css', 'hbs', 'json'],
+          paths: ['styles', 'templates', 'lang'],
         });
-        expect(manifest.documentTypes).toBeUndefined();
+        // The bare name here; `registerModule` files it as `my-pack.note`.
+        expect(manifest.documentTypes).toEqual({ Item: { note: { htmlFields: ['body'] } } });
       });
+
+      it('ships the note sheet template and its type label', async () => {
+        await scaffold({
+          templateDir: join(templatesRoot(), variant),
+          destDir,
+          vars: VARS,
+        });
+        expect(existsSync(join(destDir, 'templates', 'item', 'note-sheet.hbs'))).toBe(true);
+        const lang = JSON.parse(readFileSync(join(destDir, 'lang', 'en.json'), 'utf8'));
+        expect(lang.TYPES.Item['my-pack'].note).toBe('Note');
+      });
+    });
+  }
+
+  for (const variant of TS_VARIANTS) {
+    describe(`${variant} (typecheck)`, () => {
+      it('typechecks against the workspace @vttforge/core', async () => {
+        await scaffold({
+          templateDir: join(templatesRoot(), variant),
+          destDir,
+          vars: VARS,
+        });
+        expect(typecheck(destDir)).toBe('');
+      }, 60_000);
     });
   }
 });

@@ -11,10 +11,15 @@
   "esmodules": ["main.mjs"],
   "styles": [{ "src": "styles/main.css" }],
   "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "documentTypes": {
+    "Item": {
+      "note": { "htmlFields": ["body"] }
+    }
+  },
   "flags": {
     "hotReload": {
-      "extensions": ["css", "json"],
-      "paths": ["styles", "lang"]
+      "extensions": ["css", "hbs", "json"],
+      "paths": ["styles", "templates", "lang"]
     }
   }
 }
