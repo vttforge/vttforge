@@ -22,6 +22,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { cp, mkdir, readdir, stat } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
 import type { Plugin, UserConfig } from 'vite';
+import { version } from '../package.json' with { type: 'json' };
 
 export interface VttforgeOptions {
   /**
@@ -362,4 +363,4 @@ export default function vttforge(options: VttforgeOptions): Plugin {
   };
 }
 
-export const VTTFORGE_VITE_PLUGIN_VERSION = '0.1.0';
+export const VTTFORGE_VITE_PLUGIN_VERSION: string = version;

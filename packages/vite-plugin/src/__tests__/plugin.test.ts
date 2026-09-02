@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import pluginPackage from '../../package.json' with { type: 'json' };
 import vttforge, { VTTFORGE_VITE_PLUGIN_VERSION, type VttforgeOptions } from '../index';
 
 const FIXTURE_SRC = fileURLToPath(new URL('./fixtures/example-system', import.meta.url));
@@ -67,7 +68,7 @@ describe('@vttforge/vite-plugin', () => {
   });
 
   it('exports a version constant', () => {
-    expect(VTTFORGE_VITE_PLUGIN_VERSION).toBeTypeOf('string');
+    expect(VTTFORGE_VITE_PLUGIN_VERSION).toBe(pluginPackage.version);
   });
 
   it('returns a Vite plugin with the right shape', () => {

@@ -19,7 +19,9 @@
  * `@vttforge/types` in v1.0.
  */
 
-export const VTTFORGE_CORE_VERSION = '0.2.0';
+import { version } from '../package.json' with { type: 'json' };
+
+export const VTTFORGE_CORE_VERSION: string = version;
 
 export {
   BaseActorSheet,
