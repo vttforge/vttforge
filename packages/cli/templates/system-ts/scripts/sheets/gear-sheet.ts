@@ -1,18 +1,24 @@
 /**
- * GearSheet — minimal Item sheet built on `BaseItemSheet()` from
- * `@vttforge/core`. Single PART, single TABS group, no DRAG_DROP — exercises
- * the mirror surface of BaseActorSheet on ItemSheetV2.
+ * GearSheet — the `gear` Item sheet on `BaseItemSheet()`.
+ *
+ * Single part, one tab group, no drag-drop: the smallest useful sheet.
  */
 import { BaseItemSheet } from '@vttforge/core';
+import type { GearData } from '../data/gear-data.js';
 
 const SYSTEM_ID = '{{ID}}';
 
-// biome-ignore lint/suspicious/noExplicitAny: typed sheet bases ship in a later @vttforge/types release
-const Base = BaseItemSheet() as any;
+/** What this sheet reads off its item. See `CharacterSheet` for the pattern. */
+interface GearItem {
+  readonly name: string;
+  readonly img: string;
+  readonly isOwner: boolean;
+  readonly system: GearData;
+}
 
-export class GearSheet extends Base {
-  static DEFAULT_OPTIONS = foundry.utils.mergeObject(
-    Base.DEFAULT_OPTIONS,
+export class GearSheet extends BaseItemSheet() {
+  static override DEFAULT_OPTIONS = foundry.utils.mergeObject(
+    super.DEFAULT_OPTIONS,
     {
       id: '{{ID}}-gear',
       classes: ['{{ID}}', 'sheet', 'item', 'gear'],
@@ -26,9 +32,7 @@ export class GearSheet extends Base {
   );
 
   static PARTS = {
-    sheet: {
-      template: `systems/${SYSTEM_ID}/templates/item/gear-sheet.hbs`,
-    },
+    sheet: { template: `systems/${SYSTEM_ID}/templates/item/gear-sheet.hbs` },
   };
 
   static TABS = {
@@ -51,18 +55,20 @@ export class GearSheet extends Base {
     },
   };
 
-  // biome-ignore lint/suspicious/noExplicitAny: see @vttforge/types follow-up
-  async _prepareContext(options: any) {
+  get item(): GearItem {
+    return this.document as GearItem;
+  }
+
+  override async _prepareContext(options: unknown): Promise<Record<string, unknown>> {
     const context = await super._prepareContext(options);
-    const item = (this as unknown as { document: any }).document;
+    const { item } = this;
     context.item = item;
     context.system = item.system;
-    context.isEditable = (this as unknown as { isEditable: boolean }).isEditable;
-    context.enrichedDescription =
-      await foundry.applications.ux.TextEditor.implementation.enrichHTML(
-        item.system?.description ?? '',
-        { relativeTo: item, secrets: item.isOwner },
-      );
+    context.isEditable = this.isEditable;
+    context.enrichedDescription = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+      item.system.description,
+      { relativeTo: item, secrets: item.isOwner },
+    );
     return context;
   }
 }

@@ -1,18 +1,44 @@
 /**
- * CharacterSheet — tabbed character sheet built on `BaseActorSheet()` from
- * `@vttforge/core`. Demonstrates the full boilerplate-elimination surface:
+ * CharacterSheet — tabbed character sheet on `BaseActorSheet()`.
  *
- * - `static TABS` — `context.tabs.<group>` auto-populated by BaseActorSheet
- *   (no manual `_prepareTabs` call).
- * - `static DRAG_DROP` — wires `foundry.applications.ux.DragDrop` on first
- *   render with `isEditable`-gated permissions.
- * - Typed `onDropItem(item, event)` — pre-resolves UUIDs, rejects
- *   non-`gear` items with a notification, lets `gear` flow through to
- *   Foundry's default `_onDropItem` by returning `undefined`.
+ * - `static TABS` — `context.tabs.<group>` is filled in for you.
+ * - `static DRAG_DROP` — drag-drop wired on render, gated on `isEditable`.
+ * - `onDropItem(item, event)` — the item arrives resolved, not as a UUID.
+ *   Return `false` to refuse, `undefined` to hand the drop back to Foundry.
  */
 import { BaseActorSheet } from '@vttforge/core';
+import type { CharacterData } from '../data/character-data.js';
+import type { GearData } from '../data/gear-data.js';
 
 const SYSTEM_ID = '{{ID}}';
+
+/**
+ * What this sheet reads off its actor.
+ *
+ * Foundry's own `Actor` type is not wired in — see `foundry-globals.ts` — so
+ * the sheet says what it needs. Grow this as the sheet grows; it is the one
+ * place to change when a real type package lands.
+ */
+interface CharacterActor {
+  readonly name: string;
+  readonly img: string;
+  readonly isOwner: boolean;
+  readonly system: CharacterData;
+  readonly items: {
+    filter(fn: (item: GearItem) => boolean): GearItem[];
+    get(id: string): GearItem | undefined;
+  };
+  getRollData(): Record<string, unknown>;
+}
+
+interface GearItem {
+  readonly id: string;
+  readonly name: string;
+  readonly img: string;
+  readonly type: string;
+  readonly system: GearData;
+  delete(): Promise<unknown>;
+}
 
 interface AbilityViewModel {
   key: string;
@@ -21,22 +47,18 @@ interface AbilityViewModel {
   mod: number;
 }
 
-interface GearViewModel {
-  id: string;
-  name: string;
-  img: string;
-  kind: string;
-  quantity: number;
-  weight: number;
-  description: string;
-}
+const ABILITY_LABELS: Record<string, string> = {
+  str: '{{LOCALE_PREFIX}}.Ability.str',
+  dex: '{{LOCALE_PREFIX}}.Ability.dex',
+  con: '{{LOCALE_PREFIX}}.Ability.con',
+  int: '{{LOCALE_PREFIX}}.Ability.int',
+  wis: '{{LOCALE_PREFIX}}.Ability.wis',
+  cha: '{{LOCALE_PREFIX}}.Ability.cha',
+};
 
-// biome-ignore lint/suspicious/noExplicitAny: typed sheet bases ship in a later @vttforge/types release
-const Base = BaseActorSheet() as any;
-
-export class CharacterSheet extends Base {
-  static DEFAULT_OPTIONS = foundry.utils.mergeObject(
-    Base.DEFAULT_OPTIONS,
+export class CharacterSheet extends BaseActorSheet() {
+  static override DEFAULT_OPTIONS = foundry.utils.mergeObject(
+    super.DEFAULT_OPTIONS,
     {
       id: '{{ID}}-character',
       classes: ['{{ID}}', 'sheet', 'actor', 'character'],
@@ -55,9 +77,7 @@ export class CharacterSheet extends Base {
   );
 
   static PARTS = {
-    sheet: {
-      template: `systems/${SYSTEM_ID}/templates/actor/character-sheet.hbs`,
-    },
+    sheet: { template: `systems/${SYSTEM_ID}/templates/actor/character-sheet.hbs` },
   };
 
   static TABS = {
@@ -92,85 +112,72 @@ export class CharacterSheet extends Base {
     },
   };
 
-  static DRAG_DROP = [
-    {
-      dragSelector: '.sh-item[draggable=true]',
-      dropSelector: '.sh-body',
-    },
-  ];
+  static override DRAG_DROP = [{ dragSelector: '.sh-item[draggable=true]', dropSelector: '.sh-body' }];
 
-  // biome-ignore lint/suspicious/noExplicitAny: see @vttforge/types follow-up
-  async _prepareContext(options: any) {
+  /**
+   * The actor this sheet is for.
+   *
+   * `this.document` is `unknown` on the base — which document a sheet is for
+   * is the system's to know. One cast, here, and everything below is typed.
+   */
+  get actor(): CharacterActor {
+    return this.document as CharacterActor;
+  }
+
+  override async _prepareContext(options: unknown): Promise<Record<string, unknown>> {
     const context = await super._prepareContext(options);
-    const actor = (this as unknown as { document: any }).document;
-    const system = actor.system;
-    const abilityLabels: Record<string, string> = {
-      str: '{{LOCALE_PREFIX}}.Ability.str',
-      dex: '{{LOCALE_PREFIX}}.Ability.dex',
-      con: '{{LOCALE_PREFIX}}.Ability.con',
-      int: '{{LOCALE_PREFIX}}.Ability.int',
-      wis: '{{LOCALE_PREFIX}}.Ability.wis',
-      cha: '{{LOCALE_PREFIX}}.Ability.cha',
-    };
+    const { actor } = this;
+    const { system } = actor;
+
     context.actor = actor;
     context.system = system;
-    context.isEditable = (this as unknown as { isEditable: boolean }).isEditable;
-    context.abilities = Object.entries(system.abilities ?? {}).map(
-      ([key, data]): AbilityViewModel => {
-        const ability = data as { value?: number; mod?: number } | number;
-        const value = typeof ability === 'number' ? ability : (ability?.value ?? 10);
-        const mod = typeof ability === 'number' ? 0 : (ability?.mod ?? 0);
-        return {
-          key,
-          label: game.i18n.localize(abilityLabels[key] ?? key),
-          value,
-          mod,
-        };
-      },
+    context.isEditable = this.isEditable;
+    context.abilities = Object.entries(system.abilities).map(
+      ([key, ability]): AbilityViewModel => ({
+        key,
+        label: game.i18n.localize(ABILITY_LABELS[key] ?? key),
+        value: ability.value,
+        mod: ability.mod,
+      }),
     );
     context.gear = actor.items
-      .filter((item: { type: string }) => item.type === 'gear')
-      .map(
-        (item: {
-          id: string;
-          name: string;
-          img: string;
-          system?: { kind?: string; quantity?: number; weight?: number; description?: string };
-        }): GearViewModel => ({
-          id: item.id,
-          name: item.name,
-          img: item.img,
-          kind: item.system?.kind ?? 'stowed',
-          quantity: item.system?.quantity ?? 1,
-          weight: item.system?.weight ?? 0,
-          description: item.system?.description ?? '',
-        }),
-      );
+      .filter((item) => item.type === 'gear')
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        img: item.img,
+        kind: item.system.kind,
+        quantity: item.system.quantity,
+        weight: item.system.weight,
+        description: item.system.description,
+      }));
     context.enrichedBiography = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
-      system.biography ?? '',
+      system.biography,
       { relativeTo: actor, secrets: actor.isOwner },
     );
     return context;
   }
 
-  /** Reject non-gear drops with a notification; let gear fall through. */
-  // biome-ignore lint/suspicious/noExplicitAny: see @vttforge/types follow-up
-  async onDropItem(item: any, _event: unknown): Promise<false | undefined> {
-    if (item?.type !== 'gear') {
+  /** Only gear belongs in this inventory. Anything else is refused with a reason. */
+  override async onDropItem(item: unknown, _event: DragEvent): Promise<false | undefined> {
+    const type = (item as { type?: string } | null)?.type;
+    if (type !== 'gear') {
       ui.notifications?.warn(
-        game.i18n.format('{{LOCALE_PREFIX}}.Sheet.Drop.rejected', { type: item?.type ?? 'unknown' }),
+        game.i18n.format('{{LOCALE_PREFIX}}.Sheet.Drop.rejected', { type: type ?? 'unknown' }),
       );
       return false;
     }
     return undefined;
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: see @vttforge/types follow-up
-  static async _onRollAbility(this: any, _event: Event, target: HTMLElement) {
-    const key = target?.dataset?.ability;
+  // ApplicationV2 declares action handlers static and calls them with `this`
+  // bound to the sheet instance. `this: CharacterSheet` says so to TypeScript.
+
+  static async _onRollAbility(this: CharacterSheet, _event: Event, target: HTMLElement): Promise<void> {
+    const key = target.dataset.ability;
     if (!key) return;
-    const actor = this.document;
-    const mod = actor.system.abilities?.[key]?.mod ?? 0;
+    const { actor } = this;
+    const mod = actor.system.abilities[key as keyof CharacterData['abilities']]?.mod ?? 0;
     const roll = new Roll(`1d20 + ${mod}`, actor.getRollData());
     await roll.evaluate();
     await roll.toMessage({
@@ -181,22 +188,16 @@ export class CharacterSheet extends Base {
     });
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: see @vttforge/types follow-up
-  static async _onCreateGear(this: any, _event: Event, _target: HTMLElement) {
-    const cls = CONFIG.Item.documentClass;
-    const parent = this.document;
-    await cls.create(
+  static async _onCreateGear(this: CharacterSheet): Promise<void> {
+    await CONFIG.Item.documentClass.create(
       { name: game.i18n.localize('{{LOCALE_PREFIX}}.Sheet.NewGearName'), type: 'gear' },
-      { parent, renderSheet: true },
+      { parent: this.actor, renderSheet: true },
     );
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: see @vttforge/types follow-up
-  static async _onDeleteItem(this: any, _event: Event, target: HTMLElement) {
-    const row = target?.closest('[data-item-id]') as HTMLElement | null;
-    const id = row?.dataset?.itemId;
+  static async _onDeleteItem(this: CharacterSheet, _event: Event, target: HTMLElement): Promise<void> {
+    const id = target.closest<HTMLElement>('[data-item-id]')?.dataset.itemId;
     if (!id) return;
-    const item = this.document.items.get(id);
-    await item?.delete();
+    await this.actor.items.get(id)?.delete();
   }
 }

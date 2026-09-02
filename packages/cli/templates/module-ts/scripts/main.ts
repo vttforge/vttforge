@@ -1,71 +1,89 @@
 /**
  * {{TITLE}} — entry point.
  *
- * Demonstrates the typical Foundry module lifecycle:
- *
- * - `Hooks.once("init")` — register settings (here via `SystemConfig` from
- *   `@vttforge/core` for typed access) and expose the public API on
- *   `game.modules.get(MODULE_ID).api`.
- * - `Hooks.once("ready")` — surface a one-shot notification if the user
- *   opted in via settings.
- * - `Hooks.on("renderActorSheetV2", ...)` — example hook listener that
- *   tags any actor sheet with a discreet `.{{ID}}-badge` so you can verify
- *   the module is actually attached without hunting through devtools.
+ * One `registerModule` call replaces the `Hooks.once("init", ...)` block most
+ * modules copy from each other: the sub-type, its sheet, the enricher, the
+ * settings, and the public API.
  */
 import './foundry-globals.js';
-import { SystemConfig } from '@vttforge/core';
+import { registerModule, SystemConfig, VttfError } from '@vttforge/core';
+import { MODULE_ID, NOTE_TYPE } from './constants.js';
+import { NoteData } from './data/note-data.js';
+import { noteEnricher } from './enricher.js';
+import { NoteSheet } from './sheets/note-sheet.js';
 
-const MODULE_ID = '{{ID}}';
 const settings = new SystemConfig(MODULE_ID);
 
+/** What `game.modules.get("{{ID}}").api` offers other modules and macros. */
 interface ModuleApi {
-  greet(name: string): string;
-  getSetting<T>(key: string): T;
+  /** The prefixed type key, for `item.type === api.noteType` checks. */
+  readonly noteType: string;
+  createNote(name: string, body?: string): Promise<unknown>;
 }
 
-Hooks.once('init', () => {
-  settings.register('showWelcome', {
-    name: '{{LOCALE_PREFIX}}.Settings.showWelcome.name',
-    hint: '{{LOCALE_PREFIX}}.Settings.showWelcome.hint',
-    scope: 'client',
-    config: true,
-    type: Boolean,
-    default: true,
+const api: ModuleApi = {
+  noteType: NOTE_TYPE,
+  createNote(name, body = '') {
+    return CONFIG.Item.documentClass.create(
+      { name, type: NOTE_TYPE, system: { body } },
+      { renderSheet: true },
+    );
+  },
+};
+
+try {
+  registerModule({
+    id: MODULE_ID,
+
+    // Registered as `{{ID}}.note` — the prefix is added for you, and the
+    // manifest declares the same key under `documentTypes.Item`.
+    itemDataModels: { note: NoteData },
+
+    // Declared here rather than with `Items.registerSheet`. Foundry keys a
+    // sheet by `${scope}.${class name}` and saves that key on every document
+    // using it; a bundler renames classes between builds, and the saved key
+    // then names a sheet that no longer exists. The `id` is written down, so
+    // the key does not move. Pick it once and keep it.
+    sheets: [
+      {
+        id: 'note',
+        document: 'Item',
+        sheet: NoteSheet,
+        types: [NOTE_TYPE],
+        makeDefault: true,
+        label: '{{LOCALE_PREFIX}}.Sheet.Note.title',
+      },
+    ],
+
+    enrichers: [noteEnricher],
+
+    // Runs first inside `init` — the usual home for the module API, so it is
+    // there before anything that might hook `init` after us asks for it.
+    onBeforeInit: () => {
+      const handle = game.modules.get(MODULE_ID);
+      if (handle) handle.api = api;
+    },
+
+    onAfterInit: () => {
+      settings.register('showWelcome', {
+        name: '{{LOCALE_PREFIX}}.Settings.showWelcome.name',
+        hint: '{{LOCALE_PREFIX}}.Settings.showWelcome.hint',
+        scope: 'client',
+        config: true,
+        type: Boolean,
+        default: true,
+      });
+    },
+
+    onReady: () => {
+      if (settings.get<boolean>('showWelcome')) {
+        ui.notifications?.info(game.i18n.localize('{{LOCALE_PREFIX}}.Welcome'));
+      }
+    },
   });
-
-  const api: ModuleApi = {
-    greet(name: string): string {
-      return `Hello, ${name}!`;
-    },
-    getSetting<T>(key: string): T {
-      return settings.get(key) as T;
-    },
-  };
-
-  const moduleHandle = game.modules.get(MODULE_ID);
-  if (moduleHandle) {
-    moduleHandle.api = api;
+} catch (err) {
+  if (err instanceof VttfError) {
+    console.error(`[${err.code}] ${err.message} — see ${err.docsUrl}`);
   }
-});
-
-Hooks.once('ready', () => {
-  const shouldWelcome = settings.get<boolean>('showWelcome');
-  if (shouldWelcome) {
-    ui.notifications?.info(game.i18n.localize('{{LOCALE_PREFIX}}.Welcome'));
-  }
-});
-
-Hooks.on('renderActorSheetV2', (_app: unknown, element: HTMLElement) => {
-  // Decorative: tag the rendered sheet so it's obvious the module is
-  // active. Remove or replace with real behaviour once you start shipping
-  // module features.
-  const header = element.querySelector('.window-header .window-title');
-  if (header && !header.querySelector(`.{{ID}}-badge`)) {
-    const badge = document.createElement('span');
-    badge.className = '{{ID}}-badge';
-    // Double-quoted because `vttforge init` rejects `"` and `\` in the
-    // title — apostrophes in titles like "Daisy's Module" stay intact.
-    badge.textContent = "{{TITLE}}";
-    header.appendChild(badge);
-  }
-});
+  throw err;
+}
