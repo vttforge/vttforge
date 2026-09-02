@@ -17,8 +17,10 @@ export {
 } from './mock-foundry.js';
 export {
   type MockFoundry,
+  type RecordedEnricher,
   type RecordedHook,
   type RecordedSetting,
+  type RecordedSheet,
   withMockFoundry,
 } from './with-mock-foundry.js';
 
