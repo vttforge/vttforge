@@ -61,3 +61,21 @@ allowBuilds:
   # Pulled in by vitepress for the docs site; nothing ships it to consumers.
   esbuild: true
   lefthook: true
+
+overrides:
+  # VitePress 1.6.4 — the latest stable — depends on `vite ^5.4.14`, and vite 5
+  # ended at 5.4.21 with four advisories open against it: a `server.fs.deny`
+  # bypass on Windows, path traversal in optimized-deps `.map` handling, the
+  # esbuild dev-server request issue, and an NTLM hash disclosure through
+  # launch-editor. All four are fixed in 6.4.3, and none of them were
+  # backported, so there is no version of vite 5 to move to.
+  #
+  # Every one is a dev-server problem, and this vite only ever runs when
+  # someone builds or previews the docs site locally — nothing ships it. That
+  # made it tempting to leave. It is also four open alerts on a public
+  # repository that nobody can tell apart from a real one at a glance.
+  #
+  # VitePress turns out to run fine on vite 6: the site builds with all its
+  # pages indexed, and the dev server serves. Revisit when VitePress 2 is
+  # stable, since it moves off vite 5 on its own.
+  vite@5: ^6.4.3

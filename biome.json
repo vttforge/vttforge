@@ -13,6 +13,7 @@
       "!**/.turbo",
       "!**/node_modules",
       "!**/coverage",
+      "!**/.vitepress",
       "!plans",
       "!packages/styles/tokens.json",
       "!packages/cli/templates"
