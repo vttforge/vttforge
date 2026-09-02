@@ -24,7 +24,7 @@ payload per changed file, and this end applies it.
 | `hbs`, `html` | Recompiles the template and re-renders open windows |
 | `json` | Merges a language file, if it is one you are viewing |
 
-Anything else is ignored — the watcher may cover more file types than can be
+Anything else is ignored: the watcher may cover more file types than can be
 applied without a reload.
 
 ## Vetoing a reload
@@ -41,7 +41,7 @@ Hooks.on('hotReload', (data) => {
 ## Pointing it somewhere else
 
 It connects to `ws://localhost:31313`, or to `host.docker.internal` when
-Foundry is not served from a local address — which is what a containerised
+Foundry is not served from a local address, which is what a containerised
 Foundry needs to reach the CLI on your machine. To override:
 
 ```js

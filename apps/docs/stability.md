@@ -7,7 +7,7 @@ What you can build on, and what may move.
 ## Before 1.0
 
 Every package is below `1.0.0`. Under semver that means a **minor may break
-you** — and in this project it regularly does, because the API is still meeting
+you**, and in this project it regularly does, because the API is still meeting
 real systems and modules for the first time.
 
 Pin exactly, or accept that `pnpm update` can require code changes:
@@ -54,14 +54,14 @@ is a promise; "deprecated, and here is why nothing replaces it" is honest.
 
 Only the packages that run in Node declare an engine floor. `@vttforge/core`,
 `@vttforge/styles`, `@vttforge/types` and `@vttforge/dev-module` run in the
-browser inside Foundry and never touch Node, so they declare none — requiring a
+browser inside Foundry and never touch Node, so they declare none. Requiring a
 Node version to install a browser package only blocks people for no reason.
 
 | Package | Node |
 |---|---|
 | `@vttforge/cli` | >= 26 |
 | `@vttforge/vite-plugin` | >= 26 |
-| `@vttforge/testing` | >= 22 — its Quench half runs in the browser |
+| `@vttforge/testing` | >= 22; its Quench half runs in the browser |
 | everything else | not applicable |
 
 ## Foundry
@@ -73,4 +73,4 @@ both would mean shipping the older shape forever.
 ## Peer dependencies
 
 `@vttforge/vite-plugin` peers on `vite`. Nothing else declares a peer, and
-nothing else should — a package that needs something should depend on it.
+nothing else should. A package that needs something should depend on it.

@@ -6,7 +6,7 @@ across that line, this is what actually bites.
 ## Removed, not deprecated
 
 **TinyMCE is gone.** If your package registers an editor plugin or reaches for
-`tinymce`, that code has no v13 equivalent — ProseMirror replaced it, with a
+`tinymce`, that code has no v13 equivalent. ProseMirror replaced it, with a
 different extension model.
 
 **`ui.windows` is gone.** Open applications live in
@@ -18,7 +18,7 @@ for (const app of foundry.applications.instances.values()) {
 }
 ```
 
-Match with `instanceof`, not `constructor.name` — a bundler minifies class
+Match with `instanceof`, not `constructor.name`, because a bundler minifies class
 names, and `MyViewer` becomes `za` in the built file.
 
 ## Renamed
@@ -59,7 +59,7 @@ CONFIG.TextEditor.enrichers.push({
 ## jQuery is deprecated
 
 It still loads, but new code should use native DOM. One delegated listener on a
-container beats one per element — and if the container is rebuilt on each
+container beats one per element. If the container is rebuilt on each
 render, per-element handlers leak the old ones.
 
 ## Check your work

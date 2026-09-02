@@ -50,7 +50,7 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     code: 'VTTF-0005',
     name: 'WorldTooOldForMigration',
     summary:
-      'createMigrationRunner() was called on a world whose stored schemaVersion is older than the configured compatibleVersion floor. Upgrade the world to a supported intermediate version before continuing — running migrations across the gap would corrupt data.',
+      'createMigrationRunner() was called on a world whose stored schemaVersion is older than the configured compatibleVersion floor. Upgrade the world to a supported intermediate version before continuing. Running migrations across the gap would corrupt data.',
   }),
   'VTTF-0006': Object.freeze({
     code: 'VTTF-0006',

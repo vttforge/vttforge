@@ -42,7 +42,7 @@ documentation of the derived surface rather than a workaround.
 
 In JavaScript there is no `declare`, and a plain class field would emit and
 reset the property to `undefined` after every data preparation. Put derived
-values in the schema instead — a `NumberField` with `initial: 0` — and
+values in the schema instead, as a `NumberField` with `initial: 0`, and
 assign them in `prepareDerivedData`. The scaffold's JavaScript template does
 this for the ability modifiers.
 
@@ -79,6 +79,6 @@ field in a small factory so the literals stay inline.
 |---|---|
 | `ColorField` | a `Color` instance, not a string |
 | `SetField` | a `Set`, not an array |
-| `ForeignDocumentField` | the document — the model installs it as a getter |
+| `ForeignDocumentField` | the document; the model installs it as a getter |
 | `EmbeddedDataField` | the model instance, with its derived data |
 | `TypedSchemaField` | a union you can narrow on `type` |

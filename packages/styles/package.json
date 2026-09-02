@@ -1,7 +1,7 @@
 {
   "name": "@vttforge/styles",
   "version": "0.3.2",
-  "description": "VTTForge base CSS layer: design tokens, reset, base, components, opt-in themes (CSS Cascade Layers).",
+  "description": "VTTForge design system as CSS: tokens, reset, base, components and opt-in themes over cascade layers.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/vttforge/vttforge#readme",

@@ -1,7 +1,7 @@
 {
   "name": "@vttforge/vite-plugin",
   "version": "0.4.1",
-  "description": "Vite plugin for VTTForge: HMR for .hbs templates, manifest sync, CSS pipeline (PostCSS, optional Sass).",
+  "description": "Vite plugin for Foundry VTT v13+ packages: browser ESM output with no hashing, CSS bundled, manifest copied with the version synced.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/vttforge/vttforge#readme",

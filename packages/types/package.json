@@ -1,7 +1,7 @@
 {
   "name": "@vttforge/types",
   "version": "0.1.2",
-  "description": "Shared TypeScript types for VTTForge \u2014 full schema-to-TS inference, Foundry v13+ typing helpers.",
+  "description": "Shared TypeScript types for VTTForge. A stub today; the Foundry surface the bases declare lives in @vttforge/core.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/vttforge/vttforge#readme",
