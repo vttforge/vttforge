@@ -128,6 +128,10 @@ export type {
   MigrationRunnerOptions,
 } from './migrations/types.js';
 export {
+  type EnricherRegistration,
+  registerEnrichers,
+} from './register-enrichers.js';
+export {
   type ModuleRegistration,
   moduleSubType,
   registerModule,
