@@ -10,8 +10,8 @@ skills-lock.json
 
 # Build outputs
 dist/
-.vitepress/cache/
-.vitepress/dist/
+**/.vitepress/cache/
+**/.vitepress/dist/
 build/
 *.tsbuildinfo
 .turbo/
