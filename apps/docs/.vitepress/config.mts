@@ -16,12 +16,21 @@ function errorPages() {
 
 export default defineConfig({
   title: 'VTTForge',
+  // The landing page owns the root of vttforge.dev; the docs live under it,
+  // in one Pages artifact.
+  base: '/docs/',
   description: 'An SDK and CLI for building Foundry VTT v13+ systems and modules.',
   cleanUrls: true,
   lastUpdated: true,
 
-  // Pagefind indexes the built output, so the built-in search is off.
   themeConfig: {
+    // Was Pagefind, which built an index nothing ever loaded: no theme
+    // component mounted its UI, so the navbar search slot rendered empty and
+    // the site shipped with no search at all. At twenty pages VitePress's own
+    // local index is enough, and it is one line instead of a component plus
+    // asset loading.
+    search: { provider: 'local' },
+
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Recipes', link: '/recipes/' },
