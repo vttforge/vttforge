@@ -9,7 +9,7 @@
 [![FoundryVTT](https://img.shields.io/badge/FoundryVTT-v13%2B-orange?style=flat-square)](https://foundryvtt.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 
-[📖 Documentation](https://vttforge.dev/docs/) · [🗺️ Roadmap](#roadmap) · [🐛 Report bug](https://github.com/vttforge/vttforge/issues)
+[Documentation](https://vttforge.dev/docs/) · [Getting started](https://vttforge.dev/docs/guide/getting-started) · [API reference](https://vttforge.dev/docs/reference/) · [Roadmap](#roadmap) · [Report a bug](https://github.com/vttforge/vttforge/issues)
 
 </div>
 
@@ -36,6 +36,21 @@ pnpm dev
 ```
 
 This builds, symlinks `dist/` into your Foundry data directory, and watches. Save a template and the open sheet redraws in place, with no page reload. The first run asks where Foundry keeps its data and remembers the answer; if Foundry runs in a container and cannot follow a symlink, it prints the compose mount to use instead.
+
+## Docs
+
+The whole guide is at **[vttforge.dev/docs](https://vttforge.dev/docs/)**.
+
+- **[Getting started](https://vttforge.dev/docs/guide/getting-started).** Scaffold a project, point Foundry at it, build a release zip.
+- **[Data models](https://vttforge.dev/docs/guide/data-models).** One schema that types itself, and what each field class quietly defaults to.
+- **[Sheets](https://vttforge.dev/docs/guide/sheets).** The bases, the drop hooks, and why every sheet needs an id.
+- **[Modules](https://vttforge.dev/docs/guide/modules).** Namespaced sub-types, enrichers, and what a module may not touch.
+- **[Settings and migrations](https://vttforge.dev/docs/guide/settings-and-migrations).** `SystemConfig` and the migration runner.
+- **[The dev loop](https://vttforge.dev/docs/guide/dev-loop).** What reloads in place and what does not.
+- **[Testing](https://vttforge.dev/docs/guide/testing).** `withMockFoundry` in Vitest, Quench for what a mock cannot answer.
+- **[CLI reference](https://vttforge.dev/docs/guide/cli).** Every command, and every rule `vttforge audit` checks.
+
+Also on the site: the [API reference](https://vttforge.dev/docs/reference/) generated from the sources, the [error catalogue](https://vttforge.dev/docs/errors/), the [recipes](https://vttforge.dev/docs/recipes/), and the [stability policy](https://vttforge.dev/docs/stability).
 
 ## Why
 
@@ -143,7 +158,7 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 - ✅ **Dev loop.** Templates, styles and language files reload in place, without a page refresh
 - ✅ **Design system.** Tokens, primitives, themes, brand
 - ✅ **Published.** Every package on npm under OIDC trusted publishing, with provenance
-- ✅ **Documentation.** [vttforge.dev](https://vttforge.dev) carries the guide, the recipes, the error catalogue and the design system
+- ✅ **Documentation.** [vttforge.dev/docs](https://vttforge.dev/docs/) carries the guide, the API reference, the recipes and the error catalogue
 - 🛠️ **Now.** Widening the Foundry surface in `@vttforge/types` as adopters hit gaps
 - 🚀 **v1.0.** A stable API, decorators once the toolchain allows them, and enough adopters to know which of the remaining gaps are real
 
