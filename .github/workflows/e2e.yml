@@ -28,9 +28,6 @@ jobs:
       FOUNDRY_LICENSE_KEY: ${{ secrets.FOUNDRY_LICENSE_KEY }}
       FOUNDRY_USERNAME: ${{ secrets.FOUNDRY_USERNAME }}
       FOUNDRY_PASSWORD: ${{ secrets.FOUNDRY_PASSWORD }}
-      # Outside the workspace, so the licensed download survives between runs
-      # without going through the Actions cache, which a fork can read.
-      E2E_DATA_DIR: /opt/vttforge-e2e
     steps:
       - name: Check the credentials are configured
         run: |
@@ -78,4 +75,6 @@ jobs:
 
       - name: Stop Foundry
         if: always()
+        # The named volume outlives the run on purpose: it holds the licensed
+        # Foundry download, which is otherwise fetched again every time.
         run: docker rm -f vttforge-e2e || true
