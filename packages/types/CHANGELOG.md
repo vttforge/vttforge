@@ -1,5 +1,12 @@
 # @vttforge/types
 
+## 0.1.2
+
+### Patch Changes
+
+- 578ba31: Bring the package READMEs in line with what shipped. `core`, `styles`, `types` and `vite-plugin` still described themselves as v0.0.1 placeholders with "planned" features; `cli` did not mention `audit`.
+- ae724e3: Read the exported `VTTFORGE_*_VERSION` constants from `package.json` at build time. They were hardcoded and had fallen behind — `vttforge --version` printed `0.1.0` on the 0.5 line.
+
 ## 0.1.1
 
 ### Patch Changes
