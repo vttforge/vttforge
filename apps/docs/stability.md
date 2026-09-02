@@ -48,7 +48,7 @@ is a promise; "deprecated, and here is why nothing replaces it" is honest.
 | `@vttforge/styles` | Browser | Token names are stable; component CSS is not. |
 | `@vttforge/testing` | Node and browser | New. Expect it to move. |
 | `@vttforge/dev-module` | Browser, inside Foundry | Internal to the dev loop; not an API. |
-| `@vttforge/types` | Types only | A stub. The Foundry members the base factories declare live in `@vttforge/core` until this is worth a package. |
+| `@vttforge/types` | Types only | Small and deliberate. The Foundry members the base factories declare; grows as consumers need more. |
 
 ## Node
 

@@ -19,7 +19,7 @@
 import { VttfError } from './errors/registry.js';
 import type { DocumentSheetV2Members, VttforgeClass } from './foundry-base.js';
 
-// biome-ignore lint/suspicious/noExplicitAny: Foundry's sheet shape lives in fvtt-types (deferred to @vttforge/types v1.0)
+// biome-ignore lint/suspicious/noExplicitAny: Foundry's sheet class is resolved at runtime; the members the SDK stands on are in @vttforge/types
 type AnyConstructor = new (...args: any[]) => any;
 
 interface FoundryApplicationsSheets {

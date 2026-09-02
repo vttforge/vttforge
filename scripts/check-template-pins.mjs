@@ -33,8 +33,8 @@
  * consistent with itself and the release is consistent with the repo. The
  * released scaffold is the only thing out of step, and it is nobody's diff.
  *
- * So the second check: if a template pins a package that this release bumps,
- * the release has to include `@vttforge/cli` too.
+ * So the second check: if a template pin has moved ahead of the published
+ * version, the release has to include `@vttforge/cli` too.
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -129,12 +129,14 @@ for (const entry of readdirSync(templatesDir, { withFileTypes: true })) {
 }
 
 /**
- * Packages this release bumps that the templates pin.
+ * Pins that have moved ahead of what is published.
  *
- * Each one means a template pin had to move, and a moved pin reaches a user
- * only inside a new CLI tarball.
+ * A pin that names a version the workspace has not released yet was just
+ * corrected for this release, and a corrected pin reaches a user only inside
+ * a new CLI tarball. A bump that stays inside the pinned range (a patch on
+ * `^0.11.0`) moves no pin and needs no CLI release.
  */
-const bumpedAndPinned = new Set();
+const movedPins = new Set();
 for (const entry of readdirSync(templatesDir, { withFileTypes: true })) {
   if (!entry.isDirectory()) continue;
   let pkg;
@@ -144,13 +146,13 @@ for (const entry of readdirSync(templatesDir, { withFileTypes: true })) {
     continue;
   }
   for (const group of ['dependencies', 'devDependencies']) {
-    for (const name of Object.keys(pkg[group] ?? {})) {
-      if (name !== CLI_PACKAGE && planned.has(name)) bumpedAndPinned.add(name);
+    for (const [name, range] of Object.entries(pkg[group] ?? {})) {
+      if (name === CLI_PACKAGE || !current.has(name)) continue;
+      if (!semver.satisfies(current.get(name), range)) movedPins.add(name);
     }
   }
 }
-
-const cliUnshipped = bumpedAndPinned.size > 0 && !planned.has(CLI_PACKAGE);
+const cliUnshipped = movedPins.size > 0 && !planned.has(CLI_PACKAGE);
 
 if (problems.length === 0 && !cliUnshipped) {
   console.log(`Template pins OK — ${current.size} workspace packages checked.`);
@@ -158,9 +160,11 @@ if (problems.length === 0 && !cliUnshipped) {
 }
 
 if (cliUnshipped) {
-  console.error(`This release bumps packages the templates pin, but not ${CLI_PACKAGE}:\n`);
-  for (const name of [...bumpedAndPinned].sort()) {
-    console.error(`  ${name} → ${planned.get(name)}`);
+  console.error(
+    `Template pins moved ahead of what is published, but ${CLI_PACKAGE} is not in this release:\n`,
+  );
+  for (const name of [...movedPins].sort()) {
+    console.error(`  ${name} → ${planned.get(name) ?? current.get(name)}`);
   }
   console.error(
     `\nThe templates ship inside the ${CLI_PACKAGE} tarball, so a pin corrected here reaches`,
