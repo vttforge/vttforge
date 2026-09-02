@@ -33,6 +33,11 @@ export {
   BaseApplication,
   type BaseApplicationMembers,
 } from './base-application.js';
+export {
+  BaseDocumentSheet,
+  type BaseDocumentSheetMembers,
+  type DocumentSheetKind,
+} from './base-document-sheet.js';
 export { BaseItemSheet } from './base-item-sheet.js';
 export {
   BaseTypeDataModel,
@@ -127,5 +132,10 @@ export {
   moduleSubType,
   registerModule,
 } from './register-module.js';
+export {
+  registerSheets,
+  type SheetDocumentKind,
+  type SheetRegistration,
+} from './register-sheets.js';
 export { registerSystem, type SystemRegistration } from './register-system.js';
 export { SystemConfig } from './system-config.js';

@@ -184,4 +184,31 @@ describe('registerSystem', () => {
     expect(resolved).toBe(true);
     expect(onReady).toHaveBeenCalledOnce();
   });
+
+  it('registers sheets on init, keyed by the id rather than the class name', () => {
+    const { hooks } = setupFoundryGlobals();
+    const calls: Array<{ scope: string; name: string }> = [];
+    (globalThis as Record<string, unknown>).foundry = {
+      applications: {
+        apps: {
+          DocumentSheetConfig: {
+            registerSheet(_documentClass: unknown, scope: string, sheetClass: { name: string }) {
+              calls.push({ scope, name: sheetClass.name });
+            },
+          },
+        },
+      },
+    };
+    // The name a bundler left on the class.
+    class e {}
+    registerSystem({
+      id: 'my-system',
+      sheets: [{ id: 'character', document: 'Actor', sheet: e, makeDefault: true }],
+    });
+    const initCallback = hooks.once.mock.calls[0]?.[1] as () => void;
+    initCallback();
+
+    expect(calls).toEqual([{ scope: 'my-system', name: 'character' }]);
+    delete (globalThis as Record<string, unknown>).foundry;
+  });
 });
