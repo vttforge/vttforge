@@ -1,5 +1,5 @@
 /**
- * @vttforge/testing — helpers for testing Foundry packages.
+ * @vttforge/testing: helpers for testing Foundry packages.
  *
  * Two entry points, because the two kinds of test run in different places:
  *

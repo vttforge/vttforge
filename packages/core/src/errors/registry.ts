@@ -1,8 +1,8 @@
 /**
- * VTTF-NNNN error registry — append-only, stable across majors.
+ * VTTF-NNNN error registry: append-only, stable across majors.
  *
  * Every error VTTForge throws has a numeric code (`VTTF-NNNN`) and a PascalCase
- * `name` for stack-trace readability. Codes are URLs — `https://vttforge.dev/errors/VTTF-0001`
+ * `name` for stack-trace readability. Codes are URLs: `https://vttforge.dev/errors/VTTF-0001`
  * eventually links to a docs page generated from this registry.
  *
  * Never renumber an entry. To deprecate, mark with `deprecated: true` and add a
@@ -67,7 +67,7 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
 });
 
 /**
- * Look up a registered entry by code. Throws if the code is unknown — the
+ * Look up a registered entry by code. Throws if the code is unknown; the
  * registry is the source of truth, so missing codes mean a typo.
  */
 export function getErrorEntry(code: VttfErrorCode): VttfErrorEntry {
@@ -91,10 +91,10 @@ export function docsUrlFor(code: VttfErrorCode): string {
 }
 
 /**
- * VttfError — every error VTTForge throws extends this.
+ * VttfError: every error VTTForge throws extends this.
  *
  * - `code` is the registry key (string-narrowed).
- * - `name` is the PascalCase name from the registry — shows up in stack traces.
+ * - `name` is the PascalCase name from the registry; it shows up in stack traces.
  * - `docsUrl` points at the docs page.
  * - `cause` uses the native ES2022 mechanism. Multiple causes => pass an
  *   `AggregateError` as the cause.

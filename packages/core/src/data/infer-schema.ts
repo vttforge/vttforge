@@ -1,5 +1,5 @@
 /**
- * `InferSchema<T>` — derive the runtime shape of `actor.system` (or
+ * `InferSchema<T>`: derive the runtime shape of `actor.system` (or
  * `item.system`) from a `defineSchema()` return value.
  *
  * v0.1 scope (PRD §7): the field brands in `./fields.ts`. Recurses through
@@ -7,7 +7,7 @@
  * to `@vttforge/types`): `EmbeddedDataField`, `EmbeddedDocumentField` and
  * `TypedSchemaField`.
  *
- * Document-level fields — ownership, the `_stats` block — are deliberately
+ * Document-level fields (ownership, the `_stats` block) are deliberately
  * absent. They live on the document, never inside the schema a type data
  * model defines, so they cannot appear in what this maps.
  *
@@ -39,14 +39,14 @@ import type {
 /**
  * Flatten an intersection / mapped type into a plain object literal so IDE
  * hovers stay readable (Matt Pocock's `Prettify`). Use on every public
- * conditional-type surface — PRD §7 TS-hygiene rule.
+ * conditional-type surface, for IDE performance.
  */
 export type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
 /**
  * Whether a field's options gave an explicit `initial`.
  *
- * Presence of the key is the question, not its value — `{ initial: undefined }`
+ * Presence of the key is the question, not its value: `{ initial: undefined }`
  * is not an initial.
  */
 type HasInitial<O> = O extends { initial: unknown } ? true : false;
@@ -109,14 +109,14 @@ type HTMLDefaults = { required: true; nullable: false; populated: true };
 type NullStartDefaults = { required: false; nullable: true; populated: true };
 /** Required, and builds its own empty value. */
 type ContainerDefaults = { required: true; nullable: false; populated: true };
-/** Required but nullable — an id that points at nothing is `null`. */
+/** Required but nullable: an id that points at nothing is `null`. */
 type ReferenceDefaults = { required: true; nullable: true; populated: false };
 
 /**
  * What a `ColorField` holds once the model is initialized.
  *
  * Not a string. The field casts its stored value to a CSS string, but
- * `initialize` hands back a `Color` instance — so `system.tint` is an object
+ * `initialize` hands back a `Color` instance, so `system.tint` is an object
  * with `.css`, `.rgb`, `.hex` and friends, and typing it as `string` makes
  * every property access on it a lie the compiler accepts.
  *
@@ -129,7 +129,7 @@ type ColorFieldValue<O> = Presence<O, Color, NullStartDefaults>;
  * What a `ForeignDocumentField` holds once the model is initialized.
  *
  * With `idOnly`, the stored id string. Without it the field resolves to a
- * getter, and the data model installs it as one — so reading the property
+ * getter, and the data model installs it as one, so reading the property
  * gives the document instance, not the function that fetched it. It yields
  * `null` when the id points at nothing, or when the parent lives in a
  * compendium.
@@ -156,8 +156,8 @@ type ForeignDocumentValue<Doc extends DocumentClass, O> = Presence<
  * What a `TypedSchemaField` holds: one shape per entry, each carrying the
  * key it was filed under as its `type`.
  *
- * The field supplies that `type` when an entry does not declare one — a
- * required string validated to equal the key — so narrowing on `type` picks
+ * The field supplies that `type` when an entry does not declare one (a
+ * required string validated to equal the key), so narrowing on `type` picks
  * exactly one branch.
  */
 type TypedSchemaValue<T extends Record<string, Record<string, FieldInstance>>> = {
@@ -166,7 +166,7 @@ type TypedSchemaValue<T extends Record<string, Record<string, FieldInstance>>> =
 
 /**
  * Map a single field instance to its runtime TypeScript type. `never` for
- * shapes we don't recognise — the v1.0 `@vttforge/types` package will widen
+ * shapes we don't recognise; `@vttforge/types` will widen
  * this matrix to the remaining Foundry fields.
  */
 export type InferField<F> =

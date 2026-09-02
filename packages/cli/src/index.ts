@@ -1,5 +1,5 @@
 /**
- * @vttforge/cli — public library exports.
+ * @vttforge/cli: public library exports.
  *
  * The CLI is intended to be used as a bin (`vttforge` command). These
  * exports exist for consumers who want to programmatically invoke the
@@ -8,7 +8,7 @@
 
 import { version } from '../package.json' with { type: 'json' };
 
-export { runAudit } from './audit/index.js';
+export { type RunAuditOptions, runAudit } from './audit/index.js';
 export { runManifestRules } from './audit/manifest-rules.js';
 export type { ReportFormat } from './audit/reporter.js';
 export { formatReport } from './audit/reporter.js';

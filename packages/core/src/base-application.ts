@@ -1,14 +1,14 @@
 /**
- * BaseApplication — a plain `ApplicationV2` window, minus the two traps.
+ * BaseApplication: a plain `ApplicationV2` window, minus the two traps.
  *
  * The document sheets are covered by `BaseActorSheet` and `BaseItemSheet`.
- * Everything else a package puts on screen — a config dialog, a picker, a
- * reader window — is a bare `ApplicationV2`, and writing one by hand means
+ * Everything else a package puts on screen (a config dialog, a picker, a
+ * reader window) is a bare `ApplicationV2`, and writing one by hand means
  * meeting both of these:
  *
  * **`_replaceHTML` is easy to forget.** ApplicationV2 splits rendering in two:
  * `_renderHTML` builds the content and `_replaceHTML` puts it in the window.
- * Implement only the first and the class is silently unrenderable — Foundry
+ * Implement only the first and the class is silently unrenderable. Foundry
  * says so at the moment something tries to open it, not when it is defined.
  * Nearly every implementation of the second is the same line, so this ships
  * it. Override it when the window updates in place instead of wholesale.
@@ -95,7 +95,7 @@ export function BaseApplication(): VttforgeClass<
      * Put the rendered content in the window.
      *
      * The whole-content swap, which is what almost every window wants.
-     * Override to update in place — a viewer that keeps scroll position
+     * Override to update in place: a viewer that keeps scroll position
      * across a page turn, say.
      */
     _replaceHTML(result: HTMLElement, content: HTMLElement): void {

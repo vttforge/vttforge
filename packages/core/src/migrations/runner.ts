@@ -1,9 +1,9 @@
 /**
- * `createMigrationRunner` — declarative schema migrations for Foundry systems.
+ * `createMigrationRunner`: declarative schema migrations for Foundry systems.
  *
  * Replaces the copy-pasted "schemaVersion setting + Hooks.once('ready') +
  * isNewerVersion compare + sequential await" pattern that every system
- * eventually grows on its own. The runner owns no hooks — call
+ * eventually grows on its own. The runner owns no hooks: call
  * `register()` from your `init` hook and `run()` from your `ready` hook
  * (gated by `game.user.isGM`).
  *
@@ -12,7 +12,7 @@
  * `system.json`'s `flags.<systemId>.needsMigrationVersion` /
  * `compatibleMigrationVersion`.
  *
- * Failures advance `schemaVersion` only past migrations that *completed* — a
+ * Failures advance `schemaVersion` only past migrations that *completed*. A
  * mid-sequence throw leaves the world at the last successful version so the
  * retry on the next world load picks up exactly where it failed.
  */
@@ -45,7 +45,7 @@ function resolveIsNewerVersion(): (next: string, current: string) => boolean {
     | undefined;
   const fn = foundry?.utils?.isNewerVersion;
   if (typeof fn === 'function') return fn;
-  // Last-resort fallback for non-Foundry runtimes — naive numeric semver compare.
+  // Last-resort fallback for non-Foundry runtimes: naive numeric semver compare.
   // Real consumers always run inside Foundry where the proper comparator exists.
   return naiveIsNewerVersion;
 }
@@ -81,7 +81,7 @@ function resolveSettings(): GameSettingsApi {
   ) {
     throw new VttfError(
       'VTTF-0002',
-      'globalThis.game.settings is not available — call createMigrationRunner().register() inside the Foundry runtime (or pass an explicit settings adapter in MigrationRunnerOptions).',
+      'globalThis.game.settings is not available. Call createMigrationRunner().register() inside the Foundry runtime (or pass an explicit settings adapter in MigrationRunnerOptions).',
     );
   }
   return settings;
@@ -212,7 +212,7 @@ export function createMigrationRunner(options: MigrationRunnerOptions): Migratio
 
       for (const migration of pending) {
         const label = migration.description
-          ? `${migration.version} — ${migration.description}`
+          ? `${migration.version}: ${migration.description}`
           : migration.version;
         logger.info(`${options.systemId} | Migrating to ${label}`);
         try {

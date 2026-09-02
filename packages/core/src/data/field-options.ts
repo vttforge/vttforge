@@ -3,7 +3,7 @@
  * v0.1 `InferSchema<T>` surface.
  *
  * Mirrors the shape documented at https://foundryvtt.com/api/v13/ for each
- * `foundry.data.fields.*` class. Properties are structural — they exist purely
+ * `foundry.data.fields.*` class. Properties are structural: they exist purely
  * so the conditional types in `./infer-schema.ts` can extract semantics like
  * `nullable: true` without us pulling in `fvtt-types` (deferred to
  * `@vttforge/types` v1.0).
@@ -63,7 +63,7 @@ export interface ArrayFieldOptions extends DataFieldOptions {
 export type SchemaFieldOptions = DataFieldOptions;
 
 /**
- * `SetField` takes the same options as `ArrayField` — it is a subclass whose
+ * `SetField` takes the same options as `ArrayField`. It is a subclass whose
  * only difference is what `initialize` hands back.
  */
 export type SetFieldOptions = ArrayFieldOptions;
@@ -72,7 +72,7 @@ export interface ForeignDocumentFieldOptions extends DataFieldOptions {
   /**
    * Keep the stored id instead of resolving the document.
    *
-   * With this off, the field initializes to a getter — reading the property
+   * With this off, the field initializes to a getter: reading the property
    * gives you a function, and calling it looks the document up. That is why
    * the two cases infer to different types.
    */

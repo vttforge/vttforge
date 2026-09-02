@@ -1,7 +1,7 @@
 /**
  * Git helpers for the init scaffolder. Optional: every step degrades to a
  * warning, never throws. The scaffold completes even if git is missing or
- * the user has no global git config — the user can still `git init`
+ * the user has no global git config. The user can still `git init`
  * themselves later.
  */
 import { execFile } from 'node:child_process';

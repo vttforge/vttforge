@@ -1,5 +1,5 @@
 /**
- * registerModule — the module counterpart to `registerSystem`.
+ * registerModule: the module counterpart to `registerSystem`.
  *
  * A module is a guest in someone else's world, and Foundry enforces that. The
  * two differences that matter:
@@ -10,7 +10,7 @@
  *   type silently never appears. This function adds it for you.
  * - **A module never owns the globals.** Document classes, the initiative
  *   formula and the status-effect array belong to the system. So there is no
- *   option here to replace them — `statusEffects` only appends, which is what
+ *   option here to replace them: `statusEffects` only appends, which is what
  *   a module is allowed to do.
  */
 
@@ -20,7 +20,7 @@ import { type EnricherRegistration, registerEnrichers } from './register-enriche
 import { registerSheets, type SheetRegistration } from './register-sheets.js';
 
 export interface ModuleRegistration {
-  /** Module id — must match the folder name and `module.json` `id`. */
+  /** Module id: must match the folder name and `module.json` `id`. */
   readonly id: string;
 
   /**
@@ -60,7 +60,7 @@ export interface ModuleRegistration {
    */
   readonly enrichers?: readonly EnricherRegistration[];
 
-  /** Runs before any CONFIG mutation — the usual home for the module API. */
+  /** Runs before any CONFIG mutation: the usual home for the module API. */
   readonly onBeforeInit?: () => void;
 
   /** Runs after the mutations above, inside the same `init` hook. */
@@ -76,7 +76,7 @@ export interface ModuleRegistration {
 
 const registered = new Set<string>();
 
-/** For tests — clears the in-process "already registered" guard. */
+/** For tests: clears the in-process "already registered" guard. */
 export function _resetRegisteredModulesForTests(): void {
   registered.clear();
 }
@@ -84,7 +84,7 @@ export function _resetRegisteredModulesForTests(): void {
 /**
  * The key Foundry files a module's document sub-type under.
  *
- * Use it wherever you name the type outside `registerModule` — registering the
+ * Use it wherever you name the type outside `registerModule`: registering the
  * sheet, checking `actor.type`, writing `documentTypes` in the manifest. The
  * prefix is easy to get wrong by hand and fails silently when you do.
  *
@@ -106,7 +106,7 @@ function readHooks(): HooksApi {
   if (hooks === undefined || typeof hooks.once !== 'function') {
     throw vttfError(
       'VTTF-0002',
-      'globalThis.Hooks is not available — call registerModule() inside a Foundry runtime or stub Hooks in tests',
+      'globalThis.Hooks is not available. Call registerModule() inside a Foundry runtime or stub Hooks in tests',
     );
   }
   return hooks;
@@ -117,7 +117,7 @@ function readConfig(): FoundryConfig {
   if (config === undefined) {
     throw vttfError(
       'VTTF-0002',
-      'globalThis.CONFIG is not available — call registerModule() inside a Foundry runtime or stub CONFIG in tests',
+      'globalThis.CONFIG is not available. Call registerModule() inside a Foundry runtime or stub CONFIG in tests',
     );
   }
   return config;
@@ -136,7 +136,7 @@ function assignSubTypes(
 /**
  * Register a Foundry module with VTTForge.
  *
- * Calling twice with the same `id` throws VTTF-0001 — almost always a
+ * Calling twice with the same `id` throws VTTF-0001, almost always a
  * hot-reload artefact or a duplicate import. The CONFIG mutations are deferred
  * until Foundry's `init` hook fires.
  */

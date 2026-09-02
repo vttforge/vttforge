@@ -18,13 +18,13 @@ const WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 const LEN_16_BIT = 126;
 const LEN_64_BIT = 65_536;
 
-/** Opcode 0x8 — the client is closing. */
+/** Opcode 0x8: the client is closing. */
 const OPCODE_CLOSE = 0x8;
 
 export interface DevServer {
   /** Send one message to every connected client. */
   broadcast: (message: string) => void;
-  /** Number of clients currently attached — used to say something truthful. */
+  /** Number of clients currently attached: used to say something truthful. */
   clientCount: () => number;
   close: () => Promise<void>;
   /**
@@ -52,7 +52,7 @@ export function acceptKey(clientKey: string): string {
  *
  * Server frames are never masked. The payload length picks one of three
  * widths, and getting the boundary wrong corrupts the stream rather than
- * failing loudly — hence the explicit constants and the tests around them.
+ * failing loudly, hence the explicit constants and the tests around them.
  */
 export function encodeTextFrame(message: string): Buffer {
   const payload = Buffer.from(message, 'utf8');
@@ -94,7 +94,7 @@ export async function startDevServer(options: StartOptions): Promise<DevServer> 
   // reached the wrong port, and saying so beats an unexplained hang.
   const server: Server = createServer((_req, res) => {
     res.writeHead(426, { 'Content-Type': 'text/plain' });
-    res.end('This port speaks WebSocket only — it is the vttforge dev bridge.\n');
+    res.end('This port speaks WebSocket only; it is the vttforge dev bridge.\n');
   });
 
   server.on('upgrade', (req, socket) => {
