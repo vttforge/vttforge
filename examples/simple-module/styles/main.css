@@ -1,0 +1,77 @@
+/**
+ * VTTForge Example Module stylesheet.
+ *
+ * Every rule is scoped under `.vttforge-example-module` so nothing leaks into the host system's
+ * sheets. Colours come from Foundry's own variables so the sheet follows the
+ * light and dark themes.
+ */
+.vttforge-example-module.sheet .sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.vttforge-example-module.sheet .sheet-header .portrait {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border: 1px solid var(--color-border-dark, #7a7971);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.vttforge-example-module.sheet .sheet-header input[name="name"] {
+  flex: 1;
+  font-size: var(--font-size-20, 1.25rem);
+}
+
+.vttforge-example-module.sheet .sheet-header .pin {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.5;
+}
+
+.vttforge-example-module.sheet .sheet-header .pin.active {
+  opacity: 1;
+  color: var(--color-warm-2, #c9593f);
+}
+
+.vttforge-example-module.sheet .sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.vttforge-example-module.sheet prose-mirror,
+.vttforge-example-module.sheet .body-readonly {
+  flex: 1;
+  min-height: 12rem;
+}
+
+.vttforge-example-module.sheet .reference {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  color: var(--color-text-secondary, #4b4a44);
+  font-size: var(--font-size-12, 0.75rem);
+}
+
+/* Rendered by the `note` enricher wherever `@Note[id]` appears. */
+a.vttforge-example-module-note-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0 0.35em;
+  border: 1px dotted var(--color-border-dark, #7a7971);
+  border-radius: 3px;
+  background: var(--color-bg-tertiary, rgba(0, 0, 0, 0.06));
+  text-decoration: none;
+}
+
+a.vttforge-example-module-note-link:hover {
+  border-style: solid;
+  text-shadow: none;
+}

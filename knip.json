@@ -19,6 +19,10 @@
       "project": ["scripts/**/*.mjs"],
       "ignoreDependencies": ["@vttforge/styles"]
     },
+    "examples/simple-module": {
+      "entry": ["scripts/main.mjs"],
+      "project": ["scripts/**/*.mjs"]
+    },
     "apps/web": {
       "entry": ["index.html"],
       "ignoreDependencies": ["@vttforge/styles"]

@@ -1,0 +1,29 @@
+{
+  "TYPES": {
+    "Item": {
+      "vttforge-example-module": {
+        "note": "Note"
+      }
+    }
+  },
+  "VTTFORGE_EXAMPLE_MODULE": {
+    "Settings": {
+      "showWelcome": {
+        "name": "Show welcome notification",
+        "hint": "Display a one-shot toast when VTTForge Example Module loads in a world."
+      }
+    },
+    "Welcome": "VTTForge Example Module loaded — create a Note from the Items sidebar, or try `game.modules.get(\"vttforge-example-module\").api.createNote(\"Hello\")` in the console.",
+    "Sheet": {
+      "NamePlaceholder": "Name",
+      "Note": {
+        "title": "Note"
+      }
+    },
+    "Note": {
+      "NewName": "New Note",
+      "Pinned": "Pinned",
+      "ReferenceHint": "Paste this in any text field to link here."
+    }
+  }
+}
