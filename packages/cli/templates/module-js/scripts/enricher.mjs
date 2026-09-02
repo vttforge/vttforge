@@ -8,6 +8,10 @@
  */
 import { NOTE_TYPE } from './constants.mjs';
 
+/**
+ * @param {string} id
+ * @returns {any}
+ */
 function findNote(id) {
   const item = game.items.get(id);
   return item?.type === NOTE_TYPE ? item : undefined;
@@ -18,6 +22,7 @@ export const noteEnricher = {
   id: 'note',
   pattern: /@Note\[([^\]]+)\]/g,
 
+  /** @param {RegExpMatchArray} match */
   enricher(match) {
     const id = match[1];
     const note = id === undefined ? undefined : findNote(id);
@@ -29,13 +34,18 @@ export const noteEnricher = {
     link.className = '{{ID}}-note-link';
     link.dataset.noteId = id;
     link.draggable = false;
-    link.append(Object.assign(document.createElement('i'), { className: 'fa-solid fa-note-sticky' }));
-    link.append(note.name);
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid fa-note-sticky';
+    link.append(icon, note.name);
     return link;
   },
 
+  /** @param {HTMLElement} element */
   onRender(element) {
-    for (const link of element.querySelectorAll('a.{{ID}}-note-link')) {
+    const links = /** @type {NodeListOf<HTMLElement>} */ (
+      element.querySelectorAll('a.{{ID}}-note-link')
+    );
+    for (const link of links) {
       link.addEventListener('click', (event) => {
         event.preventDefault();
         const { noteId } = link.dataset;

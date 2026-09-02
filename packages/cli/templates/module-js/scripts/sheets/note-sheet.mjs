@@ -7,6 +7,7 @@ import { BaseItemSheet } from '@vttforge/core';
 import { MODULE_ID } from '../constants.mjs';
 
 export class NoteSheet extends BaseItemSheet() {
+  /** @override */
   static DEFAULT_OPTIONS = foundry.utils.mergeObject(
     super.DEFAULT_OPTIONS,
     {
@@ -37,7 +38,11 @@ export class NoteSheet extends BaseItemSheet() {
     return this.document;
   }
 
-  /** @override */
+  /**
+   * @override
+   * @param {Record<string, unknown>} options
+   * @returns {Promise<Record<string, unknown>>}
+   */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const { item } = this;
@@ -52,9 +57,13 @@ export class NoteSheet extends BaseItemSheet() {
     return context;
   }
 
-  // ApplicationV2 declares action handlers static and calls them with `this`
-  // bound to the sheet instance.
+  /**
+   * @this {NoteSheet} ApplicationV2 declares action handlers static but calls
+   *   them with `this` bound to the sheet instance.
+   */
   static async _onTogglePinned() {
-    await this.item.update({ 'system.pinned': !this.item.system.pinned });
+    // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time
+    const { item } = this;
+    await item.update({ 'system.pinned': !item.system.pinned });
   }
 }
