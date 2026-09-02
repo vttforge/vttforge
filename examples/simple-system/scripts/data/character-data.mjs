@@ -20,7 +20,9 @@ import { BaseTypeDataModel, fields } from '@vttforge/core';
  * form and nobody noticed, because an index signature was making every
  * property access legal.
  */
-export const defineCharacterSchema = () => {
+// Not exported: only the class below needs it, and the inferred shape is
+// already reachable as `CharacterData['$inferData']`.
+const defineCharacterSchema = () => {
   const f = fields();
   // The six ability scores are written once, as a factory rather than a
   // shared options object: a field keeps the options it was handed, and
