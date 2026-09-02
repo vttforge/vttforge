@@ -54,7 +54,19 @@ The whole guide is at **[vttforge.dev/docs](https://vttforge.dev/docs/)**.
 
 Also on the site: the [API reference](https://vttforge.dev/docs/reference/) generated from the sources, the [error catalogue](https://vttforge.dev/docs/errors/), the [recipes](https://vttforge.dev/docs/recipes/), and the [stability policy](https://vttforge.dev/docs/stability).
 
-## Why
+## Why this exists
+
+I have run Foundry games for years, and every major version I watch the same thing happen. A module I depend on stops working. Sometimes the author ports it and it costs them weeks. More often the repository goes quiet, someone opens an issue asking whether it will be updated, and nobody answers.
+
+What breaks is almost never the interesting part. It is the sheet plumbing, the registration boilerplate, the class that moved namespace. The rules of the game the author actually cared about are still correct.
+
+VTTForge exists to hold that plumbing in one place. When Foundry moves it, the change lands here, and a system or module built on it updates a dependency instead of rewriting a sheet.
+
+That is also why several things work the way they do. A sheet is registered under an id you choose, so the sheet your readers picked survives your next release. Migrations are versioned and GM-gated, so their worlds survive your schema changes. `vttforge audit` looks for the v13 breakages that fail silently, which is what strands a module after a version bump. And every push boots a real Foundry and drives the example through it, because the question that matters is whether it still loads.
+
+**If this project ever goes quiet, you are not stranded.** The build output is plain ES modules that Foundry loads natively, with no runtime shim and no framework to unwind. Delete the dependency and your code is still your code. A tool meant to keep other people's work alive has no business being the thing that traps it.
+
+## What it takes off your hands
 
 If you have built a Foundry system, you have written these by hand:
 
@@ -164,6 +176,24 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 - ✅ **Documentation.** [vttforge.dev/docs](https://vttforge.dev/docs/) carries the guide, the API reference, the recipes and the error catalogue
 - 🛠️ **Now.** Widening the Foundry surface in `@vttforge/types` as adopters hit gaps
 - 🚀 **v1.0.** A stable API, decorators once the toolchain allows them, and enough adopters to know which of the remaining gaps are real
+
+## Where it is now
+
+Early, and I would rather say so than let you find out.
+
+Every package is on a 0.x line, which under semver means a minor can break you, and here it regularly does. The API is still meeting real code for the first time. One module is built on it today, my own, and a good part of what the SDK does exists because that module broke in a way nothing reported.
+
+What it needs now is not more features. It is other people's systems and modules, because the gaps that matter are the ones a second author finds and the first never did. If you build something on this and something is wrong, an issue with the case that broke is worth more to me than a pull request.
+
+MIT, and it stays that way. No paid tier, no open core, nothing held back for a sponsor build. A tool whose whole point is that other people's work should outlive a version bump cannot have a part of itself you are not allowed to fork.
+
+## The part that is still a promise
+
+Foundry v14 is when this gets tested.
+
+The argument is that when Foundry moves, the change lands in one place and your module updates a dependency instead of rewriting a sheet. That has not happened yet. There is evidence behind it, the plumbing really is in one place and the audit really does catch the quiet v13 breakages, but a design intention is not a track record. I will say plainly how it went when it happens.
+
+There is also a version of this that fails for exactly the reason it was built. One maintainer, a quiet repository, and the dependency everyone leaned on goes still. Putting the plumbing in one place only helps if that place has more than one person who understands it. If you want to be one of them, open an issue and say so.
 
 ## Contributing
 

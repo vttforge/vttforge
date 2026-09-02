@@ -106,13 +106,15 @@
       <section class="bk" id="why">
         <div class="shell">
           <div class="bk-head">
-            <span class="bk-eyebrow">The problem</span>
-            <h2 class="bk-title">Replace 100s of lines<br />with declarative classes.</h2>
+            <span class="bk-eyebrow">Why this exists</span>
+            <h2 class="bk-title">Good modules die<br />at every Foundry version.</h2>
             <p class="bk-sub">
-              Every FoundryVTT sheet you've written has the same structural plumbing:
-              drag-drop handlers, <span class="mono">_prepareContext</span> ceremony,
-              <span class="mono">fromUuid</span> lookups, tab state machines. VTTForge
-              turns it into one declarative class.
+              What breaks is almost never the interesting part. It is the sheet plumbing,
+              the registration boilerplate, the class that moved namespace. VTTForge holds
+              that in one place, so when Foundry moves it, you update a dependency instead
+              of rewriting a sheet. And if this project ever goes quiet, the output is
+              plain ES modules Foundry loads natively: delete it and your code is still
+              your code.
             </p>
           </div>
 
