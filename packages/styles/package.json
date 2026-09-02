@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/styles",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "VTTForge base CSS layer: design tokens, reset, base, components, opt-in themes (CSS Cascade Layers).",
   "type": "module",
   "license": "MIT",

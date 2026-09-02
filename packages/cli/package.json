@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/cli",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "VTTForge CLI: scaffolding, dev server, build orchestration.",
   "type": "module",
   "license": "MIT",
