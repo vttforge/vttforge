@@ -159,4 +159,22 @@ describe('registerModule', () => {
     ]);
     delete (globalThis as Record<string, unknown>).foundry;
   });
+
+  it('registers enrichers on init, under a namespaced id', () => {
+    const enrichers: Array<{ id: string }> = [];
+    (CONFIG as unknown as { TextEditor: unknown }).TextEditor = { enrichers };
+    registerModule({
+      id: MODULE_ID,
+      enrichers: [
+        {
+          id: 'link',
+          pattern: /@PDF\[(.+?)\]/g,
+          enricher: () => null,
+          onRender: () => undefined,
+        },
+      ],
+    });
+    fireInit();
+    expect(enrichers.map((e) => e.id)).toEqual(['pdf-character-sheet.link']);
+  });
 });

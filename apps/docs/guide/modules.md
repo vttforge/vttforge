@@ -66,3 +66,52 @@ export const PDF_TYPE = moduleSubType(MODULE_ID, 'pdf');
 
 Importing it from your entry point closes a cycle that works right up until
 something reads the key while the modules are still evaluating.
+
+## Text enrichers
+
+An enricher turns a pattern in any rich text field — chat, journals, item
+descriptions — into markup:
+
+```ts
+registerModule({
+  id: MODULE_ID,
+  enrichers: [
+    {
+      id: 'link',
+      pattern: /@PDF\[(.+?)\]\{(.+?)\}/g,
+      enricher: async (match) => {
+        const anchor = document.createElement('a');
+        anchor.textContent = match[2] ?? '';
+        return anchor;
+      },
+      onRender: (element) => {
+        // Bind listeners here — it runs every time enriched content lands in
+        // the DOM.
+      },
+    },
+  ],
+});
+```
+
+`CONFIG.TextEditor.enrichers` is a plain array, so you could push to it
+yourself. Register here instead, because that array has four ways to take an
+entry and then do nothing with it, and Foundry names none of them.
+
+**`onRender` without an `id` never fires.** Foundry wraps enriched output in a
+custom element only when both are present, and only the wrapper fires the
+callback. The text still enriches, so the markup looks right and only the
+behaviour is missing. Registering through VTTForge always supplies an id, so
+this one stops being possible.
+
+**A duplicate `id` silently loses.** The wrapper stores the id as an attribute
+and finds the enricher back with `find` — first match wins. Two packages both
+using `link` means the first one's `onRender` runs against the second one's
+markup. It only reproduces in a world with both installed, which is not the
+world you are testing in. Ids are namespaced to your package, and a repeat
+within your own package is refused.
+
+**A pattern without the `g` flag throws.** Enrichment matches with `matchAll`,
+which rejects a non-global regex, and that throw is outside the handler Foundry
+wraps enrichers in. Checked when you register instead.
+
+`registerSystem` takes the same option.

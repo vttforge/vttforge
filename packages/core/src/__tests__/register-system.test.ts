@@ -211,4 +211,17 @@ describe('registerSystem', () => {
     expect(calls).toEqual([{ scope: 'my-system', name: 'character' }]);
     delete (globalThis as Record<string, unknown>).foundry;
   });
+
+  it('registers enrichers on init, under a namespaced id', () => {
+    const { hooks, config } = setupFoundryGlobals();
+    const enrichers: Array<{ id: string }> = [];
+    (config as unknown as { TextEditor: unknown }).TextEditor = { enrichers };
+    registerSystem({
+      id: 'my-system',
+      enrichers: [{ id: 'spell', pattern: /@Spell\[(.+?)\]/g, enricher: () => null }],
+    });
+    const initCallback = hooks.once.mock.calls[0]?.[1] as () => void;
+    initCallback();
+    expect(enrichers.map((e) => e.id)).toEqual(['my-system.spell']);
+  });
 });
