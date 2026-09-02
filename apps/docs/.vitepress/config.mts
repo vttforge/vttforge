@@ -42,6 +42,32 @@ export default defineConfig({
   // in one Pages artifact.
   base: '/docs/',
   description: 'An SDK and CLI for building Foundry VTT v13+ systems and modules.',
+
+  head: [
+    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
+    ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
+    [
+      'link',
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap',
+      },
+    ],
+    // VitePress selects dark with a class on <html>; the Forge tokens read
+    // `[data-theme]`. Mirror one onto the other, here in the head so it is
+    // set before first paint, and again on every toggle.
+    [
+      'script',
+      {},
+      `(() => {
+        const el = document.documentElement;
+        const sync = () =>
+          el.setAttribute('data-theme', el.classList.contains('dark') ? 'dark' : 'light');
+        sync();
+        new MutationObserver(sync).observe(el, { attributes: true, attributeFilter: ['class'] });
+      })();`,
+    ],
+  ],
   cleanUrls: true,
   lastUpdated: true,
 
@@ -59,6 +85,10 @@ export default defineConfig({
       { text: 'API', link: '/reference/' },
       { text: 'Errors', link: '/errors/' },
       { text: 'Stability', link: '/stability' },
+      // Absolute, because a root-relative link would be prefixed with the
+      // `/docs/` base and point back into the docs.
+      { text: 'Design System', link: 'https://vttforge.dev/design-system' },
+      { text: 'vttforge.dev', link: 'https://vttforge.dev/' },
     ],
 
     sidebar: {
