@@ -112,6 +112,10 @@ importers:
         version: 7.0.2
 
   apps/docs:
+    dependencies:
+      '@vttforge/styles':
+        specifier: workspace:*
+        version: link:../../packages/styles
     devDependencies:
       typedoc:
         specifier: ^0.28.20

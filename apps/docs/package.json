@@ -9,6 +9,9 @@
     "build": "node scripts/typedoc.mjs && vitepress build .",
     "preview": "vitepress preview ."
   },
+  "dependencies": {
+    "@vttforge/styles": "workspace:*"
+  },
   "devDependencies": {
     "typedoc": "^0.28.20",
     "typedoc-plugin-markdown": "^4.13.0",

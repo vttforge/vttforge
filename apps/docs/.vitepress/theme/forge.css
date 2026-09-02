@@ -1,0 +1,104 @@
+/*!
+ * Forge, applied to VitePress.
+ *
+ * The docs sit under the same domain as the landing page, so they should
+ * not look like a different product. This file maps VitePress's own theme
+ * variables onto the `--vttf-*` tokens `@vttforge/styles` publishes, which
+ * is the same set the landing page and the design-system page read.
+ *
+ * The two themes disagree about how light and dark are selected: VitePress
+ * puts a `dark` class on `<html>`, Forge reads `[data-theme]`. A small
+ * script in the site head mirrors one onto the other before first paint, so
+ * every mapping below can be written once and still follow the toggle.
+ */
+@import '@vttforge/styles/tokens.css';
+
+:root,
+:root.dark {
+  --vp-c-bg: var(--vttf-bg);
+  --vp-c-bg-alt: var(--vttf-bg-sunken);
+  --vp-c-bg-elv: var(--vttf-bg-elevated);
+  --vp-c-bg-soft: var(--vttf-surface);
+
+  --vp-c-text-1: var(--vttf-text);
+  --vp-c-text-2: var(--vttf-text-muted);
+  --vp-c-text-3: var(--vttf-text-faint);
+
+  --vp-c-divider: var(--vttf-border);
+  --vp-c-border: var(--vttf-border);
+  --vp-c-gutter: var(--vttf-border);
+
+  --vp-c-brand-1: var(--vttf-ember);
+  --vp-c-brand-2: var(--vttf-ember-glow);
+  --vp-c-brand-3: var(--vttf-ember-deep);
+  --vp-c-brand-soft: color-mix(in oklch, var(--vttf-ember) 14%, transparent);
+
+  --vp-c-default-1: var(--vttf-text);
+  --vp-c-default-2: var(--vttf-text-muted);
+  --vp-c-default-3: var(--vttf-border-strong);
+  --vp-c-default-soft: var(--vttf-surface);
+
+  --vp-c-tip-1: var(--vttf-ember);
+  --vp-c-tip-2: var(--vttf-ember-glow);
+  --vp-c-tip-3: var(--vttf-ember-deep);
+  --vp-c-tip-soft: color-mix(in oklch, var(--vttf-ember) 12%, transparent);
+
+  --vp-c-warning-1: var(--vttf-gold);
+  --vp-c-warning-soft: color-mix(in oklch, var(--vttf-gold) 12%, transparent);
+  --vp-c-danger-1: var(--vttf-rose);
+  --vp-c-danger-soft: color-mix(in oklch, var(--vttf-rose) 12%, transparent);
+
+  --vp-font-family-base: var(--vttf-font-body);
+  --vp-font-family-mono: var(--vttf-font-mono);
+
+  --vp-button-brand-bg: var(--vttf-ember);
+  --vp-button-brand-hover-bg: var(--vttf-ember-glow);
+  --vp-button-brand-active-bg: var(--vttf-ember-deep);
+  --vp-button-brand-text: var(--vttf-text-inverse);
+  --vp-button-brand-hover-text: var(--vttf-text-inverse);
+  --vp-button-alt-bg: var(--vttf-surface);
+  --vp-button-alt-hover-bg: var(--vttf-surface-2);
+  --vp-button-alt-border: var(--vttf-border-strong);
+  --vp-button-alt-text: var(--vttf-text);
+
+  --vp-code-bg: var(--vttf-surface);
+  --vp-code-color: var(--vttf-ember-glow);
+  --vp-code-block-bg: var(--vttf-bg-sunken);
+  --vp-code-copy-code-bg: var(--vttf-surface);
+  --vp-code-copy-code-hover-bg: var(--vttf-surface-2);
+
+  --vp-home-hero-name-color: var(--vttf-ember);
+  --vp-home-hero-image-background-image: none;
+
+  --vp-nav-bg-color: color-mix(in oklch, var(--vttf-bg) 88%, transparent);
+  --vp-sidebar-bg-color: var(--vttf-bg);
+  --vp-local-search-bg: var(--vttf-bg-elevated);
+}
+
+/* Headings carry the display face, the way they do on the landing page. */
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.vp-doc h4,
+.VPHero .name,
+.VPHero .text,
+.VPFeature .title,
+.VPNavBarTitle .title {
+  font-family: var(--vttf-font-display);
+  letter-spacing: -0.01em;
+}
+
+/* The section rules read as dividers, not as boxes. */
+.vp-doc h2 {
+  border-top-color: var(--vttf-border);
+}
+
+/* Inline code inherits the ember accent; kill the default brand-tinted box. */
+.vp-doc :not(pre) > code {
+  border-radius: var(--vttf-radius-sm);
+}
+
+/* The ember, dimmed, behind the nav on scroll. */
+.VPNavBar.has-sidebar .curtain {
+  background: var(--vttf-bg);
+}
