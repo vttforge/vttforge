@@ -215,6 +215,10 @@ importers:
         version: 4.1.11(@types/node@26.4.0)(happy-dom@20.12.0)(vite@8.2.2(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.0))
 
   packages/core:
+    dependencies:
+      '@vttforge/types':
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 'catalog:'

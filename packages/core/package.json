@@ -42,6 +42,9 @@
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only"
   },
+  "dependencies": {
+    "@vttforge/types": "workspace:*"
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
     "happy-dom": "catalog:",

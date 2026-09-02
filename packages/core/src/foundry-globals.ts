@@ -1,7 +1,7 @@
 /**
  * Minimal type-only contracts for the Foundry v13+ globals VTTForge core touches.
  *
- * Intentionally narrow — full Foundry typing lives in `@vttforge/types` (v1.0)
+ * Intentionally narrow. The Foundry members the bases stand on are in `@vttforge/types`;
  * built on top of `fvtt-types`. We mirror just the surface we use so the core
  * package compiles without pulling in fvtt-types' git-SHA dependency.
  *

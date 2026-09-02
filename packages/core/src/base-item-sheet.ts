@@ -18,7 +18,7 @@ import type { DragDropConfig, SheetBaseCtor } from './base-actor-sheet.js';
 import { VTTFORGE_SHEET_CLASS } from './base-actor-sheet.js';
 import { VttfError } from './errors/registry.js';
 
-// biome-ignore lint/suspicious/noExplicitAny: Foundry's ItemSheetV2 shape lives in fvtt-types (deferred to @vttforge/types v1.0)
+// biome-ignore lint/suspicious/noExplicitAny: Foundry's ItemSheetV2 class is resolved at runtime; the members the SDK stands on are in @vttforge/types
 type AnyConstructor = new (...args: any[]) => any;
 
 interface DragDropInstance {

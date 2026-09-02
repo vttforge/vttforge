@@ -92,7 +92,7 @@ Most of these exist because something failed quietly in a real world, not becaus
 | [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | The build contract: browser-ESM output with no hashing, CSS bundled, manifest copied under Foundry's filename with `version` and entry paths rewritten |
 | [`@vttforge/styles`](https://www.npmjs.com/package/@vttforge/styles) | The Forge design system: W3C DTCG tokens compiled to CSS, `.vttf-*` primitives, sheet primitives, opt-in themes over cascade layers |
 | [`@vttforge/testing`](https://www.npmjs.com/package/@vttforge/testing) | `withMockFoundry` for Vitest, and a Quench half for what a mock cannot answer |
-| [`@vttforge/types`](https://www.npmjs.com/package/@vttforge/types) | Shared TypeScript types |
+| [`@vttforge/types`](https://www.npmjs.com/package/@vttforge/types) | The Foundry surface the bases stand on: `ApplicationV2Members`, `DocumentSheetV2Members`, `VttforgeClass` |
 | [`@vttforge/dev-module`](https://www.npmjs.com/package/@vttforge/dev-module) | The in-world half of the dev loop, installed for you by `vttforge dev` |
 | [`create-vttforge`](https://www.npmjs.com/package/create-vttforge) | So `pnpm create vttforge` works |
 
@@ -144,7 +144,7 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 - ✅ **Design system.** Tokens, primitives, themes, brand
 - ✅ **Published.** Every package on npm under OIDC trusted publishing, with provenance
 - ✅ **Documentation.** [vttforge.dev](https://vttforge.dev) carries the guide, the recipes, the error catalogue and the design system
-- 🛠️ **Now.** The base factories declare the Foundry members they stand on (`ApplicationV2Members`, `DocumentSheetV2Members`); widening that surface as adopters hit gaps, then moving it into `@vttforge/types`
+- 🛠️ **Now.** Widening the Foundry surface in `@vttforge/types` as adopters hit gaps
 - 🚀 **v1.0.** A stable API, decorators once the toolchain allows them, and enough adopters to know which of the remaining gaps are real
 
 ## Contributing

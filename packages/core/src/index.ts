@@ -15,8 +15,8 @@
  *   - VttfError + error registry   — VTTF-NNNN codes with docs URLs
  *
  * Foundry classes are resolved from `globalThis.foundry` lazily so the package
- * imports cleanly in Node/tests; concrete Foundry typing arrives with
- * `@vttforge/types` in v1.0.
+ * imports cleanly in Node/tests. The Foundry members the bases stand on are
+ * declared in `@vttforge/types` and re-exported here.
  */
 
 import { version } from '../package.json' with { type: 'json' };
