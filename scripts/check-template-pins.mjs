@@ -18,6 +18,23 @@
  * Those planned versions come from `changeset status --output`, which is
  * changesets' own logic and mutates nothing. Packages with no pending release
  * fall back to their current version.
+ *
+ * ## The second half, learned the hard way
+ *
+ * Keeping the pins right in the repo is not the same as shipping them. The
+ * templates live inside the `@vttforge/cli` tarball, so a corrected pin only
+ * reaches anyone when the CLI itself is published. It never was: the pin edits
+ * rode along in other packages' releases without a changeset of their own, and
+ * `pnpm create vttforge` kept scaffolding `@vttforge/core@^0.6.0` while core
+ * shipped 0.10.0. Four minors of API — sheet registration, enrichers, a
+ * non-Handlebars document sheet — that a new project could not see.
+ *
+ * Nothing catches that, because every check here passes: the repo is
+ * consistent with itself and the release is consistent with the repo. The
+ * released scaffold is the only thing out of step, and it is nobody's diff.
+ *
+ * So the second check: if a template pins a package that this release bumps,
+ * the release has to include `@vttforge/cli` too.
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -29,6 +46,8 @@ import semver from 'semver';
 // is no other channel to report a bad pin through.
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+/** The package whose tarball carries the templates. */
+const CLI_PACKAGE = '@vttforge/cli';
 const templatesDir = join(repoRoot, 'packages', 'cli', 'templates');
 const packagesDir = join(repoRoot, 'packages');
 
@@ -109,9 +128,47 @@ for (const entry of readdirSync(templatesDir, { withFileTypes: true })) {
   }
 }
 
-if (problems.length === 0) {
+/**
+ * Packages this release bumps that the templates pin.
+ *
+ * Each one means a template pin had to move, and a moved pin reaches a user
+ * only inside a new CLI tarball.
+ */
+const bumpedAndPinned = new Set();
+for (const entry of readdirSync(templatesDir, { withFileTypes: true })) {
+  if (!entry.isDirectory()) continue;
+  let pkg;
+  try {
+    pkg = readJson(join(templatesDir, entry.name, 'package.json'));
+  } catch {
+    continue;
+  }
+  for (const group of ['dependencies', 'devDependencies']) {
+    for (const name of Object.keys(pkg[group] ?? {})) {
+      if (name !== CLI_PACKAGE && planned.has(name)) bumpedAndPinned.add(name);
+    }
+  }
+}
+
+const cliUnshipped = bumpedAndPinned.size > 0 && !planned.has(CLI_PACKAGE);
+
+if (problems.length === 0 && !cliUnshipped) {
   console.log(`Template pins OK — ${current.size} workspace packages checked.`);
   process.exit(0);
+}
+
+if (cliUnshipped) {
+  console.error(`This release bumps packages the templates pin, but not ${CLI_PACKAGE}:\n`);
+  for (const name of [...bumpedAndPinned].sort()) {
+    console.error(`  ${name} → ${planned.get(name)}`);
+  }
+  console.error(
+    `\nThe templates ship inside the ${CLI_PACKAGE} tarball, so a pin corrected here reaches`,
+  );
+  console.error('nobody until the CLI is published too. Add a patch changeset for it:\n');
+  console.error(`  pnpm changeset  # patch ${CLI_PACKAGE}`);
+  if (problems.length === 0) process.exit(1);
+  console.error('');
 }
 
 console.error('Template pins name versions the next release will not publish:\n');
