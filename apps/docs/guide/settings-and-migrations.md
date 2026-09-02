@@ -9,7 +9,7 @@ import { SystemConfig } from '@vttforge/core';
 
 const settings = new SystemConfig('my-system');
 
-// inside init — `onAfterInit` in registerSystem is the place
+// inside init; `onAfterInit` in registerSystem is the place
 settings.register('showTutorial', {
   name: 'MY.Settings.showTutorial.name',
   hint: 'MY.Settings.showTutorial.hint',
@@ -75,8 +75,8 @@ version advances only past migrations that finished. A throw in the middle
 leaves the world at the last good version, and the next load retries from
 there.
 
-Write each migration so it can run twice. The check above — `typeof legacy
-!== 'string'` — is what makes that one safe.
+Write each migration so it can run twice. The `typeof legacy !== 'string'` check above is what makes that one
+safe.
 
 ### The manifest flags
 

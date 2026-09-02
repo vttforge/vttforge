@@ -36,8 +36,8 @@ In scope:
 
 Out of scope:
 
-- Vulnerabilities in FoundryVTT itself — report those to [Foundry Gaming LLC](https://foundryvtt.com/community/contact/)
-- Vulnerabilities in third-party dependencies — report upstream first; let us know if VTTForge needs to take action
+- Vulnerabilities in FoundryVTT itself. Report those to [Foundry Gaming LLC](https://foundryvtt.com/community/contact/)
+- Vulnerabilities in third-party dependencies. Report upstream first, and let us know if VTTForge needs to take action
 - Issues in user code that merely uses VTTForge APIs
 
 ## Provenance and supply chain

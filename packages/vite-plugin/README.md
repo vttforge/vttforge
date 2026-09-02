@@ -18,7 +18,7 @@ export default defineConfig({
 
 ## What it does
 
-- Emits browser ES modules into `dist/` with **no hashed filenames** — Foundry loads files by the fixed paths in the manifest.
+- Emits browser ES modules into `dist/` with **no hashed filenames**. Foundry loads files by the fixed paths in the manifest.
 - Keeps class names through minification, so a sheet registered by class name keeps its key between builds. Prefer `registerSystem({ sheets })` with an `id`; this is the safety net.
 - Bundles CSS into one stylesheet and rewrites the manifest's `styles` and `esmodules` to the emitted paths.
 - Copies the manifest under Foundry's filename (`system.json` / `module.json`) with `version` synced from `package.json`.
@@ -29,7 +29,7 @@ export default defineConfig({
 
 | Option | Default | Meaning |
 |---|---|---|
-| `id` | — | The package id. Must match the manifest and the folder Foundry serves it from |
+| `id` | required | The package id. Must match the manifest and the folder Foundry serves it from |
 | `kind` | `'system'` | `'system'` or `'module'`. Sets the base path (`/systems/<id>/` vs `/modules/<id>/`) and the manifest filename |
 | `entry` | `'scripts/main.mjs'` | Entry script, relative to the project root |
 | `manifest` | `system.json` / `module.json` | Manifest path, relative to the project root |

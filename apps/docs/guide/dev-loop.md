@@ -13,7 +13,7 @@ and watches. Save a file and the change applies in the open window.
 |---|---|
 | a stylesheet | the `<link>` swaps, nothing re-renders |
 | a template | only the windows using it redraw |
-| a language file | every open window redraws — translations are read on render |
+| a language file | every open window redraws; translations are read on render |
 | anything else | nothing; reload the page |
 
 The scoping matters more than it sounds. Vite rewrites its whole output on
@@ -33,7 +33,7 @@ recreate the container after a build.
 
 ## The companion module
 
-Hot reload needs a small module inside Foundry to receive the messages —
+Hot reload needs a small module inside Foundry to receive the messages:
 `@vttforge/dev-module`, linked automatically. Enable **VTTForge Dev** in the
 world once.
 

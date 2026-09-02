@@ -27,8 +27,8 @@ export class CharacterSheet extends BaseActorSheet() {
 ```
 
 `static TABS` fills in `context.tabs` for you, and `static DRAG_DROP` binds the
-drag-drop wiring on render. The typed drop hooks — `onDropItem`, `onDropActor`,
-`onDropFolder`, `onDropActiveEffect` — receive the resolved document, so you are
+drag-drop wiring on render. The typed drop hooks (`onDropItem`, `onDropActor`,
+`onDropFolder`, `onDropActiveEffect`) receive the resolved document, so you are
 not parsing a UUID out of a payload. Return `undefined` to hand the drop back
 to Foundry.
 
@@ -38,7 +38,7 @@ to Foundry.
 
 `BaseActorSheet` and `BaseItemSheet` mix in Handlebars, which is right when the
 sheet is `static PARTS` and templates. It is wrong when the content is a canvas,
-an embedded PDF, or a Svelte or Lit mount — those build an element and hand it
+an embedded PDF, or a Svelte or Lit mount. Those build an element and hand it
 over.
 
 Using the Handlebars baseline for one of those does not fail loudly. The mixin
@@ -97,8 +97,8 @@ which it could not do while these returned `any`.
 
 ## Everything else
 
-A config dialog, a picker, a reader window — anything that is not a document
-sheet — is a plain `ApplicationV2`:
+A config dialog, a picker, a reader window, anything that is not a document
+sheet, is a plain `ApplicationV2`:
 
 ```ts
 import { BaseApplication } from '@vttforge/core';
@@ -116,7 +116,7 @@ export class PdfConfig extends BaseApplication() {
 
 **It splits rendering in two.** `_renderHTML` builds the content, `_replaceHTML`
 puts it in the window. Implement only the first and the class is silently
-unrenderable — Foundry reports it when something tries to open the window, as an
+unrenderable. Foundry reports it when something tries to open the window, as an
 error about abstract methods, which points at Foundry rather than at your class.
 `_replaceHTML` is provided; override it for a window that updates in place.
 
@@ -125,7 +125,7 @@ construction and names the class.
 
 ### Actor sheets are not plain applications
 
-If you are registering a sheet for an actor, it must extend `ActorSheetV2` —
+If you are registering a sheet for an actor, it must extend `ActorSheetV2`, and
 `BaseActorSheet()` does. A plain `ApplicationV2` leaves `actor.sheet` as `null`
 and reports nothing anywhere.
 

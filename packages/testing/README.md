@@ -23,20 +23,20 @@ foundry.restore();
 ```
 
 `withMockFoundry` installs `foundry`, `game`, `CONFIG`, `Hooks`, `ui` and
-`CONST`, and hands back a handle that records what your code registered — hooks,
-settings, notifications — so a test can assert on what happened rather than only
+`CONST`, and hands back a handle that records what your code registered (hooks,
+settings, notifications) so a test can assert on what happened rather than only
 on what did not throw. `restore()` puts every global back, including deleting the
 ones that never existed.
 
 The mock documents behave like real ones where it counts: `update` merges rather
-than replacing, and dotted paths expand. Both matter — a mock that replaces lets
+than replacing, and dotted paths expand. Both matter: a mock that replaces lets
 a test pass while the real thing drops every sibling key.
 
 ### Naming the globals
 
 A test that reads `game.settings` would otherwise get "Cannot find name
 'game'". Importing from this entry declares them, so there is nothing to
-configure — the import a test already writes is what brings them.
+configure. The import a test already writes is what brings them.
 
 ## `@vttforge/testing/quench`
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VTTForge · Forge sheets, not boilerplate.</title>
-    <meta name="description" content="A modern SDK for building FoundryVTT v13+ systems and modules. Declarative APIs, schema-to-type inference, zero lock-in." />
+    <meta name="description" content="An SDK and CLI for Foundry VTT v13+ systems and modules. Typed data models, sheets that already know their tabs and drops, and a dev loop that reloads in place." />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23130d0a'/><polygon points='16,10 21.5,13 21.5,19 16,22 10.5,19 10.5,13' fill='%23f57c33'/></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -60,11 +60,11 @@
     <main id="top">
       <section class="hero">
         <div class="shell">
-          <span class="status-pill"><span class="blip"></span> v0.1 in development</span>
+          <span class="status-pill"><span class="blip"></span> on npm · Foundry v13+</span>
           <h1 class="hero-title">Forge sheets,<br />not <em>boilerplate</em>.</h1>
           <p class="hero-sub">
             A modern SDK for building FoundryVTT v13+ systems and modules.
-            Declarative APIs, schema-to-type inference, zero lock-in.
+            Typed data models, sheets that already know their tabs and drops, and a dev loop that reloads in place.
           </p>
 
           <div class="hero-ctas">
@@ -82,7 +82,7 @@
           <dl class="hero-meta">
             <div class="cell"><dt>Foundry target</dt><dd>v13+</dd></div>
             <div class="cell"><dt>Layer prefix</dt><dd><span class="mono">vttforge.*</span></dd></div>
-            <div class="cell"><dt>Tests</dt><dd>100+ <span class="mono">+ end-to-end</span></dd></div>
+            <div class="cell"><dt>Tests</dt><dd>600+ <span class="mono">+ a real module</span></dd></div>
             <div class="cell"><dt>License</dt><dd>MIT</dd></div>
           </dl>
         </div>
@@ -183,10 +183,9 @@
         <div class="shell">
           <div class="bk-head">
             <span class="bk-eyebrow">What you get</span>
-            <h2 class="bk-title">Battle-tested<br />in production Foundry.</h2>
+            <h2 class="bk-title">Proven on a shipped module<br />before it ships here.</h2>
             <p class="bk-sub">
-              Every API is validated against a production FoundryVTT system before it
-              ships. Where Foundry already does something well, we don't reinvent it.
+              Every API is used by a published Foundry module before it lands in the SDK. Where Foundry already does something well, the SDK leaves it alone.
             </p>
           </div>
 
@@ -194,14 +193,14 @@
             <article class="feat">
               <div class="ico">{ }</div>
               <h3>Declarative sheet bases</h3>
-              <p><span class="mono">BaseActorSheet</span> and <span class="mono">BaseItemSheet</span> handle drag-drop wiring, tab state, and <span class="mono">fromUuid</span> resolution. You write domain logic, not plumbing.</p>
+              <p><span class="mono">BaseActorSheet</span> and <span class="mono">BaseItemSheet</span> handle drag-drop wiring, tab state, and <span class="mono">fromUuid</span> resolution. You write the rules of your game, not plumbing.</p>
               <div class="nub">@vttforge/core</div>
             </article>
             <article class="feat">
               <div class="ico">T</div>
               <h3>Schema-to-type inference</h3>
-              <p>One <span class="mono">defineSchema()</span> drives both runtime validation and your TypeScript types via <span class="mono">InferSchema&lt;T&gt;</span>. Stop double-typing your data models.</p>
-              <div class="nub">@vttforge/core · @vttforge/types</div>
+              <p>One <span class="mono">defineSchema()</span> drives both runtime validation and your TypeScript types via <span class="mono">InferSchema&lt;T&gt;</span>. One declaration, not two to keep in sync.</p>
+              <div class="nub">@vttforge/core</div>
             </article>
             <article class="feat">
               <div class="ico">≡</div>
@@ -212,19 +211,19 @@
             <article class="feat">
               <div class="ico">⟳</div>
               <h3>Migration runner</h3>
-              <p><span class="mono">createMigrationRunner()</span> ships idempotent, versioned data migrations with a clean rollback story, runs once at world load, logs to chat.</p>
+              <p><span class="mono">createMigrationRunner()</span> runs versioned migrations once at world load, GM only. A failure stops at the last version that finished, so the next load retries from there.</p>
               <div class="nub">@vttforge/core</div>
             </article>
             <article class="feat">
               <div class="ico">⚡</div>
-              <h3>HMR for Handlebars</h3>
-              <p>The Vite plugin watches <span class="mono">.hbs</span> templates and hot-swaps them in a running Foundry world. Tweak markup without reloading a world.</p>
-              <div class="nub">@vttforge/vite-plugin · v0.2</div>
+              <h3>Reload in place</h3>
+              <p>Save a template and only the windows using it redraw. Save a stylesheet and the CSS swaps. No page reload, no lost scroll position.</p>
+              <div class="nub">@vttforge/cli · @vttforge/dev-module</div>
             </article>
             <article class="feat">
               <div class="ico">↯</div>
               <h3>Stable error registry</h3>
-              <p>Every runtime error carries a <span class="mono">VTTF-NNNN</span> code from an append-only registry. Codes are stable across majors, log scrapers and IDE tooltips resolve forever.</p>
+              <p>Every runtime error carries a <span class="mono">VTTF-NNNN</span> code from an append-only registry. Codes never change across majors, so a log line from last year still resolves to a docs page.</p>
               <div class="nub">@vttforge/core</div>
             </article>
           </div>
@@ -251,12 +250,12 @@
               </tr>
               <tr>
                 <td class="pkg-name">@vttforge/cli</td>
-                <td class="pkg-desc">vttforge init / dev / build / audit — four templates, the symlink-and-watch dev loop, the release zip, a v13 manifest and source linter</td>
+                <td class="pkg-desc">vttforge init / dev / build / audit: four templates, the symlink-and-watch dev loop, the release zip, a v13 manifest and source linter</td>
                 <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
               </tr>
               <tr>
                 <td class="pkg-name">create-vttforge</td>
-                <td class="pkg-desc">pnpm create vttforge — the scaffolder as a create package</td>
+                <td class="pkg-desc">pnpm create vttforge, the scaffolder as a create package</td>
                 <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
               </tr>
               <tr>
@@ -271,7 +270,7 @@
               </tr>
               <tr>
                 <td class="pkg-name">@vttforge/testing</td>
-                <td class="pkg-desc">withMockFoundry for Vitest — sheets and enrichers recorded — and a Quench half for a real world</td>
+                <td class="pkg-desc">withMockFoundry for Vitest, which records sheets and enrichers, plus a Quench half for a real world</td>
                 <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
               </tr>
               <tr>
@@ -281,7 +280,7 @@
               </tr>
               <tr>
                 <td class="pkg-name">@vttforge/types</td>
-                <td class="pkg-desc">Shared types. A stub today — the Foundry surface the bases declare lives in core until it is worth a package</td>
+                <td class="pkg-desc">Shared types. A stub today: the Foundry surface the bases declare lives in core until it is worth a package</td>
                 <td class="pkg-status s-wip"><span class="blip"></span>stub</td>
               </tr>
             </tbody>
@@ -396,7 +395,7 @@
             <h4>Documentation</h4>
             <ul>
               <li><a href="/design-system">Design System</a></li>
-              <li><a href="/theme-recipes">Theme Recipes</a></li>
+              <li><a href="/docs/recipes/theme-v2">Theme Recipes</a></li>
               <li><a href="#packages">Packages</a></li>
               <li><a href="#roadmap">Roadmap</a></li>
             </ul>

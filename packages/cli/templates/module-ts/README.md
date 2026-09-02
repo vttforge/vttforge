@@ -20,7 +20,7 @@ or `FOUNDRY_DATA_DIR`. If Foundry runs in a container it cannot follow the
 symlink, and the command prints the compose mount to use instead.
 
 Save a template and the open sheet redraws in place; save a stylesheet and the
-CSS swaps. Enable **VTTForge Dev** in the world once — `pnpm dev` links it in.
+CSS swaps. Enable **VTTForge Dev** in the world once; `pnpm dev` links it in.
 
 Then enable **{{TITLE}}** in a world and create a Note from the Items sidebar.
 
@@ -28,9 +28,9 @@ Then enable **{{TITLE}}** in a world and create a Note from the Items sidebar.
 
 | Path | Purpose |
 |---|---|
-| `module.json` | Manifest — declares the `note` sub-type under `documentTypes` and the hot-reload paths |
+| `module.json` | Manifest. Declares the `note` sub-type under `documentTypes` and the hot-reload paths |
 | `scripts/main.ts` | One `registerModule` call: data model, sheet, enricher, settings, API |
-| `scripts/constants.ts` | `MODULE_ID` and `NOTE_TYPE` — the prefixed key Foundry files the sub-type under |
+| `scripts/constants.ts` | `MODULE_ID` and `NOTE_TYPE`, the prefixed key Foundry files the sub-type under |
 | `scripts/data/note-data.ts` | The data model. The schema is a function handed to `BaseTypeDataModel`, which is what makes `this.body` a `string` |
 | `scripts/sheets/note-sheet.ts` | The sheet, on `BaseItemSheet` |
 | `scripts/enricher.ts` | `@Note[id]` → a link that opens the note |
@@ -47,7 +47,7 @@ and `NOTE_TYPE` in `constants.ts` is the one place it is spelled out.
 **Sheets are registered by id, not by class name.** `registerModule({ sheets })`
 pins each sheet under `{{ID}}.<id>`. Foundry saves that key on every item
 whose owner picked the sheet, and derives it from the class name unless told
-otherwise — which a bundler renames between builds. Keep the ids.
+otherwise, and a bundler renames classes between builds. Keep the ids.
 
 **`this.document` is `unknown` on the sheet bases.** Which document a sheet is
 for is yours to know. The sheet narrows it once in a getter (`item`) and
@@ -78,7 +78,7 @@ git tag v0.1.0
 git push --tags
 ```
 
-Point Foundry — and foundryvtt.com — at the release's
+Point Foundry, and foundryvtt.com, at the release's
 `latest/download/module.json`, so installs auto-update on every tag.
 
 ## License

@@ -17,7 +17,7 @@ foundry.restore();
 ```
 
 `withMockFoundry` installs `foundry`, `game`, `CONFIG`, `Hooks`, `ui` and
-`CONST`, and hands back a handle that **records** what your code registered —
+`CONST`, and hands back a handle that **records** what your code registered:
 hooks, settings, notifications, sheets, enrichers. You assert on what happened,
 not merely on what did not throw.
 
@@ -41,7 +41,7 @@ foundry.sheets.map((s) => s.key); // ['my-system.character']
 ```
 
 `key` is the thing worth pinning. Foundry saves it on every document whose
-owner picked the sheet, and it is built from the class name — which a bundler
+owner picked the sheet, and it is built from the class name, which a bundler
 is free to rename between builds. A test that asserts the key is a test that
 the reader's choice survives your next release.
 
@@ -57,7 +57,7 @@ actor.system.hp; // { value: 4, max: 10 }
 actor.updates;   // every delta, in order
 ```
 
-Updates **merge**, and dotted paths expand — both because that is what Foundry
+Updates **merge**, and dotted paths expand, both because that is what Foundry
 does. A mock that replaces instead of merging lets a test pass while the real
 thing drops every sibling key.
 
@@ -86,7 +86,7 @@ imports under Vitest.
 ## Where to draw the line
 
 Anything before `_renderHTML` is testable with a mock. Real rendering, sockets
-with two clients, documents round-tripping through the database — those need
+with two clients, documents round-tripping through the database. Those need
 the real thing.
 
 Reaching for a mock past that line produces tests that pass and tell you
