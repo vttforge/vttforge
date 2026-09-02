@@ -11,6 +11,8 @@ skills-lock.json
 # Build outputs
 dist/
 **/.vitepress/cache/
+# The assembled Pages artifact — built by scripts/assemble-site.mjs.
+site/
 **/.vitepress/dist/
 build/
 *.tsbuildinfo
