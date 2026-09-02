@@ -138,12 +138,15 @@ describe('BaseTypeDataModel(defineSchema) — types', () => {
     expectTypeOf<CharacterData['prepareDerivedData']>().toEqualTypeOf<() => void>();
   });
 
-  it('leaves the no-argument form untyped, as it was', () => {
-    // Every scaffolded template calls it this way. The typed overload must
-    // not capture the no-argument call and hand it a schema of nothing.
+  it('gives the no-argument form the hooks and nothing invented', () => {
+    // Every scaffolded template calls it this way, and the typed overload
+    // must not capture it and hand it a schema of nothing. What it does NOT
+    // do any more is accept every member name: this used to compile with
+    // `this.anythingAtAll = 1`, which is how a real module shipped a call to
+    // a method that did not exist.
     class Legacy extends BaseTypeDataModel() {
       whatever(): void {
-        this.anythingAtAll = 1;
+        this.prepareDerivedData();
       }
     }
     expect(typeof Legacy).toBe('function');

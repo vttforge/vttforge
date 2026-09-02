@@ -88,13 +88,30 @@ export class CharacterSheet extends BaseActorSheet() {
   ];
 
   /**
+   * The actor this sheet is for.
+   *
+   * `this.document` is deliberately `unknown` on the base: which document a
+   * sheet is for, and what its `system` holds, is the system's to know. One
+   * getter says it once, and every use below is typed from here.
+   *
+   * Typed `any` for now, and deliberately in one place: Foundry's own Actor
+   * type is not wired into this repo yet. When it is, this getter is the
+   * single line that changes, rather than every use below.
+   *
+   * @returns {any}
+   */
+  get actor() {
+    return this.document;
+  }
+
+  /**
    * @override
    * @param {Record<string, unknown>} options
    * @returns {Promise<Record<string, unknown>>}
    */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const actor = this.document;
+    const actor = this.actor;
     const system = actor.system;
     const abilityLabels = {
       str: 'VTTFORGE_EXAMPLE.Ability.str',
@@ -159,7 +176,7 @@ export class CharacterSheet extends BaseActorSheet() {
     const key = target?.dataset?.ability;
     if (!key) return;
     // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 action handlers are declared static but invoked with `this` bound to the sheet instance
-    const actor = this.document;
+    const actor = this.actor;
     const mod = actor.system.abilities?.[key]?.mod ?? 0;
     const roll = new Roll(`1d20 + ${mod}`, actor.getRollData());
     await roll.evaluate();
@@ -179,7 +196,7 @@ export class CharacterSheet extends BaseActorSheet() {
   static async _onCreateGear(_event, _target) {
     const cls = CONFIG.Item.documentClass;
     // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time
-    const parent = this.document;
+    const parent = this.actor;
     await cls.create(
       { name: game.i18n.localize('VTTFORGE_EXAMPLE.Sheet.NewGearName'), type: 'gear' },
       { parent, renderSheet: true },
@@ -196,7 +213,7 @@ export class CharacterSheet extends BaseActorSheet() {
     const id = row?.dataset?.itemId;
     if (!id) return;
     // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time
-    const item = this.document.items.get(id);
+    const item = this.actor.items.get(id);
     await item?.delete();
   }
 }
