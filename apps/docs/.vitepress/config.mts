@@ -44,6 +44,13 @@ export default defineConfig({
   description: 'An SDK and CLI for building Foundry VTT v13+ systems and modules.',
 
   head: [
+    // Absolute paths, because head entries are not prefixed with `base`.
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/docs/favicon.svg' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:site_name', content: 'VTTForge' }],
+    ['meta', { property: 'og:image', content: 'https://vttforge.dev/social-card.png' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:image', content: 'https://vttforge.dev/social-card.png' }],
     ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
     ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
     [
@@ -72,6 +79,8 @@ export default defineConfig({
   lastUpdated: true,
 
   themeConfig: {
+    logo: '/logo.svg',
+
     // Was Pagefind, which built an index nothing ever loaded: no theme
     // component mounted its UI, so the navbar search slot rendered empty and
     // the site shipped with no search at all. At twenty pages VitePress's own
