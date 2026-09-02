@@ -1,0 +1,75 @@
+name: Deploy site
+
+# The landing page, the docs and the styles preview go out together, because
+# Pages serves one artifact per repository. `scripts/assemble-site.mjs` is what
+# decides the layout; this workflow only builds the inputs and hands the result
+# over.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'apps/docs/**'
+      - 'packages/styles/**'
+      - 'packages/core/src/errors/**' # the error pages are generated from the registry
+      - 'scripts/assemble-site.mjs'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write # Pages deploys under OIDC, the same as npm — no token to store
+
+# A queued deploy is always more current than the one it is waiting behind, but
+# cancelling one mid-flight would leave the site half-published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and assemble
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+
+      - name: Activate pnpm via Corepack
+        run: |
+          npm install -g corepack@latest
+          corepack enable
+          corepack install -g pnpm@11.25.0
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Covers both sites as well as the packages. It has to: the error pages
+      # under apps/docs/errors are written by the core build from the
+      # VTTF-NNNN registry, so the docs cannot be built on their own.
+      - name: Build
+        run: pnpm build
+
+      - name: Assemble
+        run: node scripts/assemble-site.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

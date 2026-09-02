@@ -5,11 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vitepress dev .",
-    "build": "vitepress build . && pagefind --site .vitepress/dist",
+    "build": "vitepress build .",
     "preview": "vitepress preview ."
   },
   "devDependencies": {
-    "pagefind": "catalog:",
     "vitepress": "catalog:"
   }
 }
