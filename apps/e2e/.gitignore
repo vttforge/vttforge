@@ -1,3 +1,5 @@
-.foundry/
 playwright-report/
 test-results/
+
+# Left over from before Foundry's data moved into a named volume. Safe to delete.
+.foundry/

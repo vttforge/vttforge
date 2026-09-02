@@ -6,7 +6,6 @@
  * proves nothing.
  */
 import { defineConfig } from '@playwright/test';
-import { BASE_URL } from './scripts/foundry.mjs';
 
 export default defineConfig({
   testDir: './tests',
@@ -20,7 +19,8 @@ export default defineConfig({
   timeout: 120_000,
   reporter: process.env.CI ? [['list'], ['github']] : [['list']],
   use: {
-    baseURL: BASE_URL,
+    // No baseURL: where Foundry answers is not known until globalSetup has
+    // started it, and depends on whether this process is itself a container.
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
   },

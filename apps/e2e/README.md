@@ -33,6 +33,20 @@ rot. Three plain steps replace them:
 
 The browser only joins a world that is already running.
 
+## Running inside a container
+
+CI runs this from a container that shares the host's Docker daemon, which
+moves two things:
+
+- **Paths.** Every path in a `docker` command is resolved by the host, not by
+  this process, so a bind mount and a `writeFileSync` to the same string are
+  two different directories. Everything is seeded through `docker cp` into a
+  named volume instead, which crosses that boundary from either side.
+- **The network.** A published port lands on the host, which is not this
+  process's `localhost`. When there is a container to join, Foundry joins its
+  network and is reached by name; otherwise the port is published and reached
+  on localhost. The harness works this out on its own.
+
 ## Credentials
 
 The [felddy/foundryvtt](https://hub.docker.com/r/felddy/foundryvtt) image
@@ -41,5 +55,6 @@ downloads a licensed Foundry, so it needs `FOUNDRY_LICENSE_KEY`,
 which are missing. They are personal, so this does not run on pull requests
 from forks, where secrets are not available by design.
 
-The downloaded Foundry is cached in `.foundry/container_cache`, so only the
-first run pays for it.
+Foundry's data lives in a named Docker volume, `vttforge-e2e-data`, so the
+licensed download is paid for once and reused. `docker volume rm
+vttforge-e2e-data` starts over.
