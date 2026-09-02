@@ -1,5 +1,11 @@
 # @vttforge/styles
 
+## 0.3.2
+
+### Patch Changes
+
+- 578ba31: Bring the package READMEs in line with what shipped. `core`, `styles`, `types` and `vite-plugin` still described themselves as v0.0.1 placeholders with "planned" features; `cli` did not mention `audit`.
+
 ## 0.3.1
 
 ### Patch Changes
