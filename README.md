@@ -1,8 +1,10 @@
 <div align="center">
 
-# 🔨 VTTForge
+<img src="brand/logo-512.png" alt="" width="88" height="88" />
 
-**A modern SDK and CLI for building [FoundryVTT](https://foundryvtt.com) v13+ systems and modules.**
+# VTTForge
+
+**An SDK and CLI for building [Foundry VTT](https://foundryvtt.com) v13+ systems and modules.**
 
 [![npm version](https://img.shields.io/npm/v/@vttforge/core.svg?style=flat-square)](https://www.npmjs.com/package/@vttforge/core)
 [![License](https://img.shields.io/npm/l/@vttforge/core.svg?style=flat-square)](LICENSE)

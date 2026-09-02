@@ -53,6 +53,7 @@ const stylesRoot = join(repoRoot, 'packages/styles');
 requireBuilt(webDist, 'landing page build');
 requireBuilt(docsDist, 'docs build');
 requireBuilt(join(stylesRoot, 'dist/tokens.css'), 'compiled design tokens');
+requireBuilt(join(repoRoot, 'brand/social-card.png'), 'share card');
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
@@ -83,6 +84,12 @@ const previewHtml = readFileSync(join(stylesRoot, 'preview/index.html'), 'utf8')
   './index.css',
 );
 writeFileSync(join(preview, 'index.html'), previewHtml);
+
+// The share card. One copy at the root, from `brand/`, because both the
+// landing page and the docs name the same absolute URL in their `og:image`.
+// Committing it into two `public/` directories would be the same 100 kB
+// twice, drifting apart the first time the card is redrawn.
+cpSync(join(repoRoot, 'brand/social-card.png'), join(out, 'social-card.png'));
 
 // Pages serves this from a custom domain; without the file it reverts to
 // github.io on every deploy.
