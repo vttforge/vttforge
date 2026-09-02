@@ -18,14 +18,34 @@ foundry.restore();
 
 `withMockFoundry` installs `foundry`, `game`, `CONFIG`, `Hooks`, `ui` and
 `CONST`, and hands back a handle that **records** what your code registered —
-hooks, settings, notifications. You assert on what happened, not merely on what
-did not throw.
+hooks, settings, notifications, sheets, enrichers. You assert on what happened,
+not merely on what did not throw.
 
 `restore()` puts every global back, including deleting the ones that never
 existed.
 
 Importing from this entry also declares the globals, so `game.settings` in a
 test does not produce "Cannot find name 'game'". There is nothing to configure.
+
+### Assert the sheet key, not the call
+
+```ts
+const foundry = withMockFoundry();
+registerSystem({
+  id: 'my-system',
+  sheets: [{ id: 'character', document: 'Actor', sheet: CharacterSheet, makeDefault: true }],
+});
+foundry.callHook('init');
+
+foundry.sheets.map((s) => s.key); // ['my-system.character']
+```
+
+`key` is the thing worth pinning. Foundry saves it on every document whose
+owner picked the sheet, and it is built from the class name — which a bundler
+is free to rename between builds. A test that asserts the key is a test that
+the reader's choice survives your next release.
+
+`foundry.enrichers` reads back the same way, with the namespaced id.
 
 ### Mock documents behave like documents
 
