@@ -20,7 +20,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { VttforgeClass } from './foundry-base.js';
+import type { ApplicationV2Members, VttforgeClass } from './foundry-base.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: Foundry's ApplicationV2 shape lives in fvtt-types (deferred to @vttforge/types v1.0)
 type AnyConstructor = new (...args: any[]) => any;
@@ -72,7 +72,11 @@ export interface BaseApplicationMembers {
   _replaceHTML(result: HTMLElement, content: HTMLElement): void;
 }
 
-export function BaseApplication(): VttforgeClass<BaseApplicationMembers> {
+export function BaseApplication(): VttforgeClass<
+  BaseApplicationMembers,
+  unknown,
+  ApplicationV2Members
+> {
   const Base = resolveApplicationV2();
 
   class VttforgeBaseApplication extends Base {
@@ -99,5 +103,9 @@ export function BaseApplication(): VttforgeClass<BaseApplicationMembers> {
     }
   }
 
-  return VttforgeBaseApplication as unknown as VttforgeClass<BaseApplicationMembers>;
+  return VttforgeBaseApplication as unknown as VttforgeClass<
+    BaseApplicationMembers,
+    unknown,
+    ApplicationV2Members
+  >;
 }

@@ -53,13 +53,22 @@ export class GearSheet extends BaseItemSheet() {
   };
 
   /**
+   * The item this sheet is for. See the note on CharacterSheet#actor.
+   *
+   * @returns {any}
+   */
+  get item() {
+    return this.document;
+  }
+
+  /**
    * @override
    * @param {Record<string, unknown>} options
    * @returns {Promise<Record<string, unknown>>}
    */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const item = this.document;
+    const item = this.item;
     context.item = item;
     context.system = item.system;
     context.isEditable = this.isEditable;

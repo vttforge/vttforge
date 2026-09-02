@@ -17,7 +17,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { VttforgeClass } from './foundry-base.js';
+import type { DocumentSheetV2Members, VttforgeClass } from './foundry-base.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: Foundry's sheet shape lives in fvtt-types (deferred to @vttforge/types v1.0)
 type AnyConstructor = new (...args: any[]) => any;
@@ -75,7 +75,7 @@ function resolveSheetBase(kind: DocumentSheetKind): AnyConstructor {
  */
 export function BaseDocumentSheet(
   kind: DocumentSheetKind,
-): VttforgeClass<BaseDocumentSheetMembers> {
+): VttforgeClass<BaseDocumentSheetMembers, unknown, DocumentSheetV2Members> {
   const Base = resolveSheetBase(kind);
 
   class VttforgeBaseDocumentSheet extends Base {
@@ -95,5 +95,9 @@ export function BaseDocumentSheet(
     }
   }
 
-  return VttforgeBaseDocumentSheet as unknown as VttforgeClass<BaseDocumentSheetMembers>;
+  return VttforgeBaseDocumentSheet as unknown as VttforgeClass<
+    BaseDocumentSheetMembers,
+    unknown,
+    DocumentSheetV2Members
+  >;
 }

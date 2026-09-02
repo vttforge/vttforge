@@ -10,87 +10,113 @@
 
 import { BaseTypeDataModel, fields } from '@vttforge/core';
 
-export class CharacterData extends BaseTypeDataModel() {
-  static defineSchema() {
-    const f = fields();
-    // The six ability scores are written once, as a factory rather than a
-    // shared options object: a field keeps the options it was handed, and
-    // some field classes write back into them.
-    const score = () =>
-      new f.NumberField({
+/**
+ * The schema, as a function passed to the factory rather than a `static
+ * defineSchema()` on the class.
+ *
+ * Both work at runtime. Only this one is typed: hand the factory your schema
+ * and `this.level` is a number inside `prepareDerivedData`, while the
+ * no-argument form leaves every field unknown. The example used the untyped
+ * form and nobody noticed, because an index signature was making every
+ * property access legal.
+ */
+// Not exported: only the class below needs it, and the inferred shape is
+// already reachable as `CharacterData['$inferData']`.
+const defineCharacterSchema = () => {
+  const f = fields();
+  // The six ability scores are written once, as a factory rather than a
+  // shared options object: a field keeps the options it was handed, and
+  // some field classes write back into them.
+  // One ability. `value` is what is stored and what the sheet's input writes
+  // to (`name="system.abilities.str.value"`); `mod` is derived below and
+  // deliberately absent here, because a derived value is not source data.
+  //
+  // This used to be a bare NumberField while the form wrote to `.value` and
+  // prepareDerivedData replaced the number with an object. Three shapes for
+  // one field, and nothing said so until the schema started being typed.
+  const score = () =>
+    new f.SchemaField({
+      value: new f.NumberField({
         required: true,
         nullable: false,
         integer: true,
         min: 1,
         max: 30,
         initial: 10,
-      });
-    return {
-      level: new f.NumberField({
-        required: true,
-        nullable: false,
-        integer: true,
-        min: 1,
-        max: 20,
-        initial: 1,
       }),
-      speed: new f.NumberField({
+      // Derived: rewritten by prepareDerivedData on every preparation, and
+      // never meaningful as stored data. It is in the schema anyway because
+      // this file is JavaScript, and JavaScript has no `declare` — a class
+      // field would emit and set the property to undefined at construction.
+      // A TypeScript system writes `declare mod: number` on the class and
+      // leaves this out.
+      mod: new f.NumberField({ required: true, nullable: false, integer: true, initial: 0 }),
+    });
+  return {
+    level: new f.NumberField({
+      required: true,
+      nullable: false,
+      integer: true,
+      min: 1,
+      max: 20,
+      initial: 1,
+    }),
+    speed: new f.NumberField({
+      required: true,
+      nullable: false,
+      integer: true,
+      min: 0,
+      initial: 30,
+    }),
+    abilities: new f.SchemaField({
+      str: score(),
+      dex: score(),
+      con: score(),
+      int: score(),
+      wis: score(),
+      cha: score(),
+    }),
+    health: new f.SchemaField({
+      value: new f.NumberField({
         required: true,
         nullable: false,
         integer: true,
         min: 0,
-        initial: 30,
+        initial: 10,
       }),
-      abilities: new f.SchemaField({
-        str: score(),
-        dex: score(),
-        con: score(),
-        int: score(),
-        wis: score(),
-        cha: score(),
+      max: new f.NumberField({
+        required: true,
+        nullable: false,
+        integer: true,
+        min: 0,
+        initial: 10,
       }),
-      health: new f.SchemaField({
-        value: new f.NumberField({
-          required: true,
-          nullable: false,
-          integer: true,
-          min: 0,
-          initial: 10,
-        }),
-        max: new f.NumberField({
-          required: true,
-          nullable: false,
-          integer: true,
-          min: 0,
-          initial: 10,
-        }),
+    }),
+    power: new f.SchemaField({
+      value: new f.NumberField({
+        required: true,
+        nullable: false,
+        integer: true,
+        min: 0,
+        initial: 5,
       }),
-      power: new f.SchemaField({
-        value: new f.NumberField({
-          required: true,
-          nullable: false,
-          integer: true,
-          min: 0,
-          initial: 5,
-        }),
-        max: new f.NumberField({
-          required: true,
-          nullable: false,
-          integer: true,
-          min: 0,
-          initial: 5,
-        }),
+      max: new f.NumberField({
+        required: true,
+        nullable: false,
+        integer: true,
+        min: 0,
+        initial: 5,
       }),
-      biography: new f.HTMLField(),
-    };
-  }
+    }),
+    biography: new f.HTMLField(),
+  };
+};
 
+export class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {
   /** @override */
   prepareDerivedData() {
-    for (const [key, value] of Object.entries(this.abilities)) {
-      const score = typeof value === 'number' ? value : (value?.value ?? 10);
-      const mod = Math.floor((score - 10) / 2);
-      this.abilities[key] = { value: score, mod };
+    for (const ability of Object.values(this.abilities)) {
+      ability.mod = Math.floor((ability.value - 10) / 2);
     }
 
     const conMod = this.abilities.con.mod;
