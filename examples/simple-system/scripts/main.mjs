@@ -37,6 +37,36 @@ try {
     combat: {
       initiative: { formula: '1d20 + @abilities.dex.mod', decimals: 2 },
     },
+    onBeforeInit: () => {
+      // The core sheets go first, so ours can take the default. This runs
+      // before the `sheets` below are registered.
+      const { Actors, Items } = foundry.documents.collections;
+      Actors.unregisterSheet('core', foundry.applications.sheets.ActorSheetV2);
+      Items.unregisterSheet('core', foundry.applications.sheets.ItemSheetV2);
+    },
+
+    // Declared here rather than with Actors.registerSheet, so the key Foundry
+    // saves on each document is `vttforge-example.character` — written down,
+    // not derived from a class name a bundler is free to rename.
+    sheets: [
+      {
+        id: 'character',
+        document: 'Actor',
+        sheet: CharacterSheet,
+        types: ['character'],
+        makeDefault: true,
+        label: 'VTTFORGE_EXAMPLE.Sheet.Character.title',
+      },
+      {
+        id: 'gear',
+        document: 'Item',
+        sheet: GearSheet,
+        types: ['gear'],
+        makeDefault: true,
+        label: 'VTTFORGE_EXAMPLE.Sheet.Gear.title',
+      },
+    ],
+
     onAfterInit: () => {
       // Surface a single user-facing setting so the SystemConfig wrapper is
       // exercised end-to-end alongside the migration setting.
@@ -52,22 +82,6 @@ try {
       // Register the schemaVersion setting so migrations.run() has somewhere
       // to read/write the version.
       migrations.register();
-
-      // Sheet registration is per-document-type and happens inside init,
-      // after CONFIG.Actor.dataModels has been populated by registerSystem.
-      const { Actors, Items } = foundry.documents.collections;
-      Actors.unregisterSheet('core', foundry.applications.sheets.ActorSheetV2);
-      Actors.registerSheet(SYSTEM_ID, CharacterSheet, {
-        types: ['character'],
-        makeDefault: true,
-        label: 'VTTFORGE_EXAMPLE.Sheet.Character.title',
-      });
-      Items.unregisterSheet('core', foundry.applications.sheets.ItemSheetV2);
-      Items.registerSheet(SYSTEM_ID, GearSheet, {
-        types: ['gear'],
-        makeDefault: true,
-        label: 'VTTFORGE_EXAMPLE.Sheet.Gear.title',
-      });
     },
     onReady: async () => {
       if (!game.user?.isGM) return;
