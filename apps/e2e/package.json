@@ -1,0 +1,14 @@
+{
+  "name": "@vttforge-e2e/foundry",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "e2e:up": "node -e \"import('./scripts/foundry.mjs').then(m => m.start()).then(r => console.log(r.baseUrl))\"",
+    "e2e:down": "node -e \"import('./scripts/foundry.mjs').then(m => m.stop())\""
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:"
+  }
+}

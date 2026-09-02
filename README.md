@@ -158,6 +158,7 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 - ✅ **Build pipeline.** One Vite config, a deployable `dist/`, a release zip
 - ✅ **CLI.** `init` with four templates, `dev`, `build`, `audit`
 - ✅ **Dev loop.** Templates, styles and language files reload in place, without a page refresh
+- ✅ **End-to-end.** Every push to `main` boots a real Foundry v13 in a container and drives the example system and module through it
 - ✅ **Design system.** Tokens, primitives, themes, brand
 - ✅ **Published.** Every package on npm under OIDC trusted publishing, with provenance
 - ✅ **Documentation.** [vttforge.dev/docs](https://vttforge.dev/docs/) carries the guide, the API reference, the recipes and the error catalogue
