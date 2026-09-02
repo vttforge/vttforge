@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import cliPackage from '../../package.json' with { type: 'json' };
 import {
   detectPackageManager,
   detectProjectPackageManager,
@@ -51,6 +52,6 @@ describe('@vttforge/cli public surface', () => {
   });
 
   it('exports the version constant', () => {
-    expect(VTTFORGE_CLI_VERSION).toMatch(/^\d+\.\d+\.\d+/);
+    expect(VTTFORGE_CLI_VERSION).toBe(cliPackage.version);
   });
 });
