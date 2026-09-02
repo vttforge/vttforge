@@ -9,7 +9,7 @@
 [![FoundryVTT](https://img.shields.io/badge/FoundryVTT-v13%2B-orange?style=flat-square)](https://foundryvtt.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 
-[📖 Guide](apps/docs/guide/getting-started.md) · [🗺️ Roadmap](#roadmap) · [🐛 Report bug](https://github.com/vttforge/vttforge/issues)
+[📖 Documentation](https://vttforge.dev/docs/) · [🗺️ Roadmap](#roadmap) · [🐛 Report bug](https://github.com/vttforge/vttforge/issues)
 
 </div>
 
@@ -120,7 +120,7 @@ Create a world on **VTTForge Example System** and add a Character. The sheet ren
 
 ## Design system
 
-The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-pt grid. Preview it by opening `packages/styles/preview/index.html` in a browser.
+The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-pt grid. It is live at [vttforge.dev/design-system](https://vttforge.dev/design-system/).
 
 - **Tokens** — `packages/styles/tokens.json` (W3C DTCG) compiles to `dist/tokens.css`. Three blocks: Forge, `[data-theme="light"]`, and an opt-in `[data-theme="foundry"]` that follows the GM's Theme V2 setting.
 - **Primitives** — buttons, badges, code blocks, form controls, tabs and the `.sh-*` sheet primitives consume only `--vttf-*` tokens. ARIA state drives the variants.
@@ -143,7 +143,8 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 - ✅ **Dev loop** — templates, styles and language files reload in place, without a page refresh
 - ✅ **Design system** — tokens, primitives, themes, brand
 - ✅ **Published** — every package on npm under OIDC trusted publishing, with provenance
-- 🛠️ **Now** — deploying the docs site, and widening `@vttforge/types` so the base factories stop returning `any`
+- ✅ **Documentation** — [vttforge.dev](https://vttforge.dev) carries the guide, the recipes, the error catalogue and the design system
+- 🛠️ **Now** — widening `@vttforge/types` so the base factories stop returning `any`
 - 🚀 **v1.0** — a stable API, decorators once the toolchain allows them, and enough adopters to know which of the remaining gaps are real
 
 ## Contributing
