@@ -61,6 +61,34 @@ export class PdfActorSheet extends BaseDocumentSheet('Actor') {
 It takes `'Actor'` or `'Item'`, and gives you the same `_renderHTML` /
 `_replaceHTML` contract as `BaseApplication`.
 
+### `this.document` is `unknown`
+
+The base does not know which document a sheet is for; that is yours to say.
+Narrow it once, in a getter, and read the typed value everywhere else:
+
+```ts
+interface CharacterActor {
+  readonly name: string;
+  readonly system: CharacterData;
+  readonly items: { get(id: string): GearItem | undefined };
+}
+
+export class CharacterSheet extends BaseActorSheet() {
+  get actor(): CharacterActor {
+    return this.document as CharacterActor;
+  }
+
+  override async _prepareContext(options: unknown) {
+    const context = await super._prepareContext(options);
+    context.system = this.actor.system; // typed from the schema
+    return context;
+  }
+}
+```
+
+The interface names what the sheet reads. Grow it as the sheet grows; it is
+the one place to change when a real Foundry type package lands.
+
 ### `override` is not optional
 
 The base declares these members, so TypeScript requires the keyword. That is

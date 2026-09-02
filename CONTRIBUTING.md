@@ -1,114 +1,108 @@
 # Contributing to VTTForge
 
-Thanks for considering a contribution. VTTForge is in pre-v0.1 — the core API is being shaped against a real production FoundryVTT system before stabilising. The most useful contributions today are different from when the SDK is stable.
+Thanks for considering it. Every package is on npm and below 1.0, so the API still moves — which makes the most useful contributions today:
 
-## What's most useful right now (pre-v0.1)
+- **Boilerplate reports.** Open an issue with a pattern from your own Foundry system or module that VTTForge could take off your hands.
+- **API feedback.** Where the shape feels wrong, say so before it hardens at 1.0.
+- **Bug reports with a reproduction.** A scaffolded project plus the diff that breaks it is ideal.
+- **Docs fixes.** Always welcome.
 
-- **Boilerplate reports** — open an issue with a pattern from your own FoundryVTT system or module that VTTForge could eliminate.
-- **API design feedback** — once the v0.1 API surface lands, tell us where the shape feels wrong before it stabilises.
-- **Docs / typo fixes** — always welcome via PR.
-- **Trying the v0.1 release** when it lands — early adopters who can give feedback on rough edges are gold.
+Code contributions are welcome too. The workflow is below.
 
-Once the core API stabilises in v1.0, we'll open up to broader code contributions.
+## Prerequisites
 
-## Code contributions (when the monorepo lands)
-
-The sections below describe the workflow once `@vttforge/core` source code exists. They're forward-looking — verify against the actual repo state when you read this.
-
-### Prerequisites
-
-- **Node.js 22.14 or higher** — required for npm Trusted Publishing and modern features used in the SDK
-- **Corepack enabled** — handles the pinned `pnpm` version automatically:
+- **Node.js 26 or higher.**
+- **Corepack enabled** — it picks the pinned `pnpm` from `package.json#packageManager`:
   ```bash
   corepack enable
   ```
-- **A FoundryVTT v13 installation** if you're working on sheet/runtime features
+- **A Foundry VTT v13 installation**, or Docker plus a foundryvtt.com license, for anything that touches sheets or the dev loop.
 
-### Setup
+## Setup
 
 ```bash
 git clone https://github.com/vttforge/vttforge.git
 cd vttforge
-corepack enable          # picks up pinned pnpm from package.json#packageManager
+corepack enable
 pnpm install
 ```
 
-### Common commands
+## Commands
 
 ```bash
-pnpm dev            # Watch mode across all packages (Turborepo orchestrated)
-pnpm test           # Run Vitest across the monorepo
-pnpm typecheck      # tsc --noEmit across all packages
-pnpm lint           # Biome lint + format check
 pnpm build          # tsdown build of every package
+pnpm test           # Vitest across the monorepo
+pnpm typecheck      # tsc --noEmit across all packages
+pnpm lint           # Biome, syncpack, and the template pin check
+pnpm format         # Biome, writing fixes
+pnpm knip           # unused exports and dependencies
 ```
 
-### Running Foundry locally via Docker
+`pnpm lint` may print a Biome out-of-memory warning under some terminals. It is the parent shell's TTY setup, not the code: run it as `bash -c "pnpm lint"` and it goes away.
 
-For sheet/runtime work you'll want a real Foundry v13 instance with the example system loaded. The repo ships a `docker-compose.dev.yml` that uses the [felddy/foundryvtt](https://hub.docker.com/r/felddy/foundryvtt) image and mounts the **built artifact** of `examples/simple-system` (plus the `examples/simple-module` source) read-only into the container's data tree.
+## Running Foundry locally
 
-1. **Copy the env template** and fill in your Foundry credentials (license key + foundryvtt.com login — these stay on your machine, never commit `.env`):
+For sheet or runtime work you want a real Foundry v13 with the example system loaded. `docker-compose.dev.yml` uses the [felddy/foundryvtt](https://hub.docker.com/r/felddy/foundryvtt) image and mounts the **built** `examples/simple-system` and `examples/simple-module` read-only into the container's data tree.
+
+1. Copy the env template and fill in your Foundry license and foundryvtt.com login. They stay on your machine; never commit `.env`.
    ```bash
    cp .env.example .env
    ```
-2. **Build the example system once** so `examples/simple-system/dist/` exists (the Compose volume mount points at it):
+2. Build the examples once, so `dist/` exists for the mounts:
    ```bash
-   pnpm install
    pnpm -F @vttforge-examples/simple-system build
+   pnpm -F @vttforge-examples/simple-module build
    ```
-   Use `pnpm -F @vttforge-examples/simple-system dev` instead to keep rebuilding on every source edit.
-3. **Start Foundry:**
+   Use `dev` instead of `build` to keep rebuilding on every edit.
+3. Start Foundry:
    ```bash
    docker compose -f docker-compose.dev.yml up
    ```
-4. Open <http://localhost:30000>. On first boot the image downloads the licensed Foundry distribution into the `foundry-dev-data` volume (one-time, slow). Subsequent boots are fast.
-5. Inside Foundry, create a world using the **VTTForge Example** system (or activate the example module). With `pnpm dev` running, edits to `examples/simple-system/` rebuild `dist/` and a Foundry refresh picks them up.
+4. Open <http://localhost:30000>. The first boot downloads the licensed Foundry build into the `foundry-dev-data` volume; later boots are fast.
+5. Create a world on **VTTForge Example**, or enable the example module in any world.
 
-`Ctrl+C` stops the container. To wipe Foundry state (worlds, settings) and start clean: `docker compose -f docker-compose.dev.yml down -v`.
+`Ctrl+C` stops the container. `docker compose -f docker-compose.dev.yml down -v` wipes worlds and settings.
 
-> Foundry credentials are personal and license-gated. We intentionally **do not** run Foundry in GitHub Actions — each contributor brings their own license for local smoke tests.
+Foundry credentials are personal and license-gated, so CI does not run Foundry. Each contributor smoke-tests locally.
 
-### Adding a changeset
+## Changesets
 
-If your PR changes anything user-visible in any `@vttforge/*` package, **add a changeset**:
+If your PR changes anything user-visible in a `@vttforge/*` package, add a changeset:
 
 ```bash
 pnpm changeset
 ```
 
-This walks you through which packages changed and at what semver level (patch/minor/major). The `changeset-bot` GitHub App will also remind you on the PR if you forget.
+It asks which packages changed and at what level. The bot reminds you on the PR if you forget.
 
-### Commit style
+## Commit style
 
-We use [Conventional Commits](https://www.conventionalcommits.org). Examples:
+[Conventional Commits](https://www.conventionalcommits.org):
 
 - `feat(core): add SystemConfig.getFlag`
-- `fix(vite-plugin): manifest sync drops styles field on rebuild`
-- `docs(prd): clarify v0.1 schema inference scope`
-- `chore(deps): bump tsdown to 0.22.1`
+- `fix(vite-plugin): manifest sync drops styles on rebuild`
+- `docs: explain the sheet id`
+- `chore(deps): bump tsdown`
 
-Scopes match package names (`core`, `cli`, `vite-plugin`, `styles`, `testing`, `types`) or one of `docs`, `prd`, `ci`, `deps`, `release`.
+Scopes are package names (`core`, `cli`, `vite-plugin`, `styles`, `testing`, `types`, `dev-module`) or `docs`, `ci`, `deps`, `release`. One scope per PR.
 
-### Pull request checklist
+## Pull request checklist
 
-Before you open a PR, make sure:
-
-- [ ] A changeset is included if any package changed (see above)
-- [ ] Tests added/updated for behaviour changes
-- [ ] `pnpm typecheck` + `pnpm test` + `pnpm lint` pass locally
+- [ ] A changeset, if a package changed
+- [ ] Tests for behaviour changes
+- [ ] `pnpm typecheck`, `pnpm test` and `pnpm lint` pass
 - [ ] Docs updated if the change is user-visible
-- [ ] If you touched an API marked stable, the change has a strong rationale
 
-The PR template surfaces this same checklist.
+The PR template carries the same list.
 
-## Reporting security issues
+## Security
 
-Do **not** open a public issue for security vulnerabilities. See [SECURITY.md](./SECURITY.md).
+Do not open a public issue for a vulnerability. See [SECURITY.md](./SECURITY.md).
 
 ## Code of Conduct
 
-Participation in this project is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
+Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [MIT License](./LICENSE).
+Contributions are licensed under the [MIT License](./LICENSE).

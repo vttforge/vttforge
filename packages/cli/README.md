@@ -1,39 +1,37 @@
 # @vttforge/cli
 
-VTTForge CLI — scaffolding, dev loop, and release builds for Foundry VTT v13+ systems and modules.
+Scaffold, dev loop, release build and audit for Foundry VTT v13+ systems and modules.
+
+```bash
+pnpm create vttforge my-system        # same as: npx @vttforge/cli init my-system
+```
 
 ## Commands
 
 ```bash
-vttforge init <name> [--type system|module] [--lang ts|js] [--no-install] [--no-git]
-vttforge dev  [--foundry-data <path>]
+vttforge init <name> [--type system|module] [--lang ts|js] [--id] [--title] [--description]
+                     [--author] [--license] [--yes] [--no-install] [--no-git]
+vttforge dev   [--foundry-data <path>] [--port <n>]
 vttforge build
+vttforge audit [dir] [--json] [--strict]
 ```
 
-- `vttforge init` — interactive scaffolder. Asks for package id, title, author, license, Foundry compatibility version, and writes a runnable system/module starter into `<name>/`. Detects the calling package manager (`pnpm`, `npm`, `bun`, `yarn`) via `npm_config_user_agent` and offers to install deps + `git init`. Equivalent UX from `pnpm create vttforge <name>` via the `create-vttforge` package.
-- `vttforge dev` — one-shot `vite build`, then symlink `dist/` into your Foundry user-data directory under `Data/<systems|modules>/<id>/`, then `vite build --watch` with inherited stdio. Cleans up the symlink on `Ctrl-C`. First run prompts for the Foundry data dir and saves the choice to `.vttforge/config.json`; subsequent runs skip the prompt. Override with `--foundry-data <path>` (alias: `--data-dir`) or set `FOUNDRY_DATA_DIR` in your environment.
-- `vttforge build` — production `vite build` followed by `<id>-<version>.zip` emission at the project root. Pulls `LICENSE`, `README.md`, and `CHANGELOG.md` from the project root into the zip when present.
+**`init`** writes a runnable system or module into `<name>/` from one of four templates (`system-ts`, `system-js`, `module-ts`, `module-js`). It asks for what you did not pass, or takes defaults with `--yes`, so it works in CI. It detects the package manager that invoked it (`pnpm`, `npm`, `bun`, `yarn`), installs, and runs `git init`.
 
-## Library exports
+**`dev`** builds once, links `dist/` into Foundry's data directory under `Data/<systems|modules>/<id>/`, installs the `@vttforge/dev-module` companion, and watches. Save a template and the open sheet redraws in place; save a stylesheet and the CSS swaps. The first run asks where Foundry keeps its data and saves the answer to `.vttforge/config.json`; `--foundry-data` or `FOUNDRY_DATA_DIR` overrides it. If Foundry runs in a container it cannot follow the symlink, and the command prints the compose mount to use instead.
 
-`@vttforge/cli` also exposes its internals for consumers building higher-level tooling:
+**`build`** runs the production build and writes `<id>-<version>.zip` at the project root with the manifest at the top level, which is what foundryvtt.com expects. `LICENSE`, `README.md` and `CHANGELOG.md` go in when present.
 
-```ts
-import {
-  runInit, runDev, runBuild,
-  scaffold, substitute, templatesRoot,
-  resolveFoundryDataDir, foundryPackagesDir,
-  readManifest, emitZip,
-  createLink, removeLink, readLinkTarget,
-  resolveViteInvocation, runViteBuildOnce, spawnViteWatch,
-  detectPackageManager, detectProjectPackageManager, execInvocation, installCommand,
-} from '@vttforge/cli';
-```
+**`audit`** checks the manifest and source against seven v13 breakages that fail quietly: the `flags.hotReload` shape, deprecated grid fields, the v12 `styles` shape, `HTMLField`/`FilePathField` paths missing from `documentTypes`, `TypeDataModel` without `prepareBaseData`, a bad `_addDataFieldMigrations` override, and token attributes that do not point at a `{ value, max }` field. `--json` for machines; `--strict` exits non-zero on any finding rather than only on HIGH.
 
-## Foundry-aware HMR
+## As a library
 
-Run Foundry with `--hotReload` (e.g. `foundryvtt --hotReload`) and `vttforge dev` becomes a live-reload loop without further setup: Foundry's built-in chokidar watcher follows the symlink, and its dispatcher swaps CSS / Handlebars / JSON files in place when vite re-emits them.
+Every command is exported for tooling built on top: `runInit`, `runDev`, `runBuild`, `runAudit`, `emitReleaseZip`, `resolveFoundryDataDir`, `readManifest`, and the scaffold helpers.
 
-## Stack
+## Docs
 
-Citty (commands) + Clack (prompts) + Archiver (zip).
+- [Getting started](https://vttforge.dev/docs/guide/getting-started)
+- [The dev loop](https://vttforge.dev/docs/guide/dev-loop)
+- [CLI reference](https://vttforge.dev/docs/guide/cli)
+
+Node 26+.
