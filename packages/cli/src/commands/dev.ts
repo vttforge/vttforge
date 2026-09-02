@@ -1,5 +1,5 @@
 /**
- * `vttforge dev` — symlink dist/ into Foundry Data and run vite watch.
+ * `vttforge dev`: symlink dist/ into Foundry Data and run vite watch.
  *
  * Flow:
  *   1. Sanity-check the project layout (package.json present)
@@ -46,7 +46,7 @@ export interface DevOptions {
  * Where the bridge listens.
  *
  * `@vttforge/dev-module` dials this same number. If the two drift apart the
- * module retries a port nobody is listening on, forever and quietly — so a
+ * module retries a port nobody is listening on, forever and quietly. So a
  * test asserts they still agree.
  */
 export const DEFAULT_HMR_PORT = 31_313;
@@ -69,7 +69,7 @@ interface Bridge {
  *
  * Every failure here returns null rather than throwing. A busy port or a
  * missing companion package should cost the developer hot reload, not the
- * dev loop — the build and the symlink are the load-bearing parts, and they
+ * dev loop: the build and the symlink are the load-bearing parts, and they
  * already succeeded by the time this runs.
  */
 async function startHotReloadBridge(opts: BridgeOptions): Promise<Bridge | null> {
@@ -87,7 +87,7 @@ async function startHotReloadBridge(opts: BridgeOptions): Promise<Bridge | null>
     server = await startDevServer({ port: opts.port });
   } catch {
     p.note(
-      `Port ${opts.port} is in use — another \`vttforge dev\` is probably running.\nPass --hmr-port to use a different one.`,
+      `Port ${opts.port} is in use; another \`vttforge dev\` is probably running.\nPass --hmr-port to use a different one.`,
       'Hot reload unavailable',
     );
     return null;
@@ -141,7 +141,7 @@ function createDataDirPrompt(): NonNullable<ResolveDataDirOptions['prompt']> {
     p.note(
       autoDetected
         ? `Detected Foundry user-data directory:\n  ${autoDetected}`
-        : 'Could not auto-detect a Foundry user-data directory on this OS — please type the path.',
+        : 'Could not auto-detect a Foundry user-data directory on this OS. Please type the path.',
       'First-run setup',
     );
     if (autoDetected) {
@@ -169,7 +169,7 @@ function createDataDirPrompt(): NonNullable<ResolveDataDirOptions['prompt']> {
 /**
  * Install signal handlers that fire once. We use `process.once` so a second
  * Ctrl-C while cleanup is in flight propagates as a hard exit instead of
- * being swallowed (the user gave up on graceful shutdown — let them).
+ * being swallowed (the user gave up on graceful shutdown; let them).
  */
 function installSignalHandlers(cleanup: () => Promise<void>): () => void {
   let invoked = false;
@@ -189,7 +189,7 @@ function installSignalHandlers(cleanup: () => Promise<void>): () => void {
 export async function runDev(options: DevOptions = {}): Promise<void> {
   const cwd = options.cwd ? resolve(options.cwd) : process.cwd();
 
-  p.intro('🜲 vttforge dev — symlink + watch');
+  p.intro('🜲 vttforge dev: symlink + watch');
 
   if (!existsSync(join(cwd, 'package.json'))) {
     p.cancel(`No package.json at ${cwd}. Run \`vttforge dev\` from inside a scaffolded project.`);
@@ -221,7 +221,7 @@ export async function runDev(options: DevOptions = {}): Promise<void> {
   });
 
   // 4. Create symlink. We pass overwrite: true so the dev loop "just works"
-  //    when the user switches between projects with the same id — real
+  //    when the user switches between projects with the same id. Real
   //    files/dirs are still refused inside createLink.
   const packagesDir = foundryPackagesDir(dataRoot, manifest.type);
   const target = join(packagesDir, manifest.id);
@@ -239,7 +239,7 @@ export async function runDev(options: DevOptions = {}): Promise<void> {
     'Symlinked',
   );
   // 5. Hot reload bridge. Failing to start it must not cost the developer
-  //    the whole dev loop — the build and the symlink are the load-bearing
+  //    the whole dev loop: the build and the symlink are the load-bearing
   //    parts, and a busy port should degrade to "no hot reload", not to
   //    "vttforge dev does not run".
   const bridge = await startHotReloadBridge({
@@ -251,7 +251,7 @@ export async function runDev(options: DevOptions = {}): Promise<void> {
   });
 
   p.note(
-    `${bridge ? 'Saves apply in place — no page refresh.' : 'Hot reload is off; saves need a page refresh.'}\nCtrl-C to stop.`,
+    `${bridge ? 'Saves apply in place, no page refresh.' : 'Hot reload is off; saves need a page refresh.'}\nCtrl-C to stop.`,
     'Watching',
   );
 
@@ -264,7 +264,7 @@ export async function runDev(options: DevOptions = {}): Promise<void> {
       try {
         await cleanupDevSymlink({ target, expectedSource: distDir });
       } catch {
-        // best-effort — Foundry rediscovers the next time dev runs.
+        // best-effort; Foundry rediscovers the next time dev runs.
       }
       await bridge?.close();
       if (!watcher.killed) watcher.kill('SIGINT');
@@ -272,7 +272,7 @@ export async function runDev(options: DevOptions = {}): Promise<void> {
       resolveDev();
     };
     const uninstall = installSignalHandlers(cleanup);
-    // If vite watcher dies on its own, surface it but don't auto-clean —
+    // If vite watcher dies on its own, surface it but don't auto-clean:
     // the user can re-run vttforge dev to re-establish.
     watcher.on('exit', (code) => {
       if (code !== 0 && code !== null) {
@@ -309,7 +309,7 @@ export async function setupDevSymlink(opts: { cwd: string; dataRoot: string }): 
 /**
  * Tear down a dev symlink iff it still points at the expected source.
  * Refuses to remove a symlink that another `vttforge dev` session (or a
- * manual `ln -s`) has since redirected — that link doesn't belong to us
+ * manual `ln -s`) has since redirected. That link doesn't belong to us
  * and removing it would silently disconnect their setup.
  */
 export async function cleanupDevSymlink(opts: {

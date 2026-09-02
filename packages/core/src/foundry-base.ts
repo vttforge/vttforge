@@ -13,8 +13,8 @@
  *
  * ```ts
  * const viewer = new PdfViewer();
- * viewer.goToPage(3);      // no such method — accepted
- * viewer.tpyoDeVerdade();  // not even a real name — accepted
+ * viewer.goToPage(3);      // no such method, accepted
+ * viewer.tpyoDeVerdade();  // not even a real name, accepted
  * ```
  *
  * A module shipped a release calling `url` and `goToPage` on a viewer that
@@ -37,7 +37,7 @@
  *
  * The Foundry members these factories actually stand on are written down
  * below. Removing the index signature and running both consumers produced
- * thirty-three errors naming eight distinct members — a set small enough to
+ * thirty-three errors naming eight distinct members, a set small enough to
  * declare, which is what settled the design. It is not the whole ApplicationV2
  * surface and does not claim to be; `@vttforge/types` is where that lands.
  *

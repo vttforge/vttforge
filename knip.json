@@ -26,6 +26,9 @@
     "apps/web": {
       "entry": ["index.html"],
       "ignoreDependencies": ["@vttforge/styles"]
+    },
+    "apps/docs": {
+      "ignoreDependencies": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"]
     }
   }
 }

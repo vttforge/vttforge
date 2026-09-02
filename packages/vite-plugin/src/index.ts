@@ -179,7 +179,7 @@ interface ManifestSyncResult {
 function syncManifest(opts: ResolvedOptions, builtCssSources: Set<string>): ManifestSyncResult {
   const manifestSrc = resolve(opts.root, opts.manifest);
   // Always emit the manifest at the dist root under Foundry's canonical
-  // filename — Foundry only discovers a package via `<dist>/system.json` or
+  // filename: Foundry only discovers a package via `<dist>/system.json` or
   // `<dist>/module.json`, regardless of where (or under what name) the
   // source manifest lives.
   const canonicalFilename = opts.kind === 'system' ? 'system.json' : 'module.json';
@@ -224,7 +224,7 @@ function syncManifest(opts: ResolvedOptions, builtCssSources: Set<string>): Mani
     }
     cssEntries.push(stylePath);
     // Preserve any additional metadata (e.g. `layer`) declared on the source
-    // entry — only the path is rewritten to point at the bundled output.
+    // entry; only the path is rewritten to point at the bundled output.
     rewrittenStyles.push({ ...styleEntry, src: `styles/${cssBasename}` });
   }
   manifest.styles = rewrittenStyles;
@@ -309,7 +309,7 @@ export default function vttforge(options: VttforgeOptions): Plugin {
               // `${package id}.${class name}` and that key is saved on every
               // document using it, so a rename orphans the reader's choice.
               // `registerSheets` fixes the name for that case; this keeps every
-              // other one honest — a stack trace, an instanceof error message,
+              // other one honest: a stack trace, an instanceof error message,
               // a prototype chain someone reads while debugging.
               keepNames: true,
               entryFileNames: (chunkInfo) => {
@@ -330,7 +330,7 @@ export default function vttforge(options: VttforgeOptions): Plugin {
             },
             // Foundry's browser ESM loader can't resolve bare specifiers, so
             // every dependency must be bundled in. Vite's library mode keeps
-            // `dependencies` external by default — override by leaving the
+            // `dependencies` external by default; override by leaving the
             // rollup external list empty.
             external: [],
           },

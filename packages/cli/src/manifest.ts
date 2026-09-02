@@ -4,7 +4,7 @@
  * The vite plugin emits the manifest into `dist/` during build, so the CLI
  * commands that come after a build (dev's initial symlink, build's release
  * zip) read from there rather than walking source. This file is intentionally
- * tiny — we extract just the fields the CLI cares about and surface the
+ * tiny: we extract just the fields the CLI cares about and surface the
  * rest as `raw` for any consumer that wants more.
  */
 
@@ -15,7 +15,7 @@ import { join } from 'node:path';
 export type PackageType = 'system' | 'module';
 
 export interface FoundryManifest {
-  /** Manifest id — folder name Foundry serves the package under. */
+  /** Manifest id: folder name Foundry serves the package under. */
   id: string;
   /** Semver-ish version string from the manifest. */
   version: string;
@@ -33,19 +33,19 @@ const MANIFEST_FILES: ReadonlyArray<{ file: string; type: PackageType }> = [
 // Foundry package ids are folder names. We mirror what `vttforge init`
 // allows (lowercase letters, digits, dashes, plus dot/underscore for
 // legacy packages) and reject anything that would let `join()` escape
-// the intended Data/<systems|modules>/ folder — slashes, backslashes,
+// the intended Data/<systems|modules>/ folder: slashes, backslashes,
 // `..` traversal, null bytes, whitespace, control chars.
 const MANIFEST_ID_RE = /^[a-z][a-z0-9._-]*$/;
 // Version strings end up in the release zip filename. Allow the common
 // semver alphabet (`1.2.3-beta.1+abc123`) and reject anything else for
-// the same reason — `join(cwd, `${id}-${version}.zip`)` must not climb
+// the same reason: `join(cwd, `${id}-${version}.zip`)` must not climb
 // out of cwd.
 const MANIFEST_VERSION_RE = /^[0-9A-Za-z._+-]+$/;
 
 /**
  * Locate and parse the Foundry manifest inside the given dist directory.
  * Prefers `system.json`, falls back to `module.json` (a single dist can't
- * be both — the vite plugin emits exactly one based on the project type).
+ * be both; the vite plugin emits exactly one based on the project type).
  *
  * Throws if neither file exists, required fields are missing/non-string,
  * or the id/version contain characters that would let downstream `join()`
@@ -74,7 +74,7 @@ export async function readManifest(distDir: string): Promise<FoundryManifest> {
     }
     if (!MANIFEST_ID_RE.test(id)) {
       throw new Error(
-        `Manifest at ${path} has an invalid "id" (${JSON.stringify(id)}). Foundry package ids must match ${MANIFEST_ID_RE} — lowercase letters, digits, dashes, dots, underscores; must start with a letter.`,
+        `Manifest at ${path} has an invalid "id" (${JSON.stringify(id)}). Foundry package ids must match ${MANIFEST_ID_RE}: lowercase letters, digits, dashes, dots, underscores; must start with a letter.`,
       );
     }
     if (typeof version !== 'string' || version.length === 0) {
@@ -88,6 +88,6 @@ export async function readManifest(distDir: string): Promise<FoundryManifest> {
     return { id, version, type, raw };
   }
   throw new Error(
-    `No Foundry manifest found in ${distDir}. Expected system.json or module.json — did you run \`vite build\` first?`,
+    `No Foundry manifest found in ${distDir}. Expected system.json or module.json. Did you run \`vite build\` first?`,
   );
 }

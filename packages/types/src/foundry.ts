@@ -11,7 +11,7 @@
  * The ApplicationV2 surface these bases rely on.
  *
  * Deliberately small. Every member here is one a real consumer used, not one
- * that exists in Foundry — the point is to describe what the factories stand
+ * that exists in Foundry. The point is to describe what the factories stand
  * on, not to restate Foundry's API.
  */
 export interface ApplicationV2Members {
@@ -63,7 +63,7 @@ export interface DocumentSheetV2Members extends ApplicationV2Members {
  * A class this SDK built on top of a Foundry one.
  *
  * `Added` is what the factory contributes; `Foundry` is the part of Foundry's
- * own surface the factory stands on. Anything outside both is a cast — see
+ * own surface the factory stands on. Anything outside both is a cast; see
  * the note at the top of this file for why that is the point.
  *
  * `Foundry` defaults to nothing rather than to the application surface. A

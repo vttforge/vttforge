@@ -1,6 +1,12 @@
 {
   "versionGroups": [
     {
+      "label": "TypeDoc needs a TypeScript with the JS compiler API; the workspace is on a newer one",
+      "packages": ["@vttforge/docs"],
+      "dependencies": ["typescript"],
+      "isIgnored": true
+    },
+    {
       "label": "Internal @vttforge packages use workspace protocol",
       "packages": ["**"],
       "dependencies": ["@vttforge/**"],

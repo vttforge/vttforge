@@ -1,18 +1,18 @@
 /**
- * @vttforge/core — runtime utilities for FoundryVTT v13+ systems and modules.
+ * @vttforge/core: runtime utilities for FoundryVTT v13+ systems and modules.
  *
  * v0.1 surface:
  *
- *   - registerSystem()             — one-call init, replaces Hooks.once("init")
- *   - registerModule()             — the same for modules, with namespaced sub-types
- *   - SystemConfig                 — typed wrapper around game.settings
- *   - BaseTypeDataModel()          — TypeDataModel with safe migrateData default
- *   - BaseActorSheet()             — ActorSheetV2 + HandlebarsApplicationMixin
- *   - BaseItemSheet()              — ItemSheetV2 + HandlebarsApplicationMixin
- *   - fields()                     — typed bag of foundry.data.fields constructors
- *   - InferSchema<T>               — derive `system` shape from defineSchema()
- *   - createMigrationRunner()      — declarative schema migrations (register + run)
- *   - VttfError + error registry   — VTTF-NNNN codes with docs URLs
+ *   - registerSystem(): one-call init, replaces Hooks.once("init")
+ *   - registerModule(): the same for modules, with namespaced sub-types
+ *   - SystemConfig: typed wrapper around game.settings
+ *   - BaseTypeDataModel(): TypeDataModel with safe migrateData default
+ *   - BaseActorSheet(): ActorSheetV2 + HandlebarsApplicationMixin
+ *   - BaseItemSheet(): ItemSheetV2 + HandlebarsApplicationMixin
+ *   - fields(): typed bag of foundry.data.fields constructors
+ *   - InferSchema<T>: derive `system` shape from defineSchema()
+ *   - createMigrationRunner(): declarative schema migrations (register + run)
+ *   - VttfError + error registry: VTTF-NNNN codes with docs URLs
  *
  * Foundry classes are resolved from `globalThis.foundry` lazily so the package
  * imports cleanly in Node/tests. The Foundry members the bases stand on are
@@ -117,12 +117,15 @@ export type {
 } from './foundry-base.js';
 export type {
   ActiveEffectConfig,
+  ActorConfig,
   CombatConfig,
+  ConfigCollection,
   FoundryConfig,
   GameApi,
   GameSettingsApi,
   HookCallback,
   HooksApi,
+  ItemConfig,
   SettingConfig,
   SettingScope,
 } from './foundry-globals.js';

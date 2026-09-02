@@ -55,3 +55,6 @@ Thumbs.db
 
 # Foundry data symlinks created by `vttforge dev`
 /Data
+
+# Generated API reference (apps/docs/scripts/typedoc.mjs)
+apps/docs/reference/*/

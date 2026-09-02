@@ -5,8 +5,8 @@
  * so the CLI stands up a small socket and pushes a payload per changed file.
  * This end listens and applies it.
  *
- * The socket is expected to disappear often — the CLI stops between runs, the
- * developer restarts it — so a dropped connection is normal, not an error, and
+ * The socket is expected to disappear often (the CLI stops between runs, the
+ * developer restarts it), so a dropped connection is normal, not an error, and
  * reconnection backs off rather than hammering a port nobody is listening on.
  */
 import { applyHotReload, type FoundryEnv, type HotReloadData } from './reload.js';

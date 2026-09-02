@@ -1,12 +1,12 @@
 /**
- * BaseDocumentSheet — a document sheet that builds its own DOM.
+ * BaseDocumentSheet: a document sheet that builds its own DOM.
  *
  * `BaseActorSheet` and `BaseItemSheet` are `HandlebarsApplicationMixin`
  * baselines, which is right for the common case: declare `static PARTS`, write
  * templates, let the mixin render them.
  *
  * It is wrong for a sheet whose content is not a template. A canvas, an
- * embedded PDF, a Svelte or Lit mount — those build an element and hand it
+ * embedded PDF, a Svelte or Lit mount. Those build an element and hand it
  * over. Extending the Handlebars baseline for one of those does not fail
  * loudly; the mixin's `_replaceHTML` expects a map of part id to markup,
  * receives an element instead, and quietly renders nothing. The window opens
@@ -39,7 +39,7 @@ export interface BaseDocumentSheetMembers {
   /**
    * Put the rendered content in the window.
    *
-   * The whole-content swap. Override for a sheet that updates in place —
+   * The whole-content swap. Override for a sheet that updates in place:
    * a viewer that keeps its scroll position across a page turn, say.
    */
   _replaceHTML(result: HTMLElement, content: HTMLElement): void;

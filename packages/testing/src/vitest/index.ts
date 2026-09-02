@@ -1,5 +1,5 @@
 /**
- * `@vttforge/testing/vitest` — the half that runs in CI.
+ * `@vttforge/testing/vitest`: the half that runs in CI.
  *
  * Covers everything up to the moment a window renders: data models, settings,
  * hook registration, migrations, document updates. Past that, use the Quench
@@ -14,9 +14,11 @@ export {
   createMockActor,
   createMockItem,
   type MockDocument,
+  type MockDocumentOptions,
 } from './mock-foundry.js';
 export {
   type MockFoundry,
+  type MockFoundryOptions,
   type RecordedEnricher,
   type RecordedHook,
   type RecordedSetting,

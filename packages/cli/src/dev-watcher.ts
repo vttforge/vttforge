@@ -3,7 +3,7 @@
  *
  * Watching `dist/` rather than hooking into Vite is deliberate: Vite rebuilds
  * into that directory whatever its internals look like, so this stays correct
- * across bundler versions and gives the served path directly — `dist/` is what
+ * across bundler versions and gives the served path directly: `dist/` is what
  * Foundry mounts, so a file's position inside it is its position under
  * `/systems/<id>/`.
  */
@@ -16,7 +16,7 @@ import { extname, join, posix, sep } from 'node:path';
 const RELOADABLE = new Set(['css', 'hbs', 'html', 'json']);
 
 /**
- * Editors save in bursts — write, rename, truncate — and a burst should be
+ * Editors save in bursts (write, rename, truncate) and a burst should be
  * one reload, not four.
  */
 const DEBOUNCE_MS = 40;
@@ -38,7 +38,7 @@ export interface DistWatcher {
 /**
  * The path Foundry serves this file at.
  *
- * Always POSIX separators — it becomes a URL, and a Windows backslash would
+ * Always POSIX separators: it becomes a URL, and a Windows backslash would
  * not match the `<link>` the browser rendered.
  */
 export function servedPath(
@@ -104,7 +104,7 @@ export function watchDist(options: WatchOptions): DistWatcher {
    *
    * A rebuild rewrites every output file, changed or not, so the filesystem
    * event alone says "the bundler ran", not "the developer edited this".
-   * Comparing content is what makes a reload mean the second thing — and it
+   * Comparing content is what makes a reload mean the second thing, and it
    * matters: a language file rewritten untouched would redraw every open
    * window, undoing the scoped re-render on the file that did change.
    */
@@ -141,7 +141,7 @@ export function watchDist(options: WatchOptions): DistWatcher {
   // Linux hands back a watcher that reports nothing at all. Checking first
   // gives the same answer everywhere instead of relying on either.
   if (!existsSync(options.distDir)) {
-    options.onError?.(`Cannot watch ${options.distDir} — the directory does not exist.`);
+    options.onError?.(`Cannot watch ${options.distDir}: the directory does not exist.`);
     return { close: () => undefined };
   }
 
@@ -167,7 +167,7 @@ export function watchDist(options: WatchOptions): DistWatcher {
   // Platforms disagree about how a bad path surfaces: macOS throws from
   // `watch` itself, Linux hands back a watcher that emits `error` a tick
   // later. Handling only the throw means a missing dist/ fails silently on
-  // Linux — which is where CI runs.
+  // Linux, which is where CI runs.
   watcher.on('error', (err: unknown) => {
     options.onError?.(err instanceof Error ? err.message : String(err));
   });

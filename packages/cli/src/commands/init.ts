@@ -1,5 +1,5 @@
 /**
- * `vttforge init` — interactive scaffolder.
+ * `vttforge init`: interactive scaffolder.
  *
  * Honors CLI flags first, prompts for everything missing, then copies the
  * matching template into the destination directory. Optionally `git init`s
@@ -31,7 +31,7 @@ export interface InitOptions {
   /**
    * Take the default for anything not supplied instead of asking.
    *
-   * Required to scaffold without a terminal — a prompt with nothing to read
+   * Required to scaffold without a terminal: a prompt with nothing to read
    * from waits forever, which is no way to fail.
    */
   yes?: boolean;
@@ -62,32 +62,32 @@ export type TemplateVariant = 'system-ts' | 'system-js' | 'module-ts' | 'module-
 const PACKAGE_ID_RE = /^[a-z][a-z0-9-]*$/;
 const UNSAFE_METADATA_CHARS_RE = /["\\\r\n\t]/;
 
-// Clack hands validators `string | undefined` — the prompt calls them before
+// Clack hands validators `string | undefined`; the prompt calls them before
 // anything is typed. Blank metadata is allowed here; only the `Required`
 // variant below rejects it.
 export function validateMetadata(value: string | undefined): string | undefined {
   if (!value) return undefined;
   // Reject characters that would break JSON string contexts in the
-  // generated manifests/i18n catalogues. Apostrophes are fine — every JS
+  // generated manifests/i18n catalogues. Apostrophes are fine: every JS
   // string literal in the templates is double-quoted, every JSON value is
   // double-quoted. Backslashes and double quotes need explicit escaping
   // we don't perform during substitution, so we reject them at the
   // prompt instead of producing broken scaffolds.
   if (UNSAFE_METADATA_CHARS_RE.test(value)) {
-    return 'Avoid backslashes, double quotes, and line breaks — they break the generated manifest.';
+    return 'Avoid backslashes, double quotes, and line breaks; they break the generated manifest.';
   }
   // Reject `*/` because metadata is interpolated into JS/CSS block-comment
   // headers in the generated files; a stray comment terminator there
   // closes the header early and leaves trailing source garbage.
   if (value.includes('*/')) {
-    return 'Avoid `*/` — it closes block comments in the generated source headers.';
+    return 'Avoid `*/`; it closes block comments in the generated source headers.';
   }
   return undefined;
 }
 
 export function validateRequiredMetadata(value: string | undefined): string | undefined {
   if (!value || value.trim().length === 0) {
-    return 'Required — Foundry rejects packages with a blank title.';
+    return 'Required: Foundry rejects packages with a blank title.';
   }
   return validateMetadata(value);
 }
@@ -103,7 +103,7 @@ export function validatePackageId(value: string | undefined): string | undefined
 }
 
 /**
- * Thrown when the scaffolder cannot continue — bad input, an existing
+ * Thrown when the scaffolder cannot continue: bad input, an existing
  * destination, a cancelled prompt, etc. `runInit` propagates these instead
  * of calling `process.exit`, so library consumers (tests, other CLIs) can
  * catch and recover. The `vttforge` bin wraps `runInit` in a top-level
@@ -149,7 +149,7 @@ function titleCase(input: string): string {
  * Whether we may ask the user anything at all.
  *
  * Clack reads from stdin. With no terminal attached there is nothing to read,
- * and the prompt simply hangs — so a run that cannot ask has to be told every
+ * and the prompt simply hangs. So a run that cannot ask has to be told every
  * answer up front, or be given `--yes` and take the defaults.
  */
 function canPrompt(yes: boolean | undefined): boolean {
@@ -163,7 +163,7 @@ function templateVariantFor(type: 'system' | 'module', lang: 'ts' | 'js'): Templ
 export async function runInit(options: InitOptions = {}): Promise<void> {
   const cwd = options.cwd ?? process.cwd();
   const interactive = canPrompt(options.yes);
-  p.intro('🜲 vttforge init — scaffold a Foundry v13+ system or module');
+  p.intro('🜲 vttforge init: scaffold a Foundry v13+ system or module');
 
   // --- name ------------------------------------------------------------------
   let name = options.name?.trim();
@@ -206,10 +206,10 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
     const answer = await p.select({
       message: 'What are you building?',
       options: [
-        { value: 'system', label: 'system — defines the game rules (Actor/Item types, sheets)' },
+        { value: 'system', label: 'system: defines the game rules (Actor/Item types, sheets)' },
         {
           value: 'module',
-          label: 'module — extends an existing system or adds cross-system features',
+          label: 'module: extends an existing system or adds cross-system features',
         },
       ],
       initialValue: 'system',
@@ -372,7 +372,7 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
 
   // --- install ---------------------------------------------------------------
   // Install runs BEFORE git init so the lockfile lands in the initial commit
-  // — generated repos that ship with a lockfile install reproducibly and
+  // Generated repos that ship with a lockfile install reproducibly and
   // the working tree stays clean after scaffold.
   const pm = detectPackageManager();
   let shouldInstall = !options.noInstall;

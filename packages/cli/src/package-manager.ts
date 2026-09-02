@@ -5,7 +5,7 @@
  * Strategy: read `npm_config_user_agent`, which pnpm/npm/bun/yarn all set when
  * they spawn a child process (including `pnpm dlx`, `pnpm create`, etc.).
  * Falls back to `pnpm` because that's the VTTForge house default and the
- * most common Foundry-developer choice — but any concrete signal in the
+ * most common Foundry-developer choice, but any concrete signal in the
  * environment wins over the default.
  */
 
@@ -31,7 +31,7 @@ export function installCommand(pm: PackageManager): string {
 
 /**
  * Detect a project's package manager by looking at which lockfile it
- * ships. `dev` and `build` need this — by the time the user runs
+ * ships. `dev` and `build` need this: by the time the user runs
  * `vttforge dev`, npm_config_user_agent reflects whatever shell launched
  * the binary (often nothing in a global install), not how the project
  * was bootstrapped. The lockfile is the project's own contract.
@@ -49,7 +49,7 @@ export function detectProjectPackageManager(
   // Bun text format (bun.lock) supersedes the older binary bun.lockb in 1.1+.
   if (existsSync(join(cwd, 'bun.lock')) || existsSync(join(cwd, 'bun.lockb'))) return 'bun';
   // npm supports both package-lock.json (common) and npm-shrinkwrap.json
-  // (published-package convention) — accept either as evidence of an npm
+  // (published-package convention). Accept either as evidence of an npm
   // project, otherwise we'd misclassify shrinkwrap projects as pnpm.
   if (existsSync(join(cwd, 'package-lock.json')) || existsSync(join(cwd, 'npm-shrinkwrap.json'))) {
     return 'npm';
@@ -60,7 +60,7 @@ export function detectProjectPackageManager(
 /**
  * Argument vector to invoke `vite` (or any other locally-installed CLI)
  * via the project's package manager. We always shell out through `<pm>
- * exec` so the call works regardless of the linker's choices — Yarn 4
+ * exec` so the call works regardless of the linker's choices. Yarn 4
  * Plug'n'Play, pnpm's symlinked layout, npm's flattened node_modules,
  * Bun's symlinked node_modules. Each manager exposes a uniform "run a
  * locally-resolved binary in the project's dependency graph" command.
@@ -74,7 +74,7 @@ export function execInvocation(pm: PackageManager, bin: string): [string, string
       // bin-side flags from being parsed by yarn itself.
       return ['yarn', ['exec', '--', bin]];
     case 'bun':
-      // `bun x <bin>` is the equivalent of `npx` — resolves through the
+      // `bun x <bin>` is the equivalent of `npx`; it resolves through the
       // project's node_modules and works without a global install.
       return ['bun', ['x', bin]];
     case 'npm':

@@ -2,8 +2,8 @@
  * vttforge command tree.
  *
  * Kept apart from `bin.ts`, which only runs it. Argument definitions are the
- * CLI's contract with its users — `--no-install` skipping the install, an
- * alias resolving to its canonical name — and a module that calls `runMain`
+ * CLI's contract with its users (`--no-install` skipping the install, an
+ * alias resolving to its canonical name) and a module that calls `runMain`
  * on import cannot be reached by a test. Exporting the commands from here
  * lets the suite parse real argv against the real definitions.
  */
@@ -54,7 +54,7 @@ export const init = defineCommand({
       description: 'SPDX license id (default MIT)',
     },
     // Without a terminal there is nothing for a prompt to read, so it waits
-    // forever. This flag takes the defaults instead — and the scaffolder
+    // forever. This flag takes the defaults instead, and the scaffolder
     // also assumes it when stdin is not a TTY, so CI need not pass it.
     yes: {
       type: 'boolean',
@@ -126,7 +126,7 @@ export const dev = defineCommand({
       (typeof args['foundry-data'] === 'string' ? args['foundry-data'] : undefined) ??
       (typeof args['data-dir'] === 'string' ? args['data-dir'] : undefined);
     // A non-numeric port is the user's typo, not a reason to fall back to a
-    // port they did not ask for — say so and stop.
+    // port they did not ask for. Say so and stop.
     const rawPort = typeof args['hmr-port'] === 'string' ? args['hmr-port'] : undefined;
     const hmrPort = rawPort === undefined ? undefined : Number(rawPort);
     if (hmrPort !== undefined && !Number.isInteger(hmrPort)) {
@@ -202,7 +202,8 @@ export const main = defineCommand({
   meta: {
     name: 'vttforge',
     version: VTTFORGE_CLI_VERSION,
-    description: 'VTTForge CLI — scaffold, dev, build for Foundry v13+ systems and modules',
+    description:
+      'VTTForge CLI: scaffold, dev, build and audit for Foundry v13+ systems and modules',
   },
   subCommands: {
     init,

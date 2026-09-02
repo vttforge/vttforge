@@ -7,7 +7,7 @@
  * preserving the relative path. Directories are created lazily on first
  * write.
  *
- * We intentionally avoid Handlebars or any other template engine — the
+ * We intentionally avoid Handlebars or any other template engine. The
  * substitution surface is small (a flat string-to-string map), and bundling
  * a dependency for ten lines of regex would be wasteful in a tool whose
  * value is being fast to invoke.
@@ -72,7 +72,7 @@ async function* walkRelative(dir: string, base: string = dir): AsyncGenerator<st
 /**
  * Files that should be substituted as text. Binary assets (.png, .ico, …)
  * bypass substitution and are copied byte-for-byte. The list of binary
- * extensions is intentionally small — extend if we add real binary assets
+ * extensions is intentionally small; extend if we add real binary assets
  * to templates.
  */
 const BINARY_EXTENSIONS = new Set([
@@ -123,7 +123,7 @@ export async function scaffold({ templateDir, destDir, vars }: ScaffoldOptions):
   for await (const relPath of walkRelative(templateDir)) {
     const srcPath = join(templateDir, relPath);
     // Apply substitution to the path itself so we can name files like
-    // `{{ID}}.code-workspace` if we ever need that — today no template path
+    // `{{ID}}.code-workspace` if we ever need that. Today no template path
     // uses placeholders, but the support is free. Then apply the rename map
     // so packaging-stripped names (e.g. `_gitignore`) land at their real
     // destination (e.g. `.gitignore`).

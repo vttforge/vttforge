@@ -46,14 +46,14 @@ export interface GameApi {
   readonly user?: { readonly isGM: boolean };
 }
 
-type ConfigCollection<T = unknown> = Record<string, T>;
+export type ConfigCollection<T = unknown> = Record<string, T>;
 
-interface ActorConfig {
+export interface ActorConfig {
   documentClass?: unknown;
   dataModels: ConfigCollection;
 }
 
-interface ItemConfig {
+export interface ItemConfig {
   documentClass?: unknown;
   dataModels: ConfigCollection;
 }

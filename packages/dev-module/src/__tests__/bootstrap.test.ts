@@ -79,7 +79,7 @@ describe('bootstrap', () => {
     });
     expect(result).toBeNull();
     expect(createSocket).not.toHaveBeenCalled();
-    expect(log).toHaveBeenCalledWith('Foundry globals are not available — not connecting.');
+    expect(log).toHaveBeenCalledWith('Foundry globals are not available; not connecting.');
   });
 
   it('connects to the resolved address inside Foundry', () => {
