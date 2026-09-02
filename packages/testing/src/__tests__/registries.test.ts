@@ -27,10 +27,23 @@ function registerSheet(
   Object.defineProperty(sheet, 'name', { value: id, configurable: true });
   const { DocumentSheetConfig } = (
     globalThis as unknown as {
-      foundry: { applications: { apps: { DocumentSheetConfig: Record<string, Function> } } };
+      foundry: {
+        applications: {
+          apps: {
+            DocumentSheetConfig: {
+              registerSheet(
+                documentClass: unknown,
+                scope: string,
+                sheetClass: unknown,
+                sheetOptions: Record<string, unknown>,
+              ): void;
+            };
+          };
+        };
+      };
     }
   ).foundry.applications.apps;
-  DocumentSheetConfig.registerSheet?.('ActorClass', packageId, sheet, options);
+  DocumentSheetConfig.registerSheet('ActorClass', packageId, sheet, options);
 }
 
 /** What `registerEnrichers` does: namespace the id, then push. */
