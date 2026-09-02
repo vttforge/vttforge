@@ -4,6 +4,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseActorSheet, type DragDropConfig, VTTFORGE_SHEET_CLASS } from '../base-actor-sheet.js';
 import { VttfError } from '../errors/registry.js';
 
+/**
+ * Set a member Foundry exposes as a getter.
+ *
+ * `element`, `document` and `isEditable` are readonly on the base types
+ * because that is what they are on the real classes. A test standing an
+ * instance up has to write them anyway, so it says so here once rather than
+ * casting at every line.
+ */
+function stub<T extends object>(instance: T, values: Record<string, unknown>): void {
+  Object.assign(instance as Record<string, unknown>, values);
+}
+
 class FakeActorSheetV2 {
   async _prepareContext(_options: unknown): Promise<Record<string, unknown>> {
     return { fromSuper: true };
@@ -189,7 +201,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
   it('does nothing when DRAG_DROP is empty', () => {
     const Sub = BaseActorSheet();
     const instance = new Sub();
-    instance.element = document.createElement('div');
+    stub(instance, { element: document.createElement('div') });
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(0);
   });
@@ -204,8 +216,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     }
     const instance = new Sheet();
     const element = document.createElement('div');
-    instance.element = element;
-    instance.isEditable = true;
+    stub(instance, { element: element, isEditable: true });
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(2);
     const first = dragDropBinds[0];
@@ -233,8 +244,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
       ];
     }
     const instance = new Sheet();
-    instance.element = document.createElement('div');
-    instance.isEditable = true;
+    stub(instance, { element: document.createElement('div'), isEditable: true });
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(1);
     const entry = dragDropBinds[0];
@@ -252,8 +262,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
       static override DRAG_DROP: ReadonlyArray<DragDropConfig> = [{ dragSelector: '.item' }];
     }
     const instance = new Sheet();
-    instance.element = document.createElement('div');
-    instance.isEditable = false;
+    stub(instance, { element: document.createElement('div'), isEditable: false });
     instance._onRender({}, {});
     const lockedEntry = dragDropBinds[0];
     if (!lockedEntry) throw new Error('expected dragDropBinds[0]');
@@ -270,9 +279,11 @@ describe('BaseActorSheet — default _onDragStart', () => {
   it('serializes the item identified by data-item-id', () => {
     const Sub = BaseActorSheet();
     const instance = new Sub();
-    instance.document = {
-      items: { get: (id: string) => ({ uuid: `Item.${id}` }) },
-    };
+    stub(instance, {
+      document: {
+        items: { get: (id: string) => ({ uuid: `Item.${id}` }) },
+      },
+    });
     const setData = vi.fn();
     const target = document.createElement('li');
     target.dataset.itemId = 'abc';

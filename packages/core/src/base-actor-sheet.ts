@@ -30,7 +30,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { UntypedFoundryMembers } from './foundry-base.js';
+import type { DocumentSheetV2Members } from './foundry-base.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: Foundry's ActorSheetV2 shape lives in fvtt-types (deferred to @vttforge/types v1.0)
 type AnyConstructor = new (...args: any[]) => any;
@@ -78,7 +78,7 @@ export interface SheetBaseStatics {
  *
  * Only the members a subclass actually reaches for. The rest of the Foundry
  * surface stays reachable and untyped until `@vttforge/types` describes it —
- * see `UntypedFoundryMembers`.
+ * see `DocumentSheetV2Members`.
  */
 export interface SheetBaseMembers {
   /** Fills in `context.tabs` for every group in `static TABS`. */
@@ -95,11 +95,24 @@ export interface SheetBaseMembers {
   onDropActor(actor: unknown, event: DragEvent): Promise<unknown>;
   onDropFolder(folder: unknown, event: DragEvent): Promise<unknown>;
   onDropActiveEffect(effect: unknown, event: DragEvent): Promise<unknown>;
+
+  /**
+   * Foundry's own drop entry points, implemented here to resolve the payload
+   * and hand it to the `onDropX` hook above.
+   *
+   * Declared because the base really does define them — an earlier version
+   * left them off, and nothing said so while an index signature was making
+   * every member name legal. Override `onDropItem` rather than this.
+   */
+  _onDropItem(event: DragEvent, data: unknown): Promise<unknown>;
+  _onDropActor(event: DragEvent, data: unknown): Promise<unknown>;
+  _onDropFolder(event: DragEvent, data: unknown): Promise<unknown>;
+  _onDropActiveEffect(event: DragEvent, data: unknown): Promise<unknown>;
 }
 
 export interface SheetBaseCtor extends SheetBaseStatics {
   // biome-ignore lint/suspicious/noExplicitAny: mirrors ApplicationV2's constructor arity, which subclasses pass straight through
-  new (...args: any[]): SheetBaseMembers & UntypedFoundryMembers;
+  new (...args: any[]): SheetBaseMembers & DocumentSheetV2Members;
 }
 
 interface DragDropInstance {

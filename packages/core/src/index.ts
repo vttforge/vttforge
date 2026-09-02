@@ -108,7 +108,11 @@ export {
   type VttfErrorCode,
   type VttfErrorEntry,
 } from './errors/registry.js';
-export type { UntypedFoundryMembers, VttforgeClass } from './foundry-base.js';
+export type {
+  ApplicationV2Members,
+  DocumentSheetV2Members,
+  VttforgeClass,
+} from './foundry-base.js';
 export type {
   ActiveEffectConfig,
   CombatConfig,

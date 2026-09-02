@@ -5,6 +5,11 @@ import { VTTFORGE_SHEET_CLASS } from '../base-actor-sheet.js';
 import { BaseItemSheet } from '../base-item-sheet.js';
 import { VttfError } from '../errors/registry.js';
 
+/** Set a member Foundry exposes as a getter; see the actor-sheet test. */
+function stub<T extends object>(instance: T, values: Record<string, unknown>): void {
+  Object.assign(instance as Record<string, unknown>, values);
+}
+
 class FakeItemSheetV2 {
   async _prepareContext(_options: unknown): Promise<Record<string, unknown>> {
     return { fromSuper: true };
@@ -128,8 +133,7 @@ describe('BaseItemSheet', () => {
       static override DRAG_DROP = [{ dragSelector: '.item' }];
     }
     const instance = new Sheet();
-    instance.element = document.createElement('div');
-    instance.isEditable = true;
+    stub(instance, { element: document.createElement('div'), isEditable: true });
     instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(1);
     const entry = dragDropBinds[0];
