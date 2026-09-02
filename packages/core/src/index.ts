@@ -132,5 +132,10 @@ export {
   moduleSubType,
   registerModule,
 } from './register-module.js';
+export {
+  registerSheets,
+  type SheetDocumentKind,
+  type SheetRegistration,
+} from './register-sheets.js';
 export { registerSystem, type SystemRegistration } from './register-system.js';
 export { SystemConfig } from './system-config.js';

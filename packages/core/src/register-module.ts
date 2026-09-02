@@ -16,6 +16,7 @@
 
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
 import type { FoundryConfig, HooksApi } from './foundry-globals.js';
+import { registerSheets, type SheetRegistration } from './register-sheets.js';
 
 export interface ModuleRegistration {
   /** Module id — must match the folder name and `module.json` `id`. */
@@ -38,6 +39,15 @@ export interface ModuleRegistration {
    * it would delete conditions the world depends on.
    */
   readonly statusEffects?: readonly unknown[];
+
+  /**
+   * Sheets this module offers, registered under `<id>.<sheet id>`.
+   *
+   * Register them here rather than calling Foundry's `registerSheet` yourself:
+   * Foundry derives the persisted key from the class name, and a bundler
+   * renames classes between builds. See `registerSheets`.
+   */
+  readonly sheets?: readonly SheetRegistration[];
 
   /** Runs before any CONFIG mutation — the usual home for the module API. */
   readonly onBeforeInit?: () => void;
@@ -151,6 +161,12 @@ function applyInit(config: ModuleRegistration): void {
   if (config.statusEffects !== undefined && config.statusEffects.length > 0) {
     CONFIG.statusEffects ??= [];
     CONFIG.statusEffects.push(...config.statusEffects);
+  }
+  if (config.sheets !== undefined && config.sheets.length > 0) {
+    registerSheets(config.id, config.sheets, {
+      Actor: CONFIG.Actor.documentClass,
+      Item: CONFIG.Item.documentClass,
+    });
   }
 
   config.onAfterInit?.();

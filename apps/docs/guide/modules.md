@@ -40,11 +40,17 @@ module that touches them breaks every world it is installed in.
 ## 3. Register the sheet for the prefixed type
 
 ```ts
-Items.registerSheet(MODULE_ID, PdfSheet, {
-  types: [PDF_TYPE],
-  makeDefault: true,
+registerModule({
+  id: MODULE_ID,
+  itemDataModels: { pdf: PdfData },
+  sheets: [{ id: 'pdf', document: 'Item', sheet: PdfSheet, types: [PDF_TYPE], makeDefault: true }],
 });
 ```
+
+Register here rather than calling Foundry's `registerSheet` yourself. Foundry
+derives the key it saves on each document from the sheet's class name, and a
+bundler renames classes between builds — see
+[Sheets](./sheets#why-the-id-is-not-optional).
 
 ## Keep the type key in its own module
 
