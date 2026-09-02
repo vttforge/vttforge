@@ -303,6 +303,14 @@ export default function vttforge(options: VttforgeOptions): Plugin {
           rollupOptions: {
             input: rollupInput,
             output: {
+              // Foundry reads class names at runtime, and the minifier does
+              // not promise the same one twice. A registered sheet is keyed by
+              // `${package id}.${class name}` and that key is saved on every
+              // document using it, so a rename orphans the reader's choice.
+              // `registerSheets` fixes the name for that case; this keeps every
+              // other one honest — a stack trace, an instanceof error message,
+              // a prototype chain someone reads while debugging.
+              keepNames: true,
               entryFileNames: (chunkInfo) => {
                 if (chunkInfo.name === JS_ENTRY_FILENAME) return JS_ENTRY_FILENAME;
                 return '[name]';
