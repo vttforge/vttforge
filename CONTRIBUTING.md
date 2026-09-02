@@ -63,7 +63,28 @@ For sheet or runtime work you want a real Foundry v13 with the example system lo
 
 `Ctrl+C` stops the container. `docker compose -f docker-compose.dev.yml down -v` wipes worlds and settings.
 
-Foundry credentials are personal and license-gated, so CI does not run Foundry. Each contributor smoke-tests locally.
+Foundry credentials are personal and licence-gated. They stay on your machine; never commit `.env`.
+
+## The end-to-end suite
+
+`apps/e2e` boots a real Foundry v13 in Docker with both examples installed and
+asserts what a mock cannot: that Foundry accepted the data models, that each
+sheet is filed under the id it was given, that a sheet actually draws, and that
+the module's sub-type is namespaced.
+
+```bash
+pnpm build
+pnpm --filter @vttforge-e2e/foundry test:e2e
+```
+
+It needs the same three credentials as the compose file above and stops with a
+clear message without them. `apps/e2e/README.md` explains how it boots without
+ever driving Foundry's setup screens.
+
+In CI it runs on every push to `main`, against the maintainer's licence. It
+never runs on a pull request from a fork, because GitHub does not hand secrets
+to those workflows, and a check that cannot pass is a check everyone learns to
+ignore.
 
 ## Changesets
 
