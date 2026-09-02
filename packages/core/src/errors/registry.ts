@@ -58,6 +58,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'A sheet was registered with an id that is empty, contains a dot, or repeats another sheet in the same package. The id becomes half of the key Foundry persists on every document using the sheet, so it must be a single unambiguous segment.',
   }),
+  'VTTF-0007': Object.freeze({
+    code: 'VTTF-0007',
+    name: 'InvalidEnricher',
+    summary:
+      'A text enricher was registered with an id that is empty, contains a dot, or repeats another enricher in the same package, or with a pattern missing the g flag. Foundry looks enrichers up by id and takes the first match, and matches with matchAll, which throws on a non-global regex.',
+  }),
 });
 
 /**

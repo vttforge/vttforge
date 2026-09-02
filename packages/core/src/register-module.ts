@@ -16,6 +16,7 @@
 
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
 import type { FoundryConfig, HooksApi } from './foundry-globals.js';
+import { type EnricherRegistration, registerEnrichers } from './register-enrichers.js';
 import { registerSheets, type SheetRegistration } from './register-sheets.js';
 
 export interface ModuleRegistration {
@@ -48,6 +49,16 @@ export interface ModuleRegistration {
    * renames classes between builds. See `registerSheets`.
    */
   readonly sheets?: readonly SheetRegistration[];
+
+  /**
+   * Text enrichers this module contributes, registered under `<id>.<enricher
+   * id>`.
+   *
+   * Register them here rather than pushing to `CONFIG.TextEditor.enrichers`
+   * yourself: that array has four ways to accept an entry and then do nothing
+   * with it. See `registerEnrichers`.
+   */
+  readonly enrichers?: readonly EnricherRegistration[];
 
   /** Runs before any CONFIG mutation — the usual home for the module API. */
   readonly onBeforeInit?: () => void;
@@ -161,6 +172,9 @@ function applyInit(config: ModuleRegistration): void {
   if (config.statusEffects !== undefined && config.statusEffects.length > 0) {
     CONFIG.statusEffects ??= [];
     CONFIG.statusEffects.push(...config.statusEffects);
+  }
+  if (config.enrichers !== undefined && config.enrichers.length > 0) {
+    registerEnrichers(config.id, config.enrichers);
   }
   if (config.sheets !== undefined && config.sheets.length > 0) {
     registerSheets(config.id, config.sheets, {
