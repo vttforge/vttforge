@@ -22,6 +22,7 @@ import type {
   FoundryConfig,
   HooksApi,
 } from './foundry-globals.js';
+import { registerSheets, type SheetRegistration } from './register-sheets.js';
 
 export interface SystemRegistration {
   /** System id — must match the folder name and `system.json` `id`. */
@@ -50,6 +51,15 @@ export interface SystemRegistration {
    * If omitted, the existing array is kept untouched.
    */
   readonly statusEffects?: readonly unknown[];
+
+  /**
+   * Sheets this system offers, registered under `<id>.<sheet id>`.
+   *
+   * Register them here rather than calling Foundry's `registerSheet` yourself:
+   * Foundry derives the persisted key from the class name, and a bundler
+   * renames classes between builds. See `registerSheets`.
+   */
+  readonly sheets?: readonly SheetRegistration[];
 
   /**
    * Optional pre-init hook for work that has to run before any of the CONFIG
@@ -160,6 +170,12 @@ function applyInit(config: SystemRegistration): void {
 
   if (config.statusEffects !== undefined) {
     CONFIG.statusEffects = [...config.statusEffects];
+  }
+  if (config.sheets !== undefined && config.sheets.length > 0) {
+    registerSheets(config.id, config.sheets, {
+      Actor: CONFIG.Actor.documentClass,
+      Item: CONFIG.Item.documentClass,
+    });
   }
 
   config.onAfterInit?.();

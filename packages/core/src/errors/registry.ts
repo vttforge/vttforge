@@ -52,6 +52,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'createMigrationRunner() was called on a world whose stored schemaVersion is older than the configured compatibleVersion floor. Upgrade the world to a supported intermediate version before continuing — running migrations across the gap would corrupt data.',
   }),
+  'VTTF-0006': Object.freeze({
+    code: 'VTTF-0006',
+    name: 'InvalidSheetId',
+    summary:
+      'A sheet was registered with an id that is empty, contains a dot, or repeats another sheet in the same package. The id becomes half of the key Foundry persists on every document using the sheet, so it must be a single unambiguous segment.',
+  }),
 });
 
 /**

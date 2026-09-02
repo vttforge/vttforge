@@ -133,4 +133,30 @@ describe('registerModule', () => {
   it('does not collide with a system of the same id', () => {
     expect(() => registerModule({ id: 'shared-id' })).not.toThrow();
   });
+
+  it('registers sheets on init, keyed by the id rather than the class name', () => {
+    const calls: Array<{ scope: string; name: string; documentClass: unknown }> = [];
+    (globalThis as Record<string, unknown>).foundry = {
+      applications: {
+        apps: {
+          DocumentSheetConfig: {
+            registerSheet(documentClass: unknown, scope: string, sheetClass: { name: string }) {
+              calls.push({ scope, name: sheetClass.name, documentClass });
+            },
+          },
+        },
+      },
+    };
+    // The name a bundler left on the class.
+    class mo {}
+    registerModule({
+      id: MODULE_ID,
+      sheets: [{ id: 'fillable', document: 'Actor', sheet: mo }],
+    });
+    fireInit();
+    expect(calls).toEqual([
+      { scope: 'pdf-character-sheet', name: 'fillable', documentClass: 'SystemActor' },
+    ]);
+    delete (globalThis as Record<string, unknown>).foundry;
+  });
 });
