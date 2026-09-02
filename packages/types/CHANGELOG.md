@@ -1,5 +1,11 @@
 # @vttforge/types
 
+## 0.1.3
+
+### Patch Changes
+
+- 7eeeb20: Rewrite the npm package descriptions to say what each package does today. `types` claimed full schema inference it does not have, `vite-plugin` claimed Handlebars HMR that lives in the dev loop, and `cli` did not mention `audit`.
+
 ## 0.1.2
 
 ### Patch Changes

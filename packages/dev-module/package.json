@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/dev-module",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Foundry-side companion for vttforge dev. Applies CSS, template and language changes in place, without a page reload.",
   "type": "module",
   "license": "MIT",
