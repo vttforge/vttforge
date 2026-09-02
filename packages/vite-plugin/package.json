@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/vite-plugin",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Vite plugin for Foundry VTT v13+ packages: browser ESM output with no hashing, CSS bundled, manifest copied with the version synced.",
   "type": "module",
   "license": "MIT",

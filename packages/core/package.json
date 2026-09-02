@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/core",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "description": "Runtime for Foundry VTT v13+ systems and modules: registerSystem, registerModule, typed data models, sheet bases, settings, migrations, error registry.",
   "type": "module",
   "license": "MIT",
