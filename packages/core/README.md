@@ -11,7 +11,7 @@ pnpm add @vttforge/core
 | Export | What it replaces |
 |---|---|
 | `registerSystem` / `registerModule` | The `Hooks.once("init")` block: data models, document classes, initiative, status effects, sheets, enrichers, and `ready` |
-| `BaseTypeDataModel(defineSchema)` | A `TypeDataModel` whose fields are typed from the schema — `this.level` is a `number` inside `prepareDerivedData` |
+| `BaseTypeDataModel(defineSchema)` | A `TypeDataModel` whose fields are typed from the schema, so `this.level` is a `number` inside `prepareDerivedData` |
 | `fields()` | `foundry.data.fields`, typed, read lazily so the module imports in Node |
 | `InferSchema<T>` / `Model['$inferData']` | The hand-written interface that drifts from the schema |
 | `BaseActorSheet()` / `BaseItemSheet()` | `static TABS`, `static DRAG_DROP`, typed `onDropItem` and friends on `ActorSheetV2` / `ItemSheetV2` with Handlebars |

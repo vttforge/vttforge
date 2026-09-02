@@ -8,13 +8,13 @@ pnpm add @vttforge/styles
 
 ## Usage
 
-Default — one import, sub-layered:
+Default, one import, sub-layered:
 
 ```css
 @import '@vttforge/styles';
 ```
 
-Mantine-style — wrap everything in a single `@layer vttforge`:
+Or wrap everything in a single `@layer vttforge`:
 
 ```css
 @import '@vttforge/styles/styles.layer.css';
@@ -33,7 +33,7 @@ Opt-in theme:
 @import '@vttforge/styles/themes/forge.css';
 ```
 
-The tokens are also published as data — `@vttforge/styles/tokens.json` — for anything that is not CSS.
+The tokens are also published as data, `@vttforge/styles/tokens.json`, for anything that is not CSS.
 
 ## Layer names
 

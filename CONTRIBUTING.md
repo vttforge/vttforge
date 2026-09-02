@@ -1,6 +1,6 @@
 # Contributing to VTTForge
 
-Thanks for considering it. Every package is on npm and below 1.0, so the API still moves — which makes the most useful contributions today:
+Thanks for considering it. Every package is on npm and below 1.0, so the API still moves. That makes these the most useful contributions today:
 
 - **Boilerplate reports.** Open an issue with a pattern from your own Foundry system or module that VTTForge could take off your hands.
 - **API feedback.** Where the shape feels wrong, say so before it hardens at 1.0.
@@ -12,7 +12,7 @@ Code contributions are welcome too. The workflow is below.
 ## Prerequisites
 
 - **Node.js 26 or higher.**
-- **Corepack enabled** — it picks the pinned `pnpm` from `package.json#packageManager`:
+- **Corepack enabled.** It picks the pinned `pnpm` from `package.json#packageManager`:
   ```bash
   corepack enable
   ```

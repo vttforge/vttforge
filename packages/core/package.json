@@ -1,7 +1,7 @@
 {
   "name": "@vttforge/core",
   "version": "0.11.1",
-  "description": "VTTForge core runtime: BaseTypeDataModel, BaseActorSheet, SystemConfig, registerSystem, error registry.",
+  "description": "Runtime for Foundry VTT v13+ systems and modules: registerSystem, registerModule, typed data models, sheet bases, settings, migrations, error registry.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/vttforge/vttforge#readme",

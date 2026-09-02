@@ -15,8 +15,8 @@ vttforge init <name> [--type system|module] [--lang ts|js]
 
 Writes a runnable project into `<name>/` from one of four templates. It asks
 for anything not passed; `--yes` takes the defaults instead, so the command
-works in CI. The package manager that invoked it — `pnpm`, `npm`, `bun`,
-`yarn` — is the one it installs with.
+works in CI. It installs with the package manager that invoked it: `pnpm`, `npm`, `bun`
+or `yarn`.
 
 | Template | What you get |
 |---|---|
@@ -57,17 +57,17 @@ vttforge audit [dir] [--json] [--strict]
 ```
 
 Checks the manifest and the source against the v13 breakages that fail
-quietly — nothing in the console, a feature that just does not work.
+quietly: nothing in the console, a feature that just does not work.
 
 | Code | Severity | What it catches |
 |---|---|---|
-| `VTTF-AUDIT-001` | HIGH | `flags.hotReload` in the wrong shape — hot reload silently off |
-| `VTTF-AUDIT-002` | MEDIUM | Top-level `gridDistance` / `gridUnits` — replaced by `grid` |
-| `VTTF-AUDIT-003` | LOW | `styles` as an array of strings — the v12 shape |
-| `VTTF-AUDIT-004` | MEDIUM | An `HTMLField` or `FilePathField` not listed in `documentTypes` — the server only sanitises declared paths |
-| `VTTF-AUDIT-005` | MEDIUM | A `TypeDataModel` without `prepareBaseData` — Active Effects apply between it and `prepareDerivedData` |
-| `VTTF-AUDIT-006` | LOW | An `_addDataFieldMigrations` override — the signature is not what it looks like |
-| `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field — the token bar degrades with no error |
+| `VTTF-AUDIT-001` | HIGH | `flags.hotReload` in the wrong shape, so hot reload is silently off |
+| `VTTF-AUDIT-002` | MEDIUM | Top-level `gridDistance` / `gridUnits`, replaced by `grid` |
+| `VTTF-AUDIT-003` | LOW | `styles` as an array of strings, the v12 shape |
+| `VTTF-AUDIT-004` | MEDIUM | An `HTMLField` or `FilePathField` not listed in `documentTypes`; the server only sanitises declared paths |
+| `VTTF-AUDIT-005` | MEDIUM | A `TypeDataModel` without `prepareBaseData`; Active Effects apply between it and `prepareDerivedData` |
+| `VTTF-AUDIT-006` | LOW | An `_addDataFieldMigrations` override; the signature is not what it looks like |
+| `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field; the token bar degrades with no error |
 
 Rules 004 and 007 read the schema whether it is a `static defineSchema()` or
 a function handed to `BaseTypeDataModel`, and scope it to the class

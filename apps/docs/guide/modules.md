@@ -34,7 +34,7 @@ registerModule({
 
 `registerModule` is not `registerSystem` with a different name. A module must
 not set `CONFIG.Actor.documentClass`, the initiative formula, or replace
-`CONFIG.statusEffects` — those belong to whatever system is running, and a
+`CONFIG.statusEffects`. Those belong to whatever system is running, and a
 module that touches them breaks every world it is installed in.
 
 ## 3. Register the sheet for the prefixed type
@@ -49,12 +49,12 @@ registerModule({
 
 Register here rather than calling Foundry's `registerSheet` yourself. Foundry
 derives the key it saves on each document from the sheet's class name, and a
-bundler renames classes between builds — see
+bundler renames classes between builds; see
 [Sheets](./sheets#why-the-id-is-not-optional).
 
 ## Keep the type key in its own module
 
-The subtype key gets used by the sheet, the API, the enricher — anything that
+The subtype key gets used by the sheet, the API, the enricher, anything that
 looks documents up. Put it somewhere neither of those has to import the entry
 point for:
 
@@ -69,8 +69,8 @@ something reads the key while the modules are still evaluating.
 
 ## Text enrichers
 
-An enricher turns a pattern in any rich text field — chat, journals, item
-descriptions — into markup:
+An enricher turns a pattern in any rich text field (chat, journals, item
+descriptions) into markup:
 
 ```ts
 registerModule({
@@ -85,7 +85,7 @@ registerModule({
         return anchor;
       },
       onRender: (element) => {
-        // Bind listeners here — it runs every time enriched content lands in
+        // Bind listeners here. It runs every time enriched content lands in
         // the DOM.
       },
     },
@@ -104,7 +104,7 @@ behaviour is missing. Registering through VTTForge always supplies an id, so
 this one stops being possible.
 
 **A duplicate `id` silently loses.** The wrapper stores the id as an attribute
-and finds the enricher back with `find` — first match wins. Two packages both
+and finds the enricher back with `find`, and the first match wins. Two packages both
 using `link` means the first one's `onRender` runs against the second one's
 markup. It only reproduces in a world with both installed, which is not the
 world you are testing in. Ids are namespaced to your package, and a repeat

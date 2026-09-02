@@ -30,7 +30,7 @@ override you without anyone writing `!important`, and means you do not
 accidentally outrank Foundry's own rules by specificity.
 
 `@vttforge/styles` publishes under `vttforge.*`. Pick your own package id as
-the layer name — never `system`, which Foundry owns.
+the layer name, never `system`, which Foundry owns.
 
 ## Give every variable a fallback
 
@@ -38,6 +38,6 @@ the layer name — never `system`, which Foundry owns.
 color: var(--color-text-primary, #f0f0e0);
 ```
 
-Your CSS may load in a context where Foundry's variables are not defined —
-a preview page, a screenshot tool, a test harness — and a missing custom
+Your CSS may load in a context where Foundry's variables are not defined (a
+preview page, a screenshot tool, a test harness), and a missing custom
 property makes the declaration invalid rather than falling back to inherited.
