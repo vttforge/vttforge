@@ -16,8 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 function installFoundryGlobals() {
   const settings = new Map();
   const hooks = new Map();
-  const actorRegistry = vi.fn();
-  const itemRegistry = vi.fn();
+  const registerSheet = vi.fn();
   const actorUnregister = vi.fn();
   const itemUnregister = vi.fn();
 
@@ -80,6 +79,12 @@ function installFoundryGlobals() {
   globalThis.foundry = {
     abstract: { TypeDataModel: class {} },
     applications: {
+      apps: {
+        // What `registerSystem({ sheets })` registers through. Foundry keys a
+        // sheet by `${scope}.${sheetClass.name}`, so the assertions below read
+        // the name back to check the id was pinned.
+        DocumentSheetConfig: { registerSheet },
+      },
       api: {
         HandlebarsApplicationMixin: (base) =>
           class extends base {
@@ -95,14 +100,8 @@ function installFoundryGlobals() {
     data: { fields: {} },
     documents: {
       collections: {
-        Actors: {
-          registerSheet: actorRegistry,
-          unregisterSheet: actorUnregister,
-        },
-        Items: {
-          registerSheet: itemRegistry,
-          unregisterSheet: itemUnregister,
-        },
+        Actors: { unregisterSheet: actorUnregister },
+        Items: { unregisterSheet: itemUnregister },
       },
     },
     utils: {
@@ -127,7 +126,7 @@ function installFoundryGlobals() {
     },
   };
 
-  return { hooks, settings, actorRegistry, itemRegistry, actorUnregister, itemUnregister };
+  return { hooks, settings, registerSheet, actorUnregister, itemUnregister };
 }
 
 let env;
@@ -179,16 +178,28 @@ describe('vttforge-example — boot', () => {
     env.hooks.get('init')();
     expect(env.actorUnregister).toHaveBeenCalled();
     expect(env.itemUnregister).toHaveBeenCalled();
-    expect(env.actorRegistry).toHaveBeenCalledWith(
+    expect(env.registerSheet).toHaveBeenCalledWith(
+      expect.anything(),
       'vttforge-example',
       expect.any(Function),
       expect.objectContaining({ types: ['character'], makeDefault: true }),
     );
-    expect(env.itemRegistry).toHaveBeenCalledWith(
+    expect(env.registerSheet).toHaveBeenCalledWith(
+      expect.anything(),
       'vttforge-example',
       expect.any(Function),
       expect.objectContaining({ types: ['gear'], makeDefault: true }),
     );
+  });
+
+  it('gives each sheet a key that a rebuild cannot move', async () => {
+    await import('../scripts/main.mjs?bootE2');
+    env.hooks.get('init')();
+    // Foundry saves `${scope}.${sheetClass.name}` on every document using the
+    // sheet, and a minifier renames classes between builds. The `id` is what
+    // makes these two keys the same in every build.
+    const keys = env.registerSheet.mock.calls.map(([, scope, cls]) => `${scope}.${cls.name}`);
+    expect(keys).toEqual(['vttforge-example.character', 'vttforge-example.gear']);
   });
 
   it('runs migrations on ready (advancing schemaVersion to 0.1.0)', async () => {
