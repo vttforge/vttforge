@@ -24,6 +24,27 @@ export interface RecordedSetting {
   config: Record<string, unknown>;
 }
 
+/** One `DocumentSheetConfig.registerSheet`, as VTTForge makes it. */
+export interface RecordedSheet {
+  /** The key Foundry persists: `<package id>.<sheet id>`. */
+  readonly key: string;
+  /** The package that registered it. */
+  readonly scope: string;
+  /** The sheet id — the class name VTTForge pinned. */
+  readonly id: string;
+  readonly sheetClass: unknown;
+  readonly documentClass: unknown;
+  readonly options: Record<string, unknown>;
+}
+
+/** One entry pushed onto `CONFIG.TextEditor.enrichers`. */
+export interface RecordedEnricher {
+  /** The namespaced id: `<package id>.<enricher id>`. */
+  readonly id: string;
+  readonly pattern: RegExp;
+  readonly onRender?: unknown;
+}
+
 export interface MockFoundry {
   /** Every `Hooks.on` and `Hooks.once`, in order. */
   readonly hooks: ReadonlyArray<RecordedHook>;
@@ -31,6 +52,21 @@ export interface MockFoundry {
   readonly settings: ReadonlyArray<RecordedSetting>;
   /** Every notification raised, by severity. */
   readonly notifications: ReadonlyArray<{ level: 'info' | 'warn' | 'error'; message: string }>;
+  /**
+   * Every sheet registered, in order.
+   *
+   * `key` is the thing worth asserting: Foundry saves it on each document
+   * using the sheet, so a test that pins the key is a test that the reader's
+   * choice survives your next build.
+   */
+  readonly sheets: ReadonlyArray<RecordedSheet>;
+  /**
+   * Every text enricher registered, in order.
+   *
+   * `id` is namespaced, which is what stops a common name from colliding with
+   * another package — and what makes `onRender` fire at all.
+   */
+  readonly enrichers: ReadonlyArray<RecordedEnricher>;
   /** Fire a hook the way Foundry would, for the listeners registered so far. */
   callHook(event: string, ...args: unknown[]): unknown[];
   /** Read back a registered setting's current value. */
@@ -132,12 +168,15 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
 
   const user = { id: 'user000000000001', isGM: true, name: 'Gamemaster', ...options.user };
 
+  const sheets: RecordedSheet[] = [];
+  const enrichers: RecordedEnricher[] = [];
+
   scope.Hooks = Hooks;
   scope.CONST = { DOCUMENT_OWNERSHIP_LEVELS: { NONE: 0, LIMITED: 1, OBSERVER: 2, OWNER: 3 } };
   scope.CONFIG = {
     Actor: { dataModels: {}, sheetClasses: {} },
     Item: { dataModels: {}, sheetClasses: {} },
-    TextEditor: { enrichers: [] },
+    TextEditor: { enrichers },
     Combat: {},
     ActiveEffect: {},
     statusEffects: [],
@@ -165,11 +204,37 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
     applications: {
       api: { ApplicationV2: class {}, HandlebarsApplicationMixin: (b: unknown) => b },
       sheets: { ActorSheetV2: class {}, ItemSheetV2: class {} },
+      apps: {
+        // Where `registerSystem({ sheets })` and `registerModule({ sheets })`
+        // register. Foundry builds the key from the class name, so this
+        // records the same key it would persist.
+        DocumentSheetConfig: {
+          registerSheet(
+            documentClass: unknown,
+            scope: string,
+            sheetClass: { name: string },
+            sheetOptions: Record<string, unknown> = {},
+          ) {
+            sheets.push({
+              key: `${scope}.${sheetClass.name}`,
+              scope,
+              id: sheetClass.name,
+              sheetClass,
+              documentClass,
+              options: sheetOptions,
+            });
+          },
+          unregisterSheet: () => {},
+        },
+      },
       ux: {},
       instances: new Map(),
     },
     documents: {
-      collections: { Actors: { registerSheet: () => {} }, Items: { registerSheet: () => {} } },
+      collections: {
+        Actors: { registerSheet: () => {}, unregisterSheet: () => {} },
+        Items: { registerSheet: () => {}, unregisterSheet: () => {} },
+      },
     },
     ...options.foundry,
   };
@@ -202,6 +267,8 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
     hooks,
     settings,
     notifications,
+    sheets,
+    enrichers,
     callHook,
     getSetting: (namespace, key) => values.get(`${namespace}.${key}`),
     restore() {
