@@ -12,6 +12,8 @@ The mark is `{ d20 }` — curly braces signal code, the icosahedron between them
 | `favicon-32.png` | 32×32 raster fallback for legacy browsers. |
 | `apple-touch-icon.png` | 180×180 plated raster. iOS/iPadOS home screen. |
 | `logo-512.png` | 512×512 transparent raster. Open Graph, social, hi-res docs. |
+| `avatar-512.png` | 512×512 plated raster. The GitHub organization avatar, and anywhere a square profile picture is asked for. |
+| `social-card.png` | 1280×640 card: mark, wordmark, one line of what it is. The GitHub social preview and the `og:image` for vttforge.dev. |
 
 ## The four official colors
 
