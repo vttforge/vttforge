@@ -127,7 +127,27 @@ importers:
         specifier: 'catalog:'
         version: 8.2.2(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.0)
 
-  examples/simple-module: {}
+  examples/simple-module:
+    dependencies:
+      '@vttforge/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@vttforge/vite-plugin':
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin
+      happy-dom:
+        specifier: 'catalog:'
+        version: 20.12.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.2.2(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@types/node@26.4.0)(happy-dom@20.12.0)(vite@8.2.2(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.0))
 
   examples/simple-system:
     dependencies:

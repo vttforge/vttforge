@@ -1,0 +1,25 @@
+{
+  "id": "vttforge-example-module",
+  "title": "VTTForge Example Module",
+  "description": "Reference Foundry VTT module built on @vttforge/core: a note item type, its sheet, and an enricher.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "authors": [{ "name": "VTTForge Contributors" }],
+  "esmodules": ["main.mjs"],
+  "styles": [{ "src": "styles/main.css" }],
+  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "documentTypes": {
+    "Item": {
+      "note": { "htmlFields": ["body"] }
+    }
+  },
+  "flags": {
+    "hotReload": {
+      "extensions": ["css", "hbs", "json"],
+      "paths": ["styles", "templates", "lang"]
+    }
+  }
+}
