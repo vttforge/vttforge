@@ -431,6 +431,27 @@ registerSystem({ id: 'my-system', actorDataModels: { character: CharacterData } 
       expect(await runSourceRules(cwd)).toEqual([]);
     });
 
+    it('reads a factory with a return type and a brace inside a string', async () => {
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({ id: 'my-system', version: '1.0.0', primaryTokenAttribute: 'health' }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `const defineCharacterSchema = (): Record<string, unknown> => {
+  const label = 'closes: }'; // and a comment with }
+  return {
+    health: new fields.SchemaField({ value: new fields.NumberField(), max: new fields.NumberField() }),
+  };
+};
+export class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {}
+registerSystem({ id: 'my-system', actorDataModels: { character: CharacterData } });`,
+        'utf8',
+      );
+      expect(await runSourceRules(cwd)).toEqual([]);
+    });
+
     it('still scopes a factory schema to the class that owns it', async () => {
       // The factory belongs to an Item model; token bars read actor.system.
       await writeFile(

@@ -223,7 +223,9 @@ function findSchemaFactoryRanges(content: string): ClassRange[] {
     const fnName = match[2];
     if (!className || !fnName) continue;
     const fnRe = new RegExp(
-      String.raw`(?:(?:const|let|var)\s+${fnName}\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*=>\s*\(?\s*\{|function\s+${fnName}\s*\([^)]*\)\s*\{)`,
+      // An arrow may carry a return type between `)` and `=>`; a function
+      // may carry one between `)` and `{`. Neither is captured.
+      String.raw`(?:(?:const|let|var)\s+${fnName}\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*(?::[^=]*?)?=>\s*\(?\s*\{|function\s+${fnName}\s*\([^)]*\)\s*(?::[^{]*?)?\{)`,
     );
     const fnMatch = fnRe.exec(content);
     if (fnMatch === null) continue;
@@ -244,14 +246,42 @@ function findSchemaOwnerRanges(content: string): ClassRange[] {
   return [...findClassRanges(content), ...findSchemaFactoryRanges(content)];
 }
 
+/**
+ * Index of the `}` that closes the `{` at `openIdx`, skipping braces inside
+ * string literals, template literals and comments. Returns -1 when unbalanced.
+ */
 function findMatchingBrace(content: string, openIdx: number): number {
   let depth = 0;
-  for (let i = openIdx; i < content.length; i += 1) {
-    if (content[i] === '{') depth += 1;
-    else if (content[i] === '}') {
+  let i = openIdx;
+  while (i < content.length) {
+    const ch = content[i];
+    const next = content[i + 1];
+    if (ch === '/' && next === '/') {
+      i = content.indexOf('\n', i);
+      if (i < 0) return -1;
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      i = content.indexOf('*/', i + 2);
+      if (i < 0) return -1;
+      i += 2;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === '`') {
+      i += 1;
+      while (i < content.length && content[i] !== ch) {
+        if (content[i] === '\\') i += 1;
+        i += 1;
+      }
+      i += 1;
+      continue;
+    }
+    if (ch === '{') depth += 1;
+    else if (ch === '}') {
       depth -= 1;
       if (depth === 0) return i;
     }
+    i += 1;
   }
   return -1;
 }
