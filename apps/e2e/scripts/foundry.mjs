@@ -2,8 +2,8 @@
  * Boot a real Foundry v13 in Docker, with the example system and module
  * installed, and leave it sitting on the join screen.
  *
- * Everything here happens without touching Foundry's setup UI, which is the
- * part that would rot. Three plain steps do it:
+ * Foundry's setup screens are never driven, because that is the part that
+ * would rot. Three plain steps replace them:
  *
  *   1. The end-user licence is a real HTML form. One POST signs it, and the
  *      signature lands in `Config/license.json`.
@@ -13,39 +13,102 @@
  *      next start launch that world and create its Gamemaster.
  *
  * So the browser only has to join a world that is already running.
+ *
+ * ## Why nothing here touches the host filesystem
+ *
+ * CI runs this from inside a container that shares the host's Docker socket.
+ * Every path in a `docker` command is then resolved by the host daemon, not by
+ * this process, so a bind mount and a `writeFileSync` to the same string are
+ * two different directories. Foundry's data lives in a named volume instead,
+ * and everything seeded into it goes through `docker cp`, which crosses that
+ * boundary correctly from either side.
+ *
+ * The same split applies to the network: a published port lands on the host,
+ * which is not this process's `localhost` when this process is in a container.
+ * So when there is a container to join, Foundry joins its network and is
+ * reached by name; otherwise the port is published and reached on localhost.
  */
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 const CONTAINER = 'vttforge-e2e';
+/** Named, so the licensed Foundry download survives between runs. */
+const VOLUME = process.env.E2E_VOLUME ?? 'vttforge-e2e-data';
 const PORT = Number(process.env.E2E_PORT ?? 30001);
-export const BASE_URL = `http://localhost:${PORT}`;
 const WORLD_ID = 'e2e';
 
 /** Pinned rather than floating: a build the run does not choose is a build it cannot report. */
 const IMAGE = process.env.E2E_FOUNDRY_IMAGE ?? 'felddy/foundryvtt:13';
 
-/**
- * Where Foundry keeps its data.
- *
- * Overridable because CI points it at a path on the runner host, outside the
- * workspace. The licensed Foundry download is cached in here, and a build
- * cache on a public repository is readable from a fork's workflow.
- */
-const dataDir = process.env.E2E_DATA_DIR ?? join(repoRoot, 'apps/e2e/.foundry');
-
 /** The three the felddy image needs to fetch a licensed Foundry. */
 const REQUIRED_ENV = ['FOUNDRY_LICENSE_KEY', 'FOUNDRY_USERNAME', 'FOUNDRY_PASSWORD'];
+
+/** Set by `start`, read by the tests. Absolute, because it is not always localhost. */
+export function baseUrl() {
+  const url = process.env.E2E_BASE_URL;
+  if (!url) throw new Error('Foundry has not been started: E2E_BASE_URL is not set.');
+  return url;
+}
 
 function docker(args, options = {}) {
   return execFileSync('docker', args, { encoding: 'utf8', ...options });
 }
 
-async function waitFor(label, check, { attempts = 90, everyMs = 2000 } = {}) {
+/**
+ * Run a throwaway shell against the data volume. Works while Foundry is
+ * stopped. As root, because the main container runs as root and everything it
+ * writes into the volume is owned by root.
+ */
+function inVolume(script) {
+  return docker([
+    'run',
+    '--rm',
+    '-u',
+    '0:0',
+    '-v',
+    `${VOLUME}:/data`,
+    '--entrypoint',
+    'sh',
+    IMAGE,
+    '-c',
+    script,
+  ]);
+}
+
+/**
+ * How this process can reach a container it starts.
+ *
+ * When this process is itself a container the daemon knows about, the two
+ * share a network and Foundry answers to its name. Otherwise the port is
+ * published and answers on localhost.
+ */
+function reachability() {
+  const self = process.env.HOSTNAME;
+  if (self) {
+    try {
+      const networks = docker([
+        'inspect',
+        self,
+        '--format',
+        '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}',
+      ]).trim();
+      const network = networks.split(/\s+/).filter(Boolean)[0];
+      if (network) {
+        return { args: ['--network', network], url: `http://${CONTAINER}:30000`, network };
+      }
+    } catch {
+      // Not a container this daemon knows. Publishing a port is right after all.
+    }
+  }
+  return { args: ['-p', `${PORT}:30000`], url: `http://localhost:${PORT}`, network: null };
+}
+
+async function waitFor(label, check, { attempts = 150, everyMs = 2000 } = {}) {
   for (let i = 0; i < attempts; i += 1) {
     if (await check()) return;
     await new Promise((resolve) => setTimeout(resolve, everyMs));
@@ -55,35 +118,44 @@ async function waitFor(label, check, { attempts = 90, everyMs = 2000 } = {}) {
 
 async function answers() {
   try {
-    // `redirect: 'manual'` because every Foundry route redirects somewhere;
-    // any answer at all means the server is up.
-    await fetch(BASE_URL, { redirect: 'manual' });
+    // Every Foundry route redirects somewhere, so any answer means it is up.
+    await fetch(baseUrl(), { redirect: 'manual' });
     return true;
   } catch {
     return false;
   }
 }
 
-/** Where Foundry is redirecting to, which is how it reports which stage it is at. */
+/** Where Foundry is redirecting to, which is how it reports the stage it is at. */
 async function stage() {
-  const response = await fetch(BASE_URL, { redirect: 'manual' });
+  const response = await fetch(baseUrl(), { redirect: 'manual' });
   return response.headers.get('location') ?? response.url;
 }
 
+/** Copy a built package into the volume, and hand back its manifest. */
 function installPackage(kind, id, from) {
-  const to = join(dataDir, 'Data', kind, id);
-  rmSync(to, { recursive: true, force: true });
-  cpSync(from, to, { recursive: true });
-  return JSON.parse(
-    readFileSync(join(to, kind === 'systems' ? 'system.json' : 'module.json'), 'utf8'),
-  );
+  const manifestName = kind === 'systems' ? 'system.json' : 'module.json';
+  inVolume(`rm -rf /data/Data/${kind}/${id} && mkdir -p /data/Data/${kind}/${id}`);
+  // The trailing `/.` copies the contents rather than the directory itself.
+  docker(['cp', `${from}/.`, `${CONTAINER}:/data/Data/${kind}/${id}`]);
+  return JSON.parse(readFileSync(join(from, manifestName), 'utf8'));
+}
+
+/** Read a config file out of the volume, hand it to `edit`, and put it back. */
+function editJson(pathInVolume, edit) {
+  const scratch = mkdtempSync(join(tmpdir(), 'vttforge-e2e-'));
+  const local = join(scratch, 'file.json');
+  docker(['cp', `${CONTAINER}:${pathInVolume}`, local]);
+  const value = edit(JSON.parse(readFileSync(local, 'utf8')));
+  writeFileSync(local, `${JSON.stringify(value, null, 2)}\n`);
+  docker(['cp', local, `${CONTAINER}:${pathInVolume}`]);
 }
 
 function writeWorld(system) {
-  const worldDir = join(dataDir, 'Data', 'worlds', WORLD_ID);
-  mkdirSync(worldDir, { recursive: true });
+  const scratch = mkdtempSync(join(tmpdir(), 'vttforge-e2e-'));
+  const local = join(scratch, 'world.json');
   writeFileSync(
-    join(worldDir, 'world.json'),
+    local,
     `${JSON.stringify(
       {
         id: WORLD_ID,
@@ -102,13 +174,8 @@ function writeWorld(system) {
       2,
     )}\n`,
   );
-}
-
-function selectWorld() {
-  const file = join(dataDir, 'Config', 'options.json');
-  const options = JSON.parse(readFileSync(file, 'utf8'));
-  options.world = WORLD_ID;
-  writeFileSync(file, `${JSON.stringify(options, null, 2)}\n`);
+  inVolume(`mkdir -p /data/Data/worlds/${WORLD_ID}`);
+  docker(['cp', local, `${CONTAINER}:/data/Data/worlds/${WORLD_ID}/world.json`]);
 }
 
 export function stop() {
@@ -128,11 +195,16 @@ export async function start() {
   }
 
   stop();
-  // The data directory is disposable, but the downloaded Foundry inside it is
-  // not: keeping `container_cache` turns a two-minute download into a restart.
-  rmSync(join(dataDir, 'Data'), { recursive: true, force: true });
-  rmSync(join(dataDir, 'Config'), { recursive: true, force: true });
-  mkdirSync(dataDir, { recursive: true });
+  // The worlds and the config are per-run; the downloaded Foundry beside them
+  // is not, and re-downloading it every run would cost two minutes each time.
+  try {
+    inVolume('rm -rf /data/Data /data/Config');
+  } catch {
+    // First run: the volume does not exist yet, and `docker run` will make it.
+  }
+
+  const reach = reachability();
+  process.env.E2E_BASE_URL = reach.url;
 
   docker([
     'run',
@@ -142,8 +214,7 @@ export async function start() {
     // felddy's entrypoint chowns the volume on first boot, then drops privileges.
     '-u',
     '0:0',
-    '-p',
-    `${PORT}:30000`,
+    ...reach.args,
     '-e',
     'FOUNDRY_LICENSE_KEY',
     '-e',
@@ -155,14 +226,14 @@ export async function start() {
     '-e',
     'CONTAINER_PRESERVE_CONFIG=true',
     '-v',
-    `${dataDir}:/data`,
+    `${VOLUME}:/data`,
     IMAGE,
   ]);
 
-  await waitFor('Foundry to answer', answers, { attempts: 150 });
+  await waitFor(`Foundry to answer at ${reach.url}`, answers);
 
   // 1. Sign the licence. Until this is done every route redirects to /license.
-  await fetch(`${BASE_URL}/license`, {
+  await fetch(`${baseUrl()}/license`, {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ agree: 'on', accept: '' }),
@@ -182,19 +253,18 @@ export async function start() {
     join(repoRoot, 'examples/simple-module/dist'),
   );
   writeWorld(system);
-  selectWorld();
+  editJson('/data/Config/options.json', (options) => ({ ...options, world: WORLD_ID }));
 
-  // 3. Restart into it. Foundry refuses to start over its own lock file, and
-  // stopping the container does not always clear it.
+  // 3. Restart into it. Foundry refuses to start over its own lock, and
+  // stopping the container does not always clear it. The lock is a directory.
   docker(['stop', CONTAINER]);
-  // The lock is a directory, not a file.
-  rmSync(join(dataDir, 'Config', 'options.json.lock'), { recursive: true, force: true });
+  inVolume('rm -rf /data/Config/options.json.lock');
   docker(['start', CONTAINER]);
 
-  await waitFor('Foundry to answer again', answers, { attempts: 150 });
+  await waitFor('Foundry to answer again', answers);
   await waitFor('the world to launch', async () => (await stage()).endsWith('/join'));
 
-  return { baseUrl: BASE_URL, system };
+  return { baseUrl: baseUrl(), system, network: reach.network };
 }
 
 export function logs(tail = 40) {

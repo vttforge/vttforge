@@ -10,7 +10,7 @@
  * had ever read that key back out of a running Foundry.
  */
 import { expect, test } from '@playwright/test';
-import { BASE_URL } from '../scripts/foundry.mjs';
+import { baseUrl } from '../scripts/foundry.mjs';
 
 /** Foundry refuses to lay out below 1024x700 and says so in a banner. */
 test.use({ viewport: { width: 1600, height: 1000 } });
@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
 
 /** Join as the Gamemaster the world created on launch, and wait for `ready`. */
 async function joinWorld(page) {
-  await page.goto(`${BASE_URL}/join`);
+  await page.goto(`${baseUrl()}/join`);
   await page.waitForSelector('select[name=userid]');
   await page.selectOption('select[name=userid]', { label: 'Gamemaster' });
   await page.click('button[name=join]');
