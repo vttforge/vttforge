@@ -1,18 +1,18 @@
 /**
- * BaseTypeDataModel — minimal extension of `foundry.abstract.TypeDataModel`.
+ * BaseTypeDataModel: minimal extension of `foundry.abstract.TypeDataModel`.
  *
  * Provides safe defaults that systems usually copy-paste anyway:
  *
- * - `migrateData()` calls `super.migrateData(data)` — every TypeDataModel
+ * - `migrateData()` calls `super.migrateData(data)`; every TypeDataModel
  *   must do this so chained migrations from base classes still run.
- * - `prepareBaseData()` is a no-op stub — override to initialize fields that
+ * - `prepareBaseData()` is a no-op stub; override to initialize fields that
  *   Active Effects need to mutate (e.g. base max HP before AE bonus). Foundry
  *   applies Active Effects between `prepareBaseData()` and `prepareDerivedData()`,
  *   so anything you compute here is the input AEs see.
- * - `prepareDerivedData()` is a no-op stub — override for computed values
+ * - `prepareDerivedData()` is a no-op stub; override for computed values
  *   that depend on AE-mutated state (modifiers, percentages, totals).
  *
- * Subclasses still own `defineSchema()` because there is no useful default —
+ * Subclasses still own `defineSchema()` because there is no useful default;
  * we never invent a schema for you.
  *
  * Resolves the base class from `globalThis.foundry.abstract.TypeDataModel` at
@@ -58,7 +58,7 @@ export interface TypeDataModelHooks {
 /**
  * What an instance looks like when the schema is known.
  *
- * The schema's fields ARE the instance properties — inside
+ * The schema's fields ARE the instance properties: inside
  * `prepareDerivedData()` you read `this.level`, not `this.system.level`, and
  * `actor.system` is this instance.
  *
@@ -73,7 +73,7 @@ export type TypedTypeDataModel<S extends Record<string, FieldInstance>> = InferS
   TypeDataModelHooks & {
     /**
      * Phantom property carrying the schema's inferred shape. Never assigned,
-     * never present at runtime — it exists so the type has a name:
+     * never present at runtime; it exists so the type has a name:
      *
      * ```ts
      * type CharacterSystem = CharacterData['$inferData'];
@@ -147,14 +147,14 @@ export function BaseTypeDataModel(
 
     /**
      * No-op stub. Override per type to initialize fields whose values Active
-     * Effects need to consume — base max HP, base AC, etc. Foundry calls this
+     * Effects need to consume: base max HP, base AC, etc. Foundry calls this
      * BEFORE applying Active Effects, so anything you set here is the input
      * that AE changes (`ADD`, `MULTIPLY`, `OVERRIDE`, …) operate on.
      *
      * Use `prepareDerivedData()` instead for values that depend on the
      * AE-mutated state (modifiers, percentages, totals).
      *
-     * Never write to the database here — purely in-memory.
+     * Never write to the database here; this is purely in-memory.
      */
     prepareBaseData(): void {
       // override me
@@ -165,7 +165,7 @@ export function BaseTypeDataModel(
      * AE-mutated state (modifiers, percentages, totals). Runs AFTER Active
      * Effects apply; use `prepareBaseData()` for values that AEs need to read.
      *
-     * Never write to the database here — purely in-memory.
+     * Never write to the database here; this is purely in-memory.
      */
     prepareDerivedData(): void {
       // override me

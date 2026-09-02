@@ -11,7 +11,7 @@
  * same sheet registers as `mo` in one build and `vo` in the next. The saved
  * key then names a sheet that no longer exists, Foundry falls back to the
  * default, and the reader's chosen sheet is gone with nothing in the console.
- * It hits released upgrades, not just a dev loop — pick the sheet in 1.0, ship
+ * It hits released upgrades, not just a dev loop: pick the sheet in 1.0, ship
  * 1.1, and the choice is lost.
  *
  * So the caller names the sheet and VTTForge fixes the class name to that
@@ -48,7 +48,7 @@ export interface SheetRegistration {
    * Document sub-types the sheet applies to. Omit to offer it for every type.
    *
    * A module registering a sheet for its own sub-type must pass the prefixed
-   * key — `moduleSubType(id, 'pdf')`, not `'pdf'`.
+   * key: `moduleSubType(id, 'pdf')`, not `'pdf'`.
    */
   readonly types?: readonly string[];
 
@@ -88,7 +88,7 @@ function assertValidId(id: string, packageId: string): void {
   if (!ID_PATTERN.test(id)) {
     throw new VttfError(
       'VTTF-0006',
-      `"${id}" is not a usable sheet id for "${packageId}". Use letters, digits and hyphens — no dots: Foundry joins the package id and the sheet id with one, so a dotted id produces an ambiguous key.`,
+      `"${id}" is not a usable sheet id for "${packageId}". Use letters, digits and hyphens, no dots. Foundry joins the package id and the sheet id with one, so a dotted id produces an ambiguous key.`,
     );
   }
 }
@@ -101,7 +101,7 @@ function readDocumentSheetConfig(): DocumentSheetConfigApi {
   if (config === undefined || typeof config.registerSheet !== 'function') {
     throw new VttfError(
       'VTTF-0002',
-      'foundry.applications.apps.DocumentSheetConfig is not available — register sheets inside the Foundry runtime, or stub the global in tests.',
+      'foundry.applications.apps.DocumentSheetConfig is not available. Register sheets inside the Foundry runtime, or stub the global in tests.',
     );
   }
   return config;
@@ -135,7 +135,7 @@ export function registerSheets(
     if (seen.has(entry.id)) {
       throw new VttfError(
         'VTTF-0006',
-        `"${packageId}" registers two sheets with the id "${entry.id}". Ids are the persisted key — the second would overwrite the first.`,
+        `"${packageId}" registers two sheets with the id "${entry.id}". Ids are the persisted key; the second would overwrite the first.`,
       );
     }
     seen.add(entry.id);

@@ -3,7 +3,7 @@
  *
  * Foundry ships an equivalent dispatcher, but it is unreachable: the socket
  * handler is a private method, and the `hotReload` hook fired inside it is a
- * veto — returning `false` cancels the reload. Calling that hook from outside
+ * veto: returning `false` cancels the reload. Calling that hook from outside
  * notifies listeners and nothing else.
  *
  * So the work is reimplemented here. It is a small surface and uses only
@@ -47,7 +47,7 @@ function reloadCss(path: string, doc: Document, now: number): ReloadOutcome {
       return { applied: true, kind: 'css' };
     }
   }
-  // Escape the path before it becomes a pattern — a stylesheet name is not
+  // Escape the path before it becomes a pattern; a stylesheet name is not
   // a trusted regular expression.
   const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const importRe = new RegExp(`@import "${escaped}(?:\\?[^"]+)?"`);
@@ -107,7 +107,7 @@ function reloadHtml(data: HotReloadData, env: FoundryEnv): ReloadOutcome {
 /**
  * Merge a language file into the active translations.
  *
- * Only the file matching the user's current language is worth applying —
+ * Only the file matching the user's current language is worth applying;
  * merging another language's strings would replace the visible ones.
  */
 function reloadJson(data: HotReloadData, env: FoundryEnv): ReloadOutcome {
@@ -155,7 +155,7 @@ interface RenderTarget {
  * Find the applications a changed template actually feeds.
  *
  * A sheet declares its templates in `static PARTS`, so the mapping is right
- * there on the open window — no build-time graph needed. Each part names a
+ * there on the open window; no build-time graph needed. Each part names a
  * primary `template` and may list further `templates`, which is where a
  * partial it pulls in shows up.
  *
@@ -172,7 +172,7 @@ function findRenderTargets(path: string, env: FoundryEnv): RenderTarget[] {
   }
 
   for (const app of env.applicationInstances()) {
-    // PARTS is a static on the sheet class and may be absent — it is probed,
+    // PARTS is a static on the sheet class and may be absent; it is probed,
     // not required, so it stays out of the interface above, which describes
     // only what this module calls.
     const parts =
@@ -201,7 +201,7 @@ function renderOpenApplications(env: FoundryEnv): void {
  * The Foundry surface this module touches, named explicitly.
  *
  * Passing it in rather than reaching for globals is what makes the handlers
- * testable without booting Foundry — and it documents the whole dependency
+ * testable without booting Foundry, and it documents the whole dependency
  * in one place.
  */
 export interface FoundryEnv {
@@ -229,7 +229,7 @@ export interface FoundryEnv {
  * Apply one hot reload payload.
  *
  * Mirrors core's dispatch: veto hook first, then switch on extension. An
- * unknown extension is a no-op rather than an error — the sender may watch
+ * unknown extension is a no-op rather than an error; the sender may watch
  * more file types than the client knows how to apply in place.
  */
 export function applyHotReload(data: HotReloadData, env: FoundryEnv): ReloadOutcome {

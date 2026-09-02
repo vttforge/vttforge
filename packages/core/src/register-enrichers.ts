@@ -1,8 +1,8 @@
 /**
  * Text enricher registration.
  *
- * An enricher turns a pattern in any rich text field — chat, journals, item
- * descriptions — into markup. `@PDF[handbook|page=12]{Player's Handbook}`
+ * An enricher turns a pattern in any rich text field (chat, journals, item
+ * descriptions) into markup. `@PDF[handbook|page=12]{Player's Handbook}`
  * becomes a link that opens the book at that page.
  *
  * `CONFIG.TextEditor.enrichers` is a plain array, so registering by hand is one
@@ -14,7 +14,7 @@
  *   nothing to fire the callback from. The enricher still produces markup, so
  *   the text looks right and only the behaviour is missing.
  * - **A duplicate `id` silently loses.** The wrapper stores the id as an
- *   attribute and looks the enricher back up with `find` — first match wins.
+ *   attribute and looks the enricher back up with `find`; first match wins.
  *   Two packages using `link` means the first one's `onRender` runs against the
  *   second one's markup. Only reproducible with both installed.
  * - **A pattern without the `g` flag throws.** Enrichment runs the pattern
@@ -42,14 +42,14 @@ export interface EnricherRegistration {
   readonly id: string;
 
   /**
-   * The pattern to match. Must carry the `g` flag — enrichment runs it through
+   * The pattern to match. Must carry the `g` flag: enrichment runs it through
    * `matchAll`, which refuses a non-global regex.
    */
   readonly pattern: RegExp;
 
   /**
    * Build the replacement for one match. Return `null` to leave the text
-   * alone — the usual answer when the thing referenced does not exist or the
+   * alone, the usual answer when the thing referenced does not exist or the
    * reader is not allowed to see it.
    */
   readonly enricher: (
@@ -91,7 +91,7 @@ function assertValidId(id: string, packageId: string): void {
   if (!ID_PATTERN.test(id)) {
     throw new VttfError(
       'VTTF-0007',
-      `"${id}" is not a usable enricher id for "${packageId}". Use letters, digits and hyphens — no dots: the package id and the enricher id are joined with one.`,
+      `"${id}" is not a usable enricher id for "${packageId}". Use letters, digits and hyphens, no dots. The package id and the enricher id are joined with one.`,
     );
   }
 }
@@ -100,7 +100,7 @@ function assertGlobalPattern(entry: EnricherRegistration, packageId: string): vo
   if (!entry.pattern.global) {
     throw new VttfError(
       'VTTF-0007',
-      `The pattern for enricher "${packageId}.${entry.id}" is missing the g flag. Enrichment matches with matchAll, which throws on a non-global regex — and it throws while rendering someone's chat message, not here.`,
+      `The pattern for enricher "${packageId}.${entry.id}" is missing the g flag. Enrichment matches with matchAll, which throws on a non-global regex. And it throws while rendering someone's chat message, not here.`,
     );
   }
 }
@@ -111,7 +111,7 @@ function readEnrichers(): FoundryEnricherEntry[] {
   if (!Array.isArray(enrichers)) {
     throw new VttfError(
       'VTTF-0002',
-      'CONFIG.TextEditor.enrichers is not available — register enrichers inside the Foundry runtime, or stub CONFIG in tests.',
+      'CONFIG.TextEditor.enrichers is not available. Register enrichers inside the Foundry runtime, or stub CONFIG in tests.',
     );
   }
   return enrichers;

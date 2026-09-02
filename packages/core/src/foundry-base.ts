@@ -13,8 +13,8 @@
  *
  * ```ts
  * const viewer = new PdfViewer();
- * viewer.goToPage(3);      // no such method — accepted
- * viewer.tpyoDeVerdade();  // not even a real name — accepted
+ * viewer.goToPage(3);      // no such method, accepted
+ * viewer.tpyoDeVerdade();  // not even a real name, accepted
  * ```
  *
  * A module shipped a release calling `url` and `goToPage` on a viewer that
@@ -37,7 +37,7 @@
  *
  * The Foundry members these factories actually stand on are written down
  * below. Removing the index signature and running both consumers produced
- * thirty-three errors naming eight distinct members — a set small enough to
+ * thirty-three errors naming eight distinct members, a set small enough to
  * declare, which is what settled the design. It is not the whole ApplicationV2
  * surface and does not claim to be; `@vttforge/types` is where that lands.
  *
@@ -50,7 +50,7 @@
  * The ApplicationV2 surface these bases rely on.
  *
  * Deliberately small. Every member here is one a real consumer used, not one
- * that exists in Foundry — the point is to describe what the factories stand
+ * that exists in Foundry. The point is to describe what the factories stand
  * on, not to restate Foundry's API.
  */
 export interface ApplicationV2Members {
@@ -102,7 +102,7 @@ export interface DocumentSheetV2Members extends ApplicationV2Members {
  * A class this SDK built on top of a Foundry one.
  *
  * `Added` is what the factory contributes; `Foundry` is the part of Foundry's
- * own surface the factory stands on. Anything outside both is a cast — see
+ * own surface the factory stands on. Anything outside both is a cast; see
  * the note at the top of this file for why that is the point.
  *
  * `Foundry` defaults to nothing rather than to the application surface. A

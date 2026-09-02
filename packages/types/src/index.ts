@@ -1,5 +1,5 @@
 /**
- * @vttforge/types — placeholder. Real type surface lands in v1.0.0.
+ * @vttforge/types: placeholder. Real type surface lands in v1.0.0.
  */
 import { version } from '../package.json' with { type: 'json' };
 

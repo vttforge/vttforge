@@ -6,13 +6,13 @@
  * orchestrator aggregates them into an `AuditReport` which the reporter
  * renders as JSON or markdown.
  *
- * The CLI never touches the source tree — audit is purely read-only.
+ * The CLI never touches the source tree; audit is purely read-only.
  */
 
 export type Severity = 'HIGH' | 'MEDIUM' | 'LOW';
 
 export interface RuleResult {
-  /** Stable identifier — used by users to suppress / pin / look up specific rules. */
+  /** Stable identifier, used by users to suppress / pin / look up specific rules. */
   ruleId: string;
   /** Human title. Shown in markdown report headers. */
   title: string;
@@ -48,7 +48,7 @@ export const SEVERITY_RANK: Record<Severity, number> = {
 /**
  * A rule is a plain function over the project root. Manifest rules parse
  * `system.json` / `module.json`; source rules walk `scripts/` / `src/`.
- * Rules return their own findings — the orchestrator stitches them
+ * Rules return their own findings; the orchestrator stitches them
  * together. Pure functions over the filesystem so tests inject tmp dirs.
  */
 // (kept here for tests/library consumers that want to define their own rules)

@@ -5,12 +5,12 @@
  * `module.json` at the project root. They cover three v13 manifest
  * footguns from the VTTForge audit catalog:
  *
- *   VTTF-AUDIT-001 (HIGH)   — flags.hotReload shape
- *   VTTF-AUDIT-002 (MEDIUM) — deprecated gridDistance/gridUnits
- *   VTTF-AUDIT-003 (LOW)    — styles array of strings (v12 shape)
+ *   VTTF-AUDIT-001 (HIGH)  : flags.hotReload shape
+ *   VTTF-AUDIT-002 (MEDIUM): deprecated gridDistance/gridUnits
+ *   VTTF-AUDIT-003 (LOW)   : styles array of strings (v12 shape)
  *
  * Each rule emits zero or more `RuleResult`s. Line numbers are looked up
- * cheaply by scanning the raw JSON for the offending key — accurate
+ * cheaply by scanning the raw JSON for the offending key. Accurate
  * enough for navigation, no AST dependency.
  */
 
@@ -60,7 +60,7 @@ async function loadManifests(cwd: string): Promise<LoadedManifest[]> {
 
 /**
  * Find the 1-based line number of the first `"key":` occurrence in JSON
- * source. Good enough for navigation — JSON keys are usually unique at
+ * source. Good enough for navigation: JSON keys are usually unique at
  * the level we report on, and even when nested duplicates exist the
  * first occurrence points at the right region of the file.
  */
@@ -76,7 +76,7 @@ function findKeyLine(raw: string, key: string): number | undefined {
 }
 
 /**
- * VTTF-AUDIT-001 (HIGH) — flags.hotReload shape.
+ * VTTF-AUDIT-001 (HIGH): flags.hotReload shape.
  *
  * v12 accepted `"hotReload": ["css", "hbs", ...]` (array). v13 expects
  * `"hotReload": { "extensions": [...], "paths": [...] }` (object at the
@@ -122,7 +122,7 @@ function ruleHotReload(manifest: LoadedManifest): RuleResult[] {
       },
     ];
   }
-  // Object shape — `extensions` is mandatory (Foundry has no default for
+  // Object shape: `extensions` is mandatory (Foundry has no default for
   // which extensions to watch), but `paths` is optional: when omitted,
   // Foundry watches the entire package root. Don't penalise users who
   // legitimately want the broader watch scope.
@@ -136,7 +136,7 @@ function ruleHotReload(manifest: LoadedManifest): RuleResult[] {
         filePath: manifest.path,
         line,
         message:
-          'flags.hotReload must declare an `extensions` array — Foundry has no default and the watcher silently does nothing without it.',
+          'flags.hotReload must declare an `extensions` array. Foundry has no default and the watcher silently does nothing without it.',
         remediation:
           'Add `extensions`: `"hotReload": { "extensions": ["css", "hbs", "json"], "paths": ["styles", "templates", "lang"] }`. `paths` is optional (defaults to the package root) but recommended.',
       },
@@ -146,12 +146,12 @@ function ruleHotReload(manifest: LoadedManifest): RuleResult[] {
 }
 
 /**
- * VTTF-AUDIT-002 (MEDIUM) — deprecated top-level grid fields.
+ * VTTF-AUDIT-002 (MEDIUM): deprecated top-level grid fields.
  *
  * v12 used flat `gridDistance` + `gridUnits`. v13 wants
  * `grid: { type, distance, units, diagonals }`. The legacy keys still
  * work today (Foundry auto-migrates and warns) but will be removed in
- * v14 — flag them now so the project is forward-compatible.
+ * v14. Flag them now so the project is forward-compatible.
  */
 function ruleGridShape(manifest: LoadedManifest): RuleResult[] {
   const hasLegacyDistance = 'gridDistance' in manifest.parsed;
@@ -175,7 +175,7 @@ function ruleGridShape(manifest: LoadedManifest): RuleResult[] {
 }
 
 /**
- * VTTF-AUDIT-003 (LOW) — styles array of strings.
+ * VTTF-AUDIT-003 (LOW): styles array of strings.
  *
  * v12 took `styles: ["styles/foo.css"]`. v13 expects `styles: [{ src,
  * layer? }]` so cascade-layer ordering can be declared in the manifest.
@@ -186,7 +186,7 @@ function ruleStylesShape(manifest: LoadedManifest): RuleResult[] {
   const styles = manifest.parsed.styles;
   if (!Array.isArray(styles) || styles.length === 0) return [];
 
-  // The whole array is uniform in the v12 shape — entries are strings.
+  // The whole array is uniform in the v12 shape: entries are strings.
   // Mixed arrays (some string, some object) also fail v13 expectations.
   const hasString = styles.some((entry) => typeof entry === 'string');
   if (!hasString) return [];

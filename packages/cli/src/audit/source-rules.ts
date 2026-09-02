@@ -5,10 +5,10 @@
  * project root (excluding common build/dependency dirs) and apply regex
  * heuristics to spot four v13 footguns from the VTTForge audit catalog:
  *
- *   VTTF-AUDIT-004 (MEDIUM) — HTMLField/FilePathField missing manifest declaration
- *   VTTF-AUDIT-005 (MEDIUM) — extends TypeDataModel without prepareBaseData stub
- *   VTTF-AUDIT-006 (LOW)    — `_addDataFieldMigrations` override (wrong signature)
- *   VTTF-AUDIT-007 (MEDIUM) — manifest primary/secondaryTokenAttribute not matched
+ *   VTTF-AUDIT-004 (MEDIUM): HTMLField/FilePathField missing manifest declaration
+ *   VTTF-AUDIT-005 (MEDIUM): extends TypeDataModel without prepareBaseData stub
+ *   VTTF-AUDIT-006 (LOW)   : `_addDataFieldMigrations` override (wrong signature)
+ *   VTTF-AUDIT-007 (MEDIUM): manifest primary/secondaryTokenAttribute not matched
  *                             by a `value`/`max` SchemaField in source
  *
  * Regex-based on purpose: avoids pulling in a TypeScript AST dependency
@@ -22,7 +22,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { RuleResult } from './types.js';
 
-/** Directories we never descend into — they're not user source. */
+/** Directories we never descend into; they are not user source. */
 const EXCLUDED_DIRS = new Set([
   'node_modules',
   'dist',
@@ -70,7 +70,7 @@ function lineOf(content: string, needle: string | RegExp): number | undefined {
   return line;
 }
 
-/** VTTF-AUDIT-005 — `extends TypeDataModel` without a `prepareBaseData(...)` method. */
+/** VTTF-AUDIT-005: `extends TypeDataModel` without a `prepareBaseData(...)` method. */
 function rule005(filePath: string, content: string): RuleResult[] {
   // Find every direct TypeDataModel subclass with its body extents so we
   // can check each class independently. The previous file-wide check
@@ -129,10 +129,10 @@ function findDirectTypeDataModelClasses(content: string): ClassRange[] {
   return out;
 }
 
-/** VTTF-AUDIT-006 — `_addDataFieldMigrations(` override on a TypeDataModel subclass. */
+/** VTTF-AUDIT-006: `_addDataFieldMigrations(` override on a TypeDataModel subclass. */
 function rule006(filePath: string, content: string): RuleResult[] {
   if (!/_addDataFieldMigrations\s*\(/.test(content)) return [];
-  // Only flag when the file defines a TypeDataModel-derived class — direct
+  // Only flag when the file defines a TypeDataModel-derived class, direct
   // `TypeDataModel` OR the VTTForge `BaseTypeDataModel()` factory. The
   // factory case matters because templates lean on it; an override there
   // is the most likely place users would write the buggy signature.
@@ -293,7 +293,7 @@ function findMatchingBrace(content: string, openIdx: number): number {
  *   2. `CONFIG.<Doc>.dataModels = { <subtype>: <ClassName>, … }` (block)
  *   3. `registerSystem({ actorDataModels: { <subtype>: <ClassName>, … }, … })`
  *      and the analogous `itemDataModels`, `activeEffectDataModels`, etc.
- *      — VTTForge's templated entry point uses this form, so without case
+ *      VTTForge's templated entry point uses this form, so without case
  *      (3) the bundled scaffolds register through an unknown surface and
  *      rule 004 falls back to the looser global-union check.
  */
@@ -354,7 +354,7 @@ function findConfigMappings(content: string): ConfigMapping[] {
   // (3) registerSystem({ actorDataModels: { ... }, itemDataModels: { ... }, … })
   // Find every `<KeyName>: {` block within the file body, then grab the
   // pairs inside. We use balanced-brace extraction so a nested SchemaField
-  // initializer doesn't truncate the body — but `dataModels` blocks
+  // initializer doesn't truncate the body. But `dataModels` blocks
   // typically only contain simple `<subtype>: <ClassName>` entries.
   for (const { key, doc } of REGISTER_SYSTEM_KEYS) {
     const re = new RegExp(String.raw`\b${key}\s*:\s*\{`, 'g');
@@ -388,7 +388,7 @@ function findConfigMappings(content: string): ConfigMapping[] {
  * Match `<name>: new (f|fields|foundry.data.fields).HTMLField(` or
  * `.FilePathField(`. We capture the field name, the field type, the
  * enclosing class, AND the dot-path through any enclosing SchemaField
- * wrappers — so rule 004 compares against the FULL manifest declaration
+ * wrappers, so rule 004 compares against the FULL manifest declaration
  * path (`profile.bio`), not just the leaf segment (`bio`).
  */
 const RICH_FIELD_RE = /(\w+)\s*:\s*new\s+(?:[\w.]+\.)?(HTMLField|FilePathField)\s*\(/g;
@@ -459,7 +459,7 @@ function buildSchemaPath(content: string, idx: number, fieldName: string): strin
   if (!m) return fieldName;
   const parentName = m[1] ?? '';
   if (!parentName) return fieldName;
-  // The parent's match position relative to content — recurse from there
+  // The parent's match position relative to content; recurse from there
   // so multi-level nesting (`profile.contact.email`) is captured.
   const parentMatchStart = lookbackStart + (m.index ?? 0);
   const parentPath = buildSchemaPath(content, parentMatchStart, parentName);
@@ -482,7 +482,7 @@ interface DeclaredFields {
    * what lets the two sides meet.
    */
   packageId: string | null;
-  /** Union across every subtype — used as a fallback when class→subtype lookup fails. */
+  /** Union across every subtype; used as a fallback when class→subtype lookup fails. */
   globalHtml: Set<string>;
   globalFilePath: Set<string>;
 }
@@ -501,7 +501,7 @@ function normalizeDeclaredPath(path: string): string {
  * Find one subtype's declarations, accounting for the module prefix.
  *
  * A system declares `character` in the manifest and registers `character`
- * in source — the two match directly. A module declares `vehicle` but
+ * in source, so the two match directly. A module declares `vehicle` but
  * Foundry registers it as `my-module.vehicle`, and that prefixed form is
  * what appears in source. Comparing the two verbatim reports every
  * correctly declared module field as missing, so fall back to the bare key
@@ -523,13 +523,13 @@ function lookupSubtype(
 }
 
 /**
- * VTTF-AUDIT-004 — cross-check source HTMLField/FilePathField usages
+ * VTTF-AUDIT-004: cross-check source HTMLField/FilePathField usages
  * against the manifest's documentTypes declarations.
  *
  * Subtype-aware: if the enclosing class is registered on
  * `CONFIG.<Doc>.dataModels.<subtype>`, the field must be declared in
- * THAT subtype's htmlFields / filePathFields. Otherwise — class
- * unregistered, registration spread across files, dynamic registration —
+ * THAT subtype's htmlFields / filePathFields. Otherwise (class
+ * unregistered, registration spread across files, dynamic registration)
  * we fall back to the global union check (catches the common "forgot to
  * declare anything" case without false positives on advanced setups).
  */
@@ -574,7 +574,7 @@ function rule004(
 
     // Fallback: no class→subtype mapping detected (class not registered,
     // registration via an unrecognized API, dynamic registration). Check
-    // the global union — still useful, but with looser semantics. Match
+    // the global union: still useful, but with looser semantics. Match
     // on FULL source path so `profile.bio` declared doesn't silently
     // shadow an undeclared `journal.bio`.
     const bucket = usage.type === 'HTMLField' ? declared.globalHtml : declared.globalFilePath;
@@ -593,14 +593,14 @@ function rule004(
 }
 
 /**
- * VTTF-AUDIT-007 — manifest's `primaryTokenAttribute` /
+ * VTTF-AUDIT-007: manifest's `primaryTokenAttribute` /
  * `secondaryTokenAttribute` must point at a SchemaField with `value` +
  * `max` keys. If not, Foundry's `getBarAttribute` silently degrades to
  * value-only rendering (no bar at all).
  *
  * Cross-check walks the source for every SchemaField declaration paired
  * with its full schema path (`buildSchemaPath`). The manifest path is
- * matched EXACTLY — `primaryTokenAttribute: 'health'` does not accept a
+ * matched EXACTLY: `primaryTokenAttribute: 'health'` does not accept a
  * nested `attributes.health` SchemaField, and a nested path like
  * `attributes.hp` is resolved by finding the declaration at that exact
  * dot-path. No more "verify manually" branch; either the path resolves
@@ -661,7 +661,7 @@ function lineOfInRaw(raw: string, key: string): number | undefined {
  * Why exact path: an unqualified `health: new SchemaField(...)` inside
  * `attributes: new SchemaField({...})` has schema path `attributes.health`.
  * Manifest `primaryTokenAttribute: 'health'` should NOT resolve to that
- * nested declaration — Foundry walks the document path structurally and
+ * nested declaration. Foundry walks the document path structurally and
  * would look for `health.value` at the top of `system`, not under
  * `attributes`.
  */
@@ -682,12 +682,12 @@ async function sourceHasValueMaxSchemaAtPath(
       if (decl.path !== targetPath) continue;
       // Token bars read `actor.system`, so only a schema registered as an
       // Actor data model can satisfy the manifest. An Item model that
-      // happens to declare the same path does not — accepting it would
+      // happens to declare the same path does not. Accepting it would
       // pass the rule on a system whose token bars are in fact broken.
       //
       // This narrowing only applies when the registrations are known.
       // With none found there is no ground truth to narrow by, so every
-      // declaration counts — same fallback rule 004 takes when it cannot
+      // declaration counts, the same fallback rule 004 takes when it cannot
       // resolve a class to its subtypes.
       if (actorClasses.size > 0) {
         const owner = classes.find((c) => decl.index > c.openIdx && decl.index < c.endIdx);
@@ -746,7 +746,7 @@ function findAllSchemaFields(content: string): SchemaFieldDecl[] {
  * Extract identifier keys declared at depth 0 of an object-literal body.
  *
  * The naive `value:`/`max:` regex check matches nested constructor options
- * too — `value: new NumberField({ max: 100 })` looked to a flat regex like
+ * too: `value: new NumberField({ max: 100 })` looked to a flat regex like
  * both keys were SchemaField siblings. Walking the body byte-by-byte with
  * depth tracking + string-boundary handling correctly distinguishes
  * top-level keys from nested ones.
@@ -878,7 +878,7 @@ async function collectDeclaredRichFields(cwd: string): Promise<{
         }
         // `filePathFields` is an object, not an array: its KEYS are the
         // field paths and each value lists the file categories allowed
-        // there. `htmlFields` above really is a flat array — the two
+        // there. `htmlFields` above really is a flat array; the two
         // differ, and reading both as arrays drops every correctly
         // declared path.
         for (const declaredPath of declaredFilePathKeys(sub.filePathFields)) {

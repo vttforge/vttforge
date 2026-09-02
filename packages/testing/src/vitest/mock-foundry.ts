@@ -7,7 +7,7 @@
  * needs are not obvious, they are not documented anywhere, and you discover
  * them one `ReferenceError` at a time.
  *
- * What this covers is the boundary the SDK actually sits on — everything up
+ * What this covers is the boundary the SDK actually sits on: everything up
  * to the moment a window renders. `_renderHTML` and beyond needs a real
  * browser and a real Foundry; that is what the Quench half is for.
  */
@@ -28,7 +28,7 @@ export interface MockDocument {
   readonly updates: ReadonlyArray<Record<string, unknown>>;
 }
 
-interface MockDocumentOptions {
+export interface MockDocumentOptions {
   id?: string;
   name?: string;
   type?: string;
@@ -101,7 +101,7 @@ function createMockDocument(kind: string, options: MockDocumentOptions = {}): Mo
     /**
      * Records the delta and merges it in.
      *
-     * Merges, not replaces — which is what Foundry does and what a mock has
+     * Merges, not replaces, which is what Foundry does and what a mock has
      * to match. Assigning `{system: {hp: {value: 4}}}` wholesale drops
      * `hp.max`, and a test written against that passes while the real thing
      * loses data.

@@ -1,5 +1,5 @@
 /**
- * `@vttforge/dev-module` — the Foundry side of `vttforge dev`.
+ * `@vttforge/dev-module`: the Foundry side of `vttforge dev`.
  *
  * Foundry can hot reload on its own, but only when the server is started with
  * the right flag and the files sit where that watcher looks. `vttforge dev`

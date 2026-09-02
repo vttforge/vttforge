@@ -2,8 +2,8 @@
  * Registering a Quench batch, for the tests that need a real Foundry.
  *
  * The vitest half covers everything up to the moment a window renders. Past
- * that — a sheet that actually draws, a socket with two clients, a document
- * that really round-trips through the database — needs the real thing, and
+ * that (a sheet that actually draws, a socket with two clients, a document
+ * that really round-trips through the database) needs the real thing, and
  * Quench is how the community runs those from inside a running world.
  *
  * The whole ceremony is one `quenchReady` hook and a registration call, which
@@ -46,7 +46,7 @@ interface QuenchApi {
 /**
  * Register a batch once Quench is ready.
  *
- * Safe to call at module scope — it waits for the hook rather than assuming
+ * Safe to call at module scope: it waits for the hook rather than assuming
  * Quench has loaded, which is the mistake that makes a batch silently never
  * appear.
  *
@@ -74,7 +74,7 @@ export function registerBatch(
 
   if (!hooks?.once) {
     // No Foundry here at all. Quench batches only mean anything inside a
-    // running world, so this is a no-op rather than an error — it lets a file
+    // running world, so this is a no-op rather than an error. It lets a file
     // holding both kinds of test be imported by the vitest run.
     return;
   }

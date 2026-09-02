@@ -54,7 +54,7 @@ function formatMarkdown(report: AuditReport): string {
 function formatFinding(finding: RuleResult, cwd: string): string {
   const location = formatLocation(finding, cwd);
   const lines: string[] = [];
-  lines.push(`### \`${finding.ruleId}\` — ${finding.title}`);
+  lines.push(`### \`${finding.ruleId}\`: ${finding.title}`);
   lines.push('');
   lines.push(`- file: ${location}`);
   lines.push(`- message: ${finding.message}`);

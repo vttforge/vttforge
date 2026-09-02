@@ -1,5 +1,5 @@
 /**
- * registerSystem — one call that replaces the boilerplate `Hooks.once("init", ...)`
+ * registerSystem: one call that replaces the boilerplate `Hooks.once("init", ...)`
  * block in every Foundry system.
  *
  * Conforms to the canonical Foundry init lifecycle:
@@ -7,7 +7,7 @@
  *   init       → CONFIG mutations (dataModels, documentClass, statusEffects)
  *   i18nInit   → translate CONFIG labels
  *   setup      → enrichers, packs
- *   ready      → migrations (GM-only — consumer guards inside onReady)
+ *   ready      → migrations (GM-only; the consumer guards inside onReady)
  *
  * v0.1 scope: `init` + `ready`. `setup` / `i18nInit` callbacks remain v0.1.1.
  *
@@ -26,7 +26,7 @@ import { type EnricherRegistration, registerEnrichers } from './register-enriche
 import { registerSheets, type SheetRegistration } from './register-sheets.js';
 
 export interface SystemRegistration {
-  /** System id — must match the folder name and `system.json` `id`. */
+  /** System id: must match the folder name and `system.json` `id`. */
   readonly id: string;
 
   /** Map of `documentTypes.Actor` key → TypeDataModel class. */
@@ -41,14 +41,14 @@ export interface SystemRegistration {
   /** Replacement for `CONFIG.Item.documentClass`. */
   readonly itemDocumentClass?: unknown;
 
-  /** Global initiative formula — assigned to `CONFIG.Combat.initiative`. */
+  /** Global initiative formula: assigned to `CONFIG.Combat.initiative`. */
   readonly combat?: CombatConfig;
 
   /** Disables legacy Active Effect transferral. Defaults to true. */
   readonly activeEffect?: ActiveEffectConfig;
 
   /**
-   * Replaces `CONFIG.statusEffects` (systems own this array — modules push).
+   * Replaces `CONFIG.statusEffects` (systems own this array; modules push).
    * If omitted, the existing array is kept untouched.
    */
   readonly statusEffects?: readonly unknown[];
@@ -74,7 +74,7 @@ export interface SystemRegistration {
 
   /**
    * Optional pre-init hook for work that has to run before any of the CONFIG
-   * mutations (rare — usually used to assign `globalThis.<systemId>` API).
+   * mutations (rare; usually used to assign `globalThis.<systemId>` API).
    */
   readonly onBeforeInit?: () => void;
 
@@ -82,18 +82,18 @@ export interface SystemRegistration {
   readonly onAfterInit?: () => void;
 
   /**
-   * Optional `ready` hook — fires once after Foundry has finished bootstrap.
+   * Optional `ready` hook. Fires once after Foundry has finished bootstrap.
    * The natural home for migration runners (`createMigrationRunner().run()`).
    *
    * **Not GM-gated.** Guard inside your callback (`if (!game.user.isGM) return;`)
-   * when the work is GM-only — migrations always are.
+   * when the work is GM-only, and migrations always are.
    */
   readonly onReady?: () => void | Promise<void>;
 }
 
 const registered = new Set<string>();
 
-/** For tests — clears the in-process "already registered" guard. */
+/** For tests: clears the in-process "already registered" guard. */
 export function _resetRegisteredSystemsForTests(): void {
   registered.clear();
 }
@@ -103,7 +103,7 @@ function readHooks(): HooksApi {
   if (hooks === undefined || typeof hooks.once !== 'function') {
     throw vttfError(
       'VTTF-0002',
-      'globalThis.Hooks is not available — call registerSystem() inside a Foundry runtime or stub Hooks in tests',
+      'globalThis.Hooks is not available. Call registerSystem() inside a Foundry runtime or stub Hooks in tests',
     );
   }
   return hooks;
@@ -114,7 +114,7 @@ function readConfig(): FoundryConfig {
   if (config === undefined) {
     throw vttfError(
       'VTTF-0002',
-      'globalThis.CONFIG is not available — call registerSystem() inside a Foundry runtime or stub CONFIG in tests',
+      'globalThis.CONFIG is not available. Call registerSystem() inside a Foundry runtime or stub CONFIG in tests',
     );
   }
   return config;
@@ -126,7 +126,7 @@ function vttfError(code: VttfErrorCode, message?: string): VttfError {
 
 /**
  * Register a Foundry system with VTTForge. Idempotency: the same `id` calling
- * twice throws VTTF-0001 — almost always a hot-reload or duplicate import bug.
+ * twice throws VTTF-0001, almost always a hot-reload or duplicate import bug.
  *
  * Returns the registration object so consumers can inspect what was applied
  * (useful in tests). The actual CONFIG mutations are deferred until Foundry's
@@ -145,7 +145,7 @@ export function registerSystem(config: SystemRegistration): SystemRegistration {
   if (config.onReady !== undefined) {
     hooks.once('ready', () => {
       // Foundry awaits ready-hook results, but `Hooks.once` types it as
-      // `unknown` so we don't return anything ourselves — Foundry treats
+      // `unknown` so we don't return anything ourselves; Foundry treats
       // Promise rejections as unhandled, which is the right escalation.
       void config.onReady?.();
     });
@@ -174,7 +174,7 @@ function applyInit(config: SystemRegistration): void {
     CONFIG.Combat.initiative = config.combat.initiative;
   }
 
-  // Disable legacy Active Effect transferral by default — every modern v13
+  // Disable legacy Active Effect transferral by default; every modern v13
   // system wants this off (the modern AE model is opt-in via this flag).
   const legacyTransferral = config.activeEffect?.legacyTransferral ?? false;
   CONFIG.ActiveEffect.legacyTransferral = legacyTransferral;
