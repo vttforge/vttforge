@@ -1,5 +1,15 @@
 # @vttforge/core
 
+## 0.11.3
+
+### Patch Changes
+
+- 9b8ca8c: Export the option and config interfaces that public functions already took: `MockDocumentOptions` and `MockFoundryOptions` from `@vttforge/testing`, `ActorConfig` and `ItemConfig` from `@vttforge/core`. They were reachable through the functions but could not be named.
+- 9b8ca8c: Plain punctuation in error messages, prompts and doc comments: em dashes replaced with sentence breaks, colons or parentheses. The generated API reference reads these comments, so they are public text.
+- e0941e2: `@vttforge/types` now holds the Foundry surface the base factories stand on: `ApplicationV2Members`, `DocumentSheetV2Members` and `VttforgeClass`. `@vttforge/core` depends on it and re-exports the same names, so nothing changes for a system that imports from core.
+- Updated dependencies [e0941e2]
+  - @vttforge/types@0.2.0
+
 ## 0.11.2
 
 ### Patch Changes
