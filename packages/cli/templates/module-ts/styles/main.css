@@ -1,16 +1,77 @@
 /**
  * {{TITLE}} stylesheet.
  *
- * Scope all rules under the `.{{ID}}` namespace so they don't leak into
- * other modules or the host system's sheets. Foundry's CSS cascade is
- * already layered, but namespacing makes intent explicit.
+ * Every rule is scoped under `.{{ID}}` so nothing leaks into the host system's
+ * sheets. Colours come from Foundry's own variables so the sheet follows the
+ * light and dark themes.
  */
-.{{ID}}-badge {
+.{{ID}}.sheet .sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.{{ID}}.sheet .sheet-header .portrait {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border: 1px solid var(--color-border-dark, #7a7971);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.{{ID}}.sheet .sheet-header input[name="name"] {
+  flex: 1;
+  font-size: var(--font-size-20, 1.25rem);
+}
+
+.{{ID}}.sheet .sheet-header .pin {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.5;
+}
+
+.{{ID}}.sheet .sheet-header .pin.active {
+  opacity: 1;
+  color: var(--color-warm-2, #c9593f);
+}
+
+.{{ID}}.sheet .sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.{{ID}}.sheet prose-mirror,
+.{{ID}}.sheet .body-readonly {
+  flex: 1;
+  min-height: 12rem;
+}
+
+.{{ID}}.sheet .reference {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  color: var(--color-text-secondary, #4b4a44);
+  font-size: var(--font-size-12, 0.75rem);
+}
+
+/* Rendered by the `note` enricher wherever `@Note[id]` appears. */
+a.{{ID}}-note-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  padding: 0.15em 0.5em;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.08);
-  font-size: 0.8em;
+  gap: 0.25em;
+  padding: 0 0.35em;
+  border: 1px dotted var(--color-border-dark, #7a7971);
+  border-radius: 3px;
+  background: var(--color-bg-tertiary, rgba(0, 0, 0, 0.06));
+  text-decoration: none;
+}
+
+a.{{ID}}-note-link:hover {
+  border-style: solid;
+  text-shadow: none;
 }

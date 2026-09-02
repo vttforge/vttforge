@@ -2,55 +2,79 @@
 
 {{DESCRIPTION}}
 
-A Foundry VTT module built on [VTTForge](https://github.com/vttforge/vttforge) — uses `SystemConfig` from `@vttforge/core` for typed settings, ships an example hook listener, and exposes a small public API on `game.modules.get("{{ID}}").api`.
-
-> **Note** — VTTForge is currently in pre-release and not yet published to npm. Dependencies in `package.json` will resolve once VTTForge ships its first public release.
+A Foundry VTT v13+ module built on [VTTForge](https://vttforge.dev). It adds a
+`note` Item type to whatever system the world runs, a sheet for it, and an
+`@Note[id]` enricher that links to one from any text field.
 
 ## Quick start
 
 ```bash
 pnpm install
-pnpm dev      # vite build --watch + auto-symlinks dist/ into Foundry's Data
-pnpm build    # one-shot build + emits {{ID}}-<version>.zip for foundryvtt.com
+pnpm dev      # build, link dist/ into Foundry's data dir, watch
+pnpm build    # dist/ plus {{ID}}-<version>.zip
 ```
 
-`pnpm dev` (`vttforge dev` under the hood) auto-detects your Foundry user-data
-directory on the first run, prompts you to confirm it, and saves the choice to
-`.vttforge/config.json` for next time. Override with `--data-dir <path>` or set
-`FOUNDRY_DATA_DIR` in your environment.
+`pnpm dev` asks where Foundry keeps its data on the first run and remembers
+the answer in `.vttforge/config.json`. Override with `--foundry-data <path>`
+or `FOUNDRY_DATA_DIR`. If Foundry runs in a container it cannot follow the
+symlink, and the command prints the compose mount to use instead.
 
-Run Foundry with `--hotReload` to pick up changes without refreshing the page.
-Then enable **{{TITLE}}** in any world.
+Save a template and the open sheet redraws in place; save a stylesheet and the
+CSS swaps. Enable **VTTForge Dev** in the world once — `pnpm dev` links it in.
+
+Then enable **{{TITLE}}** in a world and create a Note from the Items sidebar.
 
 ## What's inside
 
 | Path | Purpose |
 |---|---|
-| `module.json` | Manifest |
-| `scripts/main.mjs` | Entry point — settings registration, hook listeners, public API |
-| `styles/main.css` | Stylesheet, scoped under `.{{ID}}` |
-| `lang/en.json` | Localization strings |
+| `module.json` | Manifest — declares the `note` sub-type under `documentTypes` and the hot-reload paths |
+| `scripts/main.mjs` | One `registerModule` call: data model, sheet, enricher, settings, API |
+| `scripts/constants.mjs` | `MODULE_ID` and `NOTE_TYPE` — the prefixed key Foundry files the sub-type under |
+| `scripts/data/note-data.mjs` | The data model. The schema is a function handed to `BaseTypeDataModel` |
+| `scripts/sheets/note-sheet.mjs` | The sheet, on `BaseItemSheet` |
+| `scripts/enricher.mjs` | `@Note[id]` → a link that opens the note |
+| `templates/` | Handlebars, using v13's own elements (`<prose-mirror>`, `data-action`) |
+| `styles/main.css` | Scoped under `.{{ID}}`, colours from Foundry's variables |
+| `lang/en.json` | Strings, under the `{{LOCALE_PREFIX}}` prefix, plus the `TYPES.Item` label |
+
+## Two things worth knowing before you edit
+
+**A module's sub-types are namespaced.** You register `note`; Foundry files it
+as `{{ID}}.note`, and so must the manifest. `registerModule` adds the prefix,
+and `NOTE_TYPE` in `constants.ts` is the one place it is spelled out.
+
+**Sheets are registered by id, not by class name.** `registerModule({ sheets })`
+pins each sheet under `{{ID}}.<id>`. Foundry saves that key on every item
+whose owner picked the sheet, and derives it from the class name unless told
+otherwise — which a bundler renames between builds. Keep the ids.
 
 ## Public API
 
-The module exposes its API on `game.modules.get("{{ID}}").api`:
-
 ```js
 const api = game.modules.get("{{ID}}").api;
-api.greet("world");                   // returns "Hello, world!"
-api.getSetting("showWelcome");        // returns the current value
+await api.createNote("Session 3", "<p>The party reached the gate.</p>");
+api.noteType; // "{{ID}}.note"
 ```
 
-Extend `scripts/main.mjs` to add real methods — the example exists to show the registration pattern.
+## Checks
 
-## Releasing to Foundry
+```bash
+npx vttforge audit    # manifest + source against the v13 list of quiet breakages
+```
 
-Tag-push triggers `.github/workflows/release.yml` to build, zip, and attach `{{ID}}-<version>.zip` + `dist/module.json` to a GitHub Release. Point Foundry at the `latest/download/module.json` URL.
+## Releasing
+
+Push a tag and `.github/workflows/release.yml` builds, zips, and attaches
+`{{ID}}-<version>.zip` plus `module.json` to a GitHub Release:
 
 ```bash
 git tag v0.1.0
 git push --tags
 ```
+
+Point Foundry — and foundryvtt.com — at the release's
+`latest/download/module.json`, so installs auto-update on every tag.
 
 ## License
 

@@ -1,0 +1,34 @@
+{{!-- Note sheet — one part, no tabs. --}}
+<form autocomplete="off">
+
+  <header class="sheet-header">
+    <img class="portrait" src="{{item.img}}" alt="{{item.name}}" data-edit="img" />
+    <input type="text" name="name" value="{{item.name}}"
+           placeholder="{{localize '{{LOCALE_PREFIX}}.Sheet.NamePlaceholder'}}" />
+    <button type="button" class="pin {{#if system.pinned}}active{{/if}}"
+            data-action="togglePinned"
+            title="{{localize '{{LOCALE_PREFIX}}.Note.Pinned'}}">
+      <i class="fa-solid fa-thumbtack"></i>
+    </button>
+  </header>
+
+  <section class="sheet-body">
+    {{#if isEditable}}
+      <prose-mirror name="system.body"
+                    button="true"
+                    editable="{{isEditable}}"
+                    toggled="false"
+                    value="{{system.body}}">
+        {{{enrichedBody}}}
+      </prose-mirror>
+    {{else}}
+      <div class="body-readonly">{{{enrichedBody}}}</div>
+    {{/if}}
+
+    <footer class="reference">
+      <code>{{reference}}</code>
+      <small>{{localize '{{LOCALE_PREFIX}}.Note.ReferenceHint'}}</small>
+    </footer>
+  </section>
+
+</form>

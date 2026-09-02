@@ -1,18 +1,23 @@
 /**
- * CharacterSheet — tabbed character sheet built on `BaseActorSheet()` from
- * `@vttforge/core`. Demonstrates the full boilerplate-elimination surface:
+ * CharacterSheet — tabbed character sheet on `BaseActorSheet()`.
  *
- * - `static TABS` — `context.tabs.<group>` auto-populated by BaseActorSheet
- *   (no manual `_prepareTabs` call).
- * - `static DRAG_DROP` — wires `foundry.applications.ux.DragDrop` on first
- *   render with `isEditable`-gated permissions.
- * - Typed `onDropItem(item, event)` — pre-resolves UUIDs, rejects
- *   non-`gear` items with a notification, lets `gear` flow through to
- *   Foundry's default `_onDropItem` by returning `undefined`.
+ * - `static TABS` — `context.tabs.<group>` is filled in for you.
+ * - `static DRAG_DROP` — drag-drop wired on render, gated on `isEditable`.
+ * - `onDropItem(item, event)` — the item arrives resolved, not as a UUID.
+ *   Return `false` to refuse, `undefined` to hand the drop back to Foundry.
  */
 import { BaseActorSheet } from '@vttforge/core';
 
 const SYSTEM_ID = '{{ID}}';
+
+const ABILITY_LABELS = {
+  str: '{{LOCALE_PREFIX}}.Ability.str',
+  dex: '{{LOCALE_PREFIX}}.Ability.dex',
+  con: '{{LOCALE_PREFIX}}.Ability.con',
+  int: '{{LOCALE_PREFIX}}.Ability.int',
+  wis: '{{LOCALE_PREFIX}}.Ability.wis',
+  cha: '{{LOCALE_PREFIX}}.Ability.cha',
+};
 
 export class CharacterSheet extends BaseActorSheet() {
   static DEFAULT_OPTIONS = foundry.utils.mergeObject(
@@ -35,9 +40,7 @@ export class CharacterSheet extends BaseActorSheet() {
   );
 
   static PARTS = {
-    sheet: {
-      template: `systems/${SYSTEM_ID}/templates/actor/character-sheet.hbs`,
-    },
+    sheet: { template: `systems/${SYSTEM_ID}/templates/actor/character-sheet.hbs` },
   };
 
   static TABS = {
@@ -72,34 +75,31 @@ export class CharacterSheet extends BaseActorSheet() {
     },
   };
 
-  static DRAG_DROP = [
-    {
-      dragSelector: '.sh-item[draggable=true]',
-      dropSelector: '.sh-body',
-    },
-  ];
+  static DRAG_DROP = [{ dragSelector: '.sh-item[draggable=true]', dropSelector: '.sh-body' }];
+
+  /**
+   * The actor this sheet is for. One place to read `this.document` from, so
+   * the rest of the sheet says `this.actor` and means it.
+   * @returns {any}
+   */
+  get actor() {
+    return this.document;
+  }
 
   /** @override */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const actor = this.document;
-    const system = actor.system;
-    const abilityLabels = {
-      str: '{{LOCALE_PREFIX}}.Ability.str',
-      dex: '{{LOCALE_PREFIX}}.Ability.dex',
-      con: '{{LOCALE_PREFIX}}.Ability.con',
-      int: '{{LOCALE_PREFIX}}.Ability.int',
-      wis: '{{LOCALE_PREFIX}}.Ability.wis',
-      cha: '{{LOCALE_PREFIX}}.Ability.cha',
-    };
+    const { actor } = this;
+    const { system } = actor;
+
     context.actor = actor;
     context.system = system;
     context.isEditable = this.isEditable;
-    context.abilities = Object.entries(system.abilities ?? {}).map(([key, data]) => ({
+    context.abilities = Object.entries(system.abilities).map(([key, ability]) => ({
       key,
-      label: game.i18n.localize(abilityLabels[key] ?? key),
-      value: data?.value ?? data,
-      mod: data?.mod ?? 0,
+      label: game.i18n.localize(ABILITY_LABELS[key] ?? key),
+      value: ability.value,
+      mod: ability.mod,
     }));
     context.gear = actor.items
       .filter((item) => item.type === 'gear')
@@ -107,19 +107,19 @@ export class CharacterSheet extends BaseActorSheet() {
         id: item.id,
         name: item.name,
         img: item.img,
-        kind: item.system?.kind ?? 'stowed',
-        quantity: item.system?.quantity ?? 1,
-        weight: item.system?.weight ?? 0,
-        description: item.system?.description ?? '',
+        kind: item.system.kind,
+        quantity: item.system.quantity,
+        weight: item.system.weight,
+        description: item.system.description,
       }));
     context.enrichedBiography = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
-      system.biography ?? '',
+      system.biography,
       { relativeTo: actor, secrets: actor.isOwner },
     );
     return context;
   }
 
-  /** Reject non-gear drops with a notification; let gear fall through. */
+  /** Only gear belongs in this inventory. Anything else is refused with a reason. */
   async onDropItem(item, _event) {
     if (item?.type !== 'gear') {
       ui.notifications?.warn(
@@ -130,11 +130,14 @@ export class CharacterSheet extends BaseActorSheet() {
     return undefined;
   }
 
+  // ApplicationV2 declares action handlers static and calls them with `this`
+  // bound to the sheet instance.
+
   static async _onRollAbility(_event, target) {
-    const key = target?.dataset?.ability;
+    const key = target.dataset.ability;
     if (!key) return;
-    const actor = this.document;
-    const mod = actor.system.abilities?.[key]?.mod ?? 0;
+    const { actor } = this;
+    const mod = actor.system.abilities[key]?.mod ?? 0;
     const roll = new Roll(`1d20 + ${mod}`, actor.getRollData());
     await roll.evaluate();
     await roll.toMessage({
@@ -145,20 +148,16 @@ export class CharacterSheet extends BaseActorSheet() {
     });
   }
 
-  static async _onCreateGear(_event, _target) {
-    const cls = CONFIG.Item.documentClass;
-    const parent = this.document;
-    await cls.create(
+  static async _onCreateGear() {
+    await CONFIG.Item.documentClass.create(
       { name: game.i18n.localize('{{LOCALE_PREFIX}}.Sheet.NewGearName'), type: 'gear' },
-      { parent, renderSheet: true },
+      { parent: this.actor, renderSheet: true },
     );
   }
 
   static async _onDeleteItem(_event, target) {
-    const row = target?.closest('[data-item-id]');
-    const id = row?.dataset?.itemId;
+    const id = target.closest('[data-item-id]')?.dataset.itemId;
     if (!id) return;
-    const item = this.document.items.get(id);
-    await item?.delete();
+    await this.actor.items.get(id)?.delete();
   }
 }

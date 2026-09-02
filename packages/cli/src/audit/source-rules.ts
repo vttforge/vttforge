@@ -205,6 +205,58 @@ function findEnclosingClass(ranges: ClassRange[], idx: number): string | undefin
 }
 
 /**
+ * A class built on the `BaseTypeDataModel(defineSchema)` factory keeps its
+ * schema in a function outside the class body. Rules that ask "which class
+ * owns this field" would otherwise see the field as unowned. So the body of
+ * that function is reported as a range owned by the class, alongside the
+ * class's own body.
+ *
+ * Both the arrow and the `function` form are recognised, as long as the
+ * function is named and passed by name. An inline arrow is already inside
+ * the `class ... {` match and needs no help.
+ */
+function findSchemaFactoryRanges(content: string): ClassRange[] {
+  const out: ClassRange[] = [];
+  const classRe = /class\s+(\w+)\s+extends\s+(?:[\w.]+\.)?BaseTypeDataModel\s*\(\s*(\w+)\s*\)/g;
+  for (const match of content.matchAll(classRe)) {
+    const className = match[1];
+    const fnName = match[2];
+    if (!className || !fnName) continue;
+    const fnRe = new RegExp(
+      String.raw`(?:(?:const|let|var)\s+${fnName}\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*=>\s*\(?\s*\{|function\s+${fnName}\s*\([^)]*\)\s*\{)`,
+    );
+    const fnMatch = fnRe.exec(content);
+    if (fnMatch === null) continue;
+    const openIdx = fnMatch.index + fnMatch[0].length - 1;
+    const endIdx = findMatchingBrace(content, openIdx);
+    if (endIdx < 0) continue;
+    let line = 1;
+    for (let i = 0; i < fnMatch.index; i += 1) {
+      if (content[i] === '\n') line += 1;
+    }
+    out.push({ className, startLine: line, openIdx, endIdx });
+  }
+  return out;
+}
+
+/** Every range whose fields belong to a class: class bodies, then factory bodies. */
+function findSchemaOwnerRanges(content: string): ClassRange[] {
+  return [...findClassRanges(content), ...findSchemaFactoryRanges(content)];
+}
+
+function findMatchingBrace(content: string, openIdx: number): number {
+  let depth = 0;
+  for (let i = openIdx; i < content.length; i += 1) {
+    if (content[i] === '{') depth += 1;
+    else if (content[i] === '}') {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+/**
  * Detect class→subtype registrations in three forms:
  *
  *   1. `CONFIG.<Doc>.dataModels.<subtype> = <ClassName>` (direct assignment)
@@ -457,7 +509,7 @@ function rule004(
   declared: DeclaredFields,
   classToSubtypes: Map<string, ConfigMapping[]>,
 ): RuleResult[] {
-  const classes = findClassRanges(content);
+  const classes = findSchemaOwnerRanges(content);
   const usages = findRichFields(content, classes);
   const out: RuleResult[] = [];
   for (const usage of usages) {
@@ -595,7 +647,7 @@ async function sourceHasValueMaxSchemaAtPath(
     } catch {
       continue;
     }
-    const classes = findClassRanges(content);
+    const classes = findSchemaOwnerRanges(content);
     for (const decl of findAllSchemaFields(content)) {
       if (decl.path !== targetPath) continue;
       // Token bars read `actor.system`, so only a schema registered as an

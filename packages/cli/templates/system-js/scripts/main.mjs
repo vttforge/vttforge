@@ -1,11 +1,9 @@
 /**
  * {{TITLE}} — entry point.
  *
- * `registerSystem` from `@vttforge/core` replaces the ~60-line
- * `Hooks.once("init", ...)` block most systems copy-paste from each other:
- * data model registration, document class swap, initiative formula, sheet
- * registration, settings, and the `Hooks.once("ready", ...)` migration
- * gate are all wired by one call.
+ * One `registerSystem` call replaces the `Hooks.once("init", ...)` block most
+ * systems copy from each other: data models, initiative, sheets, settings,
+ * and the `ready`-time migration gate.
  */
 import { registerSystem, SystemConfig, VttfError } from '@vttforge/core';
 import { CharacterData } from './data/character-data.mjs';
@@ -26,6 +24,39 @@ try {
     combat: {
       initiative: { formula: '1d20 + @abilities.dex.mod', decimals: 2 },
     },
+
+    // The core sheets have to go before ours can be the default. This runs
+    // before the `sheets` below are registered.
+    onBeforeInit: () => {
+      const { Actors, Items } = foundry.documents.collections;
+      Actors.unregisterSheet('core', foundry.applications.sheets.ActorSheetV2);
+      Items.unregisterSheet('core', foundry.applications.sheets.ItemSheetV2);
+    },
+
+    // Declared here rather than with `Actors.registerSheet`. Foundry keys a
+    // sheet by `${scope}.${class name}` and saves that key on every document
+    // using it; a bundler renames classes between builds, and the saved key
+    // then names a sheet that no longer exists. The `id` is written down, so
+    // the key does not move. Pick it once and keep it.
+    sheets: [
+      {
+        id: 'character',
+        document: 'Actor',
+        sheet: CharacterSheet,
+        types: ['character'],
+        makeDefault: true,
+        label: '{{LOCALE_PREFIX}}.Sheet.Character.title',
+      },
+      {
+        id: 'gear',
+        document: 'Item',
+        sheet: GearSheet,
+        types: ['gear'],
+        makeDefault: true,
+        label: '{{LOCALE_PREFIX}}.Sheet.Gear.title',
+      },
+    ],
+
     onAfterInit: () => {
       settings.register('showTutorial', {
         name: '{{LOCALE_PREFIX}}.Settings.showTutorial.name',
@@ -36,24 +67,10 @@ try {
         default: true,
       });
 
-      // Register the schemaVersion setting so migrations.run() has somewhere
-      // to read and write the version flag.
+      // The schemaVersion setting `migrations.run()` reads and writes.
       migrations.register();
-
-      const { Actors, Items } = foundry.documents.collections;
-      Actors.unregisterSheet('core', foundry.applications.sheets.ActorSheetV2);
-      Actors.registerSheet(SYSTEM_ID, CharacterSheet, {
-        types: ['character'],
-        makeDefault: true,
-        label: '{{LOCALE_PREFIX}}.Sheet.Character.title',
-      });
-      Items.unregisterSheet('core', foundry.applications.sheets.ItemSheetV2);
-      Items.registerSheet(SYSTEM_ID, GearSheet, {
-        types: ['gear'],
-        makeDefault: true,
-        label: '{{LOCALE_PREFIX}}.Sheet.Gear.title',
-      });
     },
+
     onReady: async () => {
       if (!game.user?.isGM) return;
       try {
