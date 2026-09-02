@@ -3,7 +3,7 @@
  *
  * Foundry loads a module from a directory under `Data/modules/<id>/` holding
  * `module.json` and the files it names. The published package already has
- * exactly that shape, so the install is a link to the package root — no copy
+ * exactly that shape, so the install is a link to the package root, no copy
  * to keep in step, and a `pnpm update` is picked up on the next reload.
  *
  * A container is the other case: it cannot follow a host symlink, so the
@@ -20,7 +20,7 @@ const DEV_MODULE_ID = 'vttforge-dev';
 export interface InstallResult {
   /** Where the module now lives, from Foundry's point of view. */
   target: string;
-  /** The package directory it points at — what a container should mount. */
+  /** The package directory it points at: what a container should mount. */
   source: string;
   /** False when the link was already correct. */
   changed: boolean;
@@ -30,7 +30,7 @@ export interface InstallResult {
  * Find the installed package directory.
  *
  * Resolved from the consumer's project so their `node_modules` answers,
- * falling back to this CLI's own resolution — which is what makes it work
+ * falling back to this CLI's own resolution, which is what makes it work
  * inside this repository, where the package is a workspace link.
  */
 export function resolveDevModuleDir(cwd: string): string | null {

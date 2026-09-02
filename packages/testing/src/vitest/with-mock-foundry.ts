@@ -30,7 +30,7 @@ export interface RecordedSheet {
   readonly key: string;
   /** The package that registered it. */
   readonly scope: string;
-  /** The sheet id — the class name VTTForge pinned. */
+  /** The sheet id, the class name VTTForge pinned. */
   readonly id: string;
   readonly sheetClass: unknown;
   readonly documentClass: unknown;
@@ -64,7 +64,7 @@ export interface MockFoundry {
    * Every text enricher registered, in order.
    *
    * `id` is namespaced, which is what stops a common name from colliding with
-   * another package — and what makes `onRender` fire at all.
+   * another package, and what makes `onRender` fire at all.
    */
   readonly enrichers: ReadonlyArray<RecordedEnricher>;
   /** Fire a hook the way Foundry would, for the listeners registered so far. */
@@ -75,7 +75,7 @@ export interface MockFoundry {
   restore(): void;
 }
 
-interface MockFoundryOptions {
+export interface MockFoundryOptions {
   /** The current user. Defaults to a GM, since most module code checks. */
   user?: { id?: string; isGM?: boolean; name?: string };
   /** Extra `foundry.*` members, merged over the defaults. */

@@ -1,5 +1,5 @@
 /**
- * Audit orchestrator — runs every rule against a project root and
+ * Audit orchestrator: runs every rule against a project root and
  * aggregates the findings into an `AuditReport`.
  *
  * Rule organisation:
@@ -7,7 +7,7 @@
  *   - source-rules.ts   → VTTF-AUDIT-004, 005, 006, 007 (source walker
  *                         + cross-check with manifest where needed)
  *
- * The orchestrator stays minimal — it knows which rule sets exist, but
+ * The orchestrator stays minimal. It knows which rule sets exist, but
  * the rules themselves are responsible for their own file IO. This keeps
  * the individual rule files testable in isolation.
  */
@@ -33,7 +33,7 @@ export async function runAudit(options: RunAuditOptions): Promise<AuditReport> {
   const cwd = resolve(options.cwd);
   // A missing or non-directory target must fail loudly. Otherwise both
   // rule sets return zero findings, the CLI prints "No issues found" and
-  // exits 0 — silently auditing nothing in CI. The mistyped-path failure
+  // exits 0, silently auditing nothing in CI. The mistyped-path failure
   // mode is invisible without this check.
   if (!existsSync(cwd)) {
     throw new AuditTargetError(`Audit target does not exist: ${cwd}`);

@@ -1,8 +1,8 @@
 /**
  * Wiring: read the address, build the Foundry surface, connect.
  *
- * Kept apart from the entry point so every decision here — which host to
- * reach, what counts as a usable global — can be tested without a browser.
+ * Kept apart from the entry point so every decision here (which host to
+ * reach, what counts as a usable global) can be tested without a browser.
  */
 import { type Connection, connect, type SocketLike } from './client.js';
 import type { AppV2Like, FoundryEnv } from './reload.js';
@@ -18,7 +18,7 @@ export const DEFAULT_PORT = 31313;
  * Foundry commonly runs in a container while the CLI runs on the host, and
  * from inside a container `localhost` is the container. Docker publishes the
  * host as `host.docker.internal`, so when the page is not served from a local
- * address that is the better guess — a wrong guess here just fails to
+ * address that is the better guess; a wrong guess here just fails to
  * connect, which is visible and harmless.
  */
 export function resolveServerUrl(
@@ -46,7 +46,7 @@ export interface BootstrapDeps {
  * Build the environment the handlers need out of Foundry's globals.
  *
  * Returns null when the globals are not there. That is not a failure worth
- * shouting about — it means this ran outside Foundry, and refusing to connect
+ * shouting about: it means this ran outside Foundry, and refusing to connect
  * is the correct response.
  */
 export function buildEnv(deps: BootstrapDeps): FoundryEnv | null {
@@ -82,7 +82,7 @@ export function buildEnv(deps: BootstrapDeps): FoundryEnv | null {
 export function bootstrap(deps: BootstrapDeps): Connection | null {
   const env = buildEnv(deps);
   if (!env) {
-    deps.log('Foundry globals are not available — not connecting.');
+    deps.log('Foundry globals are not available; not connecting.');
     return null;
   }
   const url = resolveServerUrl(deps.location.hostname, deps.port, deps.override);

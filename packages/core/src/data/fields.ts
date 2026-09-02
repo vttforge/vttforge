@@ -1,10 +1,10 @@
 /**
- * `fields()` — typed bag of Foundry v13 data-field constructors.
+ * `fields()`: typed bag of Foundry v13 data-field constructors.
  *
  * Foundry idiom inside `defineSchema()` is `const f = foundry.data.fields`. We
  * mirror that, but routed through a factory so the import succeeds in Node
  * (tests, IDE typecheck) where the global is absent. The factory resolves
- * `globalThis.foundry.data.fields` lazily — same pattern as
+ * `globalThis.foundry.data.fields` lazily, the same pattern as
  * `BaseTypeDataModel()` (see `base-type-data-model.ts:25`) and
  * `BaseActorSheet()` (see `base-actor-sheet.ts:40`).
  *
@@ -38,7 +38,7 @@ import type {
 declare const BRAND: unique symbol;
 
 /**
- * Anything that satisfies the `FieldInstance` shape — used as the inner-field
+ * Anything that satisfies the `FieldInstance` shape. Used as the inner-field
  * constraint on `ArrayField` and as the value type of `SchemaField`'s child
  * map. Keeps the conditional types in `./infer-schema.ts` straightforward.
  */
@@ -96,7 +96,7 @@ export interface ArrayFieldInstance<
  * A `SetField` holds a `Set`, not an array.
  *
  * It extends `ArrayField` and validates the same way, but `initialize`
- * wraps the result in `new Set(...)` — so a schema that declares one and
+ * wraps the result in `new Set(...)`, so a schema that declares one and
  * types it as an array gets `.push` and index access from the compiler on a
  * value that has neither.
  */
@@ -115,7 +115,7 @@ export interface SetFieldInstance<
  * What you read back depends on `idOnly`. With it, the id string. Without
  * it, the document itself: the field resolves to a getter, so reading the
  * property looks the document up in its collection and hands back the
- * instance — or `null` when it is gone or lives in a compendium.
+ * instance, or `null` when it is gone or lives in a compendium.
  *
  * The field is nullable by default, so both shapes admit `null`.
  */
@@ -132,7 +132,7 @@ export interface ForeignDocumentFieldInstance<
  * A nested data model.
  *
  * It is a `SchemaField` built from the model class's own `defineSchema()`, so
- * the value is an instance of that model — not a plain object. Reading it
+ * the value is an instance of that model, not a plain object. Reading it
  * gives you the model's derived data and methods too.
  */
 export interface EmbeddedDataFieldInstance<
@@ -163,8 +163,8 @@ export interface EmbeddedDocumentFieldInstance<
  * One of several shapes, told apart by a `type` property.
  *
  * Each entry becomes its own SchemaField. When an entry does not declare a
- * `type` field, the field adds one — a required string whose value must equal
- * that entry's key — which is what makes the result a discriminated union you
+ * `type` field, the field adds one (a required string whose value must equal
+ * that entry's key), which is what makes the result a discriminated union you
  * can narrow on.
  */
 export interface TypedSchemaFieldInstance<
@@ -229,7 +229,7 @@ export interface SetFieldCtor {
 }
 
 /**
- * Any document class — what `ForeignDocumentField` takes as its first
+ * Any document class: what `ForeignDocumentField` takes as its first
  * argument. Declared structurally so the inference surface stays free of a
  * dependency on a Foundry type package.
  */
@@ -245,7 +245,7 @@ export interface ForeignDocumentFieldCtor {
   ): ForeignDocumentFieldInstance<Doc, O>;
 }
 
-/** Any DataModel subclass — what the embedded fields take as their type. */
+/** Any DataModel subclass: what the embedded fields take as their type. */
 export type DataModelClass = abstract new (...args: never[]) => object;
 
 export interface EmbeddedDataFieldCtor {
@@ -284,7 +284,7 @@ export interface SchemaFieldCtor {
 
 /**
  * Typed bag returned by `fields()`. Each property is the corresponding
- * `foundry.data.fields.*` class — the runtime value is Foundry's own
+ * `foundry.data.fields.*` class. The runtime value is Foundry's own
  * constructor; the type is our overlay.
  */
 export interface FieldsApi {
@@ -316,7 +316,7 @@ interface FoundryRoot {
  *
  * Call this inside `defineSchema()` (or any code that runs after Foundry's
  * `init` hook). Calling at module scope will throw when imported from Node
- * tests — the global only exists inside the Foundry runtime.
+ * tests; the global only exists inside the Foundry runtime.
  *
  * @throws `VttfError` with code `VTTF-0002` when `foundry.data.fields` is
  * missing.

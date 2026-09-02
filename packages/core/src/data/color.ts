@@ -1,8 +1,8 @@
 /**
  * The shape a `ColorField` hands back.
  *
- * Foundry initializes the field into one of its own `Color` instances — a
- * boxed 24-bit integer with derived accessors — rather than the CSS string it
+ * Foundry initializes the field into one of its own `Color` instances (a
+ * boxed 24-bit integer with derived accessors) rather than the CSS string it
  * stores. Described structurally here rather than imported, because the
  * inference surface deliberately does not depend on the Foundry type package.
  *

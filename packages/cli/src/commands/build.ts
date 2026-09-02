@@ -1,5 +1,5 @@
 /**
- * `vttforge build` — emit a foundryvtt.com-ready release zip.
+ * `vttforge build`: emit a foundryvtt.com-ready release zip.
  *
  * Flow:
  *   1. Clean dist/
@@ -64,7 +64,7 @@ export async function emitReleaseZip(opts: {
 
 export async function runBuild(options: BuildOptions = {}): Promise<void> {
   const cwd = options.cwd ? resolve(options.cwd) : process.cwd();
-  p.intro('🜲 vttforge build — release zip');
+  p.intro('🜲 vttforge build: release zip');
 
   const distDir = join(cwd, 'dist');
 

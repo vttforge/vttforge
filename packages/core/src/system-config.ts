@@ -1,5 +1,5 @@
 /**
- * SystemConfig — typed wrapper around `game.settings.register/get/set`.
+ * SystemConfig: typed wrapper around `game.settings.register/get/set`.
  *
  * Eliminates the boilerplate of repeating the system id in every call:
  *
@@ -27,7 +27,7 @@ function readGame(): GameApi {
   if (candidate === undefined || candidate.settings === undefined) {
     throw new VttfError(
       'VTTF-0002',
-      'game.settings is not available — call SystemConfig methods inside or after the Foundry "init" hook',
+      'game.settings is not available. Call SystemConfig methods inside or after the Foundry "init" hook',
     );
   }
   return candidate;

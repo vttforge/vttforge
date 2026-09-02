@@ -13,7 +13,7 @@ import type { GameSettingsApi } from '../foundry-globals.js';
 export interface Migration {
   /** Semver version this migration brings the world to. */
   readonly version: string;
-  /** Optional human-readable description — logged when the migration runs and shown in error messages. */
+  /** Optional human-readable description, logged when the migration runs and shown in error messages. */
   readonly description?: string;
   /** The migration body. May be sync or async. Should be idempotent (safe to re-run after partial failure). */
   readonly fn: () => void | Promise<void>;
@@ -26,14 +26,14 @@ export interface MigrationLogger {
 }
 
 export interface MigrationRunnerOptions {
-  /** System id — used as the `game.settings` namespace. */
+  /** System id, used as the `game.settings` namespace. */
   readonly systemId: string;
   /** Migrations in ascending version order. Empty array is allowed (`run()` is a no-op then). */
   readonly migrations: ReadonlyArray<Migration>;
   /** Settings key under `systemId`. Defaults to `'schemaVersion'`. */
   readonly settingKey?: string;
   /**
-   * Compatibility floor — worlds with a stored schemaVersion strictly older than this
+   * Compatibility floor: worlds with a stored schemaVersion strictly older than this
    * throw `VttfError VTTF-0005` instead of running migrations. Mirrors the
    * `flags.<systemId>.compatibleMigrationVersion` declaration in `system.json`.
    */
@@ -71,7 +71,7 @@ export interface MigrationRunner {
    * wrapping the original error if any migration throws; throws
    * `VttfError VTTF-0005` if the stored version is older than `compatibleVersion`.
    *
-   * Call from your `ready` hook, gated by `game.user.isGM` — this method does
+   * Call from your `ready` hook, gated by `game.user.isGM`; this method does
    * NOT enforce GM-only itself so consumers can compose differently if needed.
    */
   run(): Promise<ReadonlyArray<string>>;

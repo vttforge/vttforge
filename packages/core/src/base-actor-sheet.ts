@@ -1,17 +1,17 @@
 /**
- * BaseActorSheet — `ActorSheetV2 + HandlebarsApplicationMixin` baseline with the
+ * BaseActorSheet: `ActorSheetV2 + HandlebarsApplicationMixin` baseline with the
  * boilerplate every shipping system copy-pastes hoisted into the SDK.
  *
  * What this adds beyond stock Foundry v13:
  *
- * - **`static DRAG_DROP`** — declare drag sources / drop targets as data, get
+ * - **`static DRAG_DROP`**: declare drag sources / drop targets as data, get
  *   `foundry.applications.ux.DragDrop` instances wired in `_onRender` with
  *   `isEditable`-gated permissions and a sensible default `_onDragStart` that
  *   serialises `data-item-id` elements as `{ type: "Item", uuid }`.
  * - **`_prepareContext` auto-fills `context.tabs[group]`** for every group
  *   declared in ApplicationV2's `static TABS`, so subclass `_prepareContext`
  *   implementations stop having to call `_prepareTabs(group)` by hand.
- * - **Typed drop dispatch** — override `onDropItem(item, event)` /
+ * - **Typed drop dispatch**: override `onDropItem(item, event)` /
  *   `onDropActor(actor, event)` / `onDropFolder(folder, event)` /
  *   `onDropActiveEffect(effect, event)` and skip the `fromUuid()` ceremony.
  *   Returning `undefined` falls through to Foundry's default `_onDropX`
@@ -19,10 +19,10 @@
  *
  * Intentional non-additions:
  *
- * - `editImage` action — already shipped by `DocumentSheetV2` (inherited by
+ * - `editImage` action: already shipped by `DocumentSheetV2` (inherited by
  *   `ActorSheetV2`). Templates wire `<img data-edit="img">` and Foundry's
  *   built-in action handles the `FilePicker` flow.
- * - `_getTabs()` — ApplicationV2 already owns the tab state machine; we only
+ * - `_getTabs()`: ApplicationV2 already owns the tab state machine; we only
  *   eliminate the `_prepareTabs` call in `_prepareContext`.
  *
  * Resolved lazily so subclasses can be declared at module load without
@@ -56,7 +56,7 @@ export interface DragDropConfig {
  * The statics a VTTForge sheet base carries.
  *
  * The factory used to return a bare constructor, so a subclass writing
- * `super.DEFAULT_OPTIONS` — the pattern the docs show and every sheet needs —
+ * `super.DEFAULT_OPTIONS` (the pattern the docs show and every sheet needs)
  * failed to compile. TypeScript cannot see a static through an untyped
  * constructor. The example system never caught it because it is JavaScript.
  *
@@ -77,7 +77,7 @@ export interface SheetBaseStatics {
  * What the sheet factories add on top of Foundry's own sheet.
  *
  * Only the members a subclass actually reaches for. The rest of the Foundry
- * surface stays reachable and untyped until `@vttforge/types` describes it —
+ * surface stays reachable and untyped until `@vttforge/types` describes it;
  * see `DocumentSheetV2Members`.
  */
 export interface SheetBaseMembers {
@@ -100,7 +100,7 @@ export interface SheetBaseMembers {
    * Foundry's own drop entry points, implemented here to resolve the payload
    * and hand it to the `onDropX` hook above.
    *
-   * Declared because the base really does define them — an earlier version
+   * Declared because the base really does define them. An earlier version
    * left them off, and nothing said so while an index signature was making
    * every member name legal. Override `onDropItem` rather than this.
    */
@@ -237,7 +237,7 @@ export function BaseActorSheet(): SheetBaseCtor {
      * Augment ApplicationV2's context with `tabs[group]` for sheets that
      * declare **multiple** `static TABS` groups. ApplicationV2 already
      * auto-populates `context.tabs` (keyed by tab id) for single-group
-     * sheets — overriding that flat shape would force every consumer to
+     * sheets; overriding that flat shape would force every consumer to
      * either unwrap or write `context.tabs.<group>.<tabId>` in templates.
      * Multi-group sheets get nested `context.tabs.<group>.<tabId>` because
      * ApplicationV2 returns `{}` for them by default.
@@ -280,7 +280,7 @@ export function BaseActorSheet(): SheetBaseCtor {
      * at call time even though the handler is declared `static`.
      */
     static _onTab(_event: Event, target: HTMLElement): void {
-      // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time — wrap the cast in a single line so biome's auto-fix can't rewrite downstream references to the class name
+      // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time; wrap the cast in a single line so biome's auto-fix can't rewrite downstream references to the class name
       const sheet = this as unknown as { tabGroups: Record<string, string>; element?: HTMLElement };
       const group = target.dataset?.group;
       const tab = target.dataset?.tab;
@@ -339,7 +339,7 @@ export function BaseActorSheet(): SheetBaseCtor {
     }
 
     /**
-     * Default drag handler — serialises the item identified by
+     * Default drag handler: serialises the item identified by
      * `data-item-id` on the drag source element. Override for richer payloads
      * (Actor drags, custom UUIDs).
      */

@@ -1,5 +1,5 @@
 /**
- * `vttforge audit` — scan a system/module project against the VTTForge
+ * `vttforge audit`: scan a system/module project against the VTTForge
  * audit catalog (seven v13 manifest + code footguns).
  *
  * The seven rules (VTTF-AUDIT-001 through 007) live in
@@ -7,8 +7,8 @@
  * CLI surface that orchestrates them and prints the report.
  *
  * Exit codes:
- *   0 — clean run, or only MEDIUM/LOW findings (informational)
- *   1 — at least one HIGH finding (or any finding in `--strict` mode)
+ *   0: clean run, or only MEDIUM/LOW findings (informational)
+ *   1: at least one HIGH finding (or any finding in `--strict` mode)
  */
 
 import { resolve } from 'node:path';
@@ -23,7 +23,7 @@ export interface AuditOptions {
   format?: ReportFormat;
   /**
    * When true, MEDIUM and LOW findings also trigger a non-zero exit.
-   * Default false — HIGH-only is the canonical "block CI" line.
+   * Default false: HIGH-only is the canonical "block CI" line.
    */
   strict?: boolean;
   /** Custom writer (tests). Defaults to process.stdout.write. */

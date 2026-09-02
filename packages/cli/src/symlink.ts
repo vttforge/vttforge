@@ -5,7 +5,7 @@
  * back to the project's `dist/` so Foundry serves freshly-built files as
  * vite writes them. The win32 path matters: with `type: 'junction'` the
  * operation works on standard Windows shells without Developer Mode, while
- * `type: 'dir'` requires admin. We never silently fall back to copying —
+ * `type: 'dir'` requires admin. We never silently fall back to copying;
  * Foundry's HMR relies on live file mutation, and a copy snapshot defeats
  * the loop. If the symlink fails, we surface the platform-specific fix.
  */
@@ -16,7 +16,7 @@ import { dirname, resolve } from 'node:path';
 export interface CreateLinkOptions {
   /**
    * Overwrite an existing symlink that points elsewhere. Real files and
-   * directories are never overwritten — that path needs explicit user
+   * directories are never overwritten; that path needs explicit user
    * action outside the tool.
    */
   overwrite?: boolean;
@@ -99,7 +99,7 @@ export async function createLink(
 
 /**
  * Remove a symlink at `path`. No-ops when the path doesn't exist. Throws
- * when the path exists but isn't a symlink — we never unlink real files
+ * when the path exists but isn't a symlink; we never unlink real files
  * or directories.
  */
 export async function removeLink(path: string): Promise<void> {

@@ -1,16 +1,16 @@
 /**
- * BaseItemSheet — `ItemSheetV2 + HandlebarsApplicationMixin` baseline. Mirror
+ * BaseItemSheet: `ItemSheetV2 + HandlebarsApplicationMixin` baseline. Mirror
  * of `BaseActorSheet` minus the typed drop dispatch (items rarely receive
  * drops; the rare case that does can override `_onDrop` directly).
  *
  * Carries the same boilerplate-eliminators:
  *
- * - `static DRAG_DROP` — declarative `foundry.applications.ux.DragDrop` wiring
+ * - `static DRAG_DROP`: declarative `foundry.applications.ux.DragDrop` wiring
  *   in `_onRender`, with `isEditable`-gated permissions.
  * - `_prepareContext` auto-fills `context.tabs[group]` for every group declared
  *   in ApplicationV2's `static TABS`.
  *
- * As with `BaseActorSheet`, `editImage` is intentionally not added — it ships
+ * As with `BaseActorSheet`, `editImage` is intentionally not added; it ships
  * built-in on `DocumentSheetV2` (parent of `ItemSheetV2`).
  */
 

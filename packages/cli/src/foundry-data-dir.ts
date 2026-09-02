@@ -15,7 +15,7 @@
  * The OS-default detection treats `XDG_DATA_HOME` (Linux) and `%LOCALAPPDATA%`
  * (Windows) as part of the OS convention, not as Foundry-specific overrides.
  *
- * Everything here is pure — `platform`, `env`, and `home` flow through
+ * Everything here is pure: `platform`, `env`, and `home` flow through
  * options so tests can drive every branch without monkey-patching globals.
  */
 
@@ -31,7 +31,7 @@ export interface VTTForgeConfig {
 
 /**
  * Return the OS-default Foundry user-data directory, or `null` on unknown
- * platforms / missing platform-specific env vars. Does NOT check existence —
+ * platforms / missing platform-specific env vars. Does NOT check existence;
  * callers prompt the user when the suggested path doesn't resolve.
  */
 export function autoDetectFoundryDataDir(
@@ -95,7 +95,7 @@ export async function loadConfig(cwd: string): Promise<VTTForgeConfig | null> {
     }
     return null;
   } catch {
-    // Corrupted JSON — treat as missing rather than crashing the dev loop.
+    // Corrupted JSON: treat as missing rather than crashing the dev loop.
     // The next save (after a successful prompt) overwrites it cleanly.
     return null;
   }
@@ -111,7 +111,7 @@ export async function saveConfig(cwd: string, config: VTTForgeConfig): Promise<v
 /**
  * Heuristic: is `path` already Foundry's `Data/` folder (vs. its parent)?
  * We treat the path as Data when:
- *   - basename is "Data" (case-insensitive — macOS/Windows file systems
+ *   - basename is "Data" (case-insensitive, since macOS/Windows file systems
  *     are case-insensitive by default), OR
  *   - any of `systems/`, `modules/`, `worlds/` exists inside (proof that
  *     Foundry has previously written package folders here).
@@ -120,7 +120,7 @@ export async function saveConfig(cwd: string, config: VTTForgeConfig): Promise<v
  * root OR the `Data/` folder directly without us double-nesting `Data/Data`.
  */
 function isFoundryDataFolder(path: string): boolean {
-  // basename match — case-insensitive so `DATA`, `data`, `Data` all work on
+  // basename match, case-insensitive so `DATA`, `data`, `Data` all work on
   // macOS/Windows volumes that don't preserve case strictly. On Linux the
   // folder is always "Data" exactly; case-insensitive compare is harmless.
   if (basename(path).toLowerCase() === 'data') return true;
@@ -135,7 +135,7 @@ function isFoundryDataFolder(path: string): boolean {
  * Resolve the packages directory (`Data/systems/` or `Data/modules/`) under
  * the given Foundry user-data root. Accepts the path Foundry itself runs
  * with (the user-data folder, which contains `Data/`) OR the `Data/` folder
- * directly — both are common in muscle memory.
+ * directly; both are common in muscle memory.
  *
  * The returned path is not guaranteed to exist yet; callers `mkdir -p` it
  * before creating the symlink.
@@ -161,7 +161,7 @@ function expandTilde(p: string, home: string): string {
 }
 
 export interface ResolveDataDirOptions {
-  /** Project root — also where `.vttforge/config.json` is read/written. */
+  /** Project root: also where `.vttforge/config.json` is read/written. */
   cwd: string;
   /** `--data-dir` flag value. Skips persistence and prompting when present. */
   override?: string;
@@ -169,7 +169,7 @@ export interface ResolveDataDirOptions {
    * Interactive prompt for the first run. Receives the OS-default path
    * (may be `null` on unknown platforms) and resolves with the chosen path,
    * or `null` if the user cancelled. When undefined, the function refuses
-   * to ask and throws — appropriate for non-TTY contexts (CI, scripts).
+   * to ask and throws, appropriate for non-TTY contexts (CI, scripts).
    */
   prompt?: (autoDetected: string | null) => Promise<string | null>;
   /** Override `process.platform` (tests). */
@@ -210,7 +210,7 @@ export async function resolveFoundryDataDir(opts: ResolveDataDirOptions): Promis
   if (prompt) {
     const choice = await prompt(detected);
     if (!choice) {
-      throw new Error('No Foundry data directory selected — aborting.');
+      throw new Error('No Foundry data directory selected. Aborting.');
     }
     const chosen = resolve(expandTilde(choice, home));
     await saveConfig(cwd, { ...config, foundryDataDir: chosen });
