@@ -6,6 +6,8 @@
  * scaffolder (e.g. from another CLI, a test harness, or a custom tool).
  */
 
+import { version } from '../package.json' with { type: 'json' };
+
 export { runAudit } from './audit/index.js';
 export { runManifestRules } from './audit/manifest-rules.js';
 export type { ReportFormat } from './audit/reporter.js';
@@ -53,4 +55,4 @@ export {
 export type { EmitZipOptions, EmitZipResult } from './zip.js';
 export { emitZip } from './zip.js';
 
-export const VTTFORGE_CLI_VERSION = '0.1.0';
+export const VTTFORGE_CLI_VERSION: string = version;
