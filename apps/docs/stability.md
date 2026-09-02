@@ -70,6 +70,11 @@ Every package targets **Foundry v13+**. v12 is an explicit non-goal: the v13
 application and data-model APIs are what the SDK is built on, and supporting
 both would mean shipping the older shape forever.
 
+## How this is checked
+
+What every change passes before it ships, and what the SDK does and does not
+do on your machine, is on the [transparency page](/transparency).
+
 ## Peer dependencies
 
 `@vttforge/vite-plugin` peers on `vite`. Nothing else declares a peer, and

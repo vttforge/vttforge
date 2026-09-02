@@ -94,6 +94,7 @@ export default defineConfig({
       { text: 'API', link: '/reference/' },
       { text: 'Errors', link: '/errors/' },
       { text: 'Stability', link: '/stability' },
+      { text: 'Transparency', link: '/transparency' },
       // Absolute, because a root-relative link would be prefixed with the
       // `/docs/` base and point back into the docs.
       { text: 'Design System', link: 'https://vttforge.dev/design-system' },
