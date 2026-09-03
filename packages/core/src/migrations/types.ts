@@ -3,8 +3,8 @@
  *
  * Versions are semver strings so they line up with `system.json`'s
  * `flags.<systemId>.needsMigrationVersion` / `compatibleMigrationVersion` and
- * with `foundry.utils.isNewerVersion` (the comparator dnd5e uses in
- * production). A migration that targets `"2.4.0"` runs once the stored
+ * with `foundry.utils.isNewerVersion`, which is the comparator the runner
+ * uses. A migration that targets `"2.4.0"` runs once the stored
  * `schemaVersion` is anything strictly older than `"2.4.0"`.
  */
 
