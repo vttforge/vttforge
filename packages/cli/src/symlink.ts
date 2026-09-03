@@ -27,6 +27,9 @@ export interface CreateLinkOptions {
  * `null` if `path` doesn't exist or isn't a symlink. Relative symlink
  * targets are resolved against the link's own directory (matches the
  * semantics callers expect when comparing to a known absolute source).
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export async function readLinkTarget(path: string): Promise<string | null> {
   try {
@@ -47,6 +50,9 @@ export async function readLinkTarget(path: string): Promise<string | null> {
  *   - target already points to source → no-op
  *   - target points elsewhere → throws unless `options.overwrite`
  *   - target is a real file/dir → throws unconditionally
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export async function createLink(
   target: string,
@@ -101,6 +107,9 @@ export async function createLink(
  * Remove a symlink at `path`. No-ops when the path doesn't exist. Throws
  * when the path exists but isn't a symlink; we never unlink real files
  * or directories.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export async function removeLink(path: string): Promise<void> {
   let info: Awaited<ReturnType<typeof lstat>>;

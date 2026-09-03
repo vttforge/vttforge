@@ -50,6 +50,9 @@ const MANIFEST_VERSION_RE = /^[0-9A-Za-z._+-]+$/;
  * Throws if neither file exists, required fields are missing/non-string,
  * or the id/version contain characters that would let downstream `join()`
  * calls escape their intended directory.
+ *
+ * @experimental Shape is unproven: no consumer has asked for this yet.
+ * It can change in a minor.
  */
 export async function readManifest(distDir: string): Promise<FoundryManifest> {
   for (const { file, type } of MANIFEST_FILES) {

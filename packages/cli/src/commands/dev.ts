@@ -186,6 +186,10 @@ function installSignalHandlers(cleanup: () => Promise<void>): () => void {
   };
 }
 
+/**
+ * @experimental Shape is unproven: no consumer has asked for this yet. It can
+ * change in a minor.
+ */
 export async function runDev(options: DevOptions = {}): Promise<void> {
   const cwd = options.cwd ? resolve(options.cwd) : process.cwd();
 
@@ -291,6 +295,9 @@ export async function runDev(options: DevOptions = {}): Promise<void> {
  * create the symlink and return the target path + manifest. Skips the
  * vite spawn and the signal-loop, so tests can drive the orchestration
  * deterministically.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export async function setupDevSymlink(opts: { cwd: string; dataRoot: string }): Promise<{
   target: string;
@@ -311,6 +318,9 @@ export async function setupDevSymlink(opts: { cwd: string; dataRoot: string }): 
  * Refuses to remove a symlink that another `vttforge dev` session (or a
  * manual `ln -s`) has since redirected. That link doesn't belong to us
  * and removing it would silently disconnect their setup.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export async function cleanupDevSymlink(opts: {
   target: string;

@@ -14,6 +14,10 @@ import { join } from 'node:path';
 
 export type PackageManager = 'pnpm' | 'npm' | 'bun' | 'yarn';
 
+/**
+ * @internal Implementation detail of the `vttforge` binary. Not supported for
+ * outside use, and going away in the next major.
+ */
 export function detectPackageManager(env: NodeJS.ProcessEnv = process.env): PackageManager {
   const ua = env.npm_config_user_agent;
   if (typeof ua === 'string' && ua.length > 0) {
@@ -25,6 +29,10 @@ export function detectPackageManager(env: NodeJS.ProcessEnv = process.env): Pack
   return 'pnpm';
 }
 
+/**
+ * @internal Implementation detail of the `vttforge` binary. Not supported for
+ * outside use, and going away in the next major.
+ */
 export function installCommand(pm: PackageManager): string {
   return `${pm} install`;
 }
@@ -38,6 +46,9 @@ export function installCommand(pm: PackageManager): string {
  *
  * Falls back to {@link detectPackageManager} for fresh checkouts that
  * haven't been installed yet.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export function detectProjectPackageManager(
   cwd: string,
@@ -64,6 +75,9 @@ export function detectProjectPackageManager(
  * Plug'n'Play, pnpm's symlinked layout, npm's flattened node_modules,
  * Bun's symlinked node_modules. Each manager exposes a uniform "run a
  * locally-resolved binary in the project's dependency graph" command.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export function execInvocation(pm: PackageManager, bin: string): [string, string[]] {
   switch (pm) {

@@ -33,6 +33,9 @@ export interface VTTForgeConfig {
  * Return the OS-default Foundry user-data directory, or `null` on unknown
  * platforms / missing platform-specific env vars. Does NOT check existence;
  * callers prompt the user when the suggested path doesn't resolve.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export function autoDetectFoundryDataDir(
   platform: NodeJS.Platform = process.platform,
@@ -65,6 +68,9 @@ export function autoDetectFoundryDataDir(
  * Heuristic: a path looks like a Foundry user-data root if it contains a
  * `Data/` subdirectory (canonical Foundry layout) OR if it already contains
  * `systems/` or `modules/` (the path is already the Data folder itself).
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export function looksLikeFoundryDataDir(path: string): boolean {
   if (!existsSync(path)) return false;
@@ -78,12 +84,20 @@ export function looksLikeFoundryDataDir(path: string): boolean {
 const CONFIG_DIR = '.vttforge';
 const CONFIG_FILE = 'config.json';
 
-/** Absolute path to the project-local config file (whether or not it exists). */
+/** Absolute path to the project-local config file (whether or not it exists).
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
+ */
 export function configPath(cwd: string): string {
   return join(resolve(cwd), CONFIG_DIR, CONFIG_FILE);
 }
 
-/** Load `<cwd>/.vttforge/config.json` if it exists and is valid JSON. */
+/** Load `<cwd>/.vttforge/config.json` if it exists and is valid JSON.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
+ */
 export async function loadConfig(cwd: string): Promise<VTTForgeConfig | null> {
   const path = configPath(cwd);
   if (!existsSync(path)) return null;
@@ -101,7 +115,11 @@ export async function loadConfig(cwd: string): Promise<VTTForgeConfig | null> {
   }
 }
 
-/** Persist `<cwd>/.vttforge/config.json`. Creates the `.vttforge/` dir as needed. */
+/** Persist `<cwd>/.vttforge/config.json`. Creates the `.vttforge/` dir as needed.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
+ */
 export async function saveConfig(cwd: string, config: VTTForgeConfig): Promise<void> {
   const path = configPath(cwd);
   await mkdir(dirname(path), { recursive: true });
@@ -139,6 +157,9 @@ function isFoundryDataFolder(path: string): boolean {
  *
  * The returned path is not guaranteed to exist yet; callers `mkdir -p` it
  * before creating the symlink.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export function foundryPackagesDir(dataRoot: string, type: 'system' | 'module'): string {
   const subFolder = type === 'system' ? 'systems' : 'modules';
@@ -184,6 +205,9 @@ export interface ResolveDataDirOptions {
  * Walk the precedence chain and return the chosen Foundry user-data path.
  * Saves the user's choice to the project config on first interactive run so
  * subsequent invocations skip the prompt.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export async function resolveFoundryDataDir(opts: ResolveDataDirOptions): Promise<string> {
   const { cwd, override, prompt } = opts;

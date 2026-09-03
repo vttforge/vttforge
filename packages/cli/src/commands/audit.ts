@@ -36,6 +36,10 @@ export interface AuditResult {
   exitCode: 0 | 1;
 }
 
+/**
+ * @experimental Shape is unproven: no consumer has asked for this yet. It can
+ * change in a minor.
+ */
 export async function runAuditCommand(options: AuditOptions = {}): Promise<AuditResult> {
   const cwd = resolve(options.cwd ?? process.cwd());
   const format: ReportFormat = options.format ?? 'markdown';

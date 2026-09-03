@@ -14,6 +14,10 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { detectProjectPackageManager, execInvocation } from './package-manager.js';
 
+/**
+ * @internal Implementation detail of the `vttforge` binary. Not supported for
+ * outside use, and going away in the next major.
+ */
 export class ViteNotInstalledError extends Error {
   constructor(message: string) {
     super(message);
@@ -21,7 +25,11 @@ export class ViteNotInstalledError extends Error {
   }
 }
 
-/** Spawn args for invoking the user's vite (e.g. `["pnpm", ["exec", "vite"]]`). */
+/** Spawn args for invoking the user's vite (e.g. `["pnpm", ["exec", "vite"]]`).
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
+ */
 export function resolveViteInvocation(cwd: string): [string, string[]] {
   // Lightweight sanity check: the project must have a `package.json` so we
   // know we're inside a real project root. We do NOT require
@@ -36,7 +44,11 @@ export function resolveViteInvocation(cwd: string): [string, string[]] {
   return execInvocation(pm, 'vite');
 }
 
-/** Run `vite build` once and wait for it to exit. Throws on non-zero exit. */
+/** Run `vite build` once and wait for it to exit. Throws on non-zero exit.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
+ */
 export async function runViteBuildOnce(cwd: string): Promise<void> {
   const [bin, baseArgs] = resolveViteInvocation(cwd);
   await new Promise<void>((resolveBuild, rejectBuild) => {
@@ -74,6 +86,9 @@ export async function runViteBuildOnce(cwd: string): Promise<void> {
  * Spawn `vite build --watch` and return the child process. The caller is
  * responsible for waiting on it and tearing it down (the dev command kills
  * it on SIGINT).
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export function spawnViteWatch(cwd: string): ChildProcess {
   const [bin, baseArgs] = resolveViteInvocation(cwd);

@@ -46,6 +46,9 @@ const PLACEHOLDER_RE = /\{\{(\w+)\}\}/g;
  * Unknown placeholders are passed through unchanged so partially-templated
  * files (e.g. a snippet that contains `{{handlebarsLikeSyntax}}` as literal
  * content) still scaffold without surprises.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export function substitute(content: string, vars: ScaffoldVars): string {
   const lookup = vars as unknown as Record<string, string>;
@@ -109,6 +112,10 @@ function rewriteDestRelPath(relPath: string): string {
   return relPath.slice(0, relPath.length - base.length) + replacement;
 }
 
+/**
+ * @internal Implementation detail of the `vttforge` binary. Not supported for
+ * outside use, and going away in the next major.
+ */
 export async function scaffold({ templateDir, destDir, vars }: ScaffoldOptions): Promise<void> {
   if (!existsSync(templateDir)) {
     throw new Error(`[vttforge] template directory does not exist: ${templateDir}`);
@@ -147,6 +154,9 @@ export async function scaffold({ templateDir, destDir, vars }: ScaffoldOptions):
  * emits `dist/scaffold.mjs`, so `import.meta.url` points there at runtime;
  * we walk up two segments to land at the package root, then descend into
  * `templates/`.
+ *
+ * @internal Implementation detail of the `vttforge` binary. Not supported
+ * for outside use, and going away in the next major.
  */
 export function templatesRoot(): string {
   const here = fileURLToPath(import.meta.url);

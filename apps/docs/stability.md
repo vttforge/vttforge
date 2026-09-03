@@ -50,6 +50,47 @@ is a promise; "deprecated, and here is why nothing replaces it" is honest.
 | `@vttforge/dev-module` | Browser, inside Foundry | Internal to the dev loop; not an API. |
 | `@vttforge/types` | Types only | Small and deliberate. The Foundry members the base factories declare; grows as consumers need more. |
 
+## What is in the public surface
+
+Every export was checked for **reachability**: can you arrive at it by using
+the documented API, or only by importing it by name?
+
+A type reached through a signature is part of the contract even if you never
+write its name. `SystemRegistration` is the argument to `registerSystem`, and
+`InferSchema` resolves through the field-type triples. Those follow the policy
+above.
+
+| Package | Exports | In the contract | Reachable only by direct import |
+|---|---|---|---|
+| `@vttforge/core` | 105 | 105 | 0 |
+| `@vttforge/testing` | 14 | 14 | 0 |
+| `@vttforge/vite-plugin` | 2 | 2 | 0 |
+| `@vttforge/types` | 4 | 4 | 0 |
+| `@vttforge/cli` | 60 | 27 | 33 |
+
+`core`, `testing`, `vite-plugin` and `types` are clean: nothing is exported
+that the documented API does not already lead you to.
+
+`@vttforge/cli` is not, and the reason is that its product is a binary. Its
+index grew to re-export the pieces the commands are built from. Those are
+tagged in place, and your editor shows the tag:
+
+- **Supported**: `runInit`, and the audit surface (`runAudit`,
+  `runManifestRules`, `runSourceRules`, `formatReport`, and the `RuleFn` /
+  `RuleResult` / `Severity` types). `create-vttforge` calls `runInit`, and the
+  audit rules are a deliberate extension point: write your own `RuleFn` and
+  hand it to the same reporter the CLI uses.
+- **`@experimental`**: plausibly useful to a tool author, but nobody has asked,
+  so the shape is a guess. Can change in a minor.
+- **`@internal`**: implementation detail that reached the index by accident
+  (`substitute`, `templatesRoot`, `configPath`, the symlink and Vite-spawning
+  helpers, and the rest). Nothing outside the package imports them. They keep
+  working until the next major, and importing one is not supported today.
+
+If you are importing something tagged `@internal` and it is the only way to do
+what you need, open an issue. That is the signal that turns one into a
+supported export.
+
 ## Node
 
 Only the packages that run in Node declare an engine floor. `@vttforge/core`,

@@ -44,6 +44,9 @@ function formatBytes(n: number): string {
 /**
  * Internal building block exposed for tests: assumes dist/ is already
  * populated (vite has run, manifest is present) and just emits the zip.
+ *
+ * @experimental Shape is unproven: no consumer has asked for this yet.
+ * It can change in a minor.
  */
 export async function emitReleaseZip(opts: {
   cwd: string;
@@ -62,6 +65,10 @@ export async function emitReleaseZip(opts: {
   return { zipFile, byteSize, manifest };
 }
 
+/**
+ * @experimental Shape is unproven: no consumer has asked for this yet. It can
+ * change in a minor.
+ */
 export async function runBuild(options: BuildOptions = {}): Promise<void> {
   const cwd = options.cwd ? resolve(options.cwd) : process.cwd();
   p.intro('🜲 vttforge build: release zip');

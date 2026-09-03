@@ -32,6 +32,10 @@ export interface EmitZipResult {
   byteSize: number;
 }
 
+/**
+ * @experimental Shape is unproven: no consumer has asked for this yet. It can
+ * change in a minor.
+ */
 export async function emitZip(opts: EmitZipOptions): Promise<EmitZipResult> {
   const { sourceDir, outFile, extras = [], extrasFrom } = opts;
   if (!existsSync(sourceDir)) {

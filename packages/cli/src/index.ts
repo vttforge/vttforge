@@ -1,13 +1,28 @@
 /**
  * @vttforge/cli: public library exports.
  *
- * The CLI is intended to be used as a bin (`vttforge` command). These
- * exports exist for consumers who want to programmatically invoke the
- * scaffolder (e.g. from another CLI, a test harness, or a custom tool).
+ * The product here is the `vttforge` binary. These exports exist so another
+ * tool can drive the same work without shelling out, and they fall into three
+ * groups, marked per export below.
+ *
+ * **Supported.** `runInit` and the audit surface. `create-vttforge` calls
+ * `runInit`, and the audit rules are a documented extension point: a project
+ * can write its own `RuleFn` and hand it to the same reporter the CLI uses.
+ * These follow the deprecation policy.
+ *
+ * **`@experimental`.** Plausibly useful to a tool author, but no consumer has
+ * ever asked for them, so the shape is a guess. They can change in a minor.
+ *
+ * **`@internal`.** Implementation detail of the binary that reached the index
+ * by accident. Nothing outside this package imports them. They are staying
+ * only until the next major, and importing one is not supported today.
+ *
+ * See apps/docs/stability.md for what each tag promises.
  */
 
 import { version } from '../package.json' with { type: 'json' };
 
+/** Supported: run every audit rule over a project root. */
 export { type RunAuditOptions, runAudit } from './audit/index.js';
 export { runManifestRules } from './audit/manifest-rules.js';
 export type { ReportFormat } from './audit/reporter.js';
@@ -16,14 +31,22 @@ export { runSourceRules } from './audit/source-rules.js';
 export type { AuditReport, RuleFn, RuleResult, Severity } from './audit/types.js';
 export { SEVERITY_RANK } from './audit/types.js';
 export type { AuditOptions, AuditResult } from './commands/audit.js';
+/** @experimental The command wrapper. Prefer `runAudit` plus `formatReport`. */
 export { runAuditCommand } from './commands/audit.js';
 export type { BuildOptions } from './commands/build.js';
+/** @experimental Shape is a guess; no consumer has asked for it yet. */
 export { emitReleaseZip, runBuild } from './commands/build.js';
 export type { DevOptions } from './commands/dev.js';
+/** @experimental `runDev` may stay; the symlink helpers are internal to it. */
 export { cleanupDevSymlink, runDev, setupDevSymlink } from './commands/dev.js';
 export type { InitOptions, ResolvedInitOptions, TemplateVariant } from './commands/init.js';
+/** Supported: scaffold a project. This is what `create-vttforge` calls. */
 export { runInit, ScaffoldError } from './commands/init.js';
 export type { ResolveDataDirOptions, VTTForgeConfig } from './foundry-data-dir.js';
+/**
+ * @internal How the CLI finds a Foundry data directory. `loadConfig` and
+ * `saveConfig` read and write `.vttforge.json`; the rest are the probe steps.
+ */
 export {
   autoDetectFoundryDataDir,
   configPath,
@@ -34,8 +57,10 @@ export {
   saveConfig,
 } from './foundry-data-dir.js';
 export type { FoundryManifest, PackageType } from './manifest.js';
+/** @experimental Reads `system.json` / `module.json`. Useful, unproven. */
 export { readManifest } from './manifest.js';
 export type { PackageManager } from './package-manager.js';
+/** @internal Which package manager to shell out to, and how to spell it. */
 export {
   detectPackageManager,
   detectProjectPackageManager,
@@ -43,9 +68,16 @@ export {
   installCommand,
 } from './package-manager.js';
 export type { ScaffoldOptions, ScaffoldVars } from './scaffold.js';
+/**
+ * @internal The template copier under `runInit`. `substitute` is the
+ * placeholder replacer and `templatesRoot` resolves the bundled templates
+ * directory: both are meaningless outside this package's own layout.
+ */
 export { scaffold, substitute, templatesRoot } from './scaffold.js';
 export type { CreateLinkOptions } from './symlink.js';
+/** @internal Symlink plumbing for `vttforge dev`. */
 export { createLink, readLinkTarget, removeLink } from './symlink.js';
+/** @internal How the CLI locates and spawns Vite. */
 export {
   resolveViteInvocation,
   runViteBuildOnce,
@@ -53,6 +85,7 @@ export {
   ViteNotInstalledError,
 } from './vite-runner.js';
 export type { EmitZipOptions, EmitZipResult } from './zip.js';
+/** @experimental Lower level than `emitReleaseZip`. */
 export { emitZip } from './zip.js';
 
 export const VTTFORGE_CLI_VERSION: string = version;
