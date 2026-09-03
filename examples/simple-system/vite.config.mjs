@@ -9,7 +9,7 @@ import { defineConfig } from 'vite';
  *     no bare specifiers — Foundry's browser ESM loader can't resolve them)
  *   - bundle `styles/example.css` into `dist/styles/example.css` with
  *     `@import "@vttforge/styles"` inlined at build time
- *   - copy `system.json`, `template.json`, `lang/`, `templates/` to `dist/`
+ *   - copy `system.json`, `lang/`, `templates/` to `dist/`
  *   - sync `package.json` version into `dist/system.json`
  *   - rewrite the manifest's `esmodules` and `styles` to point at the
  *     bundled output
