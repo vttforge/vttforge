@@ -23,6 +23,17 @@ not merely on what did not throw.
 
 `restore()` puts every global back, including deleting the ones that never
 existed.
+Anything else your code reads goes in `globals`. Foundry puts every document
+class on the global scope, and the fixed set above does not include them:
+
+```ts
+const foundry = withMockFoundry({
+  globals: { JournalEntry: { create: vi.fn() } },
+});
+```
+
+`restore()` clears those too, and puts back whatever was there before.
+
 
 Importing from this entry also declares the globals, so `game.settings` in a
 test does not produce "Cannot find name 'game'". There is nothing to configure.
