@@ -8,6 +8,7 @@
  *   VTTF-AUDIT-001 (HIGH)  : flags.hotReload shape
  *   VTTF-AUDIT-002 (MEDIUM): deprecated gridDistance/gridUnits
  *   VTTF-AUDIT-003 (LOW)   : styles array of strings (v12 shape)
+ *   VTTF-AUDIT-009 (MEDIUM): a documentTypes subtype with no TYPES label
  *
  * Each rule emits zero or more `RuleResult`s. Line numbers are looked up
  * cheaply by scanning the raw JSON for the offending key. Accurate
@@ -207,6 +208,104 @@ function ruleStylesShape(manifest: LoadedManifest): RuleResult[] {
 }
 
 /**
+ * VTTF-AUDIT-009 (MEDIUM) — a declared subtype with no name.
+ *
+ * Foundry looks a subtype's label up under `TYPES.<Document>.<key>`, where a
+ * module's key carries its id: `TYPES.Item.my-module.note`. With the label
+ * missing it prints that path, so the sheet is titled
+ * `TYPES.Item.my-module.note: Rope` and the Create dialog offers
+ * `my-module.note` in its type dropdown.
+ *
+ * Nothing errors. The type works; it just has no name anywhere a reader
+ * looks, which is the sort of thing that ships and stays.
+ */
+async function ruleTypeLabels(cwd: string, manifest: LoadedManifest): Promise<RuleResult[]> {
+  const documentTypes = manifest.parsed.documentTypes;
+  if (documentTypes === null || typeof documentTypes !== 'object') return [];
+
+  const id = typeof manifest.parsed.id === 'string' ? manifest.parsed.id : null;
+  if (id === null) return [];
+  // A module namespaces its subtypes under its own id; a system does not.
+  const isModule = manifest.path.endsWith('module.json');
+
+  const languages = await loadLanguages(cwd, manifest);
+  // Nothing to check against. Missing language files are their own problem.
+  if (languages.length === 0) return [];
+
+  const missing: string[] = [];
+  for (const [document, subtypes] of Object.entries(documentTypes as Record<string, unknown>)) {
+    if (subtypes === null || typeof subtypes !== 'object') continue;
+    for (const subtype of Object.keys(subtypes as Record<string, unknown>)) {
+      const path = isModule ? ['TYPES', document, id, subtype] : ['TYPES', document, subtype];
+      const named = languages.some((catalogue) => readPath(catalogue, path) !== undefined);
+      if (!named) missing.push(path.join('.'));
+    }
+  }
+  if (missing.length === 0) return [];
+
+  return [
+    {
+      ruleId: 'VTTF-AUDIT-009',
+      title: 'Declared subtype has no name in any language file',
+      severity: 'MEDIUM',
+      filePath: manifest.path,
+      line: findKeyLine(manifest.raw, 'documentTypes'),
+      message: `No language file names ${missing.join(', ')}. Foundry falls back to printing the key, so the sheet title and the type dropdown read the raw path instead of a name.`,
+      remediation: `Add the label to a language file, nested: ${nestedExample(missing[0] ?? '')}`,
+    },
+  ];
+}
+
+/** Every language catalogue the manifest declares, parsed. Unreadable ones are skipped. */
+async function loadLanguages(
+  cwd: string,
+  manifest: LoadedManifest,
+): Promise<Record<string, unknown>[]> {
+  const declared = manifest.parsed.languages;
+  if (!Array.isArray(declared)) return [];
+  const out: Record<string, unknown>[] = [];
+  for (const entry of declared) {
+    if (entry === null || typeof entry !== 'object') continue;
+    const path = (entry as { path?: unknown }).path;
+    if (typeof path !== 'string') continue;
+    try {
+      out.push(JSON.parse(await readFile(join(cwd, path), 'utf8')));
+    } catch {
+      // Missing or malformed. Not this rule's finding to make.
+    }
+  }
+  return out;
+}
+
+/**
+ * Read a dotted path, allowing for either nesting.
+ *
+ * Foundry flattens its catalogues, so `{"TYPES.Item.x": "X"}` and the fully
+ * nested form both work. A rule that only understood one shape would report
+ * a label that is really there.
+ */
+function readPath(catalogue: Record<string, unknown>, path: readonly string[]): unknown {
+  for (let split = path.length; split > 0; split -= 1) {
+    const head = path.slice(0, split).join('.');
+    const value = catalogue[head];
+    if (value === undefined) continue;
+    if (split === path.length) return value;
+    if (value === null || typeof value !== 'object') continue;
+    const rest = readPath(value as Record<string, unknown>, path.slice(split));
+    if (rest !== undefined) return rest;
+  }
+  return undefined;
+}
+
+/** The JSON a reader should paste, for the first missing label. */
+function nestedExample(dotted: string): string {
+  const parts = dotted.split('.');
+  let json = '"Some Name"';
+  for (const key of parts.reverse()) json = `{ ${JSON.stringify(key)}: ${json} }`;
+  return json;
+}
+
+/**
  * Entry point: run every manifest rule against every manifest at the
  * project root.
  */
@@ -217,6 +316,7 @@ export async function runManifestRules(cwd: string): Promise<RuleResult[]> {
     results.push(...ruleHotReload(manifest));
     results.push(...ruleGridShape(manifest));
     results.push(...ruleStylesShape(manifest));
+    results.push(...(await ruleTypeLabels(cwd, manifest)));
   }
   return results;
 }
