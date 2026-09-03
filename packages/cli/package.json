@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/cli",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "description": "Scaffold, dev loop, release build and audit for Foundry VTT v13+ systems and modules.",
   "type": "module",
   "license": "MIT",
