@@ -9,21 +9,26 @@
  * `@vttforge/types`' job; what this file exists to do is stop "Cannot find
  * name 'game'" from drowning out the errors that actually matter.
  */
+/**
+ * `var`, not `const`. Two `declare global` blocks naming the same global have
+ * to merge, and only `var` merges. A `const` here collides with the identical
+ * declaration `@vttforge/testing` ships, and `tsc` stops with TS2451.
+ */
 declare global {
   // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
-  const game: any;
+  var game: any;
   // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
-  const CONFIG: any;
+  var CONFIG: any;
   // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
-  const Hooks: any;
+  var Hooks: any;
   // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
-  const ui: any;
+  var ui: any;
   // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
-  const ChatMessage: any;
+  var ChatMessage: any;
   // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
-  const Roll: any;
+  var Roll: any;
   // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
-  const foundry: any;
+  var foundry: any;
 }
 
 export {};
