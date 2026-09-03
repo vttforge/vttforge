@@ -1,5 +1,5 @@
 import { mkdtempSync, rmSync } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -283,5 +283,86 @@ describe('runManifestRules', () => {
       );
       expect(await runManifestRules(cwd)).toEqual([]);
     });
+  });
+});
+
+describe('VTTF-AUDIT-009 — a declared subtype with no name', () => {
+  /** A module with one subtype, and whatever language file the test wants. */
+  async function project(languages: Record<string, unknown> | null): Promise<string> {
+    const dir = mkdtempSync(join(tmpdir(), 'vttforge-audit-types-'));
+    await writeFile(
+      join(dir, 'module.json'),
+      JSON.stringify({
+        id: 'my-module',
+        version: '1.0.0',
+        documentTypes: { Item: { note: { htmlFields: ['body'] } } },
+        languages: [{ lang: 'en', name: 'English', path: 'lang/en.json' }],
+      }),
+      'utf8',
+    );
+    if (languages !== null) {
+      await mkdir(join(dir, 'lang'), { recursive: true });
+      await writeFile(join(dir, 'lang', 'en.json'), JSON.stringify(languages), 'utf8');
+    }
+    return dir;
+  }
+
+  it('flags a subtype no language file names', async () => {
+    const dir = await project({ MY_MODULE: { Hello: 'Hi' } });
+    const found = (await runManifestRules(dir)).filter((r) => r.ruleId === 'VTTF-AUDIT-009');
+    expect(found).toHaveLength(1);
+    expect(found[0]?.severity).toBe('MEDIUM');
+    // The key carries the module id, which is the part people get wrong.
+    expect(found[0]?.message).toContain('TYPES.Item.my-module.note');
+    expect(found[0]?.remediation).toContain('"my-module"');
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('accepts the nested form', async () => {
+    const dir = await project({ TYPES: { Item: { 'my-module': { note: 'Note' } } } });
+    expect((await runManifestRules(dir)).filter((r) => r.ruleId === 'VTTF-AUDIT-009')).toEqual([]);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('accepts the flattened form, which Foundry also reads', async () => {
+    const dir = await project({ 'TYPES.Item.my-module.note': 'Note' });
+    expect((await runManifestRules(dir)).filter((r) => r.ruleId === 'VTTF-AUDIT-009')).toEqual([]);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('accepts a half-flattened form', async () => {
+    const dir = await project({ TYPES: { 'Item.my-module.note': 'Note' } });
+    expect((await runManifestRules(dir)).filter((r) => r.ruleId === 'VTTF-AUDIT-009')).toEqual([]);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('says nothing when there is no language file to check against', async () => {
+    // A package with no strings at all is a different finding to make.
+    const dir = await project(null);
+    expect((await runManifestRules(dir)).filter((r) => r.ruleId === 'VTTF-AUDIT-009')).toEqual([]);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('expects a system subtype without the id in the key', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vttforge-audit-types-'));
+    await writeFile(
+      join(dir, 'system.json'),
+      JSON.stringify({
+        id: 'my-system',
+        version: '1.0.0',
+        documentTypes: { Actor: { character: {} } },
+        languages: [{ lang: 'en', name: 'English', path: 'lang/en.json' }],
+      }),
+      'utf8',
+    );
+    await mkdir(join(dir, 'lang'), { recursive: true });
+    // A system owns its type names; no module id in the path.
+    await writeFile(
+      join(dir, 'lang', 'en.json'),
+      JSON.stringify({ TYPES: { Actor: { character: 'Character' } } }),
+      'utf8',
+    );
+    expect((await runManifestRules(dir)).filter((r) => r.ruleId === 'VTTF-AUDIT-009')).toEqual([]);
+    rmSync(dir, { recursive: true, force: true });
   });
 });
