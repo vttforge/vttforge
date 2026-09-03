@@ -116,7 +116,7 @@ test('a character sheet renders its parts and its derived data', async ({ page }
   expect(sheet.derived.strMod).toBe(0);
 });
 
-test('another package\'s plain CSS cannot restyle the sheet', async ({ page }) => {
+test("another package's plain CSS cannot restyle the sheet", async ({ page }) => {
   await joinWorld(page);
 
   // An unlayered author rule beats every layered one, whatever the
