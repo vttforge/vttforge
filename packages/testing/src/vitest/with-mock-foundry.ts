@@ -82,6 +82,22 @@ export interface MockFoundryOptions {
   foundry?: Record<string, unknown>;
   /** Extra `game.*` members, merged over the defaults. */
   game?: Record<string, unknown>;
+  /**
+   * Any other globals your code reads, installed for the life of the mock and
+   * removed by `restore()` along with the rest.
+   *
+   * Foundry puts each document class on the global scope, and code under test
+   * reaches for them by name: `Actor.create`, `JournalEntry.create`,
+   * `ChatMessage.getSpeaker`. Those are not part of the fixed set this helper
+   * installs, so name the ones you need.
+   *
+   * ```ts
+   * withMockFoundry({
+   *   globals: { JournalEntry: { create: vi.fn() } },
+   * });
+   * ```
+   */
+  globals?: Record<string, unknown>;
 }
 
 const GLOBALS = ['foundry', 'game', 'CONFIG', 'Hooks', 'ui', 'CONST'] as const;
@@ -138,7 +154,10 @@ function expandObject(flat: Record<string, unknown>): Record<string, unknown> {
 export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
   const saved = new Map<string, unknown>();
   const scope = globalThis as Record<string, unknown>;
-  for (const name of GLOBALS) saved.set(name, scope[name]);
+  const extra = Object.keys(options.globals ?? {});
+  // Saved before anything is installed, so `restore()` puts back whatever was
+  // there, including nothing.
+  for (const name of [...GLOBALS, ...extra]) saved.set(name, scope[name]);
 
   const hooks: RecordedHook[] = [];
   const settings: RecordedSetting[] = [];
@@ -262,6 +281,10 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
     },
     ...options.game,
   };
+
+  // Last, so naming one of the built-ins here overrides it rather than
+  // being overwritten by it.
+  for (const [name, value] of Object.entries(options.globals ?? {})) scope[name] = value;
 
   return {
     hooks,
