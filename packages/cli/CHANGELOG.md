@@ -1,5 +1,19 @@
 # @vttforge/cli
 
+## 0.6.0
+
+### Minor Changes
+
+- 65e8c13: `vttforge audit` gains two rules, both for failures a real module shipped.
+  
+  `VTTF-AUDIT-008` (HIGH) flags a sheet template that opens its own `<form>`. `BaseActorSheet` and `BaseItemSheet` set `tag: 'form'`, so the application element already is one, and a nested form owns the fields inside it: the submit reads the outer element, finds nothing, and every edit is dropped when the window closes. No error, no warning. It only looks at templates those two bases name in their `PARTS`, so a `BaseApplication` that legitimately builds a form is left alone.
+  
+  `VTTF-AUDIT-009` (MEDIUM) flags a subtype declared in `documentTypes` with no `TYPES` label. Foundry prints the raw key instead, so the sheet is titled `TYPES.Item.my-module.note` and the Create dialog offers the same string in its type dropdown. A label written nested or flattened both count, because Foundry reads both.
+
+### Patch Changes
+
+- 65e8c13: The scaffolding sheet templates no longer open a `<form>` the sheet already is. `BaseActorSheet` and `BaseItemSheet` set `tag: 'form'`, so the application element is the form; the nested one owned every field inside it, and the submit read the outer element and found nothing. A scaffolded project's sheets accepted every edit and dropped it when the window closed, with no error. Found by the new `VTTF-AUDIT-008`, which reported it against all four templates the first time it ran.
+
 ## 0.5.6
 
 ### Patch Changes
