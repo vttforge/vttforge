@@ -1,5 +1,11 @@
 {{!-- Gear sheet — minimal demo of BaseItemSheet on ItemSheetV2. --}}
-<form autocomplete="off">
+{{!--
+  No <form> here. The sheet bases set `tag: 'form'`, so the application
+  element already is one, and a nested form owns the fields inside it: the
+  submit would read the outer element, find nothing, and drop every edit when
+  the window closes. `vttforge audit` reports this as VTTF-AUDIT-008.
+--}}
+<div class="sheet-body-root">
 
   <header class="sheet-header">
     <img class="portrait" src="{{item.img}}" alt="{{item.name}}" data-edit="img" />
@@ -51,4 +57,4 @@
     </section>
   </section>
 
-</form>
+</div>

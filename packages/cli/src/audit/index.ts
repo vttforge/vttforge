@@ -6,6 +6,8 @@
  *   - manifest-rules.ts → VTTF-AUDIT-001, 002, 003 (manifest-only)
  *   - source-rules.ts   → VTTF-AUDIT-004, 005, 006, 007 (source walker
  *                         + cross-check with manifest where needed)
+ *   - template-rules.ts → VTTF-AUDIT-008 (the Handlebars, cross-checked
+ *                         against which base each sheet is built on)
  *
  * The orchestrator stays minimal. It knows which rule sets exist, but
  * the rules themselves are responsible for their own file IO. This keeps
@@ -16,6 +18,7 @@ import { existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { runManifestRules } from './manifest-rules.js';
 import { runSourceRules } from './source-rules.js';
+import { runTemplateRules } from './template-rules.js';
 import { type AuditReport, type RuleResult, SEVERITY_RANK } from './types.js';
 
 export interface RunAuditOptions {
@@ -43,12 +46,15 @@ export async function runAudit(options: RunAuditOptions): Promise<AuditReport> {
   }
   const startedAt = new Date().toISOString();
 
-  const [manifestFindings, sourceFindings] = await Promise.all([
+  const [manifestFindings, sourceFindings, templateFindings] = await Promise.all([
     runManifestRules(cwd),
     runSourceRules(cwd),
+    runTemplateRules(cwd),
   ]);
 
-  const findings: RuleResult[] = [...manifestFindings, ...sourceFindings].sort(compareFindings);
+  const findings: RuleResult[] = [...manifestFindings, ...sourceFindings, ...templateFindings].sort(
+    compareFindings,
+  );
 
   return {
     cwd,

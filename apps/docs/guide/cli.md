@@ -68,10 +68,15 @@ quietly: nothing in the console, a feature that just does not work.
 | `VTTF-AUDIT-005` | MEDIUM | A `TypeDataModel` without `prepareBaseData`; Active Effects apply between it and `prepareDerivedData` |
 | `VTTF-AUDIT-006` | LOW | An `_addDataFieldMigrations` override; the signature is not what it looks like |
 | `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field; the token bar degrades with no error |
+| `VTTF-AUDIT-008` | HIGH | A sheet template that opens its own `<form>` when the sheet base already is one; the fields belong to the inner form and every edit is dropped on close |
+| `VTTF-AUDIT-009` | MEDIUM | A subtype declared in `documentTypes` with no `TYPES` label; Foundry prints the raw key as the type's name |
 
 Rules 004 and 007 read the schema whether it is a `static defineSchema()` or
 a function handed to `BaseTypeDataModel`, and scope it to the class
-registered for that document.
+registered for that document. Rule 008 only looks at templates a
+`BaseActorSheet` or `BaseItemSheet` names in its `PARTS`, since those are the
+bases that set `tag: 'form'`. Rule 009 accepts a label written either nested
+or flattened, because Foundry reads both.
 
 The exit code is non-zero on a HIGH finding. `--strict` makes any finding
 fail, for CI. `--json` prints the report as data.
