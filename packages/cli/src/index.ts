@@ -37,53 +37,14 @@ export type { BuildOptions } from './commands/build.js';
 /** @experimental Shape is a guess; no consumer has asked for it yet. */
 export { emitReleaseZip, runBuild } from './commands/build.js';
 export type { DevOptions } from './commands/dev.js';
-/** @experimental `runDev` may stay; the symlink helpers are internal to it. */
-export { cleanupDevSymlink, runDev, setupDevSymlink } from './commands/dev.js';
+/** @experimental Shape is unproven; `vttforge dev` is the supported way in. */
+export { runDev } from './commands/dev.js';
 export type { InitOptions, ResolvedInitOptions, TemplateVariant } from './commands/init.js';
 /** Supported: scaffold a project. This is what `create-vttforge` calls. */
 export { runInit, ScaffoldError } from './commands/init.js';
-export type { ResolveDataDirOptions, VTTForgeConfig } from './foundry-data-dir.js';
-/**
- * @internal How the CLI finds a Foundry data directory. `loadConfig` and
- * `saveConfig` read and write `.vttforge.json`; the rest are the probe steps.
- */
-export {
-  autoDetectFoundryDataDir,
-  configPath,
-  foundryPackagesDir,
-  loadConfig,
-  looksLikeFoundryDataDir,
-  resolveFoundryDataDir,
-  saveConfig,
-} from './foundry-data-dir.js';
 export type { FoundryManifest, PackageType } from './manifest.js';
 /** @experimental Reads `system.json` / `module.json`. Useful, unproven. */
 export { readManifest } from './manifest.js';
-export type { PackageManager } from './package-manager.js';
-/** @internal Which package manager to shell out to, and how to spell it. */
-export {
-  detectPackageManager,
-  detectProjectPackageManager,
-  execInvocation,
-  installCommand,
-} from './package-manager.js';
-export type { ScaffoldOptions, ScaffoldVars } from './scaffold.js';
-/**
- * @internal The template copier under `runInit`. `substitute` is the
- * placeholder replacer and `templatesRoot` resolves the bundled templates
- * directory: both are meaningless outside this package's own layout.
- */
-export { scaffold, substitute, templatesRoot } from './scaffold.js';
-export type { CreateLinkOptions } from './symlink.js';
-/** @internal Symlink plumbing for `vttforge dev`. */
-export { createLink, readLinkTarget, removeLink } from './symlink.js';
-/** @internal How the CLI locates and spawns Vite. */
-export {
-  resolveViteInvocation,
-  runViteBuildOnce,
-  spawnViteWatch,
-  ViteNotInstalledError,
-} from './vite-runner.js';
 export type { EmitZipOptions, EmitZipResult } from './zip.js';
 /** @experimental Lower level than `emitReleaseZip`. */
 export { emitZip } from './zip.js';

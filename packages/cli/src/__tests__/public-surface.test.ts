@@ -42,32 +42,11 @@ const EXPERIMENTAL = new Set([
   'emitZip',
 ]);
 
-/** Implementation detail, tagged `@internal` at its definition. */
-const INTERNAL = new Set([
-  'scaffold',
-  'substitute',
-  'templatesRoot',
-  'createLink',
-  'readLinkTarget',
-  'removeLink',
-  'resolveViteInvocation',
-  'runViteBuildOnce',
-  'spawnViteWatch',
-  'ViteNotInstalledError',
-  'detectPackageManager',
-  'detectProjectPackageManager',
-  'execInvocation',
-  'installCommand',
-  'autoDetectFoundryDataDir',
-  'configPath',
-  'foundryPackagesDir',
-  'looksLikeFoundryDataDir',
-  'resolveFoundryDataDir',
-  'loadConfig',
-  'saveConfig',
-  'setupDevSymlink',
-  'cleanupDevSymlink',
-]);
+/**
+ * Removed in 0.8.0. Kept here so the guard below can prove they stay out: the
+ * index test asserts absence, this one asserts nobody re-adds them to a group.
+ */
+const REMOVED = new Set<string>([]);
 
 /**
  * The value exports the index re-exports.
@@ -96,7 +75,7 @@ function exportedValues(): string[] {
 describe('the CLI public surface', () => {
   it('classifies every exported value', () => {
     const unclassified = exportedValues().filter(
-      (name) => !SUPPORTED.has(name) && !EXPERIMENTAL.has(name) && !INTERNAL.has(name),
+      (name) => !SUPPORTED.has(name) && !EXPERIMENTAL.has(name) && !REMOVED.has(name),
     );
 
     expect(
@@ -107,14 +86,14 @@ describe('the CLI public surface', () => {
 
   it('does not claim to classify exports that are gone', () => {
     const live = new Set(exportedValues());
-    const stale = [...SUPPORTED, ...EXPERIMENTAL, ...INTERNAL].filter((n) => !live.has(n));
+    const stale = [...SUPPORTED, ...EXPERIMENTAL, ...REMOVED].filter((n) => !live.has(n));
 
     expect(stale, 'these are classified but no longer exported; drop them from the lists').toEqual(
       [],
     );
   });
 
-  it('tags every experimental and internal export at its definition', () => {
+  it('tags every experimental export at its definition', () => {
     // The tag has to live on the declaration, not on the re-export line:
     // the bundler drops re-export comments, so only the definition's comment
     // reaches the published `.d.mts` and the consumer's editor.
@@ -133,10 +112,7 @@ describe('the CLI public surface', () => {
     const all = [...bodies.values()].join('\n');
 
     const untagged: string[] = [];
-    for (const [name, tag] of [
-      ...[...EXPERIMENTAL].map((n) => [n, '@experimental'] as const),
-      ...[...INTERNAL].map((n) => [n, '@internal'] as const),
-    ]) {
+    for (const [name, tag] of [...[...EXPERIMENTAL].map((n) => [n, '@experimental'] as const)]) {
       const decl = new RegExp(
         `/\\*\\*(?:[^*]|\\*(?!/))*?${tag}(?:[^*]|\\*(?!/))*?\\*/\\s*export (?:async )?(?:function|const|class) ${name}\\b`,
       );
