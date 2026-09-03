@@ -138,15 +138,17 @@ describe('scaffolded templates', () => {
         expect(manifest.documentTypes.Actor.character.htmlFields).toEqual(['biography']);
       });
 
-      it('ships template.json with declared types', async () => {
+      it('ships no template.json, which would erase the manifest metadata', async () => {
         await scaffold({
           templateDir: join(templatesRoot(), variant),
           destDir,
           vars: VARS,
         });
-        const template = JSON.parse(readFileSync(join(destDir, 'template.json'), 'utf8'));
-        expect(template.Actor.types).toContain('character');
-        expect(template.Item.types).toContain('gear');
+        // Foundry replaces a type's `documentTypes` entry with a fresh object
+        // for every type template.json lists, carrying over only htmlFields,
+        // filePathFields and gmOnlyFields, and reading those from the document
+        // level. Shipping one here would drop the htmlFields asserted above.
+        expect(existsSync(join(destDir, 'template.json'))).toBe(false);
       });
 
       it('ships Handlebars sheet templates', async () => {

@@ -29,7 +29,6 @@ Then create a world on **{{TITLE}}** and open a character.
 | Path | Purpose |
 |---|---|
 | `system.json` | Manifest: types, `htmlFields`, hot-reload paths, migration flags |
-| `template.json` | The type names Foundry expects to see declared |
 | `scripts/main.ts` | One `registerSystem` call: models, sheets, initiative, settings, migrations |
 | `scripts/data/*.ts` | Data models. The schema is a function handed to `BaseTypeDataModel`, which is what makes `this.level` a `number` |
 | `scripts/sheets/*.ts` | Sheets on `BaseActorSheet` / `BaseItemSheet`: `static TABS`, `static DRAG_DROP`, typed `onDropItem` |

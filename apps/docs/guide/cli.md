@@ -70,6 +70,7 @@ quietly: nothing in the console, a feature that just does not work.
 | `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field; the token bar degrades with no error |
 | `VTTF-AUDIT-008` | HIGH | A sheet template that opens its own `<form>` when the sheet base already is one; the fields belong to the inner form and every edit is dropped on close |
 | `VTTF-AUDIT-009` | MEDIUM | A subtype declared in `documentTypes` with no `TYPES` label; Foundry prints the raw key as the type's name |
+| `VTTF-AUDIT-010` | HIGH | A `template.json` listing a type whose `documentTypes` entry declares `htmlFields`, `filePathFields` or `gmOnlyFields`; Foundry replaces the entry and drops them |
 
 Rules 004 and 007 read the schema whether it is a `static defineSchema()` or
 a function handed to `BaseTypeDataModel`, and scope it to the class

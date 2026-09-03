@@ -67,5 +67,4 @@ tests/
 styles/example.css                ← @import '@vttforge/styles' + per-system rules
 lang/en.json                      ← localisation strings (incl. TYPES.Actor.*, TYPES.Item.*)
 system.json                       ← Foundry v13 manifest (id: vttforge-example)
-template.json                     ← Actor/Item type declarations
 ```
