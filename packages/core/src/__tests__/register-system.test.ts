@@ -224,4 +224,70 @@ describe('registerSystem', () => {
     initCallback();
     expect(enrichers.map((e) => e.id)).toEqual(['my-system.spell']);
   });
+
+  it('does not register i18nInit or setup hooks when their callbacks are omitted', () => {
+    const { hooks } = setupFoundryGlobals();
+    registerSystem({ id: 'my-system' });
+    const staged = hooks.once.mock.calls.map((call) => call[0]);
+    expect(staged).not.toContain('i18nInit');
+    expect(staged).not.toContain('setup');
+  });
+
+  it('runs onI18nInit on the i18nInit hook, not on init', () => {
+    const { hooks } = setupFoundryGlobals();
+    const onI18nInit = vi.fn();
+    registerSystem({ id: 'my-system', onI18nInit });
+
+    // The whole point of the hook: CONFIG labels cannot be translated during
+    // init, because game.i18n has not loaded yet.
+    const initCallback = hooks.once.mock.calls.find(
+      (call) => call[0] === 'init',
+    )?.[1] as () => void;
+    initCallback();
+    expect(onI18nInit).not.toHaveBeenCalled();
+
+    const callback = hooks.once.mock.calls.find(
+      (call) => call[0] === 'i18nInit',
+    )?.[1] as () => void;
+    expect(callback).toBeDefined();
+    callback();
+    expect(onI18nInit).toHaveBeenCalledOnce();
+  });
+
+  it('runs onSetup on the setup hook', () => {
+    const { hooks } = setupFoundryGlobals();
+    const onSetup = vi.fn();
+    registerSystem({ id: 'my-system', onSetup });
+    const callback = hooks.once.mock.calls.find((call) => call[0] === 'setup')?.[1] as () => void;
+    expect(callback).toBeDefined();
+    callback();
+    expect(onSetup).toHaveBeenCalledOnce();
+  });
+
+  it('supports async onSetup (returned promise is fire-and-forget)', async () => {
+    const { hooks } = setupFoundryGlobals();
+    let resolved = false;
+    const onSetup = vi.fn(async () => {
+      await Promise.resolve();
+      resolved = true;
+    });
+    registerSystem({ id: 'my-system', onSetup });
+    const callback = hooks.once.mock.calls.find((call) => call[0] === 'setup')?.[1] as () => void;
+    callback();
+    await Promise.resolve();
+    expect(resolved).toBe(true);
+  });
+
+  it('stages all four callbacks in the order Foundry fires them', () => {
+    const { hooks } = setupFoundryGlobals();
+    registerSystem({
+      id: 'my-system',
+      onAfterInit: vi.fn(),
+      onI18nInit: vi.fn(),
+      onSetup: vi.fn(),
+      onReady: vi.fn(),
+    });
+    const staged = hooks.once.mock.calls.map((call) => call[0]);
+    expect(staged).toEqual(['init', 'i18nInit', 'setup', 'ready']);
+  });
 });
