@@ -250,6 +250,87 @@ describe('runManifestRules', () => {
     });
   });
 
+  describe('VTTF-AUDIT-010 — template.json shadowing documentTypes', () => {
+    const SYSTEM = {
+      id: 'my-system',
+      documentTypes: {
+        Actor: { character: { htmlFields: ['biography'] } },
+        Item: { gear: { htmlFields: ['description'] } },
+      },
+    };
+
+    async function write(system: unknown, template: unknown | null): Promise<void> {
+      await writeFile(join(cwd, 'system.json'), JSON.stringify(system, null, 2), 'utf8');
+      if (template !== null) {
+        await writeFile(join(cwd, 'template.json'), JSON.stringify(template, null, 2), 'utf8');
+      }
+    }
+
+    async function findings(): Promise<Awaited<ReturnType<typeof runManifestRules>>> {
+      return (await runManifestRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-010');
+    }
+
+    it('is silent when there is no template.json', async () => {
+      await write(SYSTEM, null);
+      expect(await findings()).toEqual([]);
+    });
+
+    it('reports each type whose metadata template.json would erase', async () => {
+      await write(SYSTEM, { Actor: { types: ['character'] }, Item: { types: ['gear'] } });
+      const found = await findings();
+      expect(found).toHaveLength(2);
+      expect(found[0]?.severity).toBe('HIGH');
+      expect(found[0]?.filePath).toBe('template.json');
+      expect(found.map((r) => r.message).join(' ')).toContain('htmlFields');
+    });
+
+    it('is silent when the type carries no metadata to lose', async () => {
+      await write(
+        { id: 'my-system', documentTypes: { Actor: { character: {} } } },
+        { Actor: { types: ['character'] } },
+      );
+      expect(await findings()).toEqual([]);
+    });
+
+    it('is silent when template.json already carries the key at document level', async () => {
+      // Foundry copies these three from the document level, so declaring them
+      // there means nothing is actually lost.
+      await write(SYSTEM, {
+        Actor: { types: ['character'], htmlFields: ['biography'] },
+        Item: { types: ['gear'], htmlFields: ['description'] },
+      });
+      expect(await findings()).toEqual([]);
+    });
+
+    it('is silent for a type template.json does not list', async () => {
+      await write(SYSTEM, { Actor: { types: ['npc'] }, Item: { types: [] } });
+      expect(await findings()).toEqual([]);
+    });
+
+    it('ignores a module manifest, which Foundry reads no template.json for', async () => {
+      await writeFile(
+        join(cwd, 'module.json'),
+        JSON.stringify({
+          id: 'my-module',
+          documentTypes: { Item: { note: { htmlFields: ['body'] } } },
+        }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'template.json'),
+        JSON.stringify({ Item: { types: ['note'] } }),
+        'utf8',
+      );
+      expect(await findings()).toEqual([]);
+    });
+
+    it('survives a template.json that will not parse', async () => {
+      await writeFile(join(cwd, 'system.json'), JSON.stringify(SYSTEM), 'utf8');
+      await writeFile(join(cwd, 'template.json'), '{ not json', 'utf8');
+      expect(await findings()).toEqual([]);
+    });
+  });
+
   describe('multi-rule aggregation', () => {
     it('emits all three rules in a worst-case manifest', async () => {
       await writeFile(

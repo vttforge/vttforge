@@ -9,13 +9,14 @@
  *   VTTF-AUDIT-002 (MEDIUM): deprecated gridDistance/gridUnits
  *   VTTF-AUDIT-003 (LOW)   : styles array of strings (v12 shape)
  *   VTTF-AUDIT-009 (MEDIUM): a documentTypes subtype with no TYPES label
+ *   VTTF-AUDIT-010 (HIGH)  : template.json erasing documentTypes metadata
  *
  * Each rule emits zero or more `RuleResult`s. Line numbers are looked up
  * cheaply by scanning the raw JSON for the offending key. Accurate
  * enough for navigation, no AST dependency.
  */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { RuleResult } from './types.js';
@@ -309,6 +310,89 @@ function nestedExample(dotted: string): string {
  * Entry point: run every manifest rule against every manifest at the
  * project root.
  */
+/**
+ * VTTF-AUDIT-010 (HIGH) — `template.json` erases the metadata that
+ * `system.json` declares for the same type.
+ *
+ * On load, Foundry reads `template.json` and, for every type it lists,
+ * replaces that type's entry in `documentTypes` with a fresh object. Into the
+ * new object it copies only `htmlFields`, `filePathFields` and `gmOnlyFields`,
+ * and it reads them from the document level of `template.json`, not from the
+ * type. So this in `system.json`:
+ *
+ * ```json
+ * "documentTypes": { "Actor": { "character": { "htmlFields": ["biography"] } } }
+ * ```
+ *
+ * is thrown away the moment `template.json` lists `character` under `Actor`.
+ *
+ * Nothing errors, and the type still works. What is lost is every behaviour
+ * that keys off those lists: HTML sanitization, ProseMirror enrichment, asset
+ * path migration and search indexing. The field goes on saving and loading,
+ * so the loss is invisible until a value comes back stripped or a path fails
+ * to migrate.
+ *
+ * A system whose schemas come from `TypeDataModel` does not need
+ * `template.json` at all: `documentTypes` declares the types and the data
+ * model owns the shape.
+ */
+function ruleTemplateJsonShadowing(cwd: string, manifest: LoadedManifest): RuleResult[] {
+  // Only a system manifest is affected; Foundry reads no template.json for a
+  // module.
+  if (!manifest.path.endsWith('system.json')) return [];
+
+  const templatePath = join(cwd, 'template.json');
+  if (!existsSync(templatePath)) return [];
+
+  const documentTypes = manifest.parsed.documentTypes;
+  if (documentTypes === null || typeof documentTypes !== 'object') return [];
+
+  let template: Record<string, unknown>;
+  try {
+    template = JSON.parse(readFileSync(templatePath, 'utf8')) as Record<string, unknown>;
+  } catch {
+    // A template.json that will not parse is a different failure, and the
+    // build reports it. Not this rule's business.
+    return [];
+  }
+
+  const CARRIED = ['htmlFields', 'filePathFields', 'gmOnlyFields'] as const;
+  const results: RuleResult[] = [];
+
+  for (const [documentName, declared] of Object.entries(documentTypes as Record<string, unknown>)) {
+    if (declared === null || typeof declared !== 'object') continue;
+    const templateDoc = template[documentName];
+    if (templateDoc === null || typeof templateDoc !== 'object') continue;
+    const listed = (templateDoc as { types?: unknown }).types;
+    if (!Array.isArray(listed)) continue;
+
+    for (const [type, meta] of Object.entries(declared as Record<string, unknown>)) {
+      if (!listed.includes(type)) continue;
+      if (meta === null || typeof meta !== 'object') continue;
+
+      // Only report what is actually lost. A bare `{}` loses nothing, and a
+      // key already present at the document level survives the copy.
+      const lost = CARRIED.filter(
+        (key) => key in (meta as Record<string, unknown>) && !(key in templateDoc),
+      );
+      if (lost.length === 0) continue;
+
+      results.push({
+        ruleId: 'VTTF-AUDIT-010',
+        title: 'template.json erases documentTypes metadata',
+        severity: 'HIGH',
+        filePath: 'template.json',
+        line: findKeyLine(readFileSync(templatePath, 'utf8'), documentName),
+        message: `template.json lists ${documentName} type "${type}", so Foundry replaces that type's documentTypes entry and drops ${lost.join(', ')} declared in system.json. Sanitization, enrichment and asset migration stop applying to those fields, silently.`,
+        remediation:
+          'Delete template.json. Your types are declared in system.json under `documentTypes`, and the schema comes from the TypeDataModel registered on `CONFIG.<Document>.dataModels`. If you still need it, move the lost keys up to the document level of template.json instead of the type.',
+      });
+    }
+  }
+
+  return results;
+}
+
 export async function runManifestRules(cwd: string): Promise<RuleResult[]> {
   const manifests = await loadManifests(cwd);
   const results: RuleResult[] = [];
@@ -317,6 +401,7 @@ export async function runManifestRules(cwd: string): Promise<RuleResult[]> {
     results.push(...ruleGridShape(manifest));
     results.push(...ruleStylesShape(manifest));
     results.push(...(await ruleTypeLabels(cwd, manifest)));
+    results.push(...ruleTemplateJsonShadowing(cwd, manifest));
   }
   return results;
 }
