@@ -8,14 +8,18 @@
  * Only tokens and the reset sit in a cascade layer. Base, components and the
  * theme are deliberately unlayered.
  *
- * The reason is a rule of the cascade itself: an unlayered author rule beats
- * every layered author rule, whatever the specificity. Foundry loads a system
- * or module stylesheet unlayered unless its manifest asks otherwise, so most
- * packages on the page write plain CSS. Put these components in a layer and a
- * bare `button { border-radius: 99px }` from an unrelated module overrides
- * every one of them, and no amount of specificity gets it back. Leaving the
- * visible parts unlayered is what keeps a VTTForge sheet looking like itself
- * when other packages are installed.
+ * Foundry has already put this file in a layer by the time you see it. A
+ * system's stylesheet goes in `@layer system` and a module's in
+ * `@layer modules`; the manifest's `styles` entry takes an optional `layer`,
+ * and leaving it out lets the server fill one in. So the question here is
+ * never whether these rules are layered. It is how they sort against the rest
+ * of what is in that same layer, which is your own CSS.
+ *
+ * An unlayered rule beats every layered one in the same layer, whatever the
+ * specificity. Sub-layer the components and a bare `button { }` of yours beats
+ * `.vttf-btn`, and nothing you write can lose. That sounds convenient until a
+ * broad selector meant for one corner restyles every component. Leaving them
+ * unlayered puts the two on the same footing, where specificity decides.
  *
  * Tokens and the reset stay layered on purpose, and lose on purpose. Tokens are
  * custom properties a consumer must be able to override with one plain

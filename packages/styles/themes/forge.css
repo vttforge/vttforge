@@ -6,8 +6,8 @@
  * preference takes over. Explicit `data-theme="light"` and
  * `data-theme="foundry"` are handled by tokens.css.
  *
- * Imported after components and, like them, unlayered: theme overrides win on
- * source order.
+ * Imported after components and, like them, unlayered, so theme overrides win
+ * on source order.
  */
 
 @media (prefers-color-scheme: light) {
