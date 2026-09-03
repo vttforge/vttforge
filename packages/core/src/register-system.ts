@@ -5,14 +5,17 @@
  * Conforms to the canonical Foundry init lifecycle:
  *
  *   init       → CONFIG mutations (dataModels, documentClass, statusEffects)
- *   i18nInit   → translate CONFIG labels
- *   setup      → enrichers, packs
+ *   i18nInit   → translate the labels those mutations just wrote
+ *   setup      → work that needs registered settings or loaded packages
  *   ready      → migrations (GM-only; the consumer guards inside onReady)
  *
- * v0.1 scope: `init` + `ready`. `setup` / `i18nInit` callbacks remain v0.1.1.
+ * All four are offered. The middle two exist because `init` is too early for
+ * some work and `ready` is too late: `game.i18n` has not loaded during `init`,
+ * so a CONFIG label translated there comes out as its own key, and settings
+ * registered during `init` cannot be read until `setup`.
  *
- * Per PRD §11 open question #1, we wrap the hook ourselves ("explicit hook for
- * now"); callers don't need to write `Hooks.once("init", ...)` themselves.
+ * We wrap the hooks so callers never write `Hooks.once("init", ...)`
+ * themselves.
  */
 
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
@@ -82,6 +85,37 @@ export interface SystemRegistration {
   readonly onAfterInit?: () => void;
 
   /**
+   * Optional `i18nInit` hook. Fires after Foundry loads the language files and
+   * before `setup`.
+   *
+   * This is where CONFIG labels get translated. `game.i18n` is not loaded
+   * during `init`, so `game.i18n.localize()` called there returns the key you
+   * passed it, and the untranslated key is what players see. Do it here
+   * instead, once, rather than localizing on every render.
+   *
+   * @example
+   * ```ts
+   * onI18nInit: () => {
+   *   for (const ability of Object.values(CONFIG.MY_SYSTEM.abilities)) {
+   *     ability.label = game.i18n.localize(ability.label);
+   *   }
+   * },
+   * ```
+   */
+  readonly onI18nInit?: () => void;
+
+  /**
+   * Optional `setup` hook. Fires after every package is loaded and before the
+   * canvas is drawn.
+   *
+   * The home for work that `init` is too early for and `ready` too late: a
+   * setting registered during `init` can only be read from here on, and
+   * compendium packs are available. Keep world data out of it, that is
+   * `onReady`.
+   */
+  readonly onSetup?: () => void | Promise<void>;
+
+  /**
    * Optional `ready` hook. Fires once after Foundry has finished bootstrap.
    * The natural home for migration runners (`createMigrationRunner().run()`).
    *
@@ -142,6 +176,16 @@ export function registerSystem(config: SystemRegistration): SystemRegistration {
   hooks.once('init', () => {
     applyInit(config);
   });
+  if (config.onI18nInit !== undefined) {
+    hooks.once('i18nInit', () => {
+      config.onI18nInit?.();
+    });
+  }
+  if (config.onSetup !== undefined) {
+    hooks.once('setup', () => {
+      void config.onSetup?.();
+    });
+  }
   if (config.onReady !== undefined) {
     hooks.once('ready', () => {
       // Foundry awaits ready-hook results, but `Hooks.once` types it as
