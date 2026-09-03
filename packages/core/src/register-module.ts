@@ -67,6 +67,26 @@ export interface ModuleRegistration {
   readonly onAfterInit?: () => void;
 
   /**
+   * Runs on `i18nInit`, after Foundry loads the language files.
+   *
+   * This is where CONFIG labels get translated. `game.i18n` is not loaded
+   * during `init`, so `game.i18n.localize()` called there returns the key you
+   * passed it, and the untranslated key is what players see.
+   */
+  readonly onI18nInit?: () => void;
+
+  /**
+   * Runs on `setup`, after every package is loaded and before the canvas is
+   * drawn.
+   *
+   * For a module this is also the first point where the system it is extending
+   * has finished its own `init`, so it is the place to read what the system
+   * registered. A setting registered during `init` can only be read from here
+   * on. Keep world data out of it, that is `onReady`.
+   */
+  readonly onSetup?: () => void | Promise<void>;
+
+  /**
    * Runs once on `ready`.
    *
    * **Not GM-gated.** Guard inside your callback when the work is GM-only.
@@ -150,6 +170,16 @@ export function registerModule(config: ModuleRegistration): ModuleRegistration {
   hooks.once('init', () => {
     applyInit(config);
   });
+  if (config.onI18nInit !== undefined) {
+    hooks.once('i18nInit', () => {
+      config.onI18nInit?.();
+    });
+  }
+  if (config.onSetup !== undefined) {
+    hooks.once('setup', () => {
+      void config.onSetup?.();
+    });
+  }
   if (config.onReady !== undefined) {
     hooks.once('ready', () => {
       void config.onReady?.();
