@@ -116,93 +116,63 @@ test('a character sheet renders its parts and its derived data', async ({ page }
   expect(sheet.derived.strMod).toBe(0);
 });
 
-test("another package's plain CSS cannot restyle the sheet", async ({ page }) => {
+test("the sheet styles compose with the system's own CSS, and yield to modules", async ({
+  page,
+}) => {
   await joinWorld(page);
 
-  // An unlayered author rule beats every layered one, whatever the
-  // specificity, and layer order is settled before specificity is consulted.
-  // Foundry loads a system or module stylesheet unlayered unless the manifest
-  // asks otherwise, so most packages on the page write plain CSS. Put the
-  // components in a layer and a bare element selector from an unrelated
-  // module wins.
+  // Foundry puts a system's stylesheet in `@layer system` and a module's in
+  // `@layer modules`. The manifest's `styles` entry takes an optional `layer`
+  // and the server fills one in when it is left out, so this file is layered
+  // before anyone here gets a say.
   //
-  // Two of ours stay layered on purpose. Tokens are custom properties a
-  // consumer overrides with one plain declaration, and the reset touches bare
-  // elements, so neither should outrank a real rule from the system around it.
-  const ALLOWED = ['vttforge.tokens', 'vttforge.reset'];
-
-  const cascade = await page.evaluate(async (allowed) => {
+  // That settles two different questions, and this test holds both.
+  const cascade = await page.evaluate(async () => {
     const actor = await Actor.create({ name: 'Cascade Check', type: 'character' });
     await actor.sheet.render(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // The example system styles its sheet with its own classes, so nothing on
     // screen carries a `.vttf-` class. The element is planted; the stylesheet,
-    // the page and the rival rule below are all real.
+    // the page and the rival rules are all real.
     const button = document.createElement('button');
     button.className = 'vttf-btn';
     actor.sheet.element.querySelector('.window-content').append(button);
-    const before = getComputedStyle(button).borderRadius;
 
-    // Stand in for a second module, loaded after ours, styling elements the
-    // way modules commonly do: no layer, barely any specificity.
-    const rival = document.createElement('style');
-    rival.textContent = 'button { border-radius: 99px; }';
-    document.head.append(rival);
-    const after = getComputedStyle(button).borderRadius;
-
-    // Walk every stylesheet and note which layer, if any, each of our rules
-    // sits in. A cross-origin sheet throws on `cssRules`, so the count of
-    // those is carried out for the failure message: it explains an empty
-    // result that would otherwise look like a pass.
-    const offenders = [];
-    let unlayeredCount = 0;
-    let unreadable = 0;
-
-    const visit = (rules, layerName) => {
-      for (const rule of rules) {
-        if (rule instanceof CSSImportRule) {
-          if (rule.styleSheet) visit(rule.styleSheet.cssRules, rule.layerName ?? layerName);
-        } else if (rule instanceof CSSLayerBlockRule) {
-          visit(rule.cssRules, rule.name || '(anonymous)');
-        } else if (rule instanceof CSSGroupingRule) {
-          visit(rule.cssRules, layerName);
-        } else if (rule instanceof CSSStyleRule && rule.selectorText.includes('vttf-')) {
-          if (layerName === null) unlayeredCount += 1;
-          else if (!allowed.includes(layerName)) {
-            offenders.push(`@layer ${layerName} { ${rule.selectorText} }`);
-          }
-        }
-      }
+    const withRival = (css) => {
+      const style = document.createElement('style');
+      style.textContent = css;
+      document.head.append(style);
+      const radius = getComputedStyle(button).borderRadius;
+      style.remove();
+      return radius;
     };
 
-    for (const sheet of document.styleSheets) {
-      try {
-        visit(sheet.cssRules, null);
-      } catch {
-        unreadable += 1;
-      }
-    }
+    const alone = getComputedStyle(button).borderRadius;
+    // The system's own stylesheet, which lands in the same layer as ours.
+    const versusSystem = withRival('@layer system { button { border-radius: 55px; } }');
+    // A module, which Foundry sorts after every system.
+    const versusModule = withRival('@layer modules { button { border-radius: 99px; } }');
 
-    rival.remove();
     button.remove();
-    return { unreadable, unlayeredCount, offenders: offenders.slice(0, 10), before, after };
-  }, ALLOWED);
+    return { alone, versusSystem, versusModule };
+  });
 
-  // Proves the walk actually read our stylesheet, so an empty `offenders` is
-  // a real result and not a sheet it could not open.
-  expect(
-    cascade.unlayeredCount,
-    `no unlayered VTTForge rules found; ${cascade.unreadable} stylesheets were unreadable`,
-  ).toBeGreaterThan(50);
-  expect(
-    cascade.offenders,
-    'these rules paint the sheet from inside a cascade layer, so plain CSS from any other module beats them',
-  ).toEqual([]);
+  const seen = `alone ${cascade.alone}, against the system ${cascade.versusSystem}, against a module ${cascade.versusModule}`;
 
-  // --vttf-radius-md, and it holds while the rival rule is on the page.
-  expect(cascade.before).toBe('6px');
-  expect(cascade.after).toBe('6px');
+  // --vttf-radius-md, applied.
+  expect(cascade.alone, seen).toBe('6px');
+
+  // The point of leaving components unlayered: inside Foundry's `system`
+  // layer, a bare `button` selector of the system's own no longer outranks
+  // `.vttf-btn` for free. Specificity decides, and `.vttf-btn` has more of it.
+  expect(cascade.versusSystem, seen).toBe('6px');
+
+  // And the point of not fighting the platform: a module still wins, because
+  // Foundry orders `system` before `modules` so that modules can override
+  // systems. This fails if anyone sets `"layer": null` on the manifest entry
+  // to jump that queue.
+  expect(cascade.versusModule, seen).toBe('99px');
 });
 
 test('the module contributes a namespaced sub-type once enabled', async ({ page }) => {
