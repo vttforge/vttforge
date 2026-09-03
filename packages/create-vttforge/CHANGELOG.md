@@ -1,5 +1,13 @@
 # create-vttforge
 
+## 0.3.10
+
+### Patch Changes
+
+- Updated dependencies [65e8c13]
+- Updated dependencies [65e8c13]
+  - @vttforge/cli@0.6.0
+
 ## 0.3.9
 
 ### Patch Changes
