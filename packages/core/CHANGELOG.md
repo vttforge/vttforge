@@ -385,9 +385,9 @@
 run(), targetVersion }`. Call `register()` from `init` to register the
   `schemaVersion` setting; call `run()` from `ready` (gated by
   `game.user.isGM`) to execute every pending migration in order. Migrations use
-  semver versions and `foundry.utils.isNewerVersion` for comparison — the same
+  semver versions and `foundry.utils.isNewerVersion` for comparison, the same
   contract `system.json`'s `flags.<systemId>.needsMigrationVersion` /
-  `compatibleMigrationVersion` use, matching the dnd5e production pattern.
+  `compatibleMigrationVersion` use.
 
   Failure semantics: `schemaVersion` is committed per-migration, so a
   mid-sequence throw leaves the world at the last successful version and the
