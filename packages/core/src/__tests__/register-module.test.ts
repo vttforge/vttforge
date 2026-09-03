@@ -22,11 +22,19 @@ class PdfActorData {}
 let CONFIG: FoundryConfig;
 let initHooks: Array<() => void>;
 let readyHooks: Array<() => void>;
+/** Every hook staged, in the order registerModule staged it. */
+let staged: Array<[string, () => void]>;
+
+/** The callbacks staged for one hook name. */
+function hooksFor(event: string): Array<() => void> {
+  return staged.filter(([name]) => name === event).map(([, fn]) => fn);
+}
 
 beforeEach(() => {
   _resetRegisteredModulesForTests();
   initHooks = [];
   readyHooks = [];
+  staged = [];
   CONFIG = {
     Actor: { dataModels: {}, documentClass: 'SystemActor' },
     Item: { dataModels: {}, documentClass: 'SystemItem' },
@@ -37,6 +45,7 @@ beforeEach(() => {
   (globalThis as Record<string, unknown>).CONFIG = CONFIG;
   (globalThis as Record<string, unknown>).Hooks = {
     once: (event: string, fn: () => void) => {
+      staged.push([event, fn]);
       if (event === 'init') initHooks.push(fn);
       if (event === 'ready') readyHooks.push(fn);
       return 0;
@@ -176,5 +185,58 @@ describe('registerModule', () => {
     });
     fireInit();
     expect(enrichers.map((e) => e.id)).toEqual(['pdf-character-sheet.link']);
+  });
+
+  it('does not register i18nInit or setup hooks when their callbacks are omitted', () => {
+    registerModule({ id: MODULE_ID });
+    expect(hooksFor('i18nInit')).toHaveLength(0);
+    expect(hooksFor('setup')).toHaveLength(0);
+  });
+
+  it('runs onI18nInit on the i18nInit hook, not on init', () => {
+    const onI18nInit = vi.fn();
+    registerModule({ id: MODULE_ID, onI18nInit });
+
+    // The whole point of the hook: CONFIG labels cannot be translated during
+    // init, because game.i18n has not loaded yet.
+    for (const hook of initHooks) hook();
+    expect(onI18nInit).not.toHaveBeenCalled();
+
+    const [hook] = hooksFor('i18nInit');
+    expect(hook).toBeDefined();
+    hook?.();
+    expect(onI18nInit).toHaveBeenCalledOnce();
+  });
+
+  it('runs onSetup on the setup hook', () => {
+    const onSetup = vi.fn();
+    registerModule({ id: MODULE_ID, onSetup });
+    const [hook] = hooksFor('setup');
+    expect(hook).toBeDefined();
+    hook?.();
+    expect(onSetup).toHaveBeenCalledOnce();
+  });
+
+  it('supports async onSetup (the returned promise is fire-and-forget)', async () => {
+    let resolved = false;
+    const onSetup = vi.fn(async () => {
+      await Promise.resolve();
+      resolved = true;
+    });
+    registerModule({ id: MODULE_ID, onSetup });
+    hooksFor('setup')[0]?.();
+    await Promise.resolve();
+    expect(resolved).toBe(true);
+  });
+
+  it('stages all four callbacks in the order Foundry fires them', () => {
+    registerModule({
+      id: MODULE_ID,
+      onAfterInit: vi.fn(),
+      onI18nInit: vi.fn(),
+      onSetup: vi.fn(),
+      onReady: vi.fn(),
+    });
+    expect(staged.map(([name]) => name)).toEqual(['init', 'i18nInit', 'setup', 'ready']);
   });
 });

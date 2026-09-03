@@ -107,6 +107,7 @@ export default defineConfig({
           text: 'Guide',
           items: [
             { text: 'Getting started', link: '/guide/getting-started' },
+            { text: 'The startup lifecycle', link: '/guide/lifecycle' },
             { text: 'Data models', link: '/guide/data-models' },
             { text: 'Sheets', link: '/guide/sheets' },
             { text: 'Modules', link: '/guide/modules' },
