@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@vttforge/core": "^0.11.0",
-    "@vttforge/styles": "^0.3.0"
+    "@vttforge/styles": "^0.4.0"
   },
   "devDependencies": {
     "@vttforge/cli": "^0.6.0",
