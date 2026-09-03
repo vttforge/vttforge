@@ -1,16 +1,29 @@
 /*!
  * @vttforge/styles
  *
- * One-line import for consumers that want everything VTTForge ships, in the right
- * cascade-layer order.
+ * One-line import for consumers that want everything VTTForge ships:
  *
  *   @import '@vttforge/styles';
  *
- * Layer order matches Foundry v13's outer layer: tokens → reset → base → components → themes.
- * Foundry's own runtime wraps system CSS in its top-level `system` layer.
+ * Only tokens and the reset sit in a cascade layer. Base, components and the
+ * theme are deliberately unlayered.
+ *
+ * The reason is a rule of the cascade itself: an unlayered author rule beats
+ * every layered author rule, whatever the specificity. Foundry loads a system
+ * or module stylesheet unlayered unless its manifest asks otherwise, so most
+ * packages on the page write plain CSS. Put these components in a layer and a
+ * bare `button { border-radius: 99px }` from an unrelated module overrides
+ * every one of them, and no amount of specificity gets it back. Leaving the
+ * visible parts unlayered is what keeps a VTTForge sheet looking like itself
+ * when other packages are installed.
+ *
+ * Tokens and the reset stay layered on purpose, and lose on purpose. Tokens are
+ * custom properties a consumer must be able to override with one plain
+ * declaration. The reset touches bare elements inside `.vttf-app`, so keeping it
+ * layered means it never outranks a real rule from the system around it.
  */
 
-@layer vttforge.tokens, vttforge.reset, vttforge.base, vttforge.components, vttforge.themes;
+@layer vttforge.tokens, vttforge.reset;
 
 @import "./dist/tokens.css";
 @import "./reset.css";
