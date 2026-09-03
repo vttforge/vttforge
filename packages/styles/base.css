@@ -3,8 +3,8 @@
  *
  * Element baselines and shared utilities on top of `tokens` + `reset`.
  *
- * Unlayered, so a plain rule from another package cannot outrank these
- * baselines. See `index.css` for why.
+ * Unlayered, so these baselines sort against a consumer's own CSS on
+ * specificity rather than always losing to it. See `index.css` for why.
  *
  * Owns `--vttf-focus-ring` rendering; components MUST NOT override `:focus-visible`.
  */

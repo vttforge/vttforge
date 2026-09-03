@@ -2,16 +2,19 @@
  * @vttforge/styles — styles.layer.css
  *
  * The opt-in variant: everything VTTForge ships, wrapped in one `@layer
- * vttforge` you can order against your own layers.
+ * vttforge` you can order against layers of your own.
  *
- *   @layer reset, vttforge, my-system;
+ *   @layer vttforge, my-system;
  *   @import '@vttforge/styles/layer';
  *
- * This entry trades away the cascade position the default entry gives you.
- * Inside a layer, VTTForge's own rules lose to every unlayered rule on the
- * page, which is how most other systems and modules ship their CSS. That is
- * the point of the variant: you decide where the styles sit. Reach for
- * `index.css` unless you have that need.
+ * Foundry has already placed this file in `@layer system` (or `modules`), so
+ * this nests a layer inside that one. The effect is that every rule here loses
+ * to your own CSS in the same layer, whatever the specificity, which is the
+ * behaviour the default entry deliberately does not have.
+ *
+ * That is the trade the variant exists to make: you give up composing on
+ * specificity in exchange for being able to order these styles as a block.
+ * Reach for `index.css` unless you need that.
  */
 
 @layer vttforge {
