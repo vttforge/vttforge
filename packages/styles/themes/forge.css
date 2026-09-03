@@ -6,26 +6,24 @@
  * preference takes over. Explicit `data-theme="light"` and
  * `data-theme="foundry"` are handled by tokens.css.
  *
- * Imported by `index.css` and `styles.layer.css` after components, so theme
- * overrides win cleanly inside `@layer vttforge.themes`.
+ * Imported after components and, like them, unlayered: theme overrides win on
+ * source order.
  */
 
-@layer vttforge.themes {
-  @media (prefers-color-scheme: light) {
-    :where([data-theme="auto"]) {
-      --vttf-bg: oklch(0.985 0.004 80);
-      --vttf-bg-elevated: oklch(0.972 0.006 78);
-      --vttf-bg-sunken: oklch(0.945 0.01 72);
-      --vttf-surface: oklch(0.962 0.008 75);
-      --vttf-surface-2: oklch(0.928 0.012 68);
-      --vttf-border: oklch(0.88 0.014 62);
-      --vttf-border-strong: oklch(0.76 0.016 58);
-      --vttf-text: oklch(0.215 0.02 42);
-      --vttf-text-muted: oklch(0.43 0.018 48);
-      --vttf-text-faint: oklch(0.595 0.014 55);
-      --vttf-ember: oklch(0.565 0.18 36);
-      --vttf-ember-deep: oklch(0.43 0.16 30);
-      --vttf-ember-glow: oklch(0.67 0.17 42);
-    }
+@media (prefers-color-scheme: light) {
+  :where([data-theme="auto"]) {
+    --vttf-bg: oklch(0.985 0.004 80);
+    --vttf-bg-elevated: oklch(0.972 0.006 78);
+    --vttf-bg-sunken: oklch(0.945 0.01 72);
+    --vttf-surface: oklch(0.962 0.008 75);
+    --vttf-surface-2: oklch(0.928 0.012 68);
+    --vttf-border: oklch(0.88 0.014 62);
+    --vttf-border-strong: oklch(0.76 0.016 58);
+    --vttf-text: oklch(0.215 0.02 42);
+    --vttf-text-muted: oklch(0.43 0.018 48);
+    --vttf-text-faint: oklch(0.595 0.014 55);
+    --vttf-ember: oklch(0.565 0.18 36);
+    --vttf-ember-deep: oklch(0.43 0.16 30);
+    --vttf-ember-glow: oklch(0.67 0.17 42);
   }
 }

@@ -116,6 +116,95 @@ test('a character sheet renders its parts and its derived data', async ({ page }
   expect(sheet.derived.strMod).toBe(0);
 });
 
+test('another package\'s plain CSS cannot restyle the sheet', async ({ page }) => {
+  await joinWorld(page);
+
+  // An unlayered author rule beats every layered one, whatever the
+  // specificity, and layer order is settled before specificity is consulted.
+  // Foundry loads a system or module stylesheet unlayered unless the manifest
+  // asks otherwise, so most packages on the page write plain CSS. Put the
+  // components in a layer and a bare element selector from an unrelated
+  // module wins.
+  //
+  // Two of ours stay layered on purpose. Tokens are custom properties a
+  // consumer overrides with one plain declaration, and the reset touches bare
+  // elements, so neither should outrank a real rule from the system around it.
+  const ALLOWED = ['vttforge.tokens', 'vttforge.reset'];
+
+  const cascade = await page.evaluate(async (allowed) => {
+    const actor = await Actor.create({ name: 'Cascade Check', type: 'character' });
+    await actor.sheet.render(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // The example system styles its sheet with its own classes, so nothing on
+    // screen carries a `.vttf-` class. The element is planted; the stylesheet,
+    // the page and the rival rule below are all real.
+    const button = document.createElement('button');
+    button.className = 'vttf-btn';
+    actor.sheet.element.querySelector('.window-content').append(button);
+    const before = getComputedStyle(button).borderRadius;
+
+    // Stand in for a second module, loaded after ours, styling elements the
+    // way modules commonly do: no layer, barely any specificity.
+    const rival = document.createElement('style');
+    rival.textContent = 'button { border-radius: 99px; }';
+    document.head.append(rival);
+    const after = getComputedStyle(button).borderRadius;
+
+    // Walk every stylesheet and note which layer, if any, each of our rules
+    // sits in. A cross-origin sheet throws on `cssRules`, so the count of
+    // those is carried out for the failure message: it explains an empty
+    // result that would otherwise look like a pass.
+    const offenders = [];
+    let unlayeredCount = 0;
+    let unreadable = 0;
+
+    const visit = (rules, layerName) => {
+      for (const rule of rules) {
+        if (rule instanceof CSSImportRule) {
+          if (rule.styleSheet) visit(rule.styleSheet.cssRules, rule.layerName ?? layerName);
+        } else if (rule instanceof CSSLayerBlockRule) {
+          visit(rule.cssRules, rule.name || '(anonymous)');
+        } else if (rule instanceof CSSGroupingRule) {
+          visit(rule.cssRules, layerName);
+        } else if (rule instanceof CSSStyleRule && rule.selectorText.includes('vttf-')) {
+          if (layerName === null) unlayeredCount += 1;
+          else if (!allowed.includes(layerName)) {
+            offenders.push(`@layer ${layerName} { ${rule.selectorText} }`);
+          }
+        }
+      }
+    };
+
+    for (const sheet of document.styleSheets) {
+      try {
+        visit(sheet.cssRules, null);
+      } catch {
+        unreadable += 1;
+      }
+    }
+
+    rival.remove();
+    button.remove();
+    return { unreadable, unlayeredCount, offenders: offenders.slice(0, 10), before, after };
+  }, ALLOWED);
+
+  // Proves the walk actually read our stylesheet, so an empty `offenders` is
+  // a real result and not a sheet it could not open.
+  expect(
+    cascade.unlayeredCount,
+    `no unlayered VTTForge rules found; ${cascade.unreadable} stylesheets were unreadable`,
+  ).toBeGreaterThan(50);
+  expect(
+    cascade.offenders,
+    'these rules paint the sheet from inside a cascade layer, so plain CSS from any other module beats them',
+  ).toEqual([]);
+
+  // --vttf-radius-md, and it holds while the rival rule is on the page.
+  expect(cascade.before).toBe('6px');
+  expect(cascade.after).toBe('6px');
+});
+
 test('the module contributes a namespaced sub-type once enabled', async ({ page }) => {
   await joinWorld(page);
 
