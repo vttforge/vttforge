@@ -93,6 +93,34 @@ describe('withMockFoundry', () => {
   });
 });
 
+describe('extra globals', () => {
+  it('installs a global the fixed set does not cover', () => {
+    // Foundry puts every document class on the global scope, and code under
+    // test reaches for them by name: Actor.create, JournalEntry.create.
+    const JournalEntry = { create: () => Promise.resolve({ id: 'j1' }) };
+    mock = withMockFoundry({ globals: { JournalEntry } });
+    expect((globalThis as Record<string, unknown>).JournalEntry).toBe(JournalEntry);
+  });
+
+  it('removes it again on restore', () => {
+    withMockFoundry({ globals: { JournalEntry: {} } }).restore();
+    expect('JournalEntry' in globalThis).toBe(false);
+  });
+
+  it('puts back a value that was already there', () => {
+    const scope = globalThis as Record<string, unknown>;
+    scope.JournalEntry = 'the original';
+    withMockFoundry({ globals: { JournalEntry: 'the mock' } }).restore();
+    expect(scope.JournalEntry).toBe('the original');
+    delete scope.JournalEntry;
+  });
+
+  it('lets you override one of the built-ins', () => {
+    mock = withMockFoundry({ globals: { CONST: { mine: true } } });
+    expect((globalThis as Record<string, unknown>).CONST).toEqual({ mine: true });
+  });
+});
+
 describe('mock documents', () => {
   it('records every update the code under test made', async () => {
     const actor = createMockActor({ name: 'Vitória' });

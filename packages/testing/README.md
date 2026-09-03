@@ -28,6 +28,17 @@ settings, notifications) so a test can assert on what happened rather than only
 on what did not throw. `restore()` puts every global back, including deleting the
 ones that never existed.
 
+Anything else your code reads goes in `globals`. Foundry puts every document
+class on the global scope, and the fixed set above does not include them:
+
+```ts
+const foundry = withMockFoundry({
+  globals: { JournalEntry: { create: vi.fn() } },
+});
+```
+
+`restore()` clears those too.
+
 The mock documents behave like real ones where it counts: `update` merges rather
 than replacing, and dotted paths expand. Both matter: a mock that replaces lets
 a test pass while the real thing drops every sibling key.
