@@ -26,17 +26,28 @@ export {
   withMockFoundry,
 } from './with-mock-foundry.js';
 
+/**
+ * `var`, not `const`, and that is the whole point.
+ *
+ * A package that consumes this already declares these globals for its own
+ * source, because the SDK does not ship a Foundry runtime type. Two
+ * `declare global` blocks naming the same thing have to merge, and only
+ * `var` merges: `const` is block-scoped, so a second one is a redeclaration
+ * and `tsc` stops with TS2451. Consumers hit that the moment they add the
+ * test helpers to a typechecked project, which is the moment they most want
+ * them.
+ */
 declare global {
   // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  const foundry: any;
+  var foundry: any;
   // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  const game: any;
+  var game: any;
   // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  const CONFIG: any;
+  var CONFIG: any;
   // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  const Hooks: any;
+  var Hooks: any;
   // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  const ui: any;
+  var ui: any;
   // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  const CONST: any;
+  var CONST: any;
 }
