@@ -758,6 +758,30 @@
 
   /* ════════ RESPONSIVE ════════ */
 
+  /*
+   * A grid or flex item defaults to `min-width: auto`, which means it refuses
+   * to shrink below its content. A wide child, a code block or a table, then
+   * pushes the whole document past the viewport and the page scrolls
+   * sideways. Naming the items lets them shrink so the scroll happens inside
+   * the code block, where it belongs.
+   */
+  .ba-grid > *,
+  .try-grid > *,
+  .feat-grid > *,
+  .hero-meta > * {
+    min-width: 0;
+  }
+
+  .vttf-codeblock {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* The packages table has more columns than a phone has room for. */
+  .pkg-table-wrap {
+    overflow-x: auto;
+  }
+
   @media (max-width: 900px) {
     .ba-grid {
       grid-template-columns: 1fr;
@@ -785,6 +809,23 @@
     }
     footer.bottom .cols {
       grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 520px) {
+    header.top .row {
+      gap: var(--vttf-space-3);
+    }
+    /* The hero badge two lines down says the same thing. */
+    header.top .ver-pill {
+      display: none;
+    }
+    .top-cta {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    footer.bottom .cols {
+      grid-template-columns: 1fr;
     }
   }
 }
