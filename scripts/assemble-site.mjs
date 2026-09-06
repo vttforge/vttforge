@@ -17,8 +17,17 @@
  * `dist/` directory across the site root. So the stylesheet graph is copied
  * beside the page and the one reference is rewritten to match.
  */
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -98,6 +107,85 @@ writeFileSync(join(out, 'CNAME'), `${DOMAIN}\n`);
 // Jekyll would otherwise skip any path starting with an underscore, which is
 // where VitePress puts its assets.
 writeFileSync(join(out, '.nojekyll'), '');
+
+/**
+ * Every page in the assembled tree, as a site-relative URL.
+ *
+ * Walking the output rather than listing sources is what keeps this honest:
+ * the docs alone are 200-odd generated pages, and a hand-kept list would be
+ * wrong by the next release.
+ */
+function pageUrls(dir = out, urls = []) {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) {
+      if (entry === 'assets') continue;
+      pageUrls(path, urls);
+      continue;
+    }
+    if (!entry.endsWith('.html')) continue;
+    // 404 is served, not indexed. README is a VitePress build artefact.
+    if (entry === '404.html' || entry === 'README.html') continue;
+    const rel = relative(out, path).split(sep).join('/');
+    urls.push(`/${rel.replace(/index\.html$/, '').replace(/\.html$/, '')}`);
+  }
+  return urls;
+}
+
+const urls = pageUrls().sort();
+
+// A sitemap so the crawler does not have to find 200-odd generated reference
+// pages by following links from the landing page.
+writeFileSync(
+  join(out, 'sitemap.xml'),
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
+    .map((u) => `  <url><loc>https://${DOMAIN}${u}</loc></url>`)
+    .join('\n')}\n</urlset>\n`,
+);
+
+// Absent, this file means the same thing as the version below: crawl
+// everything. It exists to name the sitemap, which is the part a crawler
+// cannot guess.
+writeFileSync(
+  join(out, 'robots.txt'),
+  ['User-agent: *', 'Allow: /', '', `Sitemap: https://${DOMAIN}/sitemap.xml`, ''].join('\n'),
+);
+
+// llms.txt is a proposed convention for assistants reading a site directly.
+// No search engine consumes it; it costs one file and answers the question
+// "what is this project and where is the real documentation".
+writeFileSync(
+  join(out, 'llms.txt'),
+  `# VTTForge
+
+> An SDK and CLI for building Foundry VTT v13+ systems and modules. It holds the
+> plumbing every module rewrites by hand: data models, sheet boilerplate,
+> migrations, the build. A Foundry version bump then lands in one place instead
+> of in every module.
+
+Every package is below 1.0.0, where a minor may break you. See the stability
+page before pinning.
+
+## Start here
+
+- [Getting started](https://${DOMAIN}/docs/guide/getting-started): scaffold a system or module and open it in Foundry.
+- [The startup lifecycle](https://${DOMAIN}/docs/guide/lifecycle): the four stages Foundry boots through, and what belongs in each.
+- [Data models](https://${DOMAIN}/docs/guide/data-models): typed schemas on \`TypeDataModel\`.
+- [Sheets](https://${DOMAIN}/docs/guide/sheets): \`ApplicationV2\` sheets with tabs and drag-drop already wired.
+
+## Reference
+
+- [CLI reference](https://${DOMAIN}/docs/guide/cli): every command, and the ten audit rules.
+- [Stability policy](https://${DOMAIN}/docs/stability): what each export promises, and what \`@experimental\` means here.
+- [Error registry](https://${DOMAIN}/docs/errors/): every \`VTTF-NNNN\` code with its cause and fix.
+- [API reference](https://${DOMAIN}/docs/reference/): generated from the source.
+
+## About
+
+- [Transparency](https://${DOMAIN}/docs/transparency): how this is built, and what every change has to pass.
+- [Source](https://github.com/vttforge/vttforge): MIT.
+`,
+);
 
 console.log(`Assembled → ${out}`);
 console.log(`  /               landing page`);
