@@ -78,6 +78,22 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
 
+  /**
+   * One canonical URL per page, derived from the file it was built from.
+   *
+   * The docs are reachable at more than one path (a directory and its
+   * `index.html`), and the generated API reference repeats names across
+   * packages. Naming the canonical leaves the crawler nothing to guess.
+   */
+  transformPageData(pageData) {
+    const path = pageData.relativePath.replace(/(index)?\.md$/, '');
+    pageData.frontmatter.head ??= [];
+    pageData.frontmatter.head.push([
+      'link',
+      { rel: 'canonical', href: `https://vttforge.dev/docs/${path}` },
+    ]);
+  },
+
   themeConfig: {
     logo: '/logo.svg',
 
