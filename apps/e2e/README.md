@@ -1,6 +1,6 @@
 # End-to-end: the SDK inside a real Foundry
 
-Boots Foundry v13 in Docker with `examples/simple-system` and
+Boots Foundry v14 in Docker with `examples/simple-system` and
 `examples/simple-module` installed, joins the world as the Gamemaster, and
 asserts what only a running Foundry can answer.
 

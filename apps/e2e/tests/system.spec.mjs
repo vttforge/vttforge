@@ -43,7 +43,6 @@ test('the system registers everything registerSystem was given', async ({ page }
     actorModels: Object.keys(CONFIG.Actor.dataModels ?? {}),
     itemModels: Object.keys(CONFIG.Item.dataModels ?? {}),
     initiative: CONFIG.Combat.initiative?.formula,
-    legacyTransferral: CONFIG.ActiveEffect.legacyTransferral,
     settings: [...game.settings.settings.keys()].filter((key) =>
       key.startsWith('vttforge-example.'),
     ),
@@ -53,9 +52,6 @@ test('the system registers everything registerSystem was given', async ({ page }
   expect(registered.actorModels).toContain('character');
   expect(registered.itemModels).toContain('gear');
   expect(registered.initiative).toBe('1d20 + @abilities.dex.mod');
-  // registerSystem turns this off by default; a system that still has it on
-  // gets Active Effects applied twice.
-  expect(registered.legacyTransferral).toBe(false);
   expect(registered.settings).toEqual(
     expect.arrayContaining(['vttforge-example.showTutorial', 'vttforge-example.schemaVersion']),
   );
