@@ -18,8 +18,7 @@ interface FakeConfig {
   Actor: { dataModels: Record<string, unknown>; documentClass: unknown };
   Item: { dataModels: Record<string, unknown>; documentClass: unknown };
   Combat: { initiative: unknown };
-  ActiveEffect: { legacyTransferral: boolean };
-  statusEffects: unknown[];
+  statusEffects: Record<string, unknown>;
 }
 
 function setupFoundryGlobals(): { hooks: FakeHooks; config: FakeConfig } {
@@ -34,8 +33,7 @@ function setupFoundryGlobals(): { hooks: FakeHooks; config: FakeConfig } {
     Actor: { dataModels: {}, documentClass: undefined },
     Item: { dataModels: {}, documentClass: undefined },
     Combat: { initiative: undefined },
-    ActiveEffect: { legacyTransferral: true },
-    statusEffects: [],
+    statusEffects: { dead: { id: 'dead', name: 'Dead' } },
   };
   (globalThis as Record<string, unknown>).Hooks = hooks;
   (globalThis as Record<string, unknown>).CONFIG = config;
@@ -65,7 +63,7 @@ describe('registerSystem', () => {
     const NpcData = class {};
     const Actor = class {};
     const Item = class {};
-    const status = [{ id: 'my-system.prone' }];
+    const status = [{ id: 'my-system.prone' }, { id: 'dead', name: 'MY_SYSTEM.Dead' }];
 
     const registration: SystemRegistration = {
       id: 'my-system',
@@ -86,8 +84,22 @@ describe('registerSystem', () => {
     expect(config.Actor.documentClass).toBe(Actor);
     expect(config.Item.documentClass).toBe(Item);
     expect(config.Combat.initiative).toEqual({ formula: '1d20 + @abilities.dex.mod', decimals: 2 });
-    expect(config.ActiveEffect.legacyTransferral).toBe(false); // default
-    expect(config.statusEffects).toEqual(status);
+    // Added by id: the pre-existing core condition is replaced, not wiped
+    // alongside everything else the way a whole-array assignment would.
+    expect(config.statusEffects).toEqual({
+      'my-system.prone': { id: 'my-system.prone' },
+      dead: { id: 'dead', name: 'MY_SYSTEM.Dead' },
+    });
+  });
+
+  it('rejects a status effect without an id (VTTF-0008)', () => {
+    const { hooks } = setupFoundryGlobals();
+    registerSystem({
+      id: 'my-system',
+      statusEffects: [{ name: 'Nameless' } as unknown as { id: string }],
+    });
+    const initCallback = hooks.once.mock.calls[0]?.[1] as () => void;
+    expect(initCallback).toThrow(/VTTF-0008/);
   });
 
   it('runs onBeforeInit before, and onAfterInit after, the CONFIG mutations', () => {

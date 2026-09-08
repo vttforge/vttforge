@@ -197,8 +197,9 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
     Item: { dataModels: {}, sheetClasses: {} },
     TextEditor: { enrichers },
     Combat: {},
-    ActiveEffect: {},
-    statusEffects: [],
+    // v14 keys the collection by status id, so registration writes
+    // `CONFIG.statusEffects[id]` and a test reads it back the same way.
+    statusEffects: {},
     debug: { hooks: false },
   };
   scope.ui = {

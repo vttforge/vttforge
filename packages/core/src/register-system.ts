@@ -20,13 +20,14 @@
 
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
 import type {
-  ActiveEffectConfig,
   CombatConfig,
   FoundryConfig,
   HooksApi,
+  StatusEffectConfig,
 } from './foundry-globals.js';
 import { type EnricherRegistration, registerEnrichers } from './register-enrichers.js';
 import { registerSheets, type SheetRegistration } from './register-sheets.js';
+import { addStatusEffects } from './status-effects.js';
 
 export interface SystemRegistration {
   /** System id: must match the folder name and `system.json` `id`. */
@@ -47,14 +48,13 @@ export interface SystemRegistration {
   /** Global initiative formula: assigned to `CONFIG.Combat.initiative`. */
   readonly combat?: CombatConfig;
 
-  /** Disables legacy Active Effect transferral. Defaults to true. */
-  readonly activeEffect?: ActiveEffectConfig;
-
   /**
-   * Replaces `CONFIG.statusEffects` (systems own this array; modules push).
-   * If omitted, the existing array is kept untouched.
+   * Conditions this system adds to `CONFIG.statusEffects`, each keyed by its
+   * `id`. An id that matches a core condition replaces it. The collection is
+   * never assigned wholesale: that would drop the conditions other packages
+   * added before this system's `init` ran.
    */
-  readonly statusEffects?: readonly unknown[];
+  readonly statusEffects?: readonly StatusEffectConfig[];
 
   /**
    * Sheets this system offers, registered under `<id>.<sheet id>`.
@@ -217,14 +217,8 @@ function applyInit(config: SystemRegistration): void {
   if (config.combat?.initiative !== undefined) {
     CONFIG.Combat.initiative = config.combat.initiative;
   }
-
-  // Disable legacy Active Effect transferral by default; every modern v13
-  // system wants this off (the modern AE model is opt-in via this flag).
-  const legacyTransferral = config.activeEffect?.legacyTransferral ?? false;
-  CONFIG.ActiveEffect.legacyTransferral = legacyTransferral;
-
-  if (config.statusEffects !== undefined) {
-    CONFIG.statusEffects = [...config.statusEffects];
+  if (config.statusEffects !== undefined && config.statusEffects.length > 0) {
+    addStatusEffects(config.id, config.statusEffects, CONFIG);
   }
   if (config.enrichers !== undefined && config.enrichers.length > 0) {
     registerEnrichers(config.id, config.enrichers);

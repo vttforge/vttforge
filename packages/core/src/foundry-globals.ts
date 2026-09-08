@@ -1,5 +1,5 @@
 /**
- * Minimal type-only contracts for the Foundry v13+ globals VTTForge core touches.
+ * Minimal type-only contracts for the Foundry v14+ globals VTTForge core touches.
  *
  * Intentionally narrow. The Foundry members the bases stand on are in `@vttforge/types`;
  * built on top of `fvtt-types`. We mirror just the surface we use so the core
@@ -62,15 +62,20 @@ export interface CombatConfig {
   initiative?: { formula: string; decimals?: number };
 }
 
-export interface ActiveEffectConfig {
-  legacyTransferral?: boolean;
+/**
+ * One entry of `CONFIG.statusEffects`. Foundry v14 indexes that collection by
+ * `id`, so the id is the one field VTTForge needs; the rest (`name`, `img`,
+ * `system.changes`, ...) is passed through untouched.
+ */
+export interface StatusEffectConfig {
+  readonly id: string;
+  readonly [key: string]: unknown;
 }
 
 export interface FoundryConfig {
   Actor: ActorConfig;
   Item: ItemConfig;
   Combat: CombatConfig;
-  ActiveEffect: ActiveEffectConfig;
-  statusEffects?: unknown[];
+  statusEffects?: Record<string, unknown>;
   [key: string]: unknown;
 }

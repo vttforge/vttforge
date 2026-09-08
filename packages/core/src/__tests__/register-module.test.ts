@@ -39,8 +39,7 @@ beforeEach(() => {
     Actor: { dataModels: {}, documentClass: 'SystemActor' },
     Item: { dataModels: {}, documentClass: 'SystemItem' },
     Combat: { initiative: { formula: '1d20' } },
-    ActiveEffect: {},
-    statusEffects: [{ id: 'system.prone' }],
+    statusEffects: { 'system.prone': { id: 'system.prone' } },
   };
   (globalThis as Record<string, unknown>).CONFIG = CONFIG;
   (globalThis as Record<string, unknown>).Hooks = {
@@ -98,14 +97,14 @@ describe('registerModule', () => {
     expect(CONFIG.Combat.initiative).toEqual({ formula: '1d20' });
   });
 
-  it('appends status effects rather than replacing the array', () => {
+  it('adds status effects by id rather than replacing the collection', () => {
     // Replacing it would delete the system's own conditions.
     registerModule({ id: MODULE_ID, statusEffects: [{ id: 'pdf-character-sheet.reading' }] });
     fireInit();
-    expect(CONFIG.statusEffects).toEqual([
-      { id: 'system.prone' },
-      { id: 'pdf-character-sheet.reading' },
-    ]);
+    expect(CONFIG.statusEffects).toEqual({
+      'system.prone': { id: 'system.prone' },
+      'pdf-character-sheet.reading': { id: 'pdf-character-sheet.reading' },
+    });
   });
 
   it('defers every mutation to the init hook', () => {

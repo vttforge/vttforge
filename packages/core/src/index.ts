@@ -1,5 +1,5 @@
 /**
- * @vttforge/core: runtime utilities for FoundryVTT v13+ systems and modules.
+ * @vttforge/core: runtime utilities for FoundryVTT v14+ systems and modules.
  *
  * v0.1 surface:
  *
@@ -123,7 +123,6 @@ export type {
   VttforgeClass,
 } from './foundry-base.js';
 export type {
-  ActiveEffectConfig,
   ActorConfig,
   CombatConfig,
   ConfigCollection,
@@ -135,6 +134,7 @@ export type {
   ItemConfig,
   SettingConfig,
   SettingScope,
+  StatusEffectConfig,
 } from './foundry-globals.js';
 export { createMigrationRunner } from './migrations/runner.js';
 export type {

@@ -2,7 +2,7 @@
  * BaseActorSheet: `ActorSheetV2 + HandlebarsApplicationMixin` baseline with the
  * boilerplate every shipping system copy-pastes hoisted into the SDK.
  *
- * What this adds beyond stock Foundry v13:
+ * What this adds beyond stock Foundry v14:
  *
  * - **`static DRAG_DROP`**: declare drag sources / drop targets as data, get
  *   `foundry.applications.ux.DragDrop` instances wired in `_onRender` with
