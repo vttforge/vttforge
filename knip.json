@@ -12,8 +12,7 @@
       "project": ["preview/**/*.js"]
     },
     "packages/vite-plugin": {
-      "ignore": ["src/__tests__/fixtures/**"],
-      "ignoreDependencies": ["@babel/plugin-proposal-decorators"]
+      "ignore": ["src/__tests__/fixtures/**"]
     },
     "examples/simple-system": {
       "entry": ["scripts/main.mjs"],

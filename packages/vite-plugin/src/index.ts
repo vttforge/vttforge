@@ -21,6 +21,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { cp, mkdir, readdir, stat } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
+import decorators from '@babel/plugin-proposal-decorators';
 import babel from '@rolldown/plugin-babel';
 import type { Plugin, PluginOption, UserConfig } from 'vite';
 import { version } from '../package.json' with { type: 'json' };
@@ -245,11 +246,15 @@ function syncManifest(opts: ResolvedOptions, builtCssSources: Set<string>): Mani
 function decoratorLowering(): PluginOption {
   // `babel()` resolves asynchronously. Vite accepts a promise in `plugins`
   // and awaits it, so this stays a plain synchronous call for the consumer.
+  //
+  // The plugin is passed as a module, not by name. Babel resolves a name from
+  // the consumer's project root, where the package is not installed: it is a
+  // dependency of this plugin, and a strict package manager keeps it here.
   return babel({
     presets: [
       {
         preset: () => ({
-          plugins: [['@babel/plugin-proposal-decorators', { version: '2023-11' }]],
+          plugins: [[decorators, { version: '2023-11' }]],
         }),
         rolldown: { filter: { code: '@' } },
       },
