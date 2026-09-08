@@ -112,14 +112,14 @@ describe('@vttforge/vite-plugin', () => {
   });
 
   describe('option validation', () => {
-    it('throws when id is missing', () => {
-      expect(() =>
+    it('throws when id is missing', async () => {
+      await expect(() =>
         invokeConfigHook(mainPlugin(vttforge({ id: '' } as VttforgeOptions)), workdir),
       ).rejects.toThrow(/`id` option is required/);
     });
 
-    it('throws when kind is invalid', () => {
-      expect(() =>
+    it('throws when kind is invalid', async () => {
+      await expect(() =>
         invokeConfigHook(
           mainPlugin(
             vttforge({ id: 'fixture-system', kind: 'plugin' } as unknown as VttforgeOptions),
