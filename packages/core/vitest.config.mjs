@@ -12,6 +12,15 @@ import babel from '@rolldown/plugin-babel';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  test: {
+    // Stated rather than left to the default: Knip reads this config to find
+    // the test entries, and with no `include` it sees none of them.
+    include: ['src/**/*.test.ts'],
+    // `.test-d.ts` files are type-level tests. They only run under
+    // `vitest --typecheck`, which is how they always ran. Put them in
+    // `include` and vitest runs them as runtime tests, which fails.
+    typecheck: { include: ['src/**/*.test-d.ts'] },
+  },
   plugins: [
     babel({
       presets: [
