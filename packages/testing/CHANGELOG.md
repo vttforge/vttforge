@@ -1,5 +1,11 @@
 # @vttforge/testing
 
+## 0.5.0
+
+### Minor Changes
+
+- 2224420: `withMockFoundry` now provides `CONFIG.statusEffects` as an object keyed by status id, the shape Foundry v14 exposes, instead of an empty array.
+
 ## 0.4.0
 
 ### Minor Changes
