@@ -7,7 +7,13 @@
  */
 import { type MockFoundry, withMockFoundry } from '@vttforge/testing/vitest';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ActorDataModel, DocumentSheet, ItemDataModel, OnHook } from '../decorators.js';
+import {
+  ActorDataModel,
+  DocumentSheet,
+  ItemDataModel,
+  OnHook,
+  SystemSetting,
+} from '../decorators.js';
 import { VttfError } from '../errors/registry.js';
 
 let mock: MockFoundry | undefined;
@@ -152,5 +158,77 @@ describe('without a Foundry runtime', () => {
       class Orphan {}
       void Orphan;
     }).toThrow(VttfError);
+  });
+});
+
+describe('@SystemSetting', () => {
+  it('registers nothing until init fires, then reads and writes through game.settings', async () => {
+    mock = withMockFoundry();
+
+    class Settings {
+      @SystemSetting({ namespace: 'my-system', scope: 'world', config: true, type: Boolean })
+      static accessor homebrew = false;
+    }
+
+    expect(mock.settings).toEqual([]);
+
+    mock.callHook('init');
+    expect(mock.settings).toEqual([
+      {
+        namespace: 'my-system',
+        key: 'homebrew',
+        config: { scope: 'world', config: true, type: Boolean, default: false },
+      },
+    ]);
+    expect(Settings.homebrew).toBe(false);
+
+    Settings.homebrew = true;
+    await Promise.resolve();
+    expect(Settings.homebrew).toBe(true);
+    expect(game.settings.get('my-system', 'homebrew')).toBe(true);
+  });
+
+  it('takes an explicit key and default over the accessor name and initializer', () => {
+    mock = withMockFoundry();
+
+    class Settings {
+      @SystemSetting({
+        namespace: 'my-system',
+        key: 'difficultyLevel',
+        scope: 'client',
+        type: String,
+        default: 'hard',
+      })
+      static accessor difficulty = 'normal';
+    }
+
+    mock.callHook('init');
+    expect(mock.settings[0]).toMatchObject({ key: 'difficultyLevel', config: { default: 'hard' } });
+    expect(Settings.difficulty).toBe('hard');
+  });
+
+  it('refuses an instance accessor (VTTF-0002)', () => {
+    mock = withMockFoundry();
+
+    expect(() => {
+      class Settings {
+        @SystemSetting({ namespace: 'my-system', scope: 'world', type: Number })
+        accessor level = 1;
+      }
+      void Settings;
+    }).toThrow(VttfError);
+  });
+
+  it('says so when read before game exists', () => {
+    mock = withMockFoundry();
+
+    class Settings {
+      @SystemSetting({ namespace: 'my-system', scope: 'world', type: Number })
+      static accessor level = 1;
+    }
+
+    mock.restore();
+    mock = undefined;
+    expect(() => Settings.level).toThrow(/VTTF-0002/);
   });
 });

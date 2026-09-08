@@ -15,6 +15,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
+import type { GameApi, SettingConfig } from './foundry-globals.js';
 import { registerSheets, type SheetDocumentKind } from './register-sheets.js';
 
 interface HooksApi {
@@ -199,5 +200,94 @@ export function OnHook(event: string) {
     context.addInitializer(function (this: unknown) {
       hooks().on(event, (...args: unknown[]) => target.apply(this, args));
     });
+  };
+}
+
+/**
+ * `game.settings`, read when it is used rather than when the class is
+ * defined: the class is defined at import time, and `game` is not there yet.
+ */
+function gameSettings(): GameApi['settings'] {
+  const game = (globalThis as Record<string, unknown>).game as GameApi | undefined;
+  if (game?.settings === undefined) {
+    throw new VttfError(
+      'VTTF-0002',
+      'game.settings is not available. A @SystemSetting accessor can be read or written inside or after the init hook.',
+    );
+  }
+  return game.settings;
+}
+
+export interface SystemSettingOptions<T> extends Omit<SettingConfig<T>, 'default'> {
+  /** The namespace to register under: your system or module id. */
+  namespace: string;
+  /** The setting key. Defaults to the accessor's name. */
+  key?: string;
+  /**
+   * The initial value. Omit it and the accessor's own initializer is used:
+   * `static accessor homebrew = false` registers with `default: false`.
+   */
+  default?: T;
+}
+
+/**
+ * Register a setting, and read and write it through a static accessor.
+ *
+ * ```ts
+ * class Settings {
+ *   @SystemSetting({ namespace: 'my-system', scope: 'world', config: true, type: Boolean })
+ *   static accessor homebrew = false;
+ * }
+ *
+ * Settings.homebrew;         // game.settings.get('my-system', 'homebrew')
+ * Settings.homebrew = true;  // game.settings.set('my-system', 'homebrew', true)
+ * ```
+ *
+ * The registration waits for `init`, like every other decorator here. The
+ * setter cannot be awaited, because assignment has no result: when you need
+ * to know the write landed, call `game.settings.set` yourself.
+ *
+ * Only static accessors: a setting has one value for the world or the
+ * client, not one per instance.
+ *
+ * @experimental New in 0.15, and no consumer has used it yet. The shape can
+ * change in a minor.
+ */
+export function SystemSetting<T>(options: SystemSettingOptions<T>) {
+  return (
+    _target: ClassAccessorDecoratorTarget<unknown, T>,
+    context: ClassAccessorDecoratorContext<unknown, T>,
+  ): ClassAccessorDecoratorResult<unknown, T> => {
+    if (!context.static) {
+      throw new VttfError(
+        'VTTF-0002',
+        `@SystemSetting is on an instance accessor (${String(context.name)}). A setting has one value, not one per instance: make it static.`,
+      );
+    }
+    const { namespace, key: explicitKey, default: explicitDefault, ...config } = options;
+    const key = explicitKey ?? String(context.name);
+    let initial: T | undefined;
+
+    atInit(() => {
+      gameSettings().register<T>(namespace, key, {
+        ...config,
+        default: (explicitDefault ?? initial) as T,
+      });
+    });
+
+    return {
+      // The initializer is the default, and nothing else: the value lives
+      // in game.settings, so the field itself is never read.
+      init(value: T): T {
+        initial = value;
+        return value;
+      },
+      get(): T {
+        return gameSettings().get<T>(namespace, key);
+      },
+      set(value: T): void {
+        void gameSettings().set<T>(namespace, key, value);
+      },
+    };
   };
 }

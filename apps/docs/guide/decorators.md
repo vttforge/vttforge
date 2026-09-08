@@ -1,12 +1,12 @@
 # Decorators
 
-Four decorators for the registrations every package writes by hand. They are
+Five decorators for the registrations every package writes by hand. They are
 `@experimental`: new, and no consumer has used them yet, so the shape can
 change in a minor. `registerSystem` and `registerModule` remain the supported
 path, and are what the scaffolds use.
 
 ```ts
-import { ActorDataModel, DocumentSheet, OnHook } from '@vttforge/core';
+import { ActorDataModel, DocumentSheet, OnHook, SystemSetting } from '@vttforge/core';
 
 @ActorDataModel('character')
 class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {}
@@ -24,6 +24,14 @@ class Chat {
   @OnHook('renderChatMessageHTML')
   static onRender(message: unknown, html: HTMLElement) {}
 }
+
+class Settings {
+  @SystemSetting({ namespace: 'my-system', scope: 'world', config: true, type: Boolean })
+  static accessor homebrew = false;
+}
+
+Settings.homebrew; // game.settings.get('my-system', 'homebrew')
+Settings.homebrew = true; // game.settings.set('my-system', 'homebrew', true)
 ```
 
 ## The timing is the whole point
@@ -50,6 +58,16 @@ which pins the class name to the `id` you give it. Pick it once and keep it.
 An instance method has no instance to run against when the listener is
 registered, and inventing one would be a guess. Decorating an instance method
 throws `VTTF-0002` and says so.
+
+## `@SystemSetting` sits on a static accessor
+
+The accessor's initializer is the setting's default, and the key is the
+accessor's name unless you pass `key`. Reads go to `game.settings.get` and
+writes to `game.settings.set`, so the field itself holds nothing. The write
+cannot be awaited, because an assignment has no result; when you need to know
+it landed, call `game.settings.set` yourself. An instance accessor throws
+`VTTF-0002`: a setting has one value for the world or the client, not one per
+instance.
 
 ## The build has to lower them
 
