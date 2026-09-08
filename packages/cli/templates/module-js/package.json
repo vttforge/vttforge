@@ -11,7 +11,7 @@
     "dev": "vttforge dev"
   },
   "dependencies": {
-    "@vttforge/core": "^0.14.0"
+    "@vttforge/core": "^0.15.0"
   },
   "devDependencies": {
     "@vttforge/cli": "^0.9.0",
