@@ -12,12 +12,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@vttforge/core": "^0.12.0",
+    "@vttforge/core": "^0.13.0",
     "@vttforge/styles": "^0.4.0"
   },
   "devDependencies": {
     "@vttforge/cli": "^0.8.0",
-    "@vttforge/vite-plugin": "^0.4.0",
+    "@vttforge/vite-plugin": "^0.5.0",
     "typescript": "^5.4.0",
     "vite": "^8.2.2"
   },

@@ -47,6 +47,10 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
+    "@babel/core": "catalog:",
+    "@babel/plugin-proposal-decorators": "catalog:",
+    "@rolldown/plugin-babel": "catalog:",
+    "@vttforge/testing": "workspace:*",
     "happy-dom": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",

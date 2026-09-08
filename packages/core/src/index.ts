@@ -98,6 +98,13 @@ export {
 } from './data/fields.js';
 export type { InferField, InferSchema, Prettify } from './data/infer-schema.js';
 export {
+  ActorDataModel,
+  DocumentSheet,
+  type DocumentSheetOptions,
+  ItemDataModel,
+  OnHook,
+} from './decorators.js';
+export {
   ERROR_MANIFEST_VERSION,
   type ErrorManifest,
   getErrorManifest,
