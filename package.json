@@ -2,7 +2,7 @@
   "name": "vttforge",
   "version": "0.0.0",
   "private": true,
-  "description": "A modern SDK and CLI for building FoundryVTT v13+ systems and modules.",
+  "description": "A modern SDK and CLI for building FoundryVTT v14+ systems and modules.",
   "type": "module",
   "packageManager": "pnpm@11.25.0",
   "engines": {

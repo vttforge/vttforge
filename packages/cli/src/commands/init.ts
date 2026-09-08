@@ -163,7 +163,7 @@ function templateVariantFor(type: 'system' | 'module', lang: 'ts' | 'js'): Templ
 export async function runInit(options: InitOptions = {}): Promise<void> {
   const cwd = options.cwd ?? process.cwd();
   const interactive = canPrompt(options.yes);
-  p.intro('🜲 vttforge init: scaffold a Foundry v13+ system or module');
+  p.intro('🜲 vttforge init: scaffold a Foundry v14+ system or module');
 
   // --- name ------------------------------------------------------------------
   let name = options.name?.trim();
@@ -285,7 +285,7 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
     validateRequiredMetadata,
   );
 
-  const defaultDescription = `A Foundry v13+ ${type} built with VTTForge`;
+  const defaultDescription = `A Foundry v14+ ${type} built with VTTForge`;
   const description = await resolveField(
     options.description,
     defaultDescription,
@@ -338,8 +338,8 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
     validateRequiredMetadata,
   );
 
-  const foundryMinVersion = '13';
-  const foundryVerifiedVersion = '13.341';
+  const foundryMinVersion = '14';
+  const foundryVerifiedVersion = '14';
 
   // --- scaffold --------------------------------------------------------------
   const templateVariant = templateVariantFor(type, lang);

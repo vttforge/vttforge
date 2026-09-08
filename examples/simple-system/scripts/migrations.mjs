@@ -23,7 +23,7 @@ async function migrateToV0_1_0() {
     if (typeof legacy !== 'string') continue;
     await actor.update({
       'system.biography': legacy,
-      '-=system.bio': null,
+      'system.bio': _del,
     });
   }
 }

@@ -1,5 +1,5 @@
 /**
- * `fields()`: typed bag of Foundry v13 data-field constructors.
+ * `fields()`: typed bag of Foundry v14 data-field constructors.
  *
  * Foundry idiom inside `defineSchema()` is `const f = foundry.data.fields`. We
  * mirror that, but routed through a factory so the import succeeds in Node

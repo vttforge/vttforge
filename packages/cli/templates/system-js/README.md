@@ -2,7 +2,7 @@
 
 {{DESCRIPTION}}
 
-A Foundry VTT v13+ system built on [VTTForge](https://vttforge.dev): typed
+A Foundry VTT v14+ system built on [VTTForge](https://vttforge.dev): typed
 data models, sheet bases that already know their tabs and drops, a migration
 runner, and a build that produces what foundryvtt.com expects.
 
@@ -33,7 +33,7 @@ Then create a world on **{{TITLE}}** and open a character.
 | `scripts/data/*.mjs` | Data models. The schema is a function handed to `BaseTypeDataModel`, which is what keeps the schema in one place |
 | `scripts/sheets/*.mjs` | Sheets on `BaseActorSheet` / `BaseItemSheet`: `static TABS`, `static DRAG_DROP`, `onDropItem` |
 | `scripts/migrations.mjs` | `createMigrationRunner`: versioned, idempotent, GM-gated |
-| `templates/` | Handlebars, using v13's own elements (`<prose-mirror>`, `data-action`) |
+| `templates/` | Handlebars, using Foundry's own elements (`<prose-mirror>`, `data-action`) |
 | `styles/main.css` | Imports `@vttforge/styles` and scopes your rules under `.{{ID}}` |
 | `lang/en.json` | Strings, under the `{{LOCALE_PREFIX}}` prefix |
 
@@ -53,7 +53,7 @@ loses the sheet choice on every document already using it.
 ## Checks
 
 ```bash
-npx vttforge audit    # manifest + source against the v13 list of quiet breakages
+npx vttforge audit    # manifest + source against the v14 list of quiet breakages
 ```
 
 ## Releasing

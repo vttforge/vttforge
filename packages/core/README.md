@@ -1,6 +1,6 @@
 # @vttforge/core
 
-The runtime half of [VTTForge](https://vttforge.dev): what a Foundry VTT v13+ system or module imports.
+The runtime half of [VTTForge](https://vttforge.dev): what a Foundry VTT v14+ system or module imports.
 
 ```bash
 pnpm add @vttforge/core
@@ -47,4 +47,4 @@ Foundry keys a sheet by its class name and saves that key on every document. A b
 - [Modules](https://vttforge.dev/docs/guide/modules)
 - [Error codes](https://vttforge.dev/docs/errors/)
 
-Foundry v13+ only. The package runs in the browser inside Foundry; it reads the Foundry globals lazily, so it also imports cleanly in Node for tests.
+Foundry v14+ only. The package runs in the browser inside Foundry; it reads the Foundry globals lazily, so it also imports cleanly in Node for tests.

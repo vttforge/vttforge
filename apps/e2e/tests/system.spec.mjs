@@ -18,9 +18,18 @@ test.use({ viewport: { width: 1600, height: 1000 } });
 /** Console errors are collected for the whole file: a stray one fails the run. */
 const consoleErrors = [];
 
+/**
+ * So are deprecation warnings. Foundry names the replacement and prints the
+ * stack, so a warning whose stack runs through our code means the SDK or the
+ * example is on borrowed time, and that should fail here rather than in v16.
+ */
+const deprecations = [];
+
 test.beforeEach(async ({ page }) => {
   page.on('console', (message) => {
-    if (message.type() === 'error') consoleErrors.push(message.text());
+    const text = message.text();
+    if (message.type() === 'error') consoleErrors.push(text);
+    if (/deprecated since/i.test(text)) deprecations.push(text);
   });
   page.on('pageerror', (error) => consoleErrors.push(String(error)));
 });
@@ -28,9 +37,10 @@ test.beforeEach(async ({ page }) => {
 /** Join as the Gamemaster the world created on launch, and wait for `ready`. */
 async function joinWorld(page) {
   await page.goto(`${baseUrl()}/join`);
-  await page.waitForSelector('select[name=userid]');
-  await page.selectOption('select[name=userid]', { label: 'Gamemaster' });
-  await page.click('button[name=join]');
+  // v14 asks for the user's name in a text field; v13 offered a select.
+  await page.waitForSelector('form[name=join] input[name=username]');
+  await page.fill('form[name=join] input[name=username]', 'Gamemaster');
+  await page.click('form[name=join] button[name=join]');
   await page.waitForURL('**/game');
   await page.waitForFunction(() => globalThis.game?.ready === true, null, { timeout: 60_000 });
 }
@@ -43,7 +53,6 @@ test('the system registers everything registerSystem was given', async ({ page }
     actorModels: Object.keys(CONFIG.Actor.dataModels ?? {}),
     itemModels: Object.keys(CONFIG.Item.dataModels ?? {}),
     initiative: CONFIG.Combat.initiative?.formula,
-    legacyTransferral: CONFIG.ActiveEffect.legacyTransferral,
     settings: [...game.settings.settings.keys()].filter((key) =>
       key.startsWith('vttforge-example.'),
     ),
@@ -53,9 +62,6 @@ test('the system registers everything registerSystem was given', async ({ page }
   expect(registered.actorModels).toContain('character');
   expect(registered.itemModels).toContain('gear');
   expect(registered.initiative).toBe('1d20 + @abilities.dex.mod');
-  // registerSystem turns this off by default; a system that still has it on
-  // gets Active Effects applied twice.
-  expect(registered.legacyTransferral).toBe(false);
   expect(registered.settings).toEqual(
     expect.arrayContaining(['vttforge-example.showTutorial', 'vttforge-example.schemaVersion']),
   );
@@ -209,4 +215,10 @@ test.afterAll(() => {
   // (a missing favicon, an audio context the browser blocks). Only ours fail.
   const ours = consoleErrors.filter((line) => /vttforge|VTTF-\d{4}/i.test(line));
   expect(ours, `console errors naming VTTForge:\n${ours.join('\n')}`).toEqual([]);
+
+  const ourDeprecations = deprecations.filter((line) => /vttforge/i.test(line));
+  expect(
+    ourDeprecations,
+    `deprecation warnings whose stack runs through VTTForge:\n${ourDeprecations.join('\n')}`,
+  ).toEqual([]);
 });

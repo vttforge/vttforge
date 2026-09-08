@@ -38,6 +38,6 @@ describe('module.json', () => {
   });
 
   it('targets the Foundry generation this project supports', () => {
-    expect(manifest.compatibility.minimum).toBe('13');
+    expect(manifest.compatibility.minimum).toBe('14');
   });
 });

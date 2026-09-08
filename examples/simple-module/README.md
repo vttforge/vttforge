@@ -1,6 +1,6 @@
 # @vttforge-examples/simple-module
 
-Reference Foundry v13 module built on `@vttforge/core` and `@vttforge/vite-plugin`. It is the `module-js` template from `vttforge init`, rendered with the id `vttforge-example-module`, plus a boot test.
+Reference Foundry v14 module built on `@vttforge/core` and `@vttforge/vite-plugin`. It is the `module-js` template from `vttforge init`, rendered with the id `vttforge-example-module`, plus a boot test.
 
 ## What this exercises
 

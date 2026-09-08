@@ -21,7 +21,7 @@ const highFinding: RuleResult = {
   severity: 'HIGH',
   filePath: '/projects/my-system/system.json',
   line: 34,
-  message: 'flags.hotReload is an array; v13 expects {extensions, paths}',
+  message: 'flags.hotReload is an array; Foundry expects {extensions, paths}',
   remediation: 'Replace `["css","hbs"]` with `{ "extensions": [...], "paths": [...] }`.',
 };
 
@@ -32,7 +32,7 @@ const mediumFinding: RuleResult = {
   filePath: '/projects/my-system/system.json',
   line: 26,
   message:
-    'gridDistance/gridUnits are v12 fields; v13 wants `grid: {type, distance, units, diagonals}`',
+    'gridDistance/gridUnits are v12 fields; Foundry wants `grid: {type, distance, units, diagonals}`',
 };
 
 describe('formatReport — JSON', () => {

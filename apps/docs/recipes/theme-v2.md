@@ -1,6 +1,6 @@
 # Binding to Foundry's Theme V2
 
-Foundry v13 ships CSS custom properties that follow the user's light/dark
+Since v13 Foundry ships CSS custom properties that follow the user's light/dark
 choice. Using them means your package changes with the rest of the interface
 instead of fighting it.
 
@@ -25,7 +25,7 @@ instead of fighting it.
 
 ## Use a cascade layer
 
-v13 uses `@layer`. Wrapping your CSS in a named layer means a game system can
+Foundry uses `@layer`. Wrapping your CSS in a named layer means a game system can
 override you without anyone writing `!important`, and means you do not
 accidentally outrank Foundry's own rules by specificity.
 

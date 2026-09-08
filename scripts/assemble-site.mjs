@@ -158,7 +158,7 @@ writeFileSync(
   join(out, 'llms.txt'),
   `# VTTForge
 
-> An SDK and CLI for building Foundry VTT v13+ systems and modules. It holds the
+> An SDK and CLI for building Foundry VTT v14+ systems and modules. It holds the
 > plumbing every module rewrites by hand: data models, sheet boilerplate,
 > migrations, the build. A Foundry version bump then lands in one place instead
 > of in every module.

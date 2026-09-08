@@ -99,7 +99,7 @@ describe('runManifestRules', () => {
       expect(await runManifestRules(cwd)).toEqual([]);
     });
 
-    it('passes the v13 object shape', async () => {
+    it('passes the object shape', async () => {
       await writeFile(
         join(cwd, 'system.json'),
         JSON.stringify({
@@ -136,7 +136,7 @@ describe('runManifestRules', () => {
   });
 
   describe('VTTF-AUDIT-002 — grid shape', () => {
-    it('flags top-level gridDistance as MEDIUM', async () => {
+    it('flags top-level gridDistance as HIGH', async () => {
       await writeFile(
         join(cwd, 'system.json'),
         JSON.stringify({ id: 'my-system', version: '1.0.0', gridDistance: 5 }),
@@ -145,10 +145,10 @@ describe('runManifestRules', () => {
       const results = await runManifestRules(cwd);
       expect(results).toHaveLength(1);
       expect(results[0]?.ruleId).toBe('VTTF-AUDIT-002');
-      expect(results[0]?.severity).toBe('MEDIUM');
+      expect(results[0]?.severity).toBe('HIGH');
     });
 
-    it('flags top-level gridUnits as MEDIUM', async () => {
+    it('flags top-level gridUnits as HIGH', async () => {
       await writeFile(
         join(cwd, 'system.json'),
         JSON.stringify({ id: 'my-system', version: '1.0.0', gridUnits: 'ft' }),
@@ -173,7 +173,7 @@ describe('runManifestRules', () => {
       expect(results.filter((r) => r.ruleId === 'VTTF-AUDIT-002')).toHaveLength(1);
     });
 
-    it('passes the v13 grid object', async () => {
+    it('passes the grid object', async () => {
       await writeFile(
         join(cwd, 'system.json'),
         JSON.stringify({
@@ -218,7 +218,7 @@ describe('runManifestRules', () => {
       expect(results.some((r) => r.ruleId === 'VTTF-AUDIT-003')).toBe(true);
     });
 
-    it('passes the v13 object-array shape', async () => {
+    it('passes the object-array shape', async () => {
       await writeFile(
         join(cwd, 'system.json'),
         JSON.stringify({
@@ -350,7 +350,7 @@ describe('runManifestRules', () => {
       expect(ids).toEqual(['VTTF-AUDIT-001', 'VTTF-AUDIT-002', 'VTTF-AUDIT-003']);
     });
 
-    it('emits zero findings on a clean v13 manifest', async () => {
+    it('emits zero findings on a clean manifest', async () => {
       await writeFile(
         join(cwd, 'system.json'),
         JSON.stringify({

@@ -1,5 +1,5 @@
 /**
- * Boot a real Foundry v13 in Docker, with the example system and module
+ * Boot a real Foundry v14 in Docker, with the example system and module
  * installed, and leave it sitting on the join screen.
  *
  * Foundry's setup screens are never driven, because that is the part that
@@ -43,7 +43,7 @@ const PORT = Number(process.env.E2E_PORT ?? 30001);
 const WORLD_ID = 'e2e';
 
 /** Pinned rather than floating: a build the run does not choose is a build it cannot report. */
-const IMAGE = process.env.E2E_FOUNDRY_IMAGE ?? 'felddy/foundryvtt:13';
+const IMAGE = process.env.E2E_FOUNDRY_IMAGE ?? 'felddy/foundryvtt:14';
 
 /** The three the felddy image needs to fetch a licensed Foundry. */
 const REQUIRED_ENV = ['FOUNDRY_LICENSE_KEY', 'FOUNDRY_USERNAME', 'FOUNDRY_PASSWORD'];
@@ -163,9 +163,9 @@ function writeWorld(system) {
         description: 'Created by the end-to-end test. Thrown away with the run.',
         system: system.id,
         systemVersion: system.version,
-        coreVersion: process.env.E2E_CORE_VERSION ?? '13.351',
+        coreVersion: process.env.E2E_CORE_VERSION ?? '14',
         version: '1.0.0',
-        compatibility: { minimum: '13', verified: '13' },
+        compatibility: { minimum: '14', verified: '14' },
         authors: [],
         packs: [],
         relationships: {},

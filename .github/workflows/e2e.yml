@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   foundry:
-    name: Foundry v13
+    name: Foundry v14
     runs-on: [self-hosted, linux, x64, gcp]
     # A cold run downloads Foundry; a warm one reuses it from the host cache.
     timeout-minutes: 30

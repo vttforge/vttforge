@@ -1,6 +1,6 @@
 services:
   foundry:
-    image: felddy/foundryvtt:13
+    image: felddy/foundryvtt:14
     # Run as root so felddy's entrypoint can chown the named volume on first
     # boot. Foundry itself drops privileges via felddy's launcher once the
     # data directory is set up. (The ordem-paranormal compose works with a

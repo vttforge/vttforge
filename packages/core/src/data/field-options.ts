@@ -1,8 +1,8 @@
 /**
- * Option interfaces for the Foundry v13 data fields covered by `@vttforge/core`'s
+ * Option interfaces for the Foundry v14 data fields covered by `@vttforge/core`'s
  * v0.1 `InferSchema<T>` surface.
  *
- * Mirrors the shape documented at https://foundryvtt.com/api/v13/ for each
+ * Mirrors the shape documented at https://foundryvtt.com/api/ for each
  * `foundry.data.fields.*` class. Properties are structural: they exist purely
  * so the conditional types in `./infer-schema.ts` can extract semantics like
  * `nullable: true` without us pulling in `fvtt-types` (deferred to
@@ -13,7 +13,7 @@
  * Properties shared by every Foundry data field option object.
  *
  * Mirrors the base `DataFieldOptions` interface documented at
- * https://foundryvtt.com/api/v13/classes/foundry.data.fields.DataField.html.
+ * https://foundryvtt.com/api/classes/foundry.data.fields.DataField.html.
  */
 export interface DataFieldOptions {
   readonly required?: boolean;

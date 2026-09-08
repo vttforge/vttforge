@@ -1,6 +1,6 @@
 # @vttforge/vite-plugin
 
-The build contract for a Foundry VTT v13+ system or module, as a Vite plugin.
+The build contract for a Foundry VTT v14+ system or module, as a Vite plugin.
 
 ```bash
 pnpm add -D @vttforge/vite-plugin vite

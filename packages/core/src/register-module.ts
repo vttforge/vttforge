@@ -8,16 +8,17 @@
  *   registering the same thing must register `<module-id>.character`, and the
  *   manifest must declare it under `documentTypes`. Forget the prefix and the
  *   type silently never appears. This function adds it for you.
- * - **A module never owns the globals.** Document classes, the initiative
- *   formula and the status-effect array belong to the system. So there is no
- *   option here to replace them: `statusEffects` only appends, which is what
- *   a module is allowed to do.
+ * - **A module never owns the globals.** Document classes and the initiative
+ *   formula belong to the system, so there is no option here to replace them.
+ *   `statusEffects` adds conditions by id, which is what a module is allowed
+ *   to do.
  */
 
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
-import type { FoundryConfig, HooksApi } from './foundry-globals.js';
+import type { FoundryConfig, HooksApi, StatusEffectConfig } from './foundry-globals.js';
 import { type EnricherRegistration, registerEnrichers } from './register-enrichers.js';
 import { registerSheets, type SheetRegistration } from './register-sheets.js';
+import { addStatusEffects } from './status-effects.js';
 
 export interface ModuleRegistration {
   /** Module id: must match the folder name and `module.json` `id`. */
@@ -34,12 +35,13 @@ export interface ModuleRegistration {
   readonly itemDataModels?: Readonly<Record<string, unknown>>;
 
   /**
-   * Status effects to append to `CONFIG.statusEffects`.
-   *
-   * Appended, never assigned: the array belongs to the system, and replacing
-   * it would delete conditions the world depends on.
+   * Conditions this module adds to `CONFIG.statusEffects`, each keyed by its
+   * `id`. Prefix the id with the module id (`my-module.dazed`) so it cannot
+   * collide with the system's own. Added one by one, never assigned: the
+   * collection belongs to the system, and replacing it would delete the
+   * conditions the world depends on.
    */
-  readonly statusEffects?: readonly unknown[];
+  readonly statusEffects?: readonly StatusEffectConfig[];
 
   /**
    * Sheets this module offers, registered under `<id>.<sheet id>`.
@@ -200,8 +202,7 @@ function applyInit(config: ModuleRegistration): void {
     assignSubTypes(CONFIG.Item.dataModels, config.id, config.itemDataModels);
   }
   if (config.statusEffects !== undefined && config.statusEffects.length > 0) {
-    CONFIG.statusEffects ??= [];
-    CONFIG.statusEffects.push(...config.statusEffects);
+    addStatusEffects(config.id, config.statusEffects, CONFIG);
   }
   if (config.enrichers !== undefined && config.enrichers.length > 0) {
     registerEnrichers(config.id, config.enrichers);

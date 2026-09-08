@@ -1,5 +1,6 @@
 {
   "id": "{{ID}}",
+  "type": "module",
   "title": "{{TITLE}}",
   "description": "{{DESCRIPTION}}",
   "version": "0.1.0",

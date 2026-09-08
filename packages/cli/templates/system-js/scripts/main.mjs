@@ -25,14 +25,6 @@ try {
       initiative: { formula: '1d20 + @abilities.dex.mod', decimals: 2 },
     },
 
-    // The core sheets have to go before ours can be the default. This runs
-    // before the `sheets` below are registered.
-    onBeforeInit: () => {
-      const { Actors, Items } = foundry.documents.collections;
-      Actors.unregisterSheet('core', foundry.applications.sheets.ActorSheetV2);
-      Items.unregisterSheet('core', foundry.applications.sheets.ItemSheetV2);
-    },
-
     // Declared here rather than with `Actors.registerSheet`. Foundry keys a
     // sheet by `${scope}.${class name}` and saves that key on every document
     // using it; a bundler renames classes between builds, and the saved key

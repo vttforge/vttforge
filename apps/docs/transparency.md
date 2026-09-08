@@ -72,7 +72,7 @@ an agent's, goes through a pull request and has to pass the same gates:
 | Lint | Biome, plus a dependency-version check and a check that the scaffolding templates pin versions that exist |
 | Dead code | Unused exports and dependencies fail the build |
 | Package quality | `publint` and `attw`, so the published shape is correct |
-| A real Foundry | Every push to `main` boots Foundry v13 in a container, installs the example system and module, joins a world, and drives them. Any console error naming VTTForge fails it |
+| A real Foundry | Every push to `main` boots Foundry v14 in a container, installs the example system and module, joins a world, and drives them. Any console error naming VTTForge fails it |
 
 That last one is the one I care about most. The unit tests run against a mocked
 Foundry, so they prove the SDK calls the right things. Only a running Foundry
@@ -83,7 +83,7 @@ release.
 
 Being honest about the gaps, since a list of gates is only worth what it leaves
 out: there are no staged release channels, no visual regression captures, and
-the end-to-end run covers v13 only. Every package is below 1.0, and a minor may
+the end-to-end run covers v14 only. Every package is below 1.0, and a minor may
 break you. The [stability policy](/stability) says exactly how much.
 
 ## If you would rather not

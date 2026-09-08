@@ -64,6 +64,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'A text enricher was registered with an id that is empty, contains a dot, or repeats another enricher in the same package, or with a pattern missing the g flag. Foundry looks enrichers up by id and takes the first match, and matches with matchAll, which throws on a non-global regex.',
   }),
+  'VTTF-0008': Object.freeze({
+    code: 'VTTF-0008',
+    name: 'InvalidStatusEffect',
+    summary:
+      'A status effect was passed to registerSystem() or registerModule() without a string id. Foundry v14 keys CONFIG.statusEffects by id, so an entry without one has nowhere to go. Give every condition an id; a module prefixes it with its own id.',
+  }),
 });
 
 /**

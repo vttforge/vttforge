@@ -2,7 +2,7 @@
 
 {{DESCRIPTION}}
 
-A Foundry VTT v13+ module built on [VTTForge](https://vttforge.dev). It adds a
+A Foundry VTT v14+ module built on [VTTForge](https://vttforge.dev). It adds a
 `note` Item type to whatever system the world runs, a sheet for it, and an
 `@Note[id]` enricher that links to one from any text field.
 
@@ -34,7 +34,7 @@ Then enable **{{TITLE}}** in a world and create a Note from the Items sidebar.
 | `scripts/data/note-data.ts` | The data model. The schema is a function handed to `BaseTypeDataModel`, which is what makes `this.body` a `string` |
 | `scripts/sheets/note-sheet.ts` | The sheet, on `BaseItemSheet` |
 | `scripts/enricher.ts` | `@Note[id]` → a link that opens the note |
-| `templates/` | Handlebars, using v13's own elements (`<prose-mirror>`, `data-action`) |
+| `templates/` | Handlebars, using Foundry's own elements (`<prose-mirror>`, `data-action`) |
 | `styles/main.css` | Scoped under `.{{ID}}`, colours from Foundry's variables |
 | `lang/en.json` | Strings, under the `{{LOCALE_PREFIX}}` prefix, plus the `TYPES.Item` label |
 
@@ -65,7 +65,7 @@ api.noteType; // "{{ID}}.note"
 
 ```bash
 pnpm typecheck        # tsc against the real @vttforge/core types
-npx vttforge audit    # manifest + source against the v13 list of quiet breakages
+npx vttforge audit    # manifest + source against the v14 list of quiet breakages
 ```
 
 ## Releasing

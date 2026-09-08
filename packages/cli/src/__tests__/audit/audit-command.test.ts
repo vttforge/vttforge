@@ -31,7 +31,7 @@ describe('runAudit (orchestrator)', () => {
         id: 'my-system',
         version: '1.0.0',
         flags: { hotReload: ['css'] }, // VTTF-AUDIT-001 HIGH
-        gridDistance: 5, // VTTF-AUDIT-002 MEDIUM
+        gridDistance: 5, // VTTF-AUDIT-002 HIGH
       }),
       'utf8',
     );
@@ -44,7 +44,7 @@ describe('runAudit (orchestrator)', () => {
     );
 
     const report = await runAudit({ cwd });
-    expect(report.counts).toEqual({ HIGH: 1, MEDIUM: 2, LOW: 0 });
+    expect(report.counts).toEqual({ HIGH: 2, MEDIUM: 1, LOW: 0 });
     expect(report.findings[0]?.severity).toBe('HIGH');
     expect(report.findings.map((f) => f.ruleId)).toEqual(
       expect.arrayContaining(['VTTF-AUDIT-001', 'VTTF-AUDIT-002', 'VTTF-AUDIT-005']),
@@ -69,11 +69,12 @@ describe('runAudit (orchestrator)', () => {
         id: 'my-system',
         version: '1.0.0',
         flags: { hotReload: ['css'] }, // HIGH
-        gridDistance: 5, // MEDIUM
         styles: ['styles/a.css'], // LOW
       }),
       'utf8',
     );
+    // MEDIUM comes from the source side: a deletion key (VTTF-AUDIT-012).
+    await writeFile(join(cwd, 'main.mjs'), "await a.update({ '-=system.bio': null });\n", 'utf8');
 
     const report = await runAudit({ cwd });
     expect(report.findings[0]?.severity).toBe('HIGH');
@@ -131,9 +132,10 @@ describe('runAuditCommand (CLI surface)', () => {
   it('exits 0 by default for MEDIUM/LOW-only findings (advisory mode)', async () => {
     await writeFile(
       join(cwd, 'system.json'),
-      JSON.stringify({ id: 'my-system', version: '1.0.0', gridDistance: 5 }),
+      JSON.stringify({ id: 'my-system', version: '1.0.0' }),
       'utf8',
     );
+    await writeFile(join(cwd, 'main.mjs'), "await a.update({ '-=system.bio': null });\n", 'utf8');
     const result = await runAuditCommand({ cwd, write });
     expect(result.exitCode).toBe(0);
     expect(result.report.counts.MEDIUM).toBe(1);
@@ -142,9 +144,10 @@ describe('runAuditCommand (CLI surface)', () => {
   it('exits 1 in --strict for MEDIUM findings', async () => {
     await writeFile(
       join(cwd, 'system.json'),
-      JSON.stringify({ id: 'my-system', version: '1.0.0', gridDistance: 5 }),
+      JSON.stringify({ id: 'my-system', version: '1.0.0' }),
       'utf8',
     );
+    await writeFile(join(cwd, 'main.mjs'), "await a.update({ '-=system.bio': null });\n", 'utf8');
     const result = await runAuditCommand({ cwd, strict: true, write });
     expect(result.exitCode).toBe(1);
   });
