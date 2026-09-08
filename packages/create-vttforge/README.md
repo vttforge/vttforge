@@ -12,6 +12,6 @@ bun create vttforge my-system
 yarn create vttforge my-system
 ```
 
-This package is a thin wrapper around `@vttforge/cli init`. The scaffolder asks for the package type, language, id, title, author, license, and Foundry version, then writes a runnable Foundry v13+ scaffold into the named directory.
+This package is a thin wrapper around `@vttforge/cli init`. The scaffolder asks for the package type, language, id, title, author, license, and Foundry version, then writes a runnable Foundry v14+ scaffold into the named directory.
 
 See [`@vttforge/cli`](https://www.npmjs.com/package/@vttforge/cli) for the full CLI surface (`init`, `dev`, `build`, `audit`).

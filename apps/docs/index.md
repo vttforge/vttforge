@@ -3,7 +3,7 @@ layout: home
 hero:
   name: VTTForge
   text: Build Foundry systems without the boilerplate
-  tagline: An SDK and CLI for Foundry VTT v13+. Typed data models, sheets that already know their fields, and a dev loop that reloads in place.
+  tagline: An SDK and CLI for Foundry VTT v14+. Typed data models, sheets that already know their fields, and a dev loop that reloads in place.
   actions:
     - theme: brand
       text: Get started

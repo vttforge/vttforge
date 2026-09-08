@@ -6,7 +6,7 @@
  *
  *   :root                  — Forge default (dark, warm, ember accent)
  *   [data-theme="light"]   — Forge light overrides (color.light-mode group)
- *   [data-theme="foundry"] — Opt-in mapping to Foundry v13 Theme V2 vars
+ *   [data-theme="foundry"] — Opt-in mapping to Foundry Theme V2 vars
  *
  * The Foundry block is a static mapping table here (not in tokens.json) so the
  * design source stays clean and the integration layer stays reviewable.
@@ -82,7 +82,7 @@ StyleDictionary.registerFormat({
     out.push(' * Token strategy:');
     out.push(' *   :root                  — Forge default (dark, warm, ember accent)');
     out.push(' *   [data-theme="light"]   — Forge light overrides');
-    out.push(' *   [data-theme="foundry"] — Opt-in mapping to Foundry v13 Theme V2');
+    out.push(' *   [data-theme="foundry"] — Opt-in mapping to Foundry Theme V2');
     out.push(' */');
     out.push('');
     out.push('@layer vttforge.tokens {');

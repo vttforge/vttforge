@@ -64,9 +64,10 @@ Node version to install a browser package only blocks people for no reason.
 
 ## Foundry
 
-Every package targets **Foundry v13+**. v12 is an explicit non-goal: the v13
-application and data-model APIs are what the SDK is built on, and supporting
-both would mean shipping the older shape forever.
+Every package targets **Foundry v14+**. v13 and v12 are explicit non-goals: v14
+removed the flag that governed Active Effect transferral and keys
+`CONFIG.statusEffects` by id, and the SDK follows the new shape rather than
+carrying both.
 
 ## Peer dependencies
 

@@ -1,7 +1,8 @@
 # Migrating from Foundry v12
 
-VTTForge targets v13+ and does not support v12. If you are porting a package
-across that line, this is what actually bites.
+VTTForge targets v14+ and does not support v12. If you are porting a package
+across that line, this is what bites on the way to v13; then read
+[Migrating to v14](/recipes/migrating-to-v14) for the rest of the trip.
 
 ## Removed, not deprecated
 
@@ -68,4 +69,4 @@ render, per-element handlers leak the old ones.
 vttforge audit
 ```
 
-Scans the manifest and source for the v13 footguns that fail quietly.
+Scans the manifest and source for the v14 footguns that fail quietly.

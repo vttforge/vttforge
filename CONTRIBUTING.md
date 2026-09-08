@@ -16,7 +16,7 @@ Code contributions are welcome too. The workflow is below.
   ```bash
   corepack enable
   ```
-- **A Foundry VTT v13 installation**, or Docker plus a foundryvtt.com license, for anything that touches sheets or the dev loop.
+- **A Foundry VTT v14 installation**, or Docker plus a foundryvtt.com license, for anything that touches sheets or the dev loop.
 
 ## Setup
 
@@ -42,7 +42,7 @@ pnpm knip           # unused exports and dependencies
 
 ## Running Foundry locally
 
-For sheet or runtime work you want a real Foundry v13 with the example system loaded. `docker-compose.dev.yml` uses the [felddy/foundryvtt](https://hub.docker.com/r/felddy/foundryvtt) image and mounts the **built** `examples/simple-system` and `examples/simple-module` read-only into the container's data tree.
+For sheet or runtime work you want a real Foundry v14 with the example system loaded. `docker-compose.dev.yml` uses the [felddy/foundryvtt](https://hub.docker.com/r/felddy/foundryvtt) image and mounts the **built** `examples/simple-system` and `examples/simple-module` read-only into the container's data tree.
 
 1. Copy the env template and fill in your Foundry license and foundryvtt.com login. They stay on your machine; never commit `.env`.
    ```bash
@@ -67,7 +67,7 @@ Foundry credentials are personal and licence-gated. They stay on your machine; n
 
 ## The end-to-end suite
 
-`apps/e2e` boots a real Foundry v13 in Docker with both examples installed and
+`apps/e2e` boots a real Foundry v14 in Docker with both examples installed and
 asserts what a mock cannot: that Foundry accepted the data models, that each
 sheet is filed under the id it was given, that a sheet actually draws, and that
 the module's sub-type is namespaced.

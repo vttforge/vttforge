@@ -33,9 +33,11 @@ registerModule({
 ```
 
 `registerModule` is not `registerSystem` with a different name. A module must
-not set `CONFIG.Actor.documentClass`, the initiative formula, or replace
-`CONFIG.statusEffects`. Those belong to whatever system is running, and a
-module that touches them breaks every world it is installed in.
+not set `CONFIG.Actor.documentClass` or the initiative formula, and must not
+assign `CONFIG.statusEffects`. Those belong to whatever system is running, and a
+module that touches them breaks every world it is installed in. A module may
+add a condition of its own, and `statusEffects` does that by id, prefixed so it
+cannot collide with the system's.
 
 ## 3. Register the sheet for the prefixed type
 

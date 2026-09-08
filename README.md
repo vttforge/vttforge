@@ -4,11 +4,11 @@
 
 # VTTForge
 
-**An SDK and CLI for building [Foundry VTT](https://foundryvtt.com) v13+ systems and modules.**
+**An SDK and CLI for building [Foundry VTT](https://foundryvtt.com) v14+ systems and modules.**
 
 [![npm version](https://img.shields.io/npm/v/@vttforge/core.svg?style=flat-square)](https://www.npmjs.com/package/@vttforge/core)
 [![License](https://img.shields.io/npm/l/@vttforge/core.svg?style=flat-square)](LICENSE)
-[![FoundryVTT](https://img.shields.io/badge/FoundryVTT-v13%2B-orange?style=flat-square)](https://foundryvtt.com)
+[![FoundryVTT](https://img.shields.io/badge/FoundryVTT-v14%2B-orange?style=flat-square)](https://foundryvtt.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 
 [Documentation](https://vttforge.dev/docs/) · [Getting started](https://vttforge.dev/docs/guide/getting-started) · [API reference](https://vttforge.dev/docs/reference/) · [Roadmap](#roadmap) · [Report a bug](https://github.com/vttforge/vttforge/issues)
@@ -62,7 +62,7 @@ What breaks is almost never the interesting part. It is the sheet plumbing, the 
 
 VTTForge exists to hold that plumbing in one place. When Foundry moves it, the change lands here, and a system or module built on it updates a dependency instead of rewriting a sheet.
 
-That is also why several things work the way they do. A sheet is registered under an id you choose, so the sheet your readers picked survives your next release. Migrations are versioned and GM-gated, so their worlds survive your schema changes. `vttforge audit` looks for the v13 breakages that fail silently, which is what strands a module after a version bump. And every push boots a real Foundry and drives the example through it, because the question that matters is whether it still loads.
+That is also why several things work the way they do. A sheet is registered under an id you choose, so the sheet your readers picked survives your next release. Migrations are versioned and GM-gated, so their worlds survive your schema changes. `vttforge audit` looks for the v14 breakages that fail silently, which is what strands a module after a version bump. And every push boots a real Foundry and drives the example through it, because the question that matters is whether it still loads.
 
 **If this project ever goes quiet, you are not stranded.** The build output is plain ES modules that Foundry loads natively, with no runtime shim and no framework to unwind. Delete the dependency and your code is still your code. A tool meant to keep other people's work alive has no business being the thing that traps it.
 
@@ -135,7 +135,7 @@ Most of these exist because something failed quietly in a real world, not becaus
 
 ## Try the example
 
-The repo ships a working Foundry v13 system. Requires Docker and a [foundryvtt.com](https://foundryvtt.com) license:
+The repo ships a working Foundry v14 system. Requires Docker and a [foundryvtt.com](https://foundryvtt.com) license:
 
 ```bash
 git clone https://github.com/vttforge/vttforge && cd vttforge
@@ -170,7 +170,7 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 - ✅ **Build pipeline.** One Vite config, a deployable `dist/`, a release zip
 - ✅ **CLI.** `init` with four templates, `dev`, `build`, `audit`
 - ✅ **Dev loop.** Templates, styles and language files reload in place, without a page refresh
-- ✅ **End-to-end.** Every push to `main` boots a real Foundry v13 in a container and drives the example system and module through it
+- ✅ **End-to-end.** Every push to `main` boots a real Foundry v14 in a container and drives the example system and module through it
 - ✅ **Design system.** Tokens, primitives, themes, brand
 - ✅ **Published.** Every package on npm under OIDC trusted publishing, with provenance
 - ✅ **Documentation.** [vttforge.dev/docs](https://vttforge.dev/docs/) carries the guide, the API reference, the recipes and the error catalogue
@@ -191,7 +191,7 @@ MIT, and it stays that way. No paid tier, no open core, nothing held back for a 
 
 Foundry v14 is when this gets tested.
 
-The argument is that when Foundry moves, the change lands in one place and your module updates a dependency instead of rewriting a sheet. That has not happened yet. There is evidence behind it, the plumbing really is in one place and the audit really does catch the quiet v13 breakages, but a design intention is not a track record. I will say plainly how it went when it happens.
+The argument is that when Foundry moves, the change lands in one place and your module updates a dependency instead of rewriting a sheet. That has not happened yet. There is evidence behind it, the plumbing really is in one place and the audit really does catch the quiet v14 breakages, but a design intention is not a track record. I will say plainly how it went when it happens.
 
 There is also a version of this that fails for exactly the reason it was built. One maintainer, a quiet repository, and the dependency everyone leaned on goes still. Putting the plumbing in one place only helps if that place has more than one person who understands it. If you want to be one of them, open an issue and say so.
 

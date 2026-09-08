@@ -49,7 +49,7 @@ export const migrations = createMigrationRunner({
         for (const actor of game.actors.filter((a) => a.type === 'character')) {
           const legacy = actor.system.bio;
           if (typeof legacy !== 'string') continue;
-          await actor.update({ 'system.biography': legacy, '-=system.bio': null });
+          await actor.update({ 'system.biography': legacy, 'system.bio': _del });
         }
       },
     },
