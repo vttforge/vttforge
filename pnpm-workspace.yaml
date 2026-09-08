@@ -27,7 +27,7 @@ catalog:
   turbo: ^2.10.12
   typescript: ^7.0.2
   vite: ^8.2.2
-  vitest: ^4.1.11
+  vitest: ^5.0.0
   '@rolldown/plugin-babel': ^0.2.4
   '@babel/plugin-proposal-decorators': ^8.0.2
   '@babel/core': ^8.0.1
