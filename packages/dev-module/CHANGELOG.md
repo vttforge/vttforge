@@ -1,5 +1,11 @@
 # @vttforge/dev-module
 
+## 0.2.4
+
+### Patch Changes
+
+- 2224420: The manifest declares `"type": "module"` and Foundry v14 compatibility.
+
 ## 0.2.3
 
 ### Patch Changes
