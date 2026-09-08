@@ -29,6 +29,10 @@ declare global {
   var Roll: any;
   // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
   var foundry: any;
+  // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
+  var _del: any;
+  // biome-ignore lint/suspicious/noExplicitAny: stub declarations only
+  var _replace: any;
 }
 
 export {};

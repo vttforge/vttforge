@@ -1,11 +1,12 @@
 {
   "id": "vttforge-dev",
+  "type": "module",
   "title": "VTTForge Dev",
   "description": "Applies changes from `vttforge dev` without a page reload. Development only \u2014 do not enable in a world you care about.",
   "version": "0.0.0",
   "compatibility": {
-    "minimum": "13",
-    "verified": "13"
+    "minimum": "14",
+    "verified": "14"
   },
   "authors": [
     {

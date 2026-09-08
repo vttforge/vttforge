@@ -17,8 +17,6 @@ function installFoundryGlobals() {
   const settings = new Map();
   const hooks = new Map();
   const registerSheet = vi.fn();
-  const actorUnregister = vi.fn();
-  const itemUnregister = vi.fn();
 
   globalThis.Hooks = {
     once(name, fn) {
@@ -43,8 +41,7 @@ function installFoundryGlobals() {
     Actor: { dataModels: {}, documentClass: class {} },
     Item: { dataModels: {}, documentClass: class {} },
     Combat: { initiative: undefined },
-    ActiveEffect: { legacyTransferral: true },
-    statusEffects: [],
+    statusEffects: {},
   };
 
   globalThis.game = {
@@ -98,12 +95,6 @@ function installFoundryGlobals() {
       ux: { DragDrop: class {} },
     },
     data: { fields: {} },
-    documents: {
-      collections: {
-        Actors: { unregisterSheet: actorUnregister },
-        Items: { unregisterSheet: itemUnregister },
-      },
-    },
     utils: {
       mergeObject(a, b) {
         return { ...a, ...b };
@@ -126,7 +117,7 @@ function installFoundryGlobals() {
     },
   };
 
-  return { hooks, settings, registerSheet, actorUnregister, itemUnregister };
+  return { hooks, settings, registerSheet };
 }
 
 let env;
@@ -176,8 +167,6 @@ describe('vttforge-example — boot', () => {
   it('registers Character and Gear sheets with the right type filters', async () => {
     await import('../scripts/main.mjs?bootE');
     env.hooks.get('init')();
-    expect(env.actorUnregister).toHaveBeenCalled();
-    expect(env.itemUnregister).toHaveBeenCalled();
     expect(env.registerSheet).toHaveBeenCalledWith(
       expect.anything(),
       'vttforge-example',

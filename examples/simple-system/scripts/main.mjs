@@ -37,14 +37,6 @@ try {
     combat: {
       initiative: { formula: '1d20 + @abilities.dex.mod', decimals: 2 },
     },
-    onBeforeInit: () => {
-      // The core sheets go first, so ours can take the default. This runs
-      // before the `sheets` below are registered.
-      const { Actors, Items } = foundry.documents.collections;
-      Actors.unregisterSheet('core', foundry.applications.sheets.ActorSheetV2);
-      Items.unregisterSheet('core', foundry.applications.sheets.ItemSheetV2);
-    },
-
     // Declared here rather than with Actors.registerSheet, so the key Foundry
     // saves on each document is `vttforge-example.character` — written down,
     // not derived from a class name a bundler is free to rename.

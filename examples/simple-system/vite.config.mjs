@@ -2,7 +2,7 @@ import vttforge from '@vttforge/vite-plugin';
 import { defineConfig } from 'vite';
 
 /**
- * Build config for the reference Foundry v13 system.
+ * Build config for the reference Foundry v14 system.
  *
  * Uses `@vttforge/vite-plugin` to:
  *   - bundle `scripts/main.mjs` into `dist/main.mjs` (no hash, fully resolved,

@@ -1,11 +1,12 @@
 {
   "id": "vttforge-example",
+  "type": "system",
   "title": "VTTForge Example System",
-  "description": "Minimal Foundry v13 system that exercises @vttforge/core end-to-end — typed data models, sheet boilerplate eliminators, migration runner, and the VTTF-NNNN error catalogue.",
+  "description": "Minimal Foundry v14 system that exercises @vttforge/core end-to-end — typed data models, sheet boilerplate eliminators, migration runner, and the VTTF-NNNN error catalogue.",
   "version": "0.1.0",
   "compatibility": {
-    "minimum": "13",
-    "verified": "13.341"
+    "minimum": "14",
+    "verified": "14"
   },
   "authors": [{ "name": "VTTForge Contributors" }],
   "esmodules": ["main.mjs"],

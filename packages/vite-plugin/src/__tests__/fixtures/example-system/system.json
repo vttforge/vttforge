@@ -3,7 +3,7 @@
   "title": "Fixture System",
   "description": "Fixture for @vttforge/vite-plugin tests.",
   "version": "0.0.0",
-  "compatibility": { "minimum": "13", "verified": "13" },
+  "compatibility": { "minimum": "14", "verified": "14" },
   "esmodules": ["scripts/main.mjs"],
   "styles": ["styles/main.css"],
   "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],

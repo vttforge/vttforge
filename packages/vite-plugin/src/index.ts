@@ -1,7 +1,7 @@
 /**
  * @vttforge/vite-plugin
  *
- * Vite plugin that takes a Foundry v13+ system or module source tree and emits
+ * Vite plugin that takes a Foundry v14+ system or module source tree and emits
  * a fully bundled, Foundry-loadable artifact in `dist/`:
  *
  *   - browser ESM entry at `dist/main.mjs` (no hash)
@@ -103,10 +103,10 @@ function readJsonSafe(path: string): Record<string, unknown> | null {
 }
 
 /**
- * Foundry v13 accepts either a legacy string (`"styles/foo.css"`) or the
+ * Foundry accepts either a legacy string (`"styles/foo.css"`) or the
  * canonical object form (`{ src: "styles/foo.css", layer?: "..." }`) in the
  * manifest `styles` array. We accept both inputs and emit the object form,
- * which is what Foundry expects natively in v13 (the string form auto-migrates
+ * which is what Foundry expects natively since v13 (the string form auto-migrates
  * with a deprecation warning). Any additional metadata declared on an object
  * entry (e.g. `layer` for cascade layer placement) is preserved through the
  * rewrite so consumers keep full control of stylesheet metadata.
