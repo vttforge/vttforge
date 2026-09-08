@@ -12,6 +12,7 @@ import { runAuditCommand } from './commands/audit.js';
 import { runBuild } from './commands/build.js';
 import { runDev } from './commands/dev.js';
 import { runInit, ScaffoldError } from './commands/init.js';
+import { runMigrateCommand } from './commands/migrate.js';
 import { VTTFORGE_CLI_VERSION } from './index.js';
 
 export const init = defineCommand({
@@ -199,17 +200,55 @@ export const audit = defineCommand({
   },
 });
 
+export const migrate = defineCommand({
+  meta: {
+    name: 'migrate',
+    description: 'Rewrite a v13 system or module for Foundry v14 (preview by default)',
+  },
+  args: {
+    path: {
+      type: 'positional',
+      description: 'Project root to rewrite (defaults to the current directory)',
+      required: false,
+    },
+    write: {
+      type: 'boolean',
+      default: false,
+      description: 'Write the edits. Without it, the command only reports what it would change',
+    },
+    json: {
+      type: 'boolean',
+      default: false,
+      description: 'Emit the report as JSON',
+    },
+  },
+  async run({ args }) {
+    try {
+      const { exitCode } = await runMigrateCommand({
+        cwd: args.path ? String(args.path) : undefined,
+        write: Boolean(args.write),
+        json: Boolean(args.json),
+      });
+      process.exitCode = exitCode;
+    } catch (error) {
+      process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+      process.exitCode = 1;
+    }
+  },
+});
+
 export const main = defineCommand({
   meta: {
     name: 'vttforge',
     version: VTTFORGE_CLI_VERSION,
     description:
-      'VTTForge CLI: scaffold, dev, build and audit for Foundry v14+ systems and modules',
+      'VTTForge CLI: scaffold, dev, build, audit and migrate for Foundry v14+ systems and modules',
   },
   subCommands: {
     init,
     dev,
     build,
     audit,
+    migrate,
   },
 });
