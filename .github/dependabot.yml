@@ -25,6 +25,14 @@ updates:
       # fvtt-types is intentionally pinned to a git SHA from main (PRD §5);
       # last npm release is 10+ months stale. Bump manually when needed.
       - dependency-name: fvtt-types
+      # TypeScript majors. apps/docs pins ~6.0.0 because typedoc needs the JS
+      # compiler API, and TypeScript 7.0 ships without one (7.1 is expected to
+      # bring a new, different API). typedoc's peer range ends at 6.0.x and it
+      # crashes under 7. This entry covers the whole workspace, so a future
+      # TypeScript 8 also needs a manual look; the catalog is already on 7.
+      # Re-evaluate when typedoc's peer range includes 7.x.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
 
   # GitHub Actions versions
   - package-ecosystem: github-actions
