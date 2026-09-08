@@ -29,7 +29,7 @@ import type { RuleResult } from './types.js';
  * Only names with no plausible user-land meaning are listed: `duplicate`
  * and `debounce` are left out because a project can define its own.
  */
-const REMOVED_UTILS = [
+export const REMOVED_UTILS = [
   'mergeObject',
   'getProperty',
   'setProperty',

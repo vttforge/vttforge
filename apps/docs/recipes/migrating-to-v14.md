@@ -88,7 +88,11 @@ v16.
 
 ## Then
 
+Most of the list above is mechanical, and the CLI does it:
+
 ```bash
+vttforge migrate          # report what would change
+vttforge migrate --write  # apply it
 vttforge audit
 ```
 

@@ -88,3 +88,37 @@ or flattened, because Foundry reads both.
 
 The exit code is non-zero on a HIGH finding. `--strict` makes any finding
 fail, for CI. `--json` prints the report as data.
+
+## `vttforge migrate`
+
+```bash
+vttforge migrate [dir] [--write] [--json]
+```
+
+Rewrites a v13 project for v14. Without `--write` it only reports what it
+would change, one line per edit, so a rewrite that landed inside a string or a
+comment is seen before it is written. Run it, read the report, run it again
+with `--write`, then run `vttforge audit`.
+
+| Rewrite | Before | After |
+|---|---|---|
+| Removed globals | `mergeObject(a, b)`, `Math.clamped(x, 0, 1)` | `foundry.utils.mergeObject(a, b)`, `Math.clamp(x, 0, 1)` |
+| Data operators | `'-=system.bio': null`, `"==system.stats": {...}` | `'system.bio': _del`, `"system.stats": _replace({...})` |
+| | `performDeletions: true`, `foundry.utils.objectsEqual` | `applyOperators: true`, `foundry.utils.equals` |
+| Roll modes | `rollMode: 'gmroll'`, `game.settings.get('core', 'rollMode')` | `messageMode: 'gm'`, `game.settings.get('core', 'messageMode')` |
+| | `CONFIG.Dice.rollModes`, `CONST.DICE_ROLL_MODES.PRIVATE` | `CONFIG.ChatMessage.modes`, `"gm"` |
+| Context menus and header controls | `name`, `condition`, `callback` | `label`, `visible`, `onClick` |
+| Active Effects | `mode: CONST.ACTIVE_EFFECT_MODES.ADD` | `type: "add"` |
+| Status effects | `CONFIG.statusEffects = list;` | `for (const effect of list) CONFIG.statusEffects[effect.id] = effect;` |
+| Gone in v14 | `CONFIG.ActiveEffect.legacyTransferral = ...`, `activeEffect: { legacyTransferral }`, `Actors.unregisterSheet('core', ...)` | removed |
+| Manifest | no `type`, `compatibility` below 14 | `"type": "system"` or `"module"`, `minimum` and `verified` at `"14"` |
+
+What it will not decide, it reports as "needs a decision": a `game.template`
+read (which becomes `game.model` or a `documentTypes` lookup depending on what
+was read), a `rollMode` whose value is an expression, the parameter list of a
+renamed `callback` (`onClick` receives `(event, target)`), a root-level
+`changes` array on an effect (now `system.changes`), a `compatibility.maximum`
+below 14, and the flat `gridDistance` / `gridUnits` keys.
+
+The rewrites are text-based, like the audit rules they mirror. A match inside
+a string literal is rewritten too; the preview is where that is caught.

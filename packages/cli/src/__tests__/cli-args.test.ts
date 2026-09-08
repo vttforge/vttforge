@@ -117,7 +117,13 @@ describe('audit args', () => {
 });
 
 describe('command tree', () => {
-  it('registers the four subcommands', () => {
-    expect(Object.keys(main.subCommands ?? {}).sort()).toEqual(['audit', 'build', 'dev', 'init']);
+  it('registers the five subcommands', () => {
+    expect(Object.keys(main.subCommands ?? {}).sort()).toEqual([
+      'audit',
+      'build',
+      'dev',
+      'init',
+      'migrate',
+    ]);
   });
 });
