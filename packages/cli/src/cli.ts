@@ -160,7 +160,8 @@ export const build = defineCommand({
 export const audit = defineCommand({
   meta: {
     name: 'audit',
-    description: 'Scan a system/module project for the seven v13 manifest + code footguns',
+    description:
+      'Scan a system/module project for the v14 manifest, source and template breakages that fail quietly',
   },
   args: {
     path: {
@@ -203,7 +204,7 @@ export const main = defineCommand({
     name: 'vttforge',
     version: VTTFORGE_CLI_VERSION,
     description:
-      'VTTForge CLI: scaffold, dev, build and audit for Foundry v13+ systems and modules',
+      'VTTForge CLI: scaffold, dev, build and audit for Foundry v14+ systems and modules',
   },
   subCommands: {
     init,

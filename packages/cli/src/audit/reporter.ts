@@ -33,7 +33,7 @@ function formatMarkdown(report: AuditReport): string {
   );
   lines.push('');
   if (findings.length === 0) {
-    lines.push('No issues found. The system / module looks healthy against the v13 catalog.');
+    lines.push('No issues found. The system / module looks healthy against the v14 catalog.');
     lines.push('');
     return lines.join('\n');
   }

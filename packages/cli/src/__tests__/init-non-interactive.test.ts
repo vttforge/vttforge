@@ -40,7 +40,7 @@ describe('runInit without a terminal', () => {
     const manifest = readJson(cwd, 'smoke-module', 'module.json');
     expect(manifest.id).toBe('smoke-module');
     expect(manifest.title).toBe('Smoke Module');
-    expect(manifest.compatibility.minimum).toBe('13');
+    expect(manifest.compatibility.minimum).toBe('14');
   });
 
   it('takes every metadata value from its option', async () => {

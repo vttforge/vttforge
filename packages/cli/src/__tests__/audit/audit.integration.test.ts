@@ -2,7 +2,7 @@
  * End-to-end smoke: scaffold each of the four templates and audit the
  * result. Templates are the canonical "compliant" inputs — the audit
  * must report zero findings against them. If this test fails it means
- * either a template regressed against v13 conventions, or the audit
+ * either a template regressed against v14 conventions, or the audit
  * grew a false positive against the official scaffolds.
  */
 
@@ -19,8 +19,8 @@ const VARS: ScaffoldVars = {
   DESCRIPTION: 'Audit integration test scaffold.',
   AUTHOR: 'Daisy',
   LICENSE: 'MIT',
-  FOUNDRY_MIN_VERSION: '13',
-  FOUNDRY_VERIFIED_VERSION: '13.341',
+  FOUNDRY_MIN_VERSION: '14',
+  FOUNDRY_VERIFIED_VERSION: '14',
   LOCALE_PREFIX: 'AUDIT_SMOKE',
   YEAR: '2026',
 };

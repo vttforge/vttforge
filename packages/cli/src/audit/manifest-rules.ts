@@ -2,11 +2,11 @@
  * Manifest-scope audit rules.
  *
  * These rules operate on the parsed contents of `system.json` and/or
- * `module.json` at the project root. They cover three v13 manifest
+ * `module.json` at the project root. They cover the v14 manifest
  * footguns from the VTTForge audit catalog:
  *
  *   VTTF-AUDIT-001 (HIGH)  : flags.hotReload shape
- *   VTTF-AUDIT-002 (MEDIUM): deprecated gridDistance/gridUnits
+ *   VTTF-AUDIT-002 (HIGH)  : removed gridDistance/gridUnits
  *   VTTF-AUDIT-003 (LOW)   : styles array of strings (v12 shape)
  *   VTTF-AUDIT-009 (MEDIUM): a documentTypes subtype with no TYPES label
  *   VTTF-AUDIT-010 (HIGH)  : template.json erasing documentTypes metadata
@@ -80,7 +80,7 @@ function findKeyLine(raw: string, key: string): number | undefined {
 /**
  * VTTF-AUDIT-001 (HIGH): flags.hotReload shape.
  *
- * v12 accepted `"hotReload": ["css", "hbs", ...]` (array). v13 expects
+ * v12 accepted `"hotReload": ["css", "hbs", ...]` (array). v13+ expects
  * `"hotReload": { "extensions": [...], "paths": [...] }` (object at the
  * root of `flags`, NOT nested under a package id). With the array shape
  * the server's chokidar watcher reads `.extensions` and gets undefined,
@@ -102,7 +102,7 @@ function ruleHotReload(manifest: LoadedManifest): RuleResult[] {
         filePath: manifest.path,
         line,
         message:
-          'flags.hotReload is an array; v13 expects an object `{ "extensions": [...], "paths": [...] }`. With the array shape Foundry silently disables HMR for this package.',
+          'flags.hotReload is an array; Foundry expects an object `{ "extensions": [...], "paths": [...] }`. With the array shape Foundry silently disables HMR for this package.',
         remediation:
           'Replace the array with an object: `"hotReload": { "extensions": ["css", "hbs", "json"], "paths": ["styles", "templates", "lang"] }`.',
       },
@@ -119,7 +119,7 @@ function ruleHotReload(manifest: LoadedManifest): RuleResult[] {
         severity: 'HIGH',
         filePath: manifest.path,
         line,
-        message: 'flags.hotReload must be an object with `extensions` and `paths` arrays in v13.',
+        message: 'flags.hotReload must be an object with `extensions` and `paths` arrays.',
         remediation: 'Replace with `"hotReload": { "extensions": [...], "paths": [...] }`.',
       },
     ];
@@ -148,12 +148,12 @@ function ruleHotReload(manifest: LoadedManifest): RuleResult[] {
 }
 
 /**
- * VTTF-AUDIT-002 (MEDIUM): deprecated top-level grid fields.
+ * VTTF-AUDIT-002 (HIGH): removed top-level grid fields.
  *
- * v12 used flat `gridDistance` + `gridUnits`. v13 wants
- * `grid: { type, distance, units, diagonals }`. The legacy keys still
- * work today (Foundry auto-migrates and warns) but will be removed in
- * v14. Flag them now so the project is forward-compatible.
+ * v12 used flat `gridDistance` + `gridUnits`. v13 auto-migrated them to
+ * `grid: { type, distance, units, diagonals }` with a warning; v14 dropped
+ * the shim. The keys are now ignored and the system silently falls back to
+ * the default grid.
  */
 function ruleGridShape(manifest: LoadedManifest): RuleResult[] {
   const hasLegacyDistance = 'gridDistance' in manifest.parsed;
@@ -164,12 +164,12 @@ function ruleGridShape(manifest: LoadedManifest): RuleResult[] {
   return [
     {
       ruleId: 'VTTF-AUDIT-002',
-      title: 'Top-level gridDistance / gridUnits are deprecated v12 fields',
-      severity: 'MEDIUM',
+      title: 'Top-level gridDistance / gridUnits are removed v12 fields',
+      severity: 'HIGH',
       filePath: manifest.path,
       line: findKeyLine(manifest.raw, offendingKey),
       message:
-        'gridDistance and gridUnits at the manifest root are the v12 shape. Foundry v13 expects a structured `grid` object and emits a deprecation warning on load; the fields will be removed in v14.',
+        'gridDistance and gridUnits at the manifest root are the v12 shape. v14 removed the migration shim: the keys are ignored and the system falls back to the default grid with no warning.',
       remediation:
         'Replace with `"grid": { "type": 1, "distance": 5, "units": "ft", "diagonals": 0 }` (adjust values to your system).',
     },
@@ -179,7 +179,7 @@ function ruleGridShape(manifest: LoadedManifest): RuleResult[] {
 /**
  * VTTF-AUDIT-003 (LOW): styles array of strings.
  *
- * v12 took `styles: ["styles/foo.css"]`. v13 expects `styles: [{ src,
+ * v12 took `styles: ["styles/foo.css"]`. v13+ expects `styles: [{ src,
  * layer? }]` so cascade-layer ordering can be declared in the manifest.
  * The string form still works (Foundry auto-migrates) but emits a
  * deprecation warning and loses the ability to control layer placement.
@@ -189,7 +189,7 @@ function ruleStylesShape(manifest: LoadedManifest): RuleResult[] {
   if (!Array.isArray(styles) || styles.length === 0) return [];
 
   // The whole array is uniform in the v12 shape: entries are strings.
-  // Mixed arrays (some string, some object) also fail v13 expectations.
+  // Mixed arrays (some string, some object) also fail the v13+ shape.
   const hasString = styles.some((entry) => typeof entry === 'string');
   if (!hasString) return [];
 
@@ -201,7 +201,7 @@ function ruleStylesShape(manifest: LoadedManifest): RuleResult[] {
       filePath: manifest.path,
       line: findKeyLine(manifest.raw, 'styles'),
       message:
-        'styles entries should be objects of the form `{ "src": "path/to.css", "layer": "optional-layer" }` in v13. String entries auto-migrate today but the conversion drops your control over cascade-layer placement.',
+        'styles entries should be objects of the form `{ "src": "path/to.css", "layer": "optional-layer" }` since v13. String entries auto-migrate today but the conversion drops your control over cascade-layer placement.',
       remediation:
         'Replace each string with `{ "src": "<that-path>" }`. Add a `"layer"` field per entry where you want explicit cascade ordering.',
     },

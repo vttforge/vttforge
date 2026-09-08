@@ -1,6 +1,6 @@
 /**
  * `vttforge audit`: scan a system/module project against the VTTForge
- * audit catalog (seven v13 manifest + code footguns).
+ * audit catalog (the v14 manifest, source and template breakages that fail quietly).
  *
  * The seven rules (VTTF-AUDIT-001 through 007) live in
  * `audit/manifest-rules.ts` or `audit/source-rules.ts`; this file is the

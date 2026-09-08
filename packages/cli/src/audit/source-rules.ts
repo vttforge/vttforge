@@ -3,7 +3,7 @@
  *
  * These walk `.ts` / `.tsx` / `.mjs` / `.cjs` / `.js` files under the
  * project root (excluding common build/dependency dirs) and apply regex
- * heuristics to spot four v13 footguns from the VTTForge audit catalog:
+ * heuristics to spot four footguns from the VTTForge audit catalog:
  *
  *   VTTF-AUDIT-004 (MEDIUM): HTMLField/FilePathField missing manifest declaration
  *   VTTF-AUDIT-005 (MEDIUM): extends TypeDataModel without prepareBaseData stub
@@ -145,7 +145,7 @@ function rule006(filePath: string, content: string): RuleResult[] {
       filePath,
       line: lineOf(content, /_addDataFieldMigrations\s*\(/),
       message:
-        'The plural `_addDataFieldMigrations` is not a real Foundry API. The canonical v13 migration hook is a static `migrateData(source)` override that calls singular `super._addDataFieldMigration(source, oldKey, newKey, apply?)` for each rename. Instance overrides named `_addDataFieldMigrations` never run.',
+        'The plural `_addDataFieldMigrations` is not a real Foundry API. The canonical migration hook is a static `migrateData(source)` override that calls singular `super._addDataFieldMigration(source, oldKey, newKey, apply?)` for each rename. Instance overrides named `_addDataFieldMigrations` never run.',
       remediation:
         'Replace the override with `static migrateData(source) { super._addDataFieldMigration(source, "oldKey", "newKey"); return super.migrateData(source); }`.',
     },

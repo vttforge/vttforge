@@ -44,8 +44,8 @@ const VARS: ScaffoldVars = {
   DESCRIPTION: 'Integration test fixture.',
   AUTHOR: 'Test Author',
   LICENSE: 'MIT',
-  FOUNDRY_MIN_VERSION: '13',
-  FOUNDRY_VERIFIED_VERSION: '13.341',
+  FOUNDRY_MIN_VERSION: '14',
+  FOUNDRY_VERIFIED_VERSION: '14',
   LOCALE_PREFIX: 'MY_PACK',
   YEAR: '2026',
 };
@@ -119,7 +119,7 @@ describe('scaffolded templates', () => {
 
   for (const variant of SYSTEM_VARIANTS) {
     describe(`${variant} (system-specific)`, () => {
-      it('produces a v13-shaped system.json', async () => {
+      it('produces a v14-shaped system.json', async () => {
         await scaffold({
           templateDir: join(templatesRoot(), variant),
           destDir,
@@ -128,7 +128,8 @@ describe('scaffolded templates', () => {
         const manifest = JSON.parse(readFileSync(join(destDir, 'system.json'), 'utf8'));
         expect(manifest.id).toBe('my-pack');
         expect(manifest.title).toBe('My Pack');
-        expect(manifest.compatibility.minimum).toBe('13');
+        expect(manifest.type).toBe('system');
+        expect(manifest.compatibility.minimum).toBe('14');
         expect(manifest.styles).toEqual([{ src: 'styles/main.css' }]);
         expect(manifest.grid).toEqual({ type: 1, distance: 5, units: 'ft', diagonals: 0 });
         expect(manifest.flags.hotReload).toEqual({
@@ -165,7 +166,7 @@ describe('scaffolded templates', () => {
 
   for (const variant of MODULE_VARIANTS) {
     describe(`${variant} (module-specific)`, () => {
-      it('produces a v13-shaped module.json that declares its sub-type', async () => {
+      it('produces a v14-shaped module.json that declares its sub-type', async () => {
         await scaffold({
           templateDir: join(templatesRoot(), variant),
           destDir,
@@ -173,6 +174,7 @@ describe('scaffolded templates', () => {
         });
         const manifest = JSON.parse(readFileSync(join(destDir, 'module.json'), 'utf8'));
         expect(manifest.id).toBe('my-pack');
+        expect(manifest.type).toBe('module');
         expect(manifest.title).toBe('My Pack');
         expect(manifest.styles).toEqual([{ src: 'styles/main.css' }]);
         expect(manifest.flags.hotReload).toEqual({

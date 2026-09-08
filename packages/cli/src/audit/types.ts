@@ -1,7 +1,7 @@
 /**
  * Shared types for the `vttforge audit` rule engine.
  *
- * The audit catalog covers ten v13 footguns. Each rule produces zero or more `RuleResult` entries; the
+ * The audit catalog covers the breakages that fail quietly on v14. Each rule produces zero or more `RuleResult` entries; the
  * orchestrator aggregates them into an `AuditReport` which the reporter
  * renders as JSON or markdown.
  *

@@ -1,6 +1,6 @@
 # @vttforge/cli
 
-Scaffold, dev loop, release build and audit for Foundry VTT v13+ systems and modules.
+Scaffold, dev loop, release build and audit for Foundry VTT v14+ systems and modules.
 
 ```bash
 pnpm create vttforge my-system        # same as: npx @vttforge/cli init my-system
@@ -22,7 +22,7 @@ vttforge audit [dir] [--json] [--strict]
 
 **`build`** runs the production build and writes `<id>-<version>.zip` at the project root with the manifest at the top level, which is what foundryvtt.com expects. `LICENSE`, `README.md` and `CHANGELOG.md` go in when present.
 
-**`audit`** checks the manifest, the source and the templates against ten v13 breakages that fail quietly: the `flags.hotReload` shape, deprecated grid fields, the v12 `styles` shape, `HTMLField`/`FilePathField` paths missing from `documentTypes`, `TypeDataModel` without `prepareBaseData`, a bad `_addDataFieldMigrations` override, token attributes that do not point at a `{ value, max }` field, a sheet template that opens a `<form>` the sheet already is, a declared subtype with no name in any language file, and a `template.json` that erases the metadata `system.json` declares for the same type. `--json` for machines; `--strict` exits non-zero on any finding rather than only on HIGH.
+**`audit`** checks the manifest, the source and the templates against the v14 breakages that fail quietly: the `flags.hotReload` shape, the removed grid fields, the v12 `styles` shape, `HTMLField`/`FilePathField` paths missing from `documentTypes`, `TypeDataModel` without `prepareBaseData`, a bad `_addDataFieldMigrations` override, token attributes that do not point at a `{ value, max }` field, a sheet template that opens a `<form>` the sheet already is, a declared subtype with no name in any language file, a `template.json` that erases the metadata `system.json` declares for the same type, and the v13 code v14 broke or deprecated: bare `mergeObject`-style globals, `-=` update keys, `rollMode`, whole-array `CONFIG.statusEffects` assignment, `legacyTransferral`, numeric Active Effect modes. `--json` for machines; `--strict` exits non-zero on any finding rather than only on HIGH.
 
 ## As a library
 
