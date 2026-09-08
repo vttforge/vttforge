@@ -67,6 +67,14 @@ describe('VTTF-AUDIT-011: a global v14 removed', () => {
     ).toEqual([]);
   });
 
+  it('still flags a call inside an if-block (was a false negative before the [^)]* fix)', async () => {
+    const findings = await auditSource(
+      "if (hasProperty(actor, 'system.hp')) {\n  actor.update({ 'system.hp': 10 });\n}\n",
+    );
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({ ruleId: 'VTTF-AUDIT-011', severity: 'HIGH' });
+  });
+
   it('flags Math.clamped and game.template', async () => {
     const clamped = await auditSource('const v = Math.clamped(x, 0, 1);\n');
     expect(clamped[0]?.remediation).toContain('Math.clamp');

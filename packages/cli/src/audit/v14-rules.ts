@@ -65,12 +65,14 @@ const REMOVED_GLOBALS: readonly RemovedGlobal[] = [
 /**
  * A file that declares, imports, or defines the name as a method (a test
  * mock's `utils: { mergeObject(a, b) {...} }`) is using its own, not
- * Foundry's. The parameter list may hold nested brackets, so it is matched
- * lazily up to the `) {` that opens the body.
+ * Foundry's. The method-shorthand alternative uses `[^)]*` (no nested
+ * parens) to avoid a false positive on call-sites inside conditional blocks
+ * like `if (hasProperty(obj, 'key')) {`, where a lazy `[\s\S]*?` would
+ * backtrack through the outer `)` and match the block brace.
  */
 function definesItself(content: string, name: string): boolean {
   return new RegExp(
-    `(?:function\\s+${name}\\b|(?:const|let|var)\\s+${name}\\b|import[^;]*\\b${name}\\b|\\b${name}\\s*\\([\\s\\S]{0,200}?\\)\\s*\\{)`,
+    `(?:function\\s+${name}\\b|(?:const|let|var)\\s+${name}\\b|import[^;]*\\b${name}\\b|\\b${name}\\s*\\([^)]*\\)\\s*\\{)`,
   ).test(content);
 }
 
