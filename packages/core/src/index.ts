@@ -103,6 +103,8 @@ export {
   type DocumentSheetOptions,
   ItemDataModel,
   OnHook,
+  SystemSetting,
+  type SystemSettingOptions,
 } from './decorators.js';
 export {
   ERROR_MANIFEST_VERSION,

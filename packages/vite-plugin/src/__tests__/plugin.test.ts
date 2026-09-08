@@ -414,5 +414,36 @@ describe('@vttforge/vite-plugin', () => {
       expect(out).toContain('Decorated');
       expect(out).toContain('tagged');
     });
+
+    it('lowers a decorated static accessor, which is what @SystemSetting sits on', async () => {
+      writeFileSync(
+        resolve(workdir, 'scripts/settings.mjs'),
+        [
+          'function setting() { return (target, context) => ({ get() { return "read"; }, set() {}, init(v) { return v; } }); }',
+          'export class Settings {',
+          '  @setting()',
+          '  static accessor homebrew = false;',
+          '}',
+          '',
+        ].join('\n'),
+      );
+      writeFileSync(
+        resolve(workdir, 'scripts/main.mjs'),
+        "export { Settings } from './settings.mjs';\n",
+      );
+
+      await build({
+        root: workdir,
+        logLevel: 'silent',
+        plugins: [vttforge(defaultOptions())],
+      });
+
+      const out = readFileSync(resolve(workdir, 'dist/main.mjs'), 'utf8');
+      expect(out).not.toMatch(/^\s*@[A-Za-z_$]/m);
+      // Babel lowers the accessor to a getter/setter pair; only its helper text
+      // still says "accessor". The declaration itself must be gone.
+      expect(out).not.toMatch(/\baccessor\s+homebrew\b/);
+      expect(out).toContain('homebrew');
+    });
   });
 });
