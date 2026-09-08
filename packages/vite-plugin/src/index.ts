@@ -21,7 +21,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { cp, mkdir, readdir, stat } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
-import type { Plugin, UserConfig } from 'vite';
+import babel from '@rolldown/plugin-babel';
+import type { Plugin, PluginOption, UserConfig } from 'vite';
 import { version } from '../package.json' with { type: 'json' };
 
 export interface VttforgeOptions {
@@ -233,7 +234,35 @@ function syncManifest(opts: ResolvedOptions, builtCssSources: Set<string>): Mani
 }
 
 /**
+ * Lower TC39 decorators, which Oxc does not do yet.
+ *
+ * Vite 8 replaced esbuild with Oxc, and Oxc does not lower Stage 3 decorators
+ * (oxc-project/oxc#9170). Without this, `@ActorDataModel(...)` reaches the
+ * bundle untransformed and the system fails to load in every browser. This is
+ * the workaround the Vite 8 migration guide gives, and it is filtered to files
+ * that contain an `@`, so a project that never uses a decorator pays nothing.
+ */
+function decoratorLowering(): PluginOption {
+  // `babel()` resolves asynchronously. Vite accepts a promise in `plugins`
+  // and awaits it, so this stays a plain synchronous call for the consumer.
+  return babel({
+    presets: [
+      {
+        preset: () => ({
+          plugins: [['@babel/plugin-proposal-decorators', { version: '2023-11' }]],
+        }),
+        rolldown: { filter: { code: '@' } },
+      },
+    ],
+  });
+}
+
+/**
  * Vite plugin for Foundry VTT systems and modules.
+ *
+ * Returns two entries: decorator lowering, then the plugin proper. Vite
+ * flattens nested plugin arrays and awaits promised entries, so
+ * `plugins: [vttforge({ id })]` is unchanged.
  *
  * @example
  * ```js
@@ -246,7 +275,11 @@ function syncManifest(opts: ResolvedOptions, builtCssSources: Set<string>): Mani
  * });
  * ```
  */
-export default function vttforge(options: VttforgeOptions): Plugin {
+export default function vttforge(options: VttforgeOptions): PluginOption[] {
+  return [decoratorLowering(), vttforgePlugin(options)];
+}
+
+function vttforgePlugin(options: VttforgeOptions): Plugin {
   let resolved: ResolvedOptions;
   let cssEntries: string[] = [];
   let builtCssSources: Set<string> = new Set();

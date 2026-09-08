@@ -59,5 +59,10 @@
   "publishConfig": {
     "access": "public",
     "provenance": false
+  },
+  "dependencies": {
+    "@babel/core": "catalog:",
+    "@babel/plugin-proposal-decorators": "catalog:",
+    "@rolldown/plugin-babel": "catalog:"
   }
 }

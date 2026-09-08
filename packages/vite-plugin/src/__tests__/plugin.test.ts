@@ -10,6 +10,8 @@ import {
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { Plugin, PluginOption } from 'vite';
+import { build } from 'vite';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import pluginPackage from '../../package.json' with { type: 'json' };
 import vttforge, { VTTFORGE_VITE_PLUGIN_VERSION, type VttforgeOptions } from '../index';
@@ -25,8 +27,27 @@ function createFixtureWorkspace(): string {
 // biome-ignore lint/suspicious/noExplicitAny: test helpers call Vite plugin hooks with mocked contexts
 type AnyFn = (...args: any[]) => any;
 
+/**
+ * `vttforge()` returns the decorator lowering and then the plugin proper.
+ * The hook tests below drive the plugin proper.
+ */
+function mainPlugin(plugins: PluginOption[]): Plugin {
+  // The decorator lowering is a promise Vite resolves; the plugin proper is
+  // the one plain object with our name.
+  const found = plugins.find(
+    (p): p is Plugin =>
+      typeof p === 'object' &&
+      p !== null &&
+      !Array.isArray(p) &&
+      !('then' in p) &&
+      p.name === '@vttforge/vite-plugin',
+  );
+  if (!found) throw new Error('main plugin not found in vttforge() output');
+  return found;
+}
+
 async function invokeConfigHook(
-  plugin: ReturnType<typeof vttforge>,
+  plugin: Plugin,
   root: string,
   command: 'build' | 'serve' = 'build',
 ): Promise<Record<string, unknown>> {
@@ -46,7 +67,7 @@ async function invokeConfigHook(
   return (result ?? {}) as Record<string, unknown>;
 }
 
-async function invokeHook(plugin: ReturnType<typeof vttforge>, name: 'writeBundle'): Promise<void> {
+async function invokeHook(plugin: Plugin, name: 'writeBundle'): Promise<void> {
   const hook = plugin[name] as unknown as AnyFn | undefined;
   if (typeof hook !== 'function') return;
   await hook.call(plugin);
@@ -71,8 +92,19 @@ describe('@vttforge/vite-plugin', () => {
     expect(VTTFORGE_VITE_PLUGIN_VERSION).toBe(pluginPackage.version);
   });
 
+  it('returns the decorator lowering ahead of the plugin proper', async () => {
+    const plugins = vttforge(defaultOptions());
+    // Two entries, in this order. Vite flattens the array and awaits promised
+    // entries, so a consumer's `plugins: [vttforge({ id })]` never sees it.
+    expect(plugins).toHaveLength(2);
+    const lowering = (await plugins[0]) as Plugin;
+    expect(typeof lowering.name).toBe('string');
+    expect(lowering.name).not.toBe('@vttforge/vite-plugin');
+    expect((plugins[1] as Plugin).name).toBe('@vttforge/vite-plugin');
+  });
+
   it('returns a Vite plugin with the right shape', () => {
-    const plugin = vttforge(defaultOptions());
+    const plugin = mainPlugin(vttforge(defaultOptions()));
     expect(plugin.name).toBe('@vttforge/vite-plugin');
     expect(plugin.enforce).toBe('pre');
     expect(typeof plugin.config).toBe('function');
@@ -82,14 +114,16 @@ describe('@vttforge/vite-plugin', () => {
   describe('option validation', () => {
     it('throws when id is missing', () => {
       expect(() =>
-        invokeConfigHook(vttforge({ id: '' } as VttforgeOptions), workdir),
+        invokeConfigHook(mainPlugin(vttforge({ id: '' } as VttforgeOptions)), workdir),
       ).rejects.toThrow(/`id` option is required/);
     });
 
     it('throws when kind is invalid', () => {
       expect(() =>
         invokeConfigHook(
-          vttforge({ id: 'fixture-system', kind: 'plugin' } as unknown as VttforgeOptions),
+          mainPlugin(
+            vttforge({ id: 'fixture-system', kind: 'plugin' } as unknown as VttforgeOptions),
+          ),
           workdir,
         ),
       ).rejects.toThrow(/`kind` must be 'system' or 'module'/);
@@ -97,14 +131,14 @@ describe('@vttforge/vite-plugin', () => {
 
     it('throws when entry file is missing', async () => {
       rmSync(resolve(workdir, 'scripts/main.mjs'));
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       await expect(invokeConfigHook(plugin, workdir)).rejects.toThrow(/Entry file not found/);
     });
   });
 
   describe('Vite config shape', () => {
     it('sets base to /systems/<id>/ for systems', async () => {
-      const plugin = vttforge(defaultOptions({ kind: 'system' }));
+      const plugin = mainPlugin(vttforge(defaultOptions({ kind: 'system' })));
       const config = await invokeConfigHook(plugin, workdir);
       expect(config.base).toBe('/systems/fixture-system/');
     });
@@ -114,13 +148,13 @@ describe('@vttforge/vite-plugin', () => {
         resolve(workdir, 'module.json'),
         readFileSync(resolve(workdir, 'system.json'), 'utf8'),
       );
-      const plugin = vttforge(defaultOptions({ kind: 'module' }));
+      const plugin = mainPlugin(vttforge(defaultOptions({ kind: 'module' })));
       const config = await invokeConfigHook(plugin, workdir);
       expect(config.base).toBe('/modules/fixture-system/');
     });
 
     it('disables publicDir and sets browser target', async () => {
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       const config = await invokeConfigHook(plugin, workdir);
       expect(config.publicDir).toBe(false);
       const build = config.build as Record<string, unknown>;
@@ -128,7 +162,7 @@ describe('@vttforge/vite-plugin', () => {
     });
 
     it('emits main.mjs entry with no hashing', async () => {
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       const config = await invokeConfigHook(plugin, workdir);
       const build = config.build as Record<string, unknown>;
       const rollup = build.rollupOptions as Record<string, unknown>;
@@ -150,7 +184,7 @@ describe('@vttforge/vite-plugin', () => {
     });
 
     it('includes CSS entries from the manifest in rollup input under flat basename keys', async () => {
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       const config = await invokeConfigHook(plugin, workdir);
       const build = config.build as Record<string, unknown>;
       const rollup = build.rollupOptions as Record<string, unknown>;
@@ -159,7 +193,7 @@ describe('@vttforge/vite-plugin', () => {
     });
 
     it('keeps the external list empty so Foundry gets a fully resolved bundle', async () => {
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       const config = await invokeConfigHook(plugin, workdir);
       const build = config.build as Record<string, unknown>;
       const rollup = build.rollupOptions as Record<string, unknown>;
@@ -167,7 +201,7 @@ describe('@vttforge/vite-plugin', () => {
     });
 
     it('disables minification when running in watch / serve mode', async () => {
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       const config = await invokeConfigHook(plugin, workdir, 'serve');
       const build = config.build as Record<string, unknown>;
       expect(build.minify).toBe(false);
@@ -176,7 +210,7 @@ describe('@vttforge/vite-plugin', () => {
 
   describe('static + manifest pipeline', () => {
     it('copies static assets to dist/ on writeBundle', async () => {
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       await invokeConfigHook(plugin, workdir);
       await invokeHook(plugin, 'writeBundle');
       expect(existsSync(resolve(workdir, 'dist/lang/en.json'))).toBe(true);
@@ -185,7 +219,7 @@ describe('@vttforge/vite-plugin', () => {
     });
 
     it('syncs version from package.json and rewrites manifest paths on writeBundle', async () => {
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       await invokeConfigHook(plugin, workdir);
       await invokeHook(plugin, 'writeBundle');
       const manifest = JSON.parse(
@@ -200,7 +234,7 @@ describe('@vttforge/vite-plugin', () => {
     });
 
     it('throws when manifest id does not match plugin option', async () => {
-      const plugin = vttforge(defaultOptions({ id: 'wrong-id' }));
+      const plugin = mainPlugin(vttforge(defaultOptions({ id: 'wrong-id' })));
       await invokeConfigHook(plugin, workdir);
       await expect(invokeHook(plugin, 'writeBundle')).rejects.toThrow(
         /Manifest id 'fixture-system' does not match plugin option id 'wrong-id'/,
@@ -208,7 +242,7 @@ describe('@vttforge/vite-plugin', () => {
     });
 
     it('respects a custom staticAssets list', async () => {
-      const plugin = vttforge(defaultOptions({ staticAssets: ['lang'] }));
+      const plugin = mainPlugin(vttforge(defaultOptions({ staticAssets: ['lang'] })));
       await invokeConfigHook(plugin, workdir);
       await invokeHook(plugin, 'writeBundle');
       expect(existsSync(resolve(workdir, 'dist/lang/en.json'))).toBe(true);
@@ -226,7 +260,7 @@ describe('@vttforge/vite-plugin', () => {
         readFileSync(resolve(workdir, 'system.json'), 'utf8'),
       );
       rmSync(resolve(workdir, 'system.json'));
-      const plugin = vttforge(defaultOptions({ manifest: 'static/system.json' }));
+      const plugin = mainPlugin(vttforge(defaultOptions({ manifest: 'static/system.json' })));
       await invokeConfigHook(plugin, workdir);
       await invokeHook(plugin, 'writeBundle');
       expect(existsSync(resolve(workdir, 'dist/system.json'))).toBe(true);
@@ -242,7 +276,7 @@ describe('@vttforge/vite-plugin', () => {
         readFileSync(resolve(workdir, 'system.json'), 'utf8'),
       );
       rmSync(resolve(workdir, 'system.json'));
-      const plugin = vttforge(defaultOptions({ manifest: 'forge.json' }));
+      const plugin = mainPlugin(vttforge(defaultOptions({ manifest: 'forge.json' })));
       await invokeConfigHook(plugin, workdir);
       await invokeHook(plugin, 'writeBundle');
       expect(existsSync(resolve(workdir, 'dist/system.json'))).toBe(true);
@@ -250,7 +284,7 @@ describe('@vttforge/vite-plugin', () => {
     });
 
     it('drops stylesheet entries added after Vite started instead of advertising an unbuilt file', async () => {
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       await invokeConfigHook(plugin, workdir);
       // Simulate the consumer editing the manifest mid-watch to declare a
       // brand-new stylesheet that the captured rollup input graph never saw.
@@ -277,7 +311,7 @@ describe('@vttforge/vite-plugin', () => {
       >;
       manifest.styles = [{ src: 'styles/main.css' }];
       writeFileSync(resolve(workdir, 'system.json'), JSON.stringify(manifest, null, 2));
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       await invokeConfigHook(plugin, workdir);
       await invokeHook(plugin, 'writeBundle');
       const written = JSON.parse(
@@ -297,7 +331,7 @@ describe('@vttforge/vite-plugin', () => {
       >;
       manifest.styles = [{ src: 'styles/main.css', layer: 'fixture-system' }];
       writeFileSync(resolve(workdir, 'system.json'), JSON.stringify(manifest, null, 2));
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       await invokeConfigHook(plugin, workdir);
       await invokeHook(plugin, 'writeBundle');
       const written = JSON.parse(
@@ -311,7 +345,7 @@ describe('@vttforge/vite-plugin', () => {
       // Same basename, but the new source was never in Rollup's input graph.
       // The manifest must NOT advertise it under the old path with the
       // outdated bundle content.
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       await invokeConfigHook(plugin, workdir);
       mkdirSync(resolve(workdir, 'themes'));
       writeFileSync(resolve(workdir, 'themes/main.css'), '.themed { color: gold; }');
@@ -340,10 +374,45 @@ describe('@vttforge/vite-plugin', () => {
       >;
       manifest.styles = ['styles/main.css', 'styles/themes/main.css'];
       writeFileSync(resolve(workdir, 'system.json'), JSON.stringify(manifest, null, 2));
-      const plugin = vttforge(defaultOptions());
+      const plugin = mainPlugin(vttforge(defaultOptions()));
       await expect(invokeConfigHook(plugin, workdir)).rejects.toThrow(
         /Stylesheet basename collision/,
       );
+    });
+  });
+
+  describe('decorators', () => {
+    it('lowers a TC39 decorator so the bundle Foundry loads has no raw `@`', async () => {
+      // Oxc, which Vite 8 uses, does not lower Stage 3 decorators. Without
+      // the plugin's Babel pass this file reaches dist untransformed and the
+      // system fails to load in every browser, with no error at build time.
+      writeFileSync(
+        resolve(workdir, 'scripts/decorated.mjs'),
+        [
+          'function tag(value) { return (target) => { target.tagged = value; }; }',
+          '@tag("yes")',
+          'export class Decorated {}',
+          '',
+        ].join('\n'),
+      );
+      writeFileSync(
+        resolve(workdir, 'scripts/main.mjs'),
+        "export { Decorated } from './decorated.mjs';\n",
+      );
+
+      await build({
+        root: workdir,
+        logLevel: 'silent',
+        plugins: [vttforge(defaultOptions())],
+      });
+
+      const out = readFileSync(resolve(workdir, 'dist/main.mjs'), 'utf8');
+      // A decorator that survived would sit at the start of a line as `@name`.
+      expect(out).not.toMatch(/^\s*@[A-Za-z_$]/m);
+      // The class and its decorator's effect are still there, so it was
+      // lowered, not dropped.
+      expect(out).toContain('Decorated');
+      expect(out).toContain('tagged');
     });
   });
 });

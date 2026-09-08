@@ -28,6 +28,9 @@ catalog:
   typescript: ^7.0.2
   vite: ^8.2.2
   vitest: ^4.1.11
+  '@rolldown/plugin-babel': ^0.2.4
+  '@babel/plugin-proposal-decorators': ^8.0.2
+  '@babel/core': ^8.0.1
 
 # pnpm 11 reads settings from here, not .npmrc — .npmrc keeps registry and auth
 # only. It does not warn when it finds them in the old place, so anything left
@@ -53,6 +56,7 @@ supportedArchitectures:
 # applying the moment knip bumps — drop the block then rather than growing it.
 minimumReleaseAgeExclude:
   - knip@6.34.0
+  - '@rolldown/plugin-babel@0.2.4'
 
 # pnpm 11 turns an ignored build script into a hard error. lefthook needs its
 # postinstall to write the git hooks.
