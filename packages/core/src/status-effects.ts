@@ -17,8 +17,8 @@ export function addStatusEffects(
   effects: readonly StatusEffectConfig[],
   CONFIG: FoundryConfig,
 ): void {
-  CONFIG.statusEffects ??= {};
-  const target = CONFIG.statusEffects;
+  // Validate the whole list first, so a bad entry leaves CONFIG untouched
+  // rather than half-registered.
   for (const effect of effects) {
     if (typeof effect.id !== 'string' || effect.id.length === 0) {
       throw new VttfError(
@@ -26,6 +26,9 @@ export function addStatusEffects(
         `Package "${packageId}" registered a status effect without an id: ${JSON.stringify(effect)}`,
       );
     }
-    target[effect.id] = effect;
+  }
+  CONFIG.statusEffects ??= {};
+  for (const effect of effects) {
+    CONFIG.statusEffects[effect.id] = effect;
   }
 }

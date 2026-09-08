@@ -18,17 +18,6 @@ import { readFile } from 'node:fs/promises';
 import { _internal } from './source-rules.js';
 import type { RuleResult } from './types.js';
 
-/** Find the 1-based line number of the first match of `needle`. */
-function lineOf(content: string, needle: RegExp): number | undefined {
-  const idx = content.search(needle);
-  if (idx < 0) return undefined;
-  let line = 1;
-  for (let i = 0; i < idx; i += 1) {
-    if (content[i] === '\n') line += 1;
-  }
-  return line;
-}
-
 /**
  * VTTF-AUDIT-011 (HIGH): a bare utility global v14 removed.
  *
@@ -53,40 +42,64 @@ const REMOVED_UTILS = [
   'randomID',
 ] as const;
 
+interface RemovedGlobal {
+  readonly name: string;
+  readonly pattern: RegExp;
+  readonly replacement: string;
+}
+
+const REMOVED_GLOBALS: readonly RemovedGlobal[] = [
+  ...REMOVED_UTILS.map((name) => ({
+    name,
+    pattern: new RegExp(`(?<![\\w$.])${name}\\s*\\(`),
+    replacement: `\`foundry.utils.${name}\``,
+  })),
+  { name: 'Math.clamped', pattern: /\bMath\.clamped\s*\(/, replacement: '`Math.clamp`' },
+  {
+    name: 'game.template',
+    pattern: /\bgame\.template\b/,
+    replacement: '`game.model` or the `documentTypes` on the package',
+  },
+];
+
+/**
+ * A file that declares, imports, or defines the name as a method (a test
+ * mock's `utils: { mergeObject(a, b) {...} }`) is using its own, not
+ * Foundry's. The parameter list may hold nested brackets, so it is matched
+ * lazily up to the `) {` that opens the body.
+ */
+function definesItself(content: string, name: string): boolean {
+  return new RegExp(
+    `(?:function\\s+${name}\\b|(?:const|let|var)\\s+${name}\\b|import[^;]*\\b${name}\\b|\\b${name}\\s*\\([\\s\\S]{0,200}?\\)\\s*\\{)`,
+  ).test(content);
+}
+
 function rule011(filePath: string, content: string): RuleResult[] {
-  const bareCall = new RegExp(`(?<![\\w$.])(${REMOVED_UTILS.join('|')})\\s*\\(`);
-  const match = bareCall.exec(content);
-  const clamped = /\bMath\.clamped\s*\(/.exec(content);
-  const template = /\bgame\.template\b/.exec(content);
-  const hit = [match, clamped, template]
-    .filter((m): m is RegExpExecArray => m !== null)
-    .sort((a, b) => a.index - b.index)[0];
-  if (hit === undefined) return [];
+  // Each removed name is checked on its own, so a file that wraps one of
+  // them in a helper of the same name still gets its other hits reported.
+  const hits = REMOVED_GLOBALS.flatMap((global) => {
+    const idx = content.search(global.pattern);
+    if (idx < 0) return [];
+    if (
+      REMOVED_UTILS.includes(global.name as (typeof REMOVED_UTILS)[number]) &&
+      definesItself(content, global.name)
+    ) {
+      return [];
+    }
+    return [{ global, idx }];
+  });
+  const first = hits.sort((a, b) => a.idx - b.idx)[0];
+  if (first === undefined) return [];
 
-  const name =
-    hit === match ? (match[1] ?? '') : hit === clamped ? 'Math.clamped' : 'game.template';
-  // A file that declares, imports, or defines the name as a method (a test
-  // mock's `utils: { mergeObject(a, b) {...} }`) is using its own, not Foundry's.
-  const ownDefinition = new RegExp(
-    `(?:function\\s+${name}\\b|(?:const|let|var)\\s+${name}\\b|import[^;]*\\b${name}\\b|\\b${name}\\s*\\([^)]*\\)\\s*\\{)`,
-  );
-  if (hit === match && ownDefinition.test(content)) return [];
-
-  const replacement =
-    hit === match
-      ? `\`foundry.utils.${name}\``
-      : hit === clamped
-        ? '`Math.clamp`'
-        : '`game.model` or the `documentTypes` on the package';
   return [
     {
       ruleId: 'VTTF-AUDIT-011',
       title: 'A global v14 removed',
       severity: 'HIGH',
       filePath,
-      line: lineOf(content, new RegExp(hit[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))),
-      message: `\`${name}\` was a v12 shim that v13 kept and v14 removed. The call throws ReferenceError the first time it runs.`,
-      remediation: `Use ${replacement}.`,
+      line: _internal.lineOf(content, first.global.pattern),
+      message: `\`${first.global.name}\` was a v12 shim that v13 kept and v14 removed. The call throws ReferenceError the first time it runs.`,
+      remediation: `Use ${first.global.replacement}.`,
     },
   ];
 }
@@ -107,7 +120,7 @@ function rule012(filePath: string, content: string): RuleResult[] {
       title: 'Update key uses the -= / == prefix',
       severity: 'MEDIUM',
       filePath,
-      line: lineOf(content, pattern),
+      line: _internal.lineOf(content, pattern),
       message:
         'The `-=key` and `==key` update syntax is deprecated since v14 and removed in v16. Foundry warns on every write that uses it.',
       remediation:
@@ -133,7 +146,7 @@ function rule013(filePath: string, content: string): RuleResult[] {
       title: 'rollMode is deprecated in favour of messageMode',
       severity: 'MEDIUM',
       filePath,
-      line: lineOf(content, pattern),
+      line: _internal.lineOf(content, pattern),
       message:
         'The `rollMode` option, the `core.rollMode` setting, `CONFIG.Dice.rollModes` and `CONST.DICE_ROLL_MODES` are deprecated since v14 and removed in v16.',
       remediation:
@@ -158,7 +171,7 @@ function rule014(filePath: string, content: string): RuleResult[] {
       title: 'CONFIG.statusEffects is assigned wholesale',
       severity: 'MEDIUM',
       filePath,
-      line: lineOf(content, pattern),
+      line: _internal.lineOf(content, pattern),
       message:
         'Assigning an array to `CONFIG.statusEffects` empties the collection first, which drops the conditions other packages added before this code ran. v14 deprecates the assignment.',
       remediation:
@@ -183,7 +196,7 @@ function rule015(filePath: string, content: string): RuleResult[] {
       title: 'legacyTransferral no longer exists',
       severity: 'MEDIUM',
       filePath,
-      line: lineOf(content, pattern),
+      line: _internal.lineOf(content, pattern),
       message:
         '`CONFIG.ActiveEffect.legacyTransferral` was removed in v14. Item effects with `transfer: true` apply to the Actor in place through `allApplicableEffects()`; the flag is ignored.',
       remediation:
@@ -209,7 +222,7 @@ function rule016(filePath: string, content: string): RuleResult[] {
       title: 'Active Effect changes use numeric modes',
       severity: 'MEDIUM',
       filePath,
-      line: lineOf(content, pattern),
+      line: _internal.lineOf(content, pattern),
       message:
         '`CONST.ACTIVE_EFFECT_MODES` and a numeric `mode` on a change are deprecated since v14 and removed in v16. Changes live in `system.changes` with a string `type`.',
       remediation:

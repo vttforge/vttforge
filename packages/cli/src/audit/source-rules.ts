@@ -985,6 +985,7 @@ export async function runSourceRules(cwd: string): Promise<RuleResult[]> {
 export const _internal = {
   walkSourceFiles,
   isSourceFile,
+  lineOf,
   lastSegment,
   // Shared with template-rules.ts, which has to know which class a `PARTS`
   // entry belongs to before it can say whether its template is wrong.

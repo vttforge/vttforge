@@ -92,14 +92,15 @@ describe('registerSystem', () => {
     });
   });
 
-  it('rejects a status effect without an id (VTTF-0008)', () => {
-    const { hooks } = setupFoundryGlobals();
+  it('rejects a status effect without an id (VTTF-0008) and writes nothing', () => {
+    const { hooks, config } = setupFoundryGlobals();
     registerSystem({
       id: 'my-system',
-      statusEffects: [{ name: 'Nameless' } as unknown as { id: string }],
+      statusEffects: [{ id: 'my-system.ok' }, { name: 'Nameless' } as unknown as { id: string }],
     });
     const initCallback = hooks.once.mock.calls[0]?.[1] as () => void;
     expect(initCallback).toThrow(/VTTF-0008/);
+    expect(config.statusEffects['my-system.ok']).toBeUndefined();
   });
 
   it('runs onBeforeInit before, and onAfterInit after, the CONFIG mutations', () => {

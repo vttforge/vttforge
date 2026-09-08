@@ -52,6 +52,21 @@ describe('VTTF-AUDIT-011: a global v14 removed', () => {
     ).toEqual([]);
   });
 
+  it('still reports Math.clamped when the file wraps a utility of its own', async () => {
+    const findings = await auditSource(
+      'function mergeObject(a, b) { return foundry.utils.mergeObject(a, b); }\nMath.clamped(x, 0, 10);\n',
+    );
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({ line: 2 });
+    expect(findings[0]?.remediation).toContain('Math.clamp');
+  });
+
+  it('recognises a definition whose parameters carry brackets', async () => {
+    expect(
+      await auditSource('function mergeObject(a, defaults = {}) { return a; }\nmergeObject(x);\n'),
+    ).toEqual([]);
+  });
+
   it('flags Math.clamped and game.template', async () => {
     const clamped = await auditSource('const v = Math.clamped(x, 0, 1);\n');
     expect(clamped[0]?.remediation).toContain('Math.clamp');

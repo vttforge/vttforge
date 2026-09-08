@@ -2,9 +2,8 @@
  * `vttforge audit`: scan a system/module project against the VTTForge
  * audit catalog (the v14 manifest, source and template breakages that fail quietly).
  *
- * The seven rules (VTTF-AUDIT-001 through 007) live in
- * `audit/manifest-rules.ts` or `audit/source-rules.ts`; this file is the
- * CLI surface that orchestrates them and prints the report.
+ * The rules live under `audit/` (manifest, source, template and v14 sets);
+ * this file is the CLI surface that orchestrates them and prints the report.
  *
  * Exit codes:
  *   0: clean run, or only MEDIUM/LOW findings (informational)
