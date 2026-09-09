@@ -78,7 +78,12 @@ describe('extractListeners', () => {
     const src = 'class T extends ItemSheet {}';
     const [t] = findSheetClasses(parseSource(src, 'js'), src);
     if (!t) throw new Error('fixture has no sheet class');
-    expect(extractListeners(t, src)).toEqual({ actions: [], listeners: [], leftovers: [] });
+    expect(extractListeners(t, src)).toEqual({
+      actions: [],
+      listeners: [],
+      leftovers: [],
+      htmlParam: 'html',
+    });
   });
 });
 

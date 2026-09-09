@@ -37,6 +37,9 @@ export class HeroSheet extends ActorSheet {
       if (ok) await this.actor.deleteEmbeddedDocuments('Item', [li.data('itemId')]);
     });
     html.find('.item-name').dblclick((event) => this._onItemEdit(event));
+    html.find('[name="system.armed"]').change((e) => {
+      if (e.target.checked) html.find('[name="system.hidden"]')[0].checked = false;
+    });
     html.find('#rest-button').click(async () => {
       await this.actor.update({ 'system.hp.value': this.actor.system.hp.max });
     });

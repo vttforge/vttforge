@@ -147,6 +147,37 @@ describe('vttforge migrate --sheets', () => {
     expect(out).toMatch(/Would edit templates:\n {2}templates\/actor-sheet\.html/);
   });
 
+  it('reads every template when the class builds its path at runtime', async () => {
+    await sheetProject();
+    const dynamic = FIXTURE.replace(
+      "template: 'systems/hero/templates/actor-sheet.html',",
+      '',
+    ).replace(
+      'static get defaultOptions() {',
+      'get template() {\n    return `systems/hero/templates/${this.actor.type}-sheet.html`;\n  }\n\n  static get defaultOptions() {',
+    );
+    await writeFile(join(cwd, 'module', 'actor-sheet.mjs'), dynamic, 'utf8');
+    const { report } = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
+    expect(report.sheets?.templates.map((t) => t.file)).toEqual(['templates/actor-sheet.html']);
+    expect(report.sheets?.files[0]?.todos.some((t) => /chosen at runtime/.test(t.message))).toBe(
+      true,
+    );
+  });
+
+  it('reports a file it cannot parse instead of stopping', async () => {
+    await sheetProject();
+    await writeFile(
+      join(cwd, 'module', 'broken.mjs'),
+      'class B extends ActorSheet { static get x() { return { a: 1 b: 2 }; } }\n',
+      'utf8',
+    );
+    const { report } = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
+    expect(report.sheets?.files.map((f) => f.to)).toEqual(['module/actor-sheet.v2.mjs']);
+    expect(
+      report.sheets?.notes.some((n) => /module\/broken\.mjs.*could not be parsed/.test(n)),
+    ).toBe(true);
+  });
+
   it('says so when there is no v1 sheet', async () => {
     const { report } = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
     expect(report.sheets).toEqual({ files: [], templates: [], notes: [] });

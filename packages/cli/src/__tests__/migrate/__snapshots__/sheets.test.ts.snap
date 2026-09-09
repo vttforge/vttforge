@@ -56,6 +56,11 @@ export class HeroSheet extends BaseActorSheet() {
     for (const el of this.element.querySelectorAll('.item-name')) {
       el.addEventListener('dblclick', (event) => this._onItemEdit(event));
     }
+    for (const el of this.element.querySelectorAll('[name="system.armed"]')) {
+      el.addEventListener('change', (e) => {
+        if (e.target.checked) this.element.querySelector('[name="system.hidden"]')[0].checked = false;
+      });
+    }
   }
 
   async _onItemCreate(event, target) {

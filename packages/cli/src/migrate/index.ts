@@ -8,7 +8,7 @@
  */
 
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { _internal } from '../audit/source-rules.js';
 import { type EmitStyle, planDataModels } from './data-models.js';
@@ -154,6 +154,22 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
   return report;
 }
 
+/** Every `.hbs` / `.html` under `templates/`, project-relative. */
+async function allTemplates(cwd: string): Promise<string[]> {
+  const root = join(cwd, 'templates');
+  if (!existsSync(root)) return [];
+  const out: string[] = [];
+  const visit = async (dir: string): Promise<void> => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) await visit(full);
+      else if (/\.(?:hbs|html)$/.test(entry.name)) out.push(relative(cwd, full));
+    }
+  };
+  await visit(root);
+  return out.sort();
+}
+
 /** Project-relative path for a Foundry template path such as `systems/<id>/templates/x.html`. */
 function localTemplate(cwd: string, foundryPath: string): string | null {
   const m = /^(?:systems|modules)\/[^/]+\/(.+)$/.exec(foundryPath);
@@ -186,12 +202,22 @@ async function planSheets(
     const source = transformSource(raw).output;
 
     // First pass: which templates and nav selectors, so the tab ids can be read.
-    const probe = planSheetFile(rel, source, { lang, tabIds: {} });
+    let probe: ReturnType<typeof planSheetFile>;
+    try {
+      probe = planSheetFile(rel, source, { lang, tabIds: {} });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      notes.push(`${rel} could not be parsed and was skipped: ${reason}`);
+      continue;
+    }
     notes.push(...probe.notes);
     if (probe.files.length === 0) continue;
-    const templatePaths = [...new Set(probe.files.flatMap((f) => f.templates))]
+    let templatePaths = [...new Set(probe.files.flatMap((f) => f.templates))]
       .map((t) => localTemplate(cwd, t))
       .filter((t): t is string => t !== null);
+    // A `get template()` that builds the path at runtime names nothing; every
+    // sheet template in the project is a candidate then.
+    if (templatePaths.length === 0) templatePaths = await allTemplates(cwd);
     const navSelectors = [...new Set(probe.files.flatMap((f) => f.tabNavSelectors))];
     const tabIds: Record<string, string[]> = {};
     for (const t of templatePaths) {

@@ -105,6 +105,25 @@ function firstParam(methodText: string, name: string): string | null {
   return first ? first : null;
 }
 
+/** Lines after the first sit at `spaces`, keeping their relative indentation. */
+function indentTo(snippet: string, spaces: number): string {
+  const lines = snippet.split('\n');
+  const rest = lines.slice(1);
+  const indents = rest
+    .filter((l) => l.trim().length > 0)
+    .map((l) => /^[ \t]*/.exec(l)?.[0].length ?? 0);
+  const min = indents.length > 0 ? Math.min(...indents) : 0;
+  const pad = ' '.repeat(spaces);
+  return [
+    (lines[0] ?? '').trimStart(),
+    ...rest.map((l) =>
+      l.trim().length === 0
+        ? ''
+        : `${pad}${l.slice(Math.min(min, /^[ \t]*/.exec(l)?.[0].length ?? 0))}`,
+    ),
+  ].join('\n');
+}
+
 /** A block body lifted out of `activateListeners`: inner lines at four spaces, the brace at two. */
 function dedentBlock(block: string): string {
   const lines = block.split('\n');
@@ -180,7 +199,9 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
     actionEntries.length === 0
       ? '      actions: {},'
       : `      actions: {\n${actionEntries.map((a) => `        ${a.name}: ${cls.name}.prototype.${a.method},`).join('\n')}\n      },`;
-  members.push(renderStatics(options, tabIds, todo).replace(ACTIONS_PLACEHOLDER, actionsBlock));
+  // A runtime `get template()` decides the template; a static one next to it is not the whole story.
+  const statics = options.templateGetter ? { ...options, template: null } : options;
+  members.push(renderStatics(statics, tabIds, todo).replace(ACTIONS_PLACEHOLDER, actionsBlock));
 
   // 2. The document getter.
   if (!methodOf(cls.node, own, { kind: 'get' })) {
@@ -197,10 +218,22 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
   // 5. _onRender for the events that are not clicks.
   if (listeners.listeners.length > 0) {
     const body = listeners.listeners
-      .map(
-        (l) =>
-          `    for (const el of this.element.querySelectorAll(${single(l.selector)})) {\n      el.addEventListener(${single(l.event)}, ${l.handlerText});\n    }`,
-      )
+      .map((l) => {
+        const param = /^\s*(?:async\s+)?\(?\s*(\w+)/.exec(l.handlerText)?.[1] ?? null;
+        const isFunction = /^\s*(?:async\s+)?(?:\(|\w+\s*=>|function\b)/.test(l.handlerText);
+        const handler = isFunction
+          ? indentTo(
+              rewriteHandlerBody(
+                l.handlerText,
+                param,
+                listeners.htmlParam,
+                param ? `${param}.currentTarget` : 'target',
+              ).code,
+              6,
+            )
+          : l.handlerText;
+        return `    for (const el of this.element.querySelectorAll(${single(l.selector)})) {\n      el.addEventListener(${single(l.event)}, ${handler});\n    }`;
+      })
       .join('\n');
     members.push(
       `  /** @override */\n  _onRender(context, options) {\n    super._onRender(context, options);\n${body}\n  }`,

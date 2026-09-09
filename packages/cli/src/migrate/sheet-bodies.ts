@@ -47,7 +47,7 @@ function todoAt(code: string, index: number, msg: string): string {
 
 /** The jQuery calls with no one-to-one DOM rewrite. */
 const LEFTOVER_JQUERY =
-  /\$\(|\.(?:val|text|html|prop|toggle|slideToggle|slideUp|slideDown|show|hide|addClass|removeClass|toggleClass|siblings|parents|children|find)\(/g;
+  /\$\(|\.(?:val|text|html|prop|toggle|slideToggle|slideUp|slideDown|show|hide|addClass|removeClass|toggleClass|siblings|children|find)\(/g;
 
 const JQUERY_MSG = 'jQuery left here; use the DOM on `target` / `this.element`';
 
@@ -85,6 +85,8 @@ export function rewriteHandlerBody(
     /\.attr\(\s*(['"])data-([\w-]+)\1\s*\)/g,
     (_m, _q, key) => `.dataset.${camel(key)}`,
   );
+  // jQuery's `parents(sel)` is read for its nearest match everywhere a sheet uses it.
+  code = replaceCode(code, /\.parents\(/g, () => '.closest(');
   if (htmlParam) {
     code = replaceCode(
       code,

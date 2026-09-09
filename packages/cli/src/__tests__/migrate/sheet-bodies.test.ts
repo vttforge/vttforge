@@ -40,6 +40,12 @@ describe('rewriteHandlerBody', () => {
     expect(r.code.match(/TODO\(migrate\)/g)).toHaveLength(1);
   });
 
+  it('reads jQuery parents() as the nearest ancestor', () => {
+    const r = rewriteHandlerBody('{ const li = $(ev.currentTarget).parents(".row"); }', 'ev', null);
+    expect(r.code).toBe('{ const li = target.closest(".row"); }');
+    expect(r.todos).toEqual([]);
+  });
+
   it('leaves a body with no event param alone', () => {
     expect(rewriteHandlerBody('{ await this.actor.rest(); }', null, null).code).toBe(
       '{ await this.actor.rest(); }',

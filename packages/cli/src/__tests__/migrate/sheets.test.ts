@@ -68,9 +68,25 @@ describe('planSheetFile', () => {
     expect(file.source).not.toContain('activateListeners');
   });
 
+  it('rewrites the jQuery inside a render listener and keeps its indentation', () => {
+    expect(file.source).toContain(
+      "    for (const el of this.element.querySelectorAll('[name=\"system.armed\"]')) {\n      el.addEventListener('change', (e) => {\n        if (e.target.checked) this.element.querySelector('[name=\"system.hidden\"]')[0].checked = false;\n      });\n    }",
+    );
+  });
+
+  it('marks PARTS when a getter picks the template at runtime', () => {
+    const src = `export class S extends ItemSheet {
+      static get defaultOptions() { return mergeObject(super.defaultOptions, { template: 'systems/x/templates/a.html' }); }
+      get template() { return \`systems/x/templates/\${this.item.type}.html\`; }
+    }`;
+    const p = planSheetFile('s.mjs', src, { lang: 'js', tabIds: {} });
+    expect(p.files[0]?.source).toContain('TODO(migrate): the template is chosen at runtime');
+    expect(p.files[0]?.source).toContain('  get template() {');
+  });
+
   it('adds the render listener for the dblclick', () => {
     expect(file.source).toContain(
-      "  /** @override */\n  _onRender(context, options) {\n    super._onRender(context, options);\n    for (const el of this.element.querySelectorAll('.item-name')) {\n      el.addEventListener('dblclick', (event) => this._onItemEdit(event));\n    }\n  }",
+      "  /** @override */\n  _onRender(context, options) {\n    super._onRender(context, options);\n    for (const el of this.element.querySelectorAll('.item-name')) {\n      el.addEventListener('dblclick', (event) => this._onItemEdit(event));\n    }",
     );
   });
 

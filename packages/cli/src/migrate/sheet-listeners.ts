@@ -30,6 +30,8 @@ export interface Listeners {
   actions: ActionBinding[];
   listeners: ListenerBinding[];
   leftovers: Array<{ line: number; text: string }>;
+  /** The name `activateListeners` gave its jQuery root (`html` by convention). */
+  htmlParam: string;
 }
 
 const EVENTS = new Set([
@@ -161,11 +163,12 @@ function boundEvent(expr: Expression, htmlParam: string): Bound | null {
 }
 
 export function extractListeners(cls: SheetClass, source: string): Listeners {
-  const out: Listeners = { actions: [], listeners: [], leftovers: [] };
+  const out: Listeners = { actions: [], listeners: [], leftovers: [], htmlParam: 'html' };
   const method = methodOf(cls.node, 'activateListeners');
   if (!method) return out;
   const p = method.params[0];
   const htmlParam = p?.type === 'Identifier' ? p.name : 'html';
+  out.htmlParam = htmlParam;
   const taken = new Set<string>();
 
   const leftover = (stmt: Statement): void => {
