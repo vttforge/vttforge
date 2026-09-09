@@ -186,6 +186,42 @@ describe('the manifest', () => {
   });
 });
 
+describe('comments are left alone', () => {
+  it('rewrites the code and not the prose that mentions it', () => {
+    const src = [
+      '/**',
+      ' * flattenObject({ system: actor.system }) // → { system: CharacterData }',
+      ' */',
+      "// '-=system.bio': null used to work",
+      'const m = mergeObject(a, b); // not Math.clamped(x)',
+      "await a.update({ '-=system.bio': null });",
+      '',
+    ].join('\n');
+    const r = transformSource(src);
+    expect(r.output).toBe(
+      [
+        '/**',
+        ' * flattenObject({ system: actor.system }) // → { system: CharacterData }',
+        ' */',
+        "// '-=system.bio': null used to work",
+        'const m = foundry.utils.mergeObject(a, b); // not Math.clamped(x)',
+        "await a.update({ 'system.bio': _del });",
+        '',
+      ].join('\n'),
+    );
+    expect(r.changes.map((c) => c.line)).toEqual([5, 6]);
+  });
+
+  it('renames menu keys only outside comments inside the entry', () => {
+    const src =
+      'options.push({\n  // name: is the old key\n  name: "x",\n  icon: "i",\n  callback: () => 1,\n});\n';
+    const r = contextMenuKeys(src);
+    expect(r.output).toContain('  // name: is the old key');
+    expect(r.output).toContain('  label: "x",');
+    expect(r.output).toContain('  onClick: () => 1,');
+  });
+});
+
 describe('the whole pipeline', () => {
   it('leaves a v14 file untouched', () => {
     const src =

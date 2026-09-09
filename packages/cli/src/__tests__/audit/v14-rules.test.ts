@@ -83,6 +83,39 @@ describe('VTTF-AUDIT-011: a global v14 removed', () => {
   });
 });
 
+describe('comments are not findings', () => {
+  it('ignores a call quoted in a JSDoc block, a line comment, and a block comment', async () => {
+    expect(
+      await auditSource(
+        [
+          '/**',
+          ' * `foundry.utils.flattenObject` looks like the tool and is not:',
+          ' * ```js',
+          ' * flattenObject({ system: actor.system })',
+          ' * ```',
+          ' */',
+          '// TODO: drop mergeObject(a, b) here',
+          '/* rollMode: "gmroll" was the old way; "-=key": null too */',
+          'export const walk = (o) => o;',
+        ].join('\n'),
+      ),
+    ).toEqual([]);
+  });
+
+  it('still reports the call after the comment, on its own line', async () => {
+    const findings = await auditSource(
+      '// mergeObject(a, b) is gone\nconst m = mergeObject(a, b);\n',
+    );
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({ ruleId: 'VTTF-AUDIT-011', line: 2 });
+  });
+
+  it('does not mistake a URL in a string for a comment', async () => {
+    const findings = await auditSource('const u = "https://x.test"; mergeObject(a, b);\n');
+    expect(findings).toHaveLength(1);
+  });
+});
+
 describe('VTTF-AUDIT-012: -= / == update keys', () => {
   it('flags a deletion key', async () => {
     const findings = await auditSource(
