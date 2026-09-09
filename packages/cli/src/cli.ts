@@ -12,6 +12,7 @@ import { runAuditCommand } from './commands/audit.js';
 import { runBuild } from './commands/build.js';
 import { runDev } from './commands/dev.js';
 import { runInit, ScaffoldError } from './commands/init.js';
+import { runLintCommand } from './commands/lint.js';
 import { runMigrateCommand } from './commands/migrate.js';
 import { VTTFORGE_CLI_VERSION } from './index.js';
 
@@ -158,6 +159,51 @@ export const build = defineCommand({
   },
 });
 
+export const lint = defineCommand({
+  meta: {
+    name: 'lint',
+    description: 'Run Biome (shipped with the CLI) over the project, then the v14 audit',
+  },
+  args: {
+    path: {
+      type: 'positional',
+      description: 'Project root to lint (defaults to the current directory)',
+      required: false,
+    },
+    fix: {
+      type: 'boolean',
+      default: false,
+      description: 'Write the safe fixes and format the files instead of only reporting',
+    },
+    // Affirmative flag with a true default, so `--no-audit` parses as
+    // `audit: false` (same pattern as `--no-install` on init).
+    audit: {
+      type: 'boolean',
+      default: true,
+      description: 'Run `vttforge audit` after Biome (use --no-audit to skip)',
+    },
+    strict: {
+      type: 'boolean',
+      default: false,
+      description: 'For the audit: exit non-zero on any finding, not only HIGH',
+    },
+  },
+  async run({ args }) {
+    try {
+      const result = await runLintCommand({
+        cwd: typeof args.path === 'string' ? args.path : undefined,
+        fix: args.fix === true,
+        audit: args.audit !== false,
+        strict: args.strict === true,
+      });
+      if (result.exitCode !== 0) process.exitCode = result.exitCode;
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exitCode = 1;
+    }
+  },
+});
+
 export const audit = defineCommand({
   meta: {
     name: 'audit',
@@ -261,12 +307,13 @@ export const main = defineCommand({
     name: 'vttforge',
     version: VTTFORGE_CLI_VERSION,
     description:
-      'VTTForge CLI: scaffold, dev, build, audit and migrate for Foundry v14+ systems and modules',
+      'VTTForge CLI: scaffold, dev, build, lint, audit and migrate for Foundry v14+ systems and modules',
   },
   subCommands: {
     init,
     dev,
     build,
+    lint,
     audit,
     migrate,
   },

@@ -62,12 +62,36 @@ const defineCharacterSchema = () => {
       cha: score(),
     }),
     health: new f.SchemaField({
-      value: new f.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
-      max: new f.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
+      value: new f.NumberField({
+        required: true,
+        nullable: false,
+        integer: true,
+        min: 0,
+        initial: 10,
+      }),
+      max: new f.NumberField({
+        required: true,
+        nullable: false,
+        integer: true,
+        min: 0,
+        initial: 10,
+      }),
     }),
     power: new f.SchemaField({
-      value: new f.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 5 }),
-      max: new f.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 5 }),
+      value: new f.NumberField({
+        required: true,
+        nullable: false,
+        integer: true,
+        min: 0,
+        initial: 5,
+      }),
+      max: new f.NumberField({
+        required: true,
+        nullable: false,
+        integer: true,
+        min: 0,
+        initial: 5,
+      }),
     }),
     biography: new f.HTMLField(),
   };

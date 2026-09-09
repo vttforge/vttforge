@@ -58,10 +58,11 @@ export class GearSheet extends BaseItemSheet() {
     context.item = item;
     context.system = item.system;
     context.isEditable = this.isEditable;
-    context.enrichedDescription = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
-      item.system.description,
-      { relativeTo: item, secrets: item.isOwner },
-    );
+    context.enrichedDescription =
+      await foundry.applications.ux.TextEditor.implementation.enrichHTML(item.system.description, {
+        relativeTo: item,
+        secrets: item.isOwner,
+      });
     return context;
   }
 }

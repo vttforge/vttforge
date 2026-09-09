@@ -112,7 +112,9 @@ export class CharacterSheet extends BaseActorSheet() {
     },
   };
 
-  static override DRAG_DROP = [{ dragSelector: '.sh-item[draggable=true]', dropSelector: '.sh-body' }];
+  static override DRAG_DROP = [
+    { dragSelector: '.sh-item[draggable=true]', dropSelector: '.sh-body' },
+  ];
 
   /**
    * The actor this sheet is for.
@@ -173,7 +175,11 @@ export class CharacterSheet extends BaseActorSheet() {
   // ApplicationV2 declares action handlers static and calls them with `this`
   // bound to the sheet instance. `this: CharacterSheet` says so to TypeScript.
 
-  static async _onRollAbility(this: CharacterSheet, _event: Event, target: HTMLElement): Promise<void> {
+  static async _onRollAbility(
+    this: CharacterSheet,
+    _event: Event,
+    target: HTMLElement,
+  ): Promise<void> {
     const key = target.dataset.ability;
     if (!key) return;
     const { actor } = this;
@@ -195,7 +201,11 @@ export class CharacterSheet extends BaseActorSheet() {
     );
   }
 
-  static async _onDeleteItem(this: CharacterSheet, _event: Event, target: HTMLElement): Promise<void> {
+  static async _onDeleteItem(
+    this: CharacterSheet,
+    _event: Event,
+    target: HTMLElement,
+  ): Promise<void> {
     const id = target.closest<HTMLElement>('[data-item-id]')?.dataset.itemId;
     if (!id) return;
     await this.actor.items.get(id)?.delete();

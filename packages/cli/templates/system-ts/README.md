@@ -53,7 +53,9 @@ for is yours to know. Each sheet here narrows it once in a getter (`actor`,
 
 ```bash
 pnpm typecheck        # tsc against the real @vttforge/core types
-npx vttforge audit    # manifest + source against the v14 list of quiet breakages
+pnpm lint             # Biome (shipped with the CLI) over the project, then the v14 audit
+pnpm format           # the same, writing the safe fixes and formatting
+npx vttforge audit    # the audit alone: manifest + source against the v14 list of quiet breakages
 ```
 
 ## Releasing

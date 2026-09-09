@@ -210,6 +210,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.5.11
       '@clack/prompts':
         specifier: 'catalog:'
         version: 1.7.0

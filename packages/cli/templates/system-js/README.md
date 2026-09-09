@@ -53,7 +53,9 @@ loses the sheet choice on every document already using it.
 ## Checks
 
 ```bash
-npx vttforge audit    # manifest + source against the v14 list of quiet breakages
+pnpm lint             # Biome (shipped with the CLI) over the project, then the v14 audit
+pnpm format           # the same, writing the safe fixes and formatting
+npx vttforge audit    # the audit alone: manifest + source against the v14 list of quiet breakages
 ```
 
 ## Releasing

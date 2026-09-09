@@ -50,6 +50,27 @@ root, manifest at the top level, which is what foundryvtt.com expects.
 The scaffold's release workflow runs this on every tag and attaches the zip
 and the manifest to a GitHub Release.
 
+## `vttforge lint`
+
+```bash
+vttforge lint [dir] [--fix] [--no-audit] [--strict]
+```
+
+Biome over the project, then `vttforge audit`. Biome ships as a dependency
+of the CLI, so a scaffolded project lints and formats without installing or
+configuring anything: the templates' `lint` and `format` scripts call this.
+
+The config Biome runs with is `lint/vttforge-biome.json` in the CLI
+package (the recommended rules, the house formatting, and the Foundry
+globals such as `game`, `canvas`, `CONFIG`, `Hooks` declared). A
+`biome.json` or `biome.jsonc` at the project root replaces it outright, so a
+project that wants to change a rule copies the shipped file to `biome.json`
+and edits it.
+
+`--fix` writes the safe fixes and formats the files; without it the run only
+reports. `--no-audit` skips the audit; `--strict` passes through to it. The
+exit code is non-zero when either half fails.
+
 ## `vttforge audit`
 
 ```bash

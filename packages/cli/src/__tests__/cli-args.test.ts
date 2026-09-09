@@ -11,7 +11,7 @@
 import type { ArgsDef } from 'citty';
 import { parseArgs } from 'citty';
 import { describe, expect, it } from 'vitest';
-import { audit, dev, init, main } from '../cli.js';
+import { audit, dev, init, lint, main } from '../cli.js';
 
 // `CommandDef.args` is declared as resolvable — it may be a function citty
 // awaits. Ours are always plain objects, so the cast is safe here and keeps
@@ -117,13 +117,37 @@ describe('audit args', () => {
 });
 
 describe('command tree', () => {
-  it('registers the five subcommands', () => {
+  it('registers the six subcommands', () => {
     expect(Object.keys(main.subCommands ?? {}).sort()).toEqual([
       'audit',
       'build',
       'dev',
       'init',
+      'lint',
       'migrate',
     ]);
+  });
+});
+
+describe('lint args', () => {
+  it('reports by default, with the audit on', () => {
+    const args = parse(lint, []);
+    expect(args.fix).toBe(false);
+    expect(args.audit).toBe(true);
+    expect(args.strict).toBe(false);
+  });
+
+  it('--fix writes, --no-audit skips the audit', () => {
+    const args = parse(lint, ['--fix', '--no-audit']);
+    expect(args.fix).toBe(true);
+    expect(args.audit).toBe(false);
+  });
+
+  it('takes a project path', () => {
+    expect(parse(lint, ['packages/my-system'])._[0]).toBe('packages/my-system');
+  });
+
+  it('is in the command tree', () => {
+    expect(Object.keys(main.subCommands ?? {})).toContain('lint');
   });
 });

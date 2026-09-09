@@ -1,6 +1,6 @@
 # @vttforge/cli
 
-Scaffold, dev loop, release build and audit for Foundry VTT v14+ systems and modules.
+Scaffold, dev loop, release build, lint and audit for Foundry VTT v14+ systems and modules.
 
 ```bash
 pnpm create vttforge my-system        # same as: npx @vttforge/cli init my-system
@@ -13,6 +13,7 @@ vttforge init <name> [--type system|module] [--lang ts|js] [--id] [--title] [--d
                      [--author] [--license] [--yes] [--no-install] [--no-git]
 vttforge dev   [--foundry-data <path>] [--port <n>]
 vttforge build
+vttforge lint  [dir] [--fix] [--no-audit] [--strict]
 vttforge audit [dir] [--json] [--strict]
 vttforge migrate [dir] [--write] [--json]
 ```
@@ -22,6 +23,8 @@ vttforge migrate [dir] [--write] [--json]
 **`dev`** builds once, links `dist/` into Foundry's data directory under `Data/<systems|modules>/<id>/`, installs the `@vttforge/dev-module` companion, and watches. Save a template and the open sheet redraws in place; save a stylesheet and the CSS swaps. The first run asks where Foundry keeps its data and saves the answer to `.vttforge/config.json`; `--foundry-data` or `FOUNDRY_DATA_DIR` overrides it. If Foundry runs in a container it cannot follow the symlink, and the command prints the compose mount to use instead.
 
 **`build`** runs the production build and writes `<id>-<version>.zip` at the project root with the manifest at the top level, which is what foundryvtt.com expects. `LICENSE`, `README.md` and `CHANGELOG.md` go in when present.
+
+**`lint`** runs Biome, which ships with the CLI, over the project with a shipped config (a `biome.json` at the project root replaces it), then the audit. `--fix` writes the safe fixes and formats.
 
 **`audit`** checks the manifest, the source and the templates against the v14 breakages that fail quietly: the `flags.hotReload` shape, the removed grid fields, the v12 `styles` shape, `HTMLField`/`FilePathField` paths missing from `documentTypes`, `TypeDataModel` without `prepareBaseData`, a bad `_addDataFieldMigrations` override, token attributes that do not point at a `{ value, max }` field, a sheet template that opens a `<form>` the sheet already is, a declared subtype with no name in any language file, a `template.json` that erases the metadata `system.json` declares for the same type, and the v13 code v14 broke or deprecated: bare `mergeObject`-style globals, `-=` update keys, `rollMode`, whole-array `CONFIG.statusEffects` assignment, `legacyTransferral`, numeric Active Effect modes. `--json` for machines; `--strict` exits non-zero on any finding rather than only on HIGH.
 
