@@ -79,4 +79,8 @@ still be imported by the vitest run.
 
 Anything before `_renderHTML` is testable in Vitest. Real rendering is Quench's
 half. Reaching for a mock past that line produces tests that pass and tell you
-nothing.
+nothing. So there is no helper that mounts a sheet against a mock actor and
+returns its HTML, and there will not be one: a copy of the Application
+framework inside a mock renders something like Foundry, and a test that passes
+against the copy is worse than none. Test the context in Vitest and the render
+in a real world.

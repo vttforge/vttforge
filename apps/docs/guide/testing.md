@@ -104,3 +104,12 @@ Reaching for a mock past that line produces tests that pass and tell you
 nothing. Several bugs in this SDK were found only by opening a real Foundry: a
 sheet registered but unreachable, a class extending the wrong base, an
 annotation layer whose CSS class name did not match what the library styles.
+
+That is also why there is no helper that mounts a sheet against a mock actor
+and hands back its HTML, and there will not be one. Rendering a sheet is the
+Application framework: the Handlebars mixin, `PARTS`, template loading,
+Foundry's own helpers, tabs, form handling. A copy of that inside a mock would
+render something like what Foundry renders, and a test that passes against
+the copy and fails in the real thing is worse than no test. Test the context
+in Vitest, with `_prepareContext`, and test the render in a real world, with
+Quench or the end-to-end run.
