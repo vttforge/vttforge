@@ -8,8 +8,10 @@
  *                         + cross-check with manifest where needed)
  *   - template-rules.ts → VTTF-AUDIT-008 (the Handlebars, cross-checked
  *                         against which base each sheet is built on)
- *   - v14-rules.ts      → VTTF-AUDIT-011 to 016 (v13 code that v14 broke
+ *   - v14-rules.ts      → VTTF-AUDIT-011 to 019 (v13 code that v14 broke
  *                         or deprecated)
+ *   - release-rules.ts  → VTTF-AUDIT-020 (a release workflow that ships the
+ *                         checkout of a project that builds to dist/)
  *
  * The orchestrator stays minimal. It knows which rule sets exist, but
  * the rules themselves are responsible for their own file IO. This keeps
@@ -19,6 +21,7 @@
 import { existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { runManifestRules } from './manifest-rules.js';
+import { runReleaseRules } from './release-rules.js';
 import { runSourceRules } from './source-rules.js';
 import { runTemplateRules } from './template-rules.js';
 import { type AuditReport, type RuleResult, SEVERITY_RANK } from './types.js';
@@ -49,18 +52,21 @@ export async function runAudit(options: RunAuditOptions): Promise<AuditReport> {
   }
   const startedAt = new Date().toISOString();
 
-  const [manifestFindings, sourceFindings, templateFindings, v14Findings] = await Promise.all([
-    runManifestRules(cwd),
-    runSourceRules(cwd),
-    runTemplateRules(cwd),
-    runV14Rules(cwd),
-  ]);
+  const [manifestFindings, sourceFindings, templateFindings, v14Findings, releaseFindings] =
+    await Promise.all([
+      runManifestRules(cwd),
+      runSourceRules(cwd),
+      runTemplateRules(cwd),
+      runV14Rules(cwd),
+      runReleaseRules(cwd),
+    ]);
 
   const findings: RuleResult[] = [
     ...manifestFindings,
     ...sourceFindings,
     ...templateFindings,
     ...v14Findings,
+    ...releaseFindings,
   ].sort(compareFindings);
 
   return {

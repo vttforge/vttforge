@@ -102,8 +102,11 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-017` | MEDIUM | The jQuery `renderChatMessage` hook; removed in v15, `renderChatMessageHTML` hands the element |
 | `VTTF-AUDIT-018` | LOW | A class extending an Application v1 base (`Application`, `FormApplication`, `Dialog`, `ActorSheet`, `ItemSheet`); removed in v16 |
 | `VTTF-AUDIT-019` | MEDIUM | A bare v13 global alias (`renderTemplate`, `ActorSheet`, `Actors`, `TextEditor`, `ChatLog`, ...); it warns on v14 and throws on v15, and the namespaced path is the same object |
+| `VTTF-AUDIT-020` | HIGH | A release workflow that zips the checkout of a project that builds to `dist/`, or builds and then zips the source tree; the published package has no entry file and no world starts on it |
 
-Rules 011 to 019 blank out comments before they match, so a call quoted in a
+Rule 020 only fires for a project on the vite plugin (or a `build` script that
+runs vite), and only for a workflow that publishes a zip or a manifest. Rules
+011 to 019 blank out comments before they match, so a call quoted in a
 JSDoc block is not a finding. Rules 004 and 007 read the schema whether it is a `static defineSchema()` or
 a function handed to `BaseTypeDataModel`, and scope it to the class
 registered for that document. Rule 008 only looks at templates a
