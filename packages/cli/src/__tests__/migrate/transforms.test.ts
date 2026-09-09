@@ -112,6 +112,45 @@ const other = { name: 'kept', value: 1 };
   });
 });
 
+describe('context menu keys, the shapes that are not entries', () => {
+  it('leaves a Dialog button alone: it has icon, label and callback, and keeps callback', () => {
+    const src = `new Dialog({
+  title: "T",
+  buttons: {
+    create: {
+      icon: '<i class="fas fa-check"></i>',
+      label: game.i18n.localize("X"),
+      callback: (html) => save(html),
+    },
+  },
+  default: "create",
+});
+`;
+    const r = contextMenuKeys(src);
+    expect(r.output).toBe(src);
+    expect(r.changes).toEqual([]);
+  });
+
+  it('renames only the entry, not the class body or the nested object around it', () => {
+    const src = `class Sheet {
+  static name = "kept";
+  menu() {
+    return [{ name: "MOD.x", condition: () => true, callback: (li) => ({ name: li.dataset.name }) }];
+  }
+}
+`;
+    const r = contextMenuKeys(src);
+    expect(r.output).toBe(`class Sheet {
+  static name = "kept";
+  menu() {
+    return [{ label: "MOD.x", visible: () => true, onClick: (li) => ({ name: li.dataset.name }) }];
+  }
+}
+`);
+    expect(r.changes).toHaveLength(1);
+  });
+});
+
 describe('legacyTransferral and core sheets', () => {
   it('drops the assignment, the registerSystem option, and the unregister lines', () => {
     const src = `CONFIG.ActiveEffect.legacyTransferral = false;
