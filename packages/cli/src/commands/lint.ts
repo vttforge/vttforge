@@ -44,11 +44,7 @@ export interface LintResult {
   configPath: string | null;
 }
 
-/**
- * @internal Implementation detail of the `vttforge` binary. Not supported for
- * outside use, and going away in the next major.
- */
-export class BiomeNotFoundError extends Error {
+class BiomeNotFoundError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'BiomeNotFoundError';
@@ -63,7 +59,7 @@ export class BiomeNotFoundError extends Error {
  * a project (or this monorepo) that holds the CLI inside another
  * Biome-rooted tree. `--config-path` accepts any file path.
  */
-export const SHIPPED_CONFIG_NAME = 'vttforge-biome.json';
+const SHIPPED_CONFIG_NAME = 'vttforge-biome.json';
 
 function shippedConfig(): string {
   const here = fileURLToPath(import.meta.url);
