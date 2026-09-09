@@ -1,5 +1,11 @@
 # @vttforge/core
 
+## 0.15.1
+
+### Patch Changes
+
+- 4c5bb6c: The `vttforgeTab` action activates any element with the `tab` class, not only a `<section>`. A sheet whose panes are `<div class="tab">`, which is what most systems write, never switched tabs.
+
 ## 0.15.0
 
 ### Minor Changes
