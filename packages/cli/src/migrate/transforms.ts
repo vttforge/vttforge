@@ -146,12 +146,15 @@ export const removedGlobals: Transform = (source) => {
 /**
  * `'-=key': null` → `key: _del`; `'==key': value` → `key: _replace(value)`;
  * `performDeletions` → `applyOperators`; `objectsEqual` → `equals`.
+ *
+ * The key may be a template literal with `${...}` segments in the prefix,
+ * which is how a flag deletion is usually written: `` [`flags.${id}.-=old`] ``.
  */
 export const dataOperators: Transform = (source) => {
   const deletions = rewrite(
     source,
-    /(['"])((?:[\w$]+\.)*)-=([\w$.]+)\1\s*:\s*null\b/g,
-    (_m, quote, prefix, key) => `${quote}${prefix}${key}${quote}: _del`,
+    /(['"`])((?:[\w$]+\.|\$\{[^}]*\}\.)*)-=([\w$.]+)\1(\]?)\s*:\s*null\b/g,
+    (_m, quote, prefix, key, bracket) => `${quote}${prefix}${key}${quote}${bracket}: _del`,
     'data-operators',
   );
   // `"==key": <value>` wraps a value of any shape, so the value is scanned to
@@ -175,7 +178,7 @@ export const dataOperators: Transform = (source) => {
 
 function wrapReplacementValues(source: string): TransformResult {
   const changes: Change[] = [];
-  const pattern = /(['"])((?:[\w$]+\.)*)==([\w$.]+)\1\s*:\s*/g;
+  const pattern = /(['"`])((?:[\w$]+\.|\$\{[^}]*\}\.)*)==([\w$.]+)\1(\]?)\s*:\s*/g;
   const code = maskComments(source);
   let out = '';
   let cursor = 0;
@@ -186,8 +189,8 @@ function wrapReplacementValues(source: string): TransformResult {
     const valueEnd = scanValueEnd(source, valueStart);
     if (valueEnd === -1) continue;
     const value = source.slice(valueStart, valueEnd).trimEnd();
-    const [, quote = '"', prefix = '', key = ''] = match;
-    const after = `${quote}${prefix}${key}${quote}: _replace(${value})`;
+    const [, quote = '"', prefix = '', key = '', bracket = ''] = match;
+    const after = `${quote}${prefix}${key}${quote}${bracket}: _replace(${value})`;
     out += source.slice(cursor, start) + after;
     cursor = valueStart + value.length;
     changes.push({
@@ -241,10 +244,11 @@ const ROLL_MODE_CONSTANTS: Record<string, string> = {
  *
  * `"roll"` meant "whatever the user's chat dropdown says", which is what an
  * absent `messageMode` means now, so it becomes `undefined`. A value that is
- * an expression is left for the reader, with a note.
+ * an expression is wrapped in `Roll._mapLegacyRollMode(...)`, which maps a
+ * v13 name and passes a v14 key or `undefined` through unchanged, so the
+ * wrap is safe whatever the expression yields.
  */
 export const rollMode: Transform = (source) => {
-  const notes: Note[] = [];
   const option = rewrite(
     source,
     /\brollMode\s*:\s*(['"])(publicroll|gmroll|blindroll|selfroll|roll)\1/g,
@@ -254,22 +258,9 @@ export const rollMode: Transform = (source) => {
         : `messageMode: ${quote}${ROLL_MODE_VALUES[value]}${quote}`,
     'roll-mode',
   );
-  const key = rewrite(
-    option.output,
-    /\brollMode\s*:/g,
-    (m) => m.replace('rollMode', 'messageMode'),
-    'roll-mode',
-  );
-  for (const change of key.changes) {
-    notes.push({
-      line: change.line,
-      rule: 'roll-mode',
-      message:
-        'The value is an expression. If it can be a v13 mode name, wrap it: `Roll._mapLegacyRollMode(value)`.',
-    });
-  }
+  const expressions = wrapRollModeExpressions(option.output);
   const setting = rewrite(
-    key.output,
+    expressions.output,
     /(['"])core\1\s*,\s*(['"])rollMode\2/g,
     (_m, q1, q2) => `${q1}core${q1}, ${q2}messageMode${q2}`,
     'roll-mode',
@@ -286,7 +277,55 @@ export const rollMode: Transform = (source) => {
     (_m, name) => `"${ROLL_MODE_CONSTANTS[name]}"`,
     'roll-mode',
   );
-  return { ...merge(option, key, setting, modes, constants), notes };
+  return merge(option, expressions, setting, modes, constants);
+};
+
+/** `rollMode: <expr>` → `messageMode: Roll._mapLegacyRollMode(<expr>)`. */
+function wrapRollModeExpressions(source: string): TransformResult {
+  const changes: Change[] = [];
+  const pattern = /\brollMode\s*:\s*/g;
+  const code = maskComments(source);
+  let out = '';
+  let cursor = 0;
+  for (const match of source.matchAll(pattern)) {
+    const start = match.index ?? 0;
+    if (code[start] === MASK) continue;
+    const valueStart = start + match[0].length;
+    const valueEnd = scanValueEnd(source, valueStart);
+    if (valueEnd === -1) continue;
+    const value = source.slice(valueStart, valueEnd).trimEnd();
+    const after = `messageMode: Roll._mapLegacyRollMode(${value})`;
+    out += source.slice(cursor, start) + after;
+    cursor = valueStart + value.length;
+    changes.push({
+      line: lineAt(source, start),
+      before: source.slice(start, cursor),
+      after,
+      rule: 'roll-mode',
+    });
+  }
+  out += source.slice(cursor);
+  return { output: out, changes, notes: [] };
+}
+
+/**
+ * Hooks that changed shape: noted, not rewritten. `renderChatMessage` is
+ * removed in v15 and its replacement hands an element where it handed a
+ * jQuery object, so the handler body is the reader's to change.
+ */
+export const hookNotes: Transform = (source) => {
+  const notes: Note[] = [];
+  const code = maskComments(source);
+  for (const match of source.matchAll(/Hooks\.(?:on|once)\(\s*['"]renderChatMessage['"]/g)) {
+    if (code[match.index ?? 0] === MASK) continue;
+    notes.push({
+      line: lineAt(source, match.index ?? 0),
+      rule: 'hooks',
+      message:
+        '`renderChatMessage` is removed in v15. Listen to `renderChatMessageHTML(message, html, context)`; `html` is the element, so `html.find(x)` becomes `html.querySelector(x)`.',
+    });
+  }
+  return { output: source, changes: [], notes };
 };
 
 /**
@@ -574,6 +613,7 @@ const SOURCE_TRANSFORMS: ReadonlyArray<readonly [string, Transform]> = [
   ['unregister-core-sheets', unregisterCoreSheets],
   ['status-effects', statusEffectsAssignment],
   ['active-effect-modes', activeEffectModes],
+  ['hooks', hookNotes],
 ];
 
 export function transformSource(source: string): TransformResult {

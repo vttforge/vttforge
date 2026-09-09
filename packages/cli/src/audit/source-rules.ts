@@ -17,9 +17,9 @@
  * 30MB+ runtime dep for marginal gains.
  */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { readdir, readFile, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import type { RuleResult } from './types.js';
 
 /** Directories we never descend into; they are not user source. */
@@ -43,6 +43,10 @@ function isSourceFile(name: string): boolean {
   if (name.endsWith('.d.ts') || name.endsWith('.d.mts') || name.endsWith('.d.cts')) {
     return false;
   }
+  // A minified bundle is a vendored library, not the project's source: the
+  // findings in it are not the author's to fix, and one line of it matches
+  // every pattern there is.
+  if (/\.min\.[cm]?js$/.test(name)) return false;
   return SOURCE_EXTENSIONS.some((ext) => name.endsWith(ext));
 }
 
@@ -624,7 +628,9 @@ async function rule007(
   for (const key of ['primaryTokenAttribute', 'secondaryTokenAttribute'] as const) {
     const value = manifestParsed[key];
     if (typeof value !== 'string' || value.length === 0) continue;
-    const matched = await sourceHasValueMaxSchemaAtPath(sourceFiles, value, actorClasses);
+    const matched =
+      (await sourceHasValueMaxSchemaAtPath(sourceFiles, value, actorClasses)) ||
+      templateJsonHasValueMax(manifestPath, value);
     if (!matched) {
       out.push({
         ruleId: 'VTTF-AUDIT-007',
@@ -638,6 +644,45 @@ async function rule007(
     }
   }
   return out;
+}
+
+/**
+ * The same check against `template.json`, for a system that still declares
+ * its types there. Each Actor type is the merge of the templates it lists and
+ * its own keys; the path resolves when any type has an object with `value`
+ * and `max` at it. Foundry reads the bar the same way, per actor.
+ */
+function templateJsonHasValueMax(manifestPath: string, path: string): boolean {
+  const file = join(dirname(manifestPath), 'template.json');
+  if (!existsSync(file)) return false;
+  let template: Record<string, unknown>;
+  try {
+    template = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>;
+  } catch {
+    return false;
+  }
+  const actor = template.Actor;
+  if (!actor || typeof actor !== 'object') return false;
+  const { types = [], templates = {} } = actor as {
+    types?: string[];
+    templates?: Record<string, Record<string, unknown>>;
+  };
+  for (const type of types) {
+    const own = (actor as Record<string, unknown>)[type];
+    if (!own || typeof own !== 'object') continue;
+    const merged: Record<string, unknown> = {};
+    for (const name of (own as { templates?: string[] }).templates ?? []) {
+      Object.assign(merged, templates[name] ?? {});
+    }
+    Object.assign(merged, own);
+    let node: unknown = merged;
+    for (const segment of path.split('.')) {
+      if (!node || typeof node !== 'object') break;
+      node = (node as Record<string, unknown>)[segment];
+    }
+    if (node && typeof node === 'object' && 'value' in node && 'max' in node) return true;
+  }
+  return false;
 }
 
 function lineOfInRaw(raw: string, key: string): number | undefined {

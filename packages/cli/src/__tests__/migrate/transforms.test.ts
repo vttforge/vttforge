@@ -6,6 +6,7 @@ import {
   activeEffectModes,
   contextMenuKeys,
   dataOperators,
+  hookNotes,
   legacyTransferral,
   removedGlobals,
   rollMode,
@@ -48,6 +49,11 @@ describe('data operators', () => {
     expect(r.changes).toHaveLength(2);
   });
 
+  it('handles a template-literal key with a ${} segment in the prefix', () => {
+    const r = dataOperators('actor.update({ [`flags.${id}.-=item`]: null });\n');
+    expect(r.output).toBe('actor.update({ [`flags.${id}.item`]: _del });\n');
+  });
+
   it('wraps a replacement value of any shape in _replace', () => {
     const r = dataOperators(
       'await a.update({ "==system.stats": { str: 10, list: [1, 2] }, other: 1 });\n',
@@ -78,11 +84,14 @@ describe('roll mode', () => {
     expect(r.notes).toEqual([]);
   });
 
-  it('turns "roll" into undefined, and notes an expression', () => {
-    const r = rollMode('a({ rollMode: "roll" });\nb({ rollMode: chosen });\n');
-    expect(r.output).toBe('a({ messageMode: undefined });\nb({ messageMode: chosen });\n');
-    expect(r.notes).toHaveLength(1);
-    expect(r.notes[0]).toMatchObject({ line: 2 });
+  it('turns "roll" into undefined, and wraps an expression in the mapper', () => {
+    const r = rollMode(
+      'a({ rollMode: "roll" });\nb({ rollMode: chosen });\nc(undefined, { rollMode: secret ? \'gmroll\' : undefined }).then(x);\n',
+    );
+    expect(r.output).toBe(
+      "a({ messageMode: undefined });\nb({ messageMode: Roll._mapLegacyRollMode(chosen) });\nc(undefined, { messageMode: Roll._mapLegacyRollMode(secret ? 'gmroll' : undefined) }).then(x);\n",
+    );
+    expect(r.notes).toEqual([]);
   });
 
   it('replaces the constants and CONFIG.Dice.rollModes', () => {
@@ -269,5 +278,15 @@ describe('the whole pipeline', () => {
     expect(r.output).toBe(src);
     expect(r.changes).toEqual([]);
     expect(r.notes).toEqual([]);
+  });
+});
+
+describe('hook notes', () => {
+  it('notes renderChatMessage and changes nothing', () => {
+    const src = 'Hooks.on("renderChatMessage", (m, html) => html.find("a"));\n';
+    const r = hookNotes(src);
+    expect(r.output).toBe(src);
+    expect(r.changes).toEqual([]);
+    expect(r.notes[0]?.message).toContain('renderChatMessageHTML');
   });
 });

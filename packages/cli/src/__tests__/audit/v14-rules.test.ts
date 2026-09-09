@@ -20,7 +20,7 @@ afterEach(async () => {
 async function auditSource(source: string) {
   await writeFile(join(cwd, 'main.mjs'), source, 'utf8');
   const report = await runAudit({ cwd });
-  return report.findings.filter((f) => /VTTF-AUDIT-01[1-6]/.test(f.ruleId));
+  return report.findings.filter((f) => /VTTF-AUDIT-01[1-8]/.test(f.ruleId));
 }
 
 describe('VTTF-AUDIT-011: a global v14 removed', () => {
@@ -198,5 +198,42 @@ describe('a clean v14 file', () => {
         ].join('\n'),
       ),
     ).toEqual([]);
+  });
+});
+
+describe('VTTF-AUDIT-017: renderChatMessage', () => {
+  it('flags the jQuery hook and passes the HTML one', async () => {
+    const findings = await auditSource(
+      'Hooks.on("renderChatMessage", (m, html) => html.find("a"));\n',
+    );
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({ ruleId: 'VTTF-AUDIT-017', severity: 'MEDIUM', line: 1 });
+    expect(
+      await auditSource(
+        'Hooks.on("renderChatMessageHTML", (m, html) => html.querySelector("a"));\n',
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe('VTTF-AUDIT-018: Application v1 bases', () => {
+  it('flags the v1 bases, bare or namespaced, and passes the V2 ones', async () => {
+    expect(await auditSource('class S extends ActorSheet {}\n')).toHaveLength(1);
+    expect(
+      await auditSource('class M extends foundry.appv1.api.FormApplication {}\n'),
+    ).toHaveLength(1);
+    expect((await auditSource('class D extends Dialog {}\n'))[0]?.severity).toBe('LOW');
+    expect(
+      await auditSource(
+        'class S extends foundry.applications.sheets.ActorSheetV2 {}\nclass D extends DialogV2 {}\n',
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe('vendored libraries', () => {
+  it('does not read a minified bundle', async () => {
+    await writeFile(join(cwd, 'jszip.min.js'), 'a({"-=x":null});mergeObject(a,b);\n', 'utf8');
+    expect(await auditSource('export const x = 1;\n')).toEqual([]);
   });
 });

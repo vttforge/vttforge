@@ -7,6 +7,8 @@
  *   VTTF-AUDIT-014 (MEDIUM): `CONFIG.statusEffects = [...]`, which empties the collection first
  *   VTTF-AUDIT-015 (MEDIUM): `legacyTransferral`, a flag v14 no longer reads
  *   VTTF-AUDIT-016 (MEDIUM): numeric Active Effect modes, replaced by string change types
+ *   VTTF-AUDIT-017 (MEDIUM): the jQuery `renderChatMessage` hook, removed in v15
+ *   VTTF-AUDIT-018 (LOW)   : an Application v1 base class, removed in v16
  *
  * Regex heuristics like the rest of the source rules, for the same reason:
  * the patterns are short and a TypeScript AST would not make them more
@@ -236,6 +238,59 @@ function rule016(filePath: string, content: string): RuleResult[] {
   ];
 }
 
+/**
+ * VTTF-AUDIT-017 (MEDIUM): the `renderChatMessage` hook.
+ *
+ * Deprecated since v13 and removed in v15, one version earlier than the
+ * rest of this list. Its replacement, `renderChatMessageHTML`, hands the
+ * message element instead of a jQuery object, so the handler body changes
+ * too: `html.find(...)` becomes `html.querySelector(...)`.
+ */
+function rule017(filePath: string, content: string): RuleResult[] {
+  const pattern = /Hooks\.(?:on|once)\(\s*['"]renderChatMessage['"]/;
+  if (!pattern.test(content)) return [];
+  return [
+    {
+      ruleId: 'VTTF-AUDIT-017',
+      title: 'renderChatMessage is removed in v15',
+      severity: 'MEDIUM',
+      filePath,
+      line: _internal.lineOf(content, pattern),
+      message:
+        'The `renderChatMessage` hook is deprecated since v13 and removed in v15. It hands a jQuery object; `renderChatMessageHTML` hands the element.',
+      remediation:
+        'Listen to `renderChatMessageHTML(message, html, context)` and rewrite the handler against the DOM: `html.find(x)` → `html.querySelector(x)`, `.on("click", f)` → `.addEventListener("click", f)`.',
+    },
+  ];
+}
+
+/**
+ * VTTF-AUDIT-018 (LOW): an Application v1 base class.
+ *
+ * `Application`, `FormApplication`, `Dialog`, `ActorSheet`, `ItemSheet` and
+ * the rest of `foundry.appv1` are deprecated since v13 and removed in v16.
+ * Nothing breaks on v14, which is why this is LOW; it is the largest piece
+ * of work on the list, which is why it is on the list.
+ */
+function rule018(filePath: string, content: string): RuleResult[] {
+  const pattern =
+    /extends\s+(?:foundry\.appv1\.(?:api|sheets)\.)?(?:Application|FormApplication|Dialog|DocumentSheet|ActorSheet|ItemSheet)\b(?!V2)/;
+  if (!pattern.test(content)) return [];
+  return [
+    {
+      ruleId: 'VTTF-AUDIT-018',
+      title: 'An Application v1 base class',
+      severity: 'LOW',
+      filePath,
+      line: _internal.lineOf(content, pattern),
+      message:
+        'This class extends an Application v1 base, deprecated since v13 and removed in v16. It still works on v14.',
+      remediation:
+        'Move to `foundry.applications.api.ApplicationV2` with `HandlebarsApplicationMixin`, or `foundry.applications.sheets.ActorSheetV2` / `ItemSheetV2`; `DialogV2` for dialogs. `@vttforge/core` offers `BaseApplication`, `BaseActorSheet` and `BaseItemSheet` on top of those.',
+    },
+  ];
+}
+
 export async function runV14Rules(cwd: string): Promise<RuleResult[]> {
   const results: RuleResult[] = [];
   for await (const file of _internal.walkSourceFiles(cwd)) {
@@ -256,6 +311,8 @@ export async function runV14Rules(cwd: string): Promise<RuleResult[]> {
       ...rule014(file, content),
       ...rule015(file, content),
       ...rule016(file, content),
+      ...rule017(file, content),
+      ...rule018(file, content),
     );
   }
   return results;
