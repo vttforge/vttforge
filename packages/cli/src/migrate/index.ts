@@ -217,7 +217,14 @@ async function planSheets(
       .filter((t): t is string => t !== null);
     // A `get template()` that builds the path at runtime names nothing; every
     // sheet template in the project is a candidate then.
-    if (templatePaths.length === 0) templatePaths = await allTemplates(cwd);
+    if (templatePaths.length === 0) {
+      const every = await allTemplates(cwd);
+      // Leave out the other document's folder (item templates for an actor sheet and the
+      // reverse); shared parts and dialogs stay in, since a sheet's rows often live there.
+      const other =
+        probe.files[0]?.base === 'BaseItemSheet' ? /(?:^|\/)actors?\//i : /(?:^|\/)items?\//i;
+      templatePaths = every.filter((t) => !other.test(t));
+    }
     const navSelectors = [...new Set(probe.files.flatMap((f) => f.tabNavSelectors))];
     const tabIds: Record<string, string[]> = {};
     for (const t of templatePaths) {
@@ -244,7 +251,8 @@ async function planSheets(
     for (const t of templatePaths) {
       const tpl = await readFile(join(cwd, t), 'utf8');
       const r = editTemplate(tpl, { actions, navSelectors });
-      if (r.edits.length === 0 && !r.formRoot) continue;
+      // A template the class never touched (a dialog, a chat card) is not a sheet; its form is its own.
+      if (r.edits.length === 0) continue;
       templates.push({ file: t, edits: r.edits, formRoot: r.formRoot });
       if (r.formRoot) {
         notes.push(

@@ -46,17 +46,22 @@ describe('editTemplate', () => {
 
   it('wires the tabs nav and panes for the SDK tab action', () => {
     expect(r.output).toContain(
-      '<a class="item" data-tab="items" data-action="vttforgeTab" data-group="primary">',
+      '<a class="item {{tabs.items.cssClass}}" data-tab="items" data-action="vttforgeTab" data-group="primary">',
+    );
+    // Already wired for the action: only the active-class marker is added.
+    expect(r.output).toContain(
+      '<a class="item {{tabs.notes.cssClass}}" data-tab="notes" data-action="vttforgeTab" data-group="primary">',
     );
     expect(r.output).toContain(
-      '<a class="item" data-tab="notes" data-action="vttforgeTab" data-group="primary">',
+      '<div class="tab {{tabs.items.cssClass}}" data-tab="items" data-group="primary">',
     );
-    expect(r.output).toContain('<div class="tab" data-tab="items" data-group="primary">');
-    expect(r.output).toContain('<section class="tab" data-group="primary" data-tab="notes">');
+    expect(r.output).toContain(
+      '<section class="tab {{tabs.notes.cssClass}}" data-group="primary" data-tab="notes">',
+    );
   });
 
   it('reports each edit with its line and flags the form root', () => {
-    expect(r.edits.map((e) => e.line)).toEqual([2, 4, 7, 8, 9]);
+    expect(r.edits.map((e) => e.line)).toEqual([2, 4, 5, 7, 8, 9, 11]);
     expect(r.formRoot).toBe(true);
   });
 
@@ -64,7 +69,7 @@ describe('editTemplate', () => {
     const lines = TPL.split('\n');
     const out = r.output.split('\n');
     expect(out.length).toBe(lines.length);
-    for (const i of [0, 2, 5, 10, 11]) {
+    for (const i of [0, 2, 5, 11]) {
       expect(out[i]).toBe(lines[i]);
     }
   });
@@ -106,7 +111,9 @@ describe('templates with expressions in attribute values', () => {
     expect(r.output).toContain(
       '<a class="item" data-tab="{{id}}" data-action="vttforgeTab" data-group="primary">',
     );
-    expect(r.output).toContain('<div class="tab {{cls}}" data-tab="gear" data-group="primary">');
+    expect(r.output).toContain(
+      '<div class="tab {{cls}} {{tabs.gear.cssClass}}" data-tab="gear" data-group="primary">',
+    );
     expect(r.output).toContain(
       `<a class="item-create" data-tooltip="{{localize 'SHEET.Create'}}" data-action="itemCreate">`,
     );
@@ -121,5 +128,30 @@ describe('templates with expressions in attribute values', () => {
     for (const i of [0, 1, 5, 9, 10, 11]) {
       expect(out[i]).toBe(lines[i]);
     }
+  });
+});
+
+describe('mustaches inside the opening tag', () => {
+  const tpl = `<nav class="tabs">
+  <a class="item" data-tab="items" id="set-limit"
+    {{#if data.limit}}title="Double click"{{/if}}>Items</a>
+  <a class="item" data-tab="notes">Notes</a>
+</nav>
+<button id="rest-button" type="button" {{#if data.deprived}}disabled{{/if}}>Rest</button>
+`;
+
+  it('still reads the tab ids and edits the tag', () => {
+    expect(readTabIds(tpl, '.tabs')).toEqual(['items', 'notes']);
+    const r = editTemplate(tpl, {
+      actions: [{ name: 'restButton', selector: '#rest-button' }],
+      navSelectors: ['.tabs'],
+    });
+    expect(r.output).toContain(
+      '{{#if data.deprived}}disabled{{/if}} data-action="restButton">Rest</button>',
+    );
+    expect(r.output).toContain(
+      '{{#if data.limit}}title="Double click"{{/if}} data-action="vttforgeTab" data-group="primary">Items</a>',
+    );
+    expect(r.edits.map((e) => e.line)).toEqual([2, 4, 6]);
   });
 });

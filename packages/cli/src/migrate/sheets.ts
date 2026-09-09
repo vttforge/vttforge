@@ -44,6 +44,20 @@ export interface SheetPlan {
   notes: string[];
 }
 
+/** v1 lifecycle methods a sheet used to override; V2 has other hooks for the same jobs. */
+const V1_LIFECYCLE = new Set([
+  'setPosition',
+  '_getHeaderButtons',
+  '_render',
+  '_renderInner',
+  '_replaceHTML',
+  '_onSubmit',
+  '_getSubmitData',
+  '_onChangeInput',
+  'activateEditor',
+  'close',
+]);
+
 const HANDLED = new Set([
   'defaultOptions',
   'getData',
@@ -272,6 +286,12 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
     } else if (name && listenerTargets.has(name)) {
       const ev = firstParam(code, name);
       code = rewriteHandlerBody(code, ev, null, ev ? `${ev}.currentTarget` : 'target').code;
+    } else if (member.type === 'ClassMethod') {
+      // Any other method: the jQuery idioms with a DOM equivalent, the rest flagged.
+      code = rewriteHandlerBody(code, null, null).code;
+    }
+    if (name && V1_LIFECYCLE.has(name)) {
+      code = `  ${todo(`${name} is an Application v1 lifecycle override; ApplicationV2 sizes, submits and builds its header itself. Review it against the V2 method of the same job, or delete it`)}\n${code}`;
     }
     if (name === '_updateObject') {
       code = `  ${todo('_updateObject is gone on V2; DocumentSheetV2 submits the form itself. Move any shaping into _prepareSubmitData or delete this')}\n${code}`;

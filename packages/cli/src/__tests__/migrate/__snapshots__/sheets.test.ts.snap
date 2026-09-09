@@ -43,8 +43,11 @@ export class HeroSheet extends BaseActorSheet() {
   async _prepareContext(options) {
     const data = await super._prepareContext(options);
     data.actor = this.document;
+    data.data = this.document;
     data.system = this.document.system;
     data.items = [...this.document.items];
+    data.editable = this.isEditable;
+    data.owner = this.document.isOwner;
     data.items = data.items.sort((a, b) => a.name.localeCompare(b.name));
     data.enrichedNotes = await TextEditor.enrichHTML(this.actor.system.notes, { async: true });
     return data;
@@ -58,7 +61,7 @@ export class HeroSheet extends BaseActorSheet() {
     }
     for (const el of this.element.querySelectorAll('[name="system.armed"]')) {
       el.addEventListener('change', (e) => {
-        if (e.target.checked) this.element.querySelector('[name="system.hidden"]')[0].checked = false;
+        if (e.target.checked) this.element.querySelectorAll('[name="system.hidden"]')[0].checked = false;
       });
     }
   }
@@ -87,12 +90,20 @@ export class HeroSheet extends BaseActorSheet() {
     this.actor.items.get(li.dataset.itemId).sheet.render(true);
   }
 
+  // TODO(migrate): setPosition is an Application v1 lifecycle override; ApplicationV2 sizes, submits and builds its header itself. Review it against the V2 method of the same job, or delete it
+  setPosition(options = {}) {
+    const position = super.setPosition(options);
+    // TODO(migrate): jQuery left here; use the DOM on \`target\` / \`this.element\`
+    this.element.querySelectorAll('.sheet-body').css('height', position.height - 100);
+    return position;
+  }
+
   _onDragStart(event) {
     const id = event.currentTarget.dataset.itemId;
     event.dataTransfer.setData('text/plain', JSON.stringify(this.actor.items.get(id).toDragData()));
   }
 
-  // TODO(migrate): the base hands the resolved Item as \`droppedItem\`; \`itemData\` no longer exists. The old super call created it on the actor, which is what the createEmbeddedDocuments line does now (a drop from the same actor used to re-sort instead). Return true when the drop was handled, undefined to let the base do its default
+  // TODO(migrate): the base hands the resolved Item as \`droppedItem\`; the old \`itemData\` payload is now \`droppedItem.toDragData()\`, read \`droppedItem\` directly where you can. The old super call created it on the actor, which is what the createEmbeddedDocuments line does now (a drop from the same actor used to re-sort instead). Return true when the drop was handled, undefined to let the base do its default
   async onDropItem(droppedItem, event) {
     const item = ((await this.document.createEmbeddedDocuments('Item', [droppedItem.toObject()])) || []).pop();
     if (item) helper(item);

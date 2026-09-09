@@ -20,7 +20,7 @@ describe('rewriteHandlerBody', () => {
     expect(r.code).toContain('const id = li.dataset.itemId;');
     expect(r.code).toContain('const kind = li.dataset.itemKind;');
     expect(r.code).toContain('const el = target;');
-    expect(r.code).toContain('const name = this.element.querySelector(".name");');
+    expect(r.code).toContain('const name = this.element.querySelectorAll(".name");');
     expect(r.todos).toEqual([]);
   });
 
@@ -38,6 +38,12 @@ describe('rewriteHandlerBody', () => {
     const r = rewriteHandlerBody(`{ $(".a").val($(".b").text()); }`, null, null);
     expect(r.todos).toHaveLength(1);
     expect(r.code.match(/TODO\(migrate\)/g)).toHaveLength(1);
+  });
+
+  it('turns this.element.find into querySelector and flags css()', () => {
+    const r = rewriteHandlerBody("{ this.element.find('.body').css('height', h); }", null, null);
+    expect(r.code).toContain("this.element.querySelectorAll('.body').css('height', h);");
+    expect(r.todos).toHaveLength(1);
   });
 
   it('reads jQuery parents() as the nearest ancestor', () => {
@@ -66,6 +72,9 @@ describe('rewriteGetData', () => {
     expect(r.code).toContain('data.actor = this.document;');
     expect(r.code).toContain('data.system = this.document.system;');
     expect(r.code).toContain('data.items = [...this.document.items];');
+    expect(r.code).toContain('data.data = this.document;');
+    expect(r.code).toContain('data.editable = this.isEditable;');
+    expect(r.code).toContain('data.owner = this.document.isOwner;');
     expect(r.code.indexOf('data.actor = ')).toBeLessThan(
       r.code.indexOf('data.items = data.items.sort()'),
     );
@@ -104,6 +113,20 @@ describe('rewriteDropMethod', () => {
     expect(r.code).toContain(
       "this.document.createEmbeddedDocuments('Item', [droppedItem.toObject()])",
     );
+  });
+
+  it('replaces the old payload identifier with toDragData()', () => {
+    const src = `async _onDropItem(event, data) {
+    const { item } = await fromDropData(data);
+    return super._onDropItem(event, data);
+  }`;
+    const r = rewriteDropMethod(src, 'Item');
+    expect(r.code).toContain('await fromDropData(droppedItem.toDragData());');
+    expect(r.code).toContain(
+      "this.document.createEmbeddedDocuments('Item', [droppedItem.toObject()]);",
+    );
+    const codeLines = r.code.split('\n').filter((l) => !l.includes('TODO(migrate)'));
+    expect(codeLines.join('\n')).not.toMatch(/\bdata\b/);
     expect(r.todos.length).toBeGreaterThan(0);
   });
 

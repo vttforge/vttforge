@@ -26,8 +26,10 @@ export interface TemplateResult {
  * A fresh regex per call: a shared global one carries `lastIndex` between
  * `readTabIds`, `elementRange` and `String#replace`.
  */
+// An opening tag: the name, then attributes and Handlebars mustaches (`{{#if x}}disabled{{/if}}`
+// sits inside a tag as an opaque token), then an optional self-closing slash.
 const tagRe = () =>
-  /<([a-zA-Z][\w-]*)((?:\s+[^\s=>/]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*(\/?)>/g;
+  /<([a-zA-Z][\w-]*)((?:\s*\{\{[^{}]*\}\}|\s+[^\s=>/{]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?|(?<=\}\})[^\s=>/{]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*(\/?)>/g;
 
 /** The value of one attribute in a tag's attribute run, or null when absent. */
 function attr(attrs: string, name: string): string | null {
@@ -147,20 +149,39 @@ export function editTemplate(
       }
       const tab = attr(attrs, 'data-tab');
       const needsGroup = attr(attrs, 'data-group') === null;
-      if (tab !== null && inNav(offset)) {
+      let withClass = attrs;
+      const isNavLink = tab !== null && inNav(offset);
+      const isPane = tab !== null && !isNavLink && hasClass(attrs, 'tab');
+      if (isNavLink) {
         if (!hasAction && !add.some((one) => one.startsWith('data-action='))) {
           add.push('data-action="vttforgeTab"');
         }
         if (needsGroup) {
           add.push('data-group="primary"');
         }
-      } else if (tab !== null && needsGroup && hasClass(attrs, 'tab')) {
+      } else if (isPane && needsGroup) {
         add.push('data-group="primary"');
       }
-      if (add.length === 0) {
+      // The active tab comes from the context: `{{tabs.<id>.cssClass}}` on the link and the pane.
+      if (
+        (isNavLink || isPane) &&
+        tab !== null &&
+        !tab.includes('{{') &&
+        !/\{\{\s*tabs\./.test(attrs)
+      ) {
+        const marker = `{{tabs.${tab}.cssClass}}`;
+        withClass = /\sclass\s*=\s*"([^"]*)"/.test(attrs)
+          ? attrs.replace(
+              /(\sclass\s*=\s*")([^"]*)(")/,
+              (_m, open, value, close) => `${open}${value.trimEnd()} ${marker}${close}`,
+            )
+          : attrs;
+        if (withClass === attrs) add.push(`class="${marker}"`);
+      }
+      if (add.length === 0 && withClass === attrs) {
         return whole;
       }
-      const after = `<${name}${attrs.replace(/\s+$/, '')} ${add.join(' ')}${selfClose ? ' /' : ''}>`;
+      const after = `<${name}${withClass.replace(/\s+$/, '')}${add.length > 0 ? ` ${add.join(' ')}` : ''}${selfClose ? ' /' : ''}>`;
       edits.push({ line: lineOf(template, offset), before: whole, after });
       return after;
     },

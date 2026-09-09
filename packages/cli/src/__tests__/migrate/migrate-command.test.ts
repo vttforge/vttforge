@@ -158,6 +158,24 @@ describe('vttforge migrate --sheets', () => {
     );
     await writeFile(join(cwd, 'module', 'actor-sheet.mjs'), dynamic, 'utf8');
     const { report } = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
+    // An item template in the tree is not a candidate for an actor sheet; shared parts are.
+    await mkdir(join(cwd, 'templates', 'item'), { recursive: true });
+    await mkdir(join(cwd, 'templates', 'actor'), { recursive: true });
+    await writeFile(
+      join(cwd, 'templates', 'item', 'gear-sheet.html'),
+      '<a class="item-create">+</a>\n',
+      'utf8',
+    );
+    await writeFile(
+      join(cwd, 'templates', 'actor', 'npc-sheet.html'),
+      '<a class="item-create">+</a>\n',
+      'utf8',
+    );
+    const second = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
+    expect(second.report.sheets?.templates.map((t) => t.file)).toEqual([
+      'templates/actor-sheet.html',
+      'templates/actor/npc-sheet.html',
+    ]);
     expect(report.sheets?.templates.map((t) => t.file)).toEqual(['templates/actor-sheet.html']);
     expect(report.sheets?.files[0]?.todos.some((t) => /chosen at runtime/.test(t.message))).toBe(
       true,

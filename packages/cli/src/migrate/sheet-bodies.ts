@@ -47,7 +47,7 @@ function todoAt(code: string, index: number, msg: string): string {
 
 /** The jQuery calls with no one-to-one DOM rewrite. */
 const LEFTOVER_JQUERY =
-  /\$\(|\.(?:val|text|html|prop|toggle|slideToggle|slideUp|slideDown|show|hide|addClass|removeClass|toggleClass|siblings|children|find)\(/g;
+  /\$\(|\.(?:val|text|html|prop|toggle|slideToggle|slideUp|slideDown|show|hide|addClass|removeClass|toggleClass|siblings|children|find|css)\(/g;
 
 const JQUERY_MSG = 'jQuery left here; use the DOM on `target` / `this.element`';
 
@@ -91,9 +91,12 @@ export function rewriteHandlerBody(
     code = replaceCode(
       code,
       new RegExp(`\\b${esc(htmlParam)}\\.find\\(`, 'g'),
-      () => 'this.element.querySelector(',
+      () => 'this.element.querySelectorAll(',
     );
   }
+  // `this.element` was jQuery on v1 and is an HTMLElement on V2.
+  // A jQuery collection reads as a NodeList: `.length`, `[0]` and `forEach` keep working.
+  code = replaceCode(code, /this\.element\.find\(/g, () => 'this.element.querySelectorAll(');
   // What is left of jQuery gets a marker, once per line however much it holds.
   const masked = maskComments(code, { strings: true });
   const lines = new Set<number>();
@@ -130,11 +133,19 @@ export function rewriteGetData(methodText: string, base: 'ActorSheet' | 'ItemShe
     /(?:const|let|var)\s+(\w+)\s*=\s*(?:await\s+)?super\._prepareContext\(options\)\s*;/.exec(code);
   const v = varMatch?.[1] ?? 'context';
   const own = base === 'ActorSheet' ? 'actor' : 'item';
+  // What v1's getData handed the template and V2's _prepareContext does not:
+  // the document under its own name and as `data`, its system, the items,
+  // and the two flags every v1 template gates on.
   const wanted: Array<[string, string]> = [
     [own, `${v}.${own} = this.document;`],
+    ['data', `${v}.data = this.document;`],
     ['system', `${v}.system = this.document.system;`],
   ];
   if (base === 'ActorSheet') wanted.push(['items', `${v}.items = [...this.document.items];`]);
+  wanted.push(
+    ['editable', `${v}.editable = this.isEditable;`],
+    ['owner', `${v}.owner = this.document.isOwner;`],
+  );
 
   const masked = maskComments(code, { strings: true });
   const inject = wanted
@@ -177,7 +188,9 @@ export function rewriteDropMethod(methodText: string, which: 'Item' | 'Actor'): 
   const eventName = m[1] ?? 'event';
   const dataName = m[2] ?? 'data';
   // The body may already declare `item` / `actor`; the parameter then takes another name.
-  const declares = new RegExp(`\\b(?:const|let|var)\\s+${lower}\\b`).test(methodText);
+  const declares = new RegExp(
+    `\\b(?:const|let|var)\\s+(?:${lower}\\b|\\{[^}]*\\b${lower}\\b[^}]*\\}|\\[[^\\]]*\\b${lower}\\b[^\\]]*\\])`,
+  ).test(methodText);
   const param = declares ? `dropped${which}` : lower;
   let code = methodText.replace(sig, `onDrop${which}(${param}, ${eventName})`);
   const todos: string[] = [];
@@ -195,10 +208,16 @@ export function rewriteDropMethod(methodText: string, which: 'Item' | 'Actor'): 
       () => `super.onDrop${which}(${param}, ${eventName})`,
     );
   }
+  // The v1 body read the drag payload; the resolved document reproduces it.
+  code = replaceCode(
+    code,
+    new RegExp(`\\b${esc(dataName)}\\b`, 'g'),
+    () => `${param}.toDragData()`,
+  );
   const msg =
     which === 'Item'
-      ? `the base hands the resolved Item as \`${param}\`; \`${dataName}\` no longer exists. The old super call created it on the actor, which is what the createEmbeddedDocuments line does now (a drop from the same actor used to re-sort instead). Return true when the drop was handled, undefined to let the base do its default`
-      : `the base hands the resolved Actor as \`${param}\`; \`${dataName}\` no longer exists. Read \`${param}\` directly and return true when the drop was handled`;
+      ? `the base hands the resolved Item as \`${param}\`; the old \`${dataName}\` payload is now \`${param}.toDragData()\`, read \`${param}\` directly where you can. The old super call created it on the actor, which is what the createEmbeddedDocuments line does now (a drop from the same actor used to re-sort instead). Return true when the drop was handled, undefined to let the base do its default`
+      : `the base hands the resolved Actor as \`${param}\`; the old \`${dataName}\` payload is now \`${param}.toDragData()\`, read \`${param}\` directly where you can. Return true when the drop was handled`;
   code = todoAt(code, code.indexOf('{') + 1, msg);
   todos.push(msg);
   return { code, todos };

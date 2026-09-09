@@ -70,7 +70,7 @@ describe('planSheetFile', () => {
 
   it('rewrites the jQuery inside a render listener and keeps its indentation', () => {
     expect(file.source).toContain(
-      "    for (const el of this.element.querySelectorAll('[name=\"system.armed\"]')) {\n      el.addEventListener('change', (e) => {\n        if (e.target.checked) this.element.querySelector('[name=\"system.hidden\"]')[0].checked = false;\n      });\n    }",
+      "    for (const el of this.element.querySelectorAll('[name=\"system.armed\"]')) {\n      el.addEventListener('change', (e) => {\n        if (e.target.checked) this.element.querySelectorAll('[name=\"system.hidden\"]')[0].checked = false;\n      });\n    }",
     );
   });
 
@@ -87,6 +87,15 @@ describe('planSheetFile', () => {
   it('adds the render listener for the dblclick', () => {
     expect(file.source).toContain(
       "  /** @override */\n  _onRender(context, options) {\n    super._onRender(context, options);\n    for (const el of this.element.querySelectorAll('.item-name')) {\n      el.addEventListener('dblclick', (event) => this._onItemEdit(event));\n    }",
+    );
+  });
+
+  it('flags a v1 lifecycle override and rewrites the jQuery in it', () => {
+    expect(file.source).toContain(
+      '// TODO(migrate): setPosition is an Application v1 lifecycle override',
+    );
+    expect(file.source).toContain(
+      "this.element.querySelectorAll('.sheet-body').css('height', position.height - 100);",
     );
   });
 

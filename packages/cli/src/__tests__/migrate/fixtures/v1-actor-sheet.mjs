@@ -75,6 +75,13 @@ export class HeroSheet extends ActorSheet {
   }
 
   /** @override */
+  setPosition(options = {}) {
+    const position = super.setPosition(options);
+    this.element.find('.sheet-body').css('height', position.height - 100);
+    return position;
+  }
+
+  /** @override */
   _onDragStart(event) {
     const id = event.currentTarget.dataset.itemId;
     event.dataTransfer.setData('text/plain', JSON.stringify(this.actor.items.get(id).toDragData()));
