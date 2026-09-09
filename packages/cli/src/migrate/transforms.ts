@@ -13,6 +13,7 @@
  * is what the preview is for.
  */
 
+import { bareUsePattern, definesName, LEGACY_GLOBALS } from '../audit/legacy-globals.js';
 import { MASK, maskComments } from '../audit/mask.js';
 import { REMOVED_UTILS } from '../audit/v14-rules.js';
 
@@ -141,6 +142,39 @@ export const removedGlobals: Transform = (source) => {
     });
   }
   return { ...merge(utils, clamped), notes };
+};
+
+/**
+ * Bare v13 global aliases → their `foundry.*` path: `renderTemplate(` →
+ * `foundry.applications.handlebars.renderTemplate(`, `extends ActorSheet` →
+ * `extends foundry.appv1.sheets.ActorSheet`. Same object, no removal date.
+ * A name the file declares or imports, an object key, a property, and a
+ * word inside a string or comment are left alone.
+ */
+export const namespacedGlobals: Transform = (source) => {
+  const changes: Change[] = [];
+  const code = maskComments(source, { strings: true });
+  const edits: Array<{ start: number; end: number; text: string; name: string }> = [];
+  for (const [name, path] of Object.entries(LEGACY_GLOBALS)) {
+    if (definesName(code, name)) continue;
+    for (const match of code.matchAll(bareUsePattern(name))) {
+      const start = match.index ?? 0;
+      edits.push({ start, end: start + name.length, text: path, name });
+    }
+  }
+  let output = source;
+  for (const edit of edits.sort((a, b) => b.start - a.start)) {
+    output = output.slice(0, edit.start) + edit.text + output.slice(edit.end);
+  }
+  for (const edit of edits.sort((a, b) => a.start - b.start)) {
+    changes.push({
+      line: lineAt(source, edit.start),
+      before: edit.name,
+      after: edit.text,
+      rule: 'namespaced-globals',
+    });
+  }
+  return { output, changes, notes: [] };
 };
 
 /**
@@ -606,6 +640,7 @@ export const activeEffectModes: Transform = (source) => {
 /** The transforms, in the order they run. */
 const SOURCE_TRANSFORMS: ReadonlyArray<readonly [string, Transform]> = [
   ['removed-globals', removedGlobals],
+  ['namespaced-globals', namespacedGlobals],
   ['data-operators', dataOperators],
   ['roll-mode', rollMode],
   ['context-menu-keys', contextMenuKeys],
@@ -643,23 +678,29 @@ export function transformManifest(
   let output = raw;
 
   if (parsed.type !== kind) {
-    const typeLine = /^([ \t]*)"type"\s*:\s*"[^"]*"/m.exec(output);
-    if (typeLine) {
-      output = output.replace(typeLine[0], `${typeLine[1]}"type": "${kind}"`);
+    const typeKey = topLevelKey(output, 'type');
+    if (typeKey) {
+      output = `${output.slice(0, typeKey.valueStart)}"${kind}"${output.slice(typeKey.valueEnd)}`;
       changes.push({
-        line: lineAt(raw, typeLine.index),
-        before: typeLine[0].trim(),
+        line: lineAt(raw, typeKey.keyStart),
+        before: raw.slice(typeKey.keyStart, typeKey.valueEnd).trim(),
         after: `"type": "${kind}"`,
         rule: 'manifest',
       });
     } else {
-      const idLine = /^([ \t]*)"id"\s*:\s*"[^"]*"\s*,?[ \t]*$/m.exec(output);
-      if (idLine) {
-        const indent = idLine[1] ?? '';
-        const insertAt = idLine.index + idLine[0].length;
-        output = `${output.slice(0, insertAt)}\n${indent}"type": "${kind}",${output.slice(insertAt)}`;
+      const idKey = topLevelKey(output, 'id');
+      if (idKey) {
+        const lineStart = output.lastIndexOf('\n', idKey.keyStart) + 1;
+        const indent = output.slice(lineStart, idKey.keyStart);
+        const after = output.indexOf('\n', idKey.valueEnd);
+        const insertAt = after === -1 ? output.length : after;
+        const needsComma = !/,\s*$/.test(output.slice(idKey.valueEnd, insertAt));
+        const head = needsComma
+          ? `${output.slice(0, idKey.valueEnd)},${output.slice(idKey.valueEnd, insertAt)}`
+          : output.slice(0, insertAt);
+        output = `${head}\n${indent}"type": "${kind}",${output.slice(insertAt)}`;
         changes.push({
-          line: lineAt(raw, idLine.index) + 1,
+          line: lineAt(raw, idKey.keyStart) + 1,
           before: '(no "type")',
           after: `"type": "${kind}"`,
           rule: 'manifest',
@@ -675,26 +716,23 @@ export function transformManifest(
   }
 
   const compatibility = (parsed.compatibility ?? {}) as Record<string, unknown>;
-  const block = /"compatibility"\s*:\s*\{[^}]*\}/.exec(output);
   for (const field of ['minimum', 'verified'] as const) {
     const current = compatibility[field];
     const major = Number.parseInt(String(current ?? '0'), 10);
     if (Number.isFinite(major) && major >= 14) continue;
-    if (block && current !== undefined) {
-      const field_ = new RegExp(`("${field}"\\s*:\\s*)("[^"]*"|[\\d.]+)`);
-      const inBlock = field_.exec(block[0]);
-      if (inBlock) {
-        const replaced = block[0].replace(field_, '$1"14"');
-        output = output.replace(block[0], replaced);
-        block[0] = replaced;
-        changes.push({
-          line: lineAt(raw, raw.indexOf(`"${field}"`, raw.indexOf('"compatibility"'))),
-          before: `compatibility.${field}: ${JSON.stringify(current)}`,
-          after: `compatibility.${field}: "14"`,
-          rule: 'manifest',
-        });
-        continue;
-      }
+    const block = topLevelKey(output, 'compatibility');
+    const inner = block ? topLevelKey(output.slice(block.valueStart, block.valueEnd), field) : null;
+    if (block && inner && current !== undefined) {
+      const valueStart = block.valueStart + inner.valueStart;
+      const valueEnd = block.valueStart + inner.valueEnd;
+      output = `${output.slice(0, valueStart)}"14"${output.slice(valueEnd)}`;
+      changes.push({
+        line: lineAt(output, block.valueStart + inner.keyStart),
+        before: `compatibility.${field}: ${JSON.stringify(current)}`,
+        after: `compatibility.${field}: "14"`,
+        rule: 'manifest',
+      });
+      continue;
     }
     notes.push({
       line: 1,
@@ -721,4 +759,74 @@ export function transformManifest(
   if (changes.length === 0) return notes.length ? { output: raw, changes, notes } : null;
   JSON.parse(output); // an edit that broke the file is a bug here, not the user's problem
   return { output, changes, notes };
+}
+
+/**
+ * Where a key of the root object sits in the JSON text: the start of the
+ * quoted key, and the span of its value. Only depth one counts, so a
+ * `"type"` inside `relationships.systems[]` is not the manifest's `type`.
+ */
+function topLevelKey(
+  json: string,
+  key: string,
+): { keyStart: number; valueStart: number; valueEnd: number } | null {
+  let depth = 0;
+  let i = 0;
+  const skipString = (from: number): number => {
+    let j = from + 1;
+    for (; j < json.length; j += 1) {
+      if (json[j] === '\\') j += 1;
+      else if (json[j] === '"') return j + 1;
+    }
+    return j;
+  };
+  const skipValue = (from: number): number => {
+    let j = from;
+    while (j < json.length && /\s/.test(json[j] ?? '')) j += 1;
+    const ch = json[j] ?? '';
+    if (ch === '"') return skipString(j);
+    if (ch === '{' || ch === '[') {
+      let d = 0;
+      for (let k = j; k < json.length; k += 1) {
+        const c = json[k] ?? '';
+        if (c === '"') k = skipString(k) - 1;
+        else if (c === '{' || c === '[') d += 1;
+        else if (c === '}' || c === ']') {
+          d -= 1;
+          if (d === 0) return k + 1;
+        }
+      }
+      return json.length;
+    }
+    while (j < json.length && !/[,}\]\s]/.test(json[j] ?? '')) j += 1;
+    return j;
+  };
+  while (i < json.length) {
+    const ch = json[i] ?? '';
+    if (ch === '"') {
+      const end = skipString(i);
+      if (depth === 1) {
+        const name = json.slice(i + 1, end - 1);
+        let k = end;
+        while (k < json.length && /\s/.test(json[k] ?? '')) k += 1;
+        if (json[k] === ':') {
+          const valueStart = (() => {
+            let v = k + 1;
+            while (v < json.length && /\s/.test(json[v] ?? '')) v += 1;
+            return v;
+          })();
+          const valueEnd = skipValue(k + 1);
+          if (name === key) return { keyStart: i, valueStart, valueEnd };
+          i = valueEnd;
+          continue;
+        }
+      }
+      i = end;
+      continue;
+    }
+    if (ch === '{' || ch === '[') depth += 1;
+    else if (ch === '}' || ch === ']') depth -= 1;
+    i += 1;
+  }
+  return null;
 }

@@ -80,8 +80,9 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-016` | MEDIUM | `CONST.ACTIVE_EFFECT_MODES`; changes now live in `system.changes` with a string `type`, removed in v16 |
 | `VTTF-AUDIT-017` | MEDIUM | The jQuery `renderChatMessage` hook; removed in v15, `renderChatMessageHTML` hands the element |
 | `VTTF-AUDIT-018` | LOW | A class extending an Application v1 base (`Application`, `FormApplication`, `Dialog`, `ActorSheet`, `ItemSheet`); removed in v16 |
+| `VTTF-AUDIT-019` | MEDIUM | A bare v13 global alias (`renderTemplate`, `ActorSheet`, `Actors`, `TextEditor`, `ChatLog`, ...); it warns on v14 and throws on v15, and the namespaced path is the same object |
 
-Rules 011 to 018 blank out comments before they match, so a call quoted in a
+Rules 011 to 019 blank out comments before they match, so a call quoted in a
 JSDoc block is not a finding. Rules 004 and 007 read the schema whether it is a `static defineSchema()` or
 a function handed to `BaseTypeDataModel`, and scope it to the class
 registered for that document. Rule 008 only looks at templates a
@@ -106,6 +107,7 @@ with `--write`, then run `vttforge audit`.
 | Rewrite | Before | After |
 |---|---|---|
 | Removed globals | `mergeObject(a, b)`, `Math.clamped(x, 0, 1)` | `foundry.utils.mergeObject(a, b)`, `Math.clamp(x, 0, 1)` |
+| v13 aliases | `renderTemplate(p, d)`, `extends ActorSheet`, `Actors.registerSheet(...)` | `foundry.applications.handlebars.renderTemplate(p, d)`, `extends foundry.appv1.sheets.ActorSheet`, `foundry.documents.collections.Actors.registerSheet(...)` |
 | Data operators | `'-=system.bio': null`, `` [`flags.${id}.-=old`]: null ``, `"==system.stats": {...}` | `'system.bio': _del`, `` [`flags.${id}.old`]: _del ``, `"system.stats": _replace({...})` |
 | | `performDeletions: true`, `foundry.utils.objectsEqual` | `applyOperators: true`, `foundry.utils.equals` |
 | Roll modes | `rollMode: 'gmroll'`, `game.settings.get('core', 'rollMode')` | `messageMode: 'gm'`, `game.settings.get('core', 'messageMode')` |

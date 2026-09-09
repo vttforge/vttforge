@@ -11,7 +11,7 @@
  */
 export const MASK = '\0';
 
-export function maskComments(source: string): string {
+export function maskComments(source: string, { strings = false } = {}): string {
   const out = source.split('');
   let quote: string | null = null;
   let lastCode = '';
@@ -19,8 +19,14 @@ export function maskComments(source: string): string {
     const ch = source[i] ?? '';
     const next = source[i + 1] ?? '';
     if (quote !== null) {
-      if (ch === '\\') i += 1;
-      else if (ch === quote) quote = null;
+      if (ch === '\\') {
+        if (strings) {
+          out[i] = MASK;
+          if (source[i + 1] !== '\n') out[i + 1] = MASK;
+        }
+        i += 1;
+      } else if (ch === quote) quote = null;
+      else if (strings && ch !== '\n') out[i] = MASK;
       continue;
     }
     if (ch === '"' || ch === "'" || ch === '`') {

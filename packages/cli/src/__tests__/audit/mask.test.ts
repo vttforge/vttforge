@@ -5,6 +5,9 @@
 import { describe, expect, it } from 'vitest';
 import { MASK, maskComments } from '../../audit/mask.js';
 
+const maskedAll = (s: string) =>
+  maskComments(s, { strings: true }).replace(new RegExp(MASK, 'g'), '#');
+
 const masked = (s: string) => maskComments(s).replace(new RegExp(MASK, 'g'), '#');
 
 describe('maskComments', () => {
@@ -31,5 +34,10 @@ describe('maskComments', () => {
     const src = '/**\n * ```js\n * mergeObject(a, b)\n * ```\n */\nexport const x = 1;\n';
     expect(maskComments(src)).not.toContain('mergeObject');
     expect(maskComments(src)).toContain('export const x = 1;');
+  });
+
+  it('blanks the inside of strings on request, quotes kept', () => {
+    expect(maskedAll('a("Token", \'x\'); // c')).toBe('a("#####", \'#\'); ####');
+    expect(maskedAll('const t = `a ${b} c`;')).toBe('const t = `########`;');
   });
 });

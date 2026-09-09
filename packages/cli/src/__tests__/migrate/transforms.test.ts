@@ -8,6 +8,7 @@ import {
   dataOperators,
   hookNotes,
   legacyTransferral,
+  namespacedGlobals,
   removedGlobals,
   rollMode,
   statusEffectsAssignment,
@@ -225,6 +226,33 @@ describe('the manifest', () => {
     );
   });
 
+  it('does not touch a nested "type" or "id" inside relationships', () => {
+    const raw = [
+      '{',
+      '    "id": "my-module",',
+      '    "relationships": {',
+      '        "systems": [',
+      '            {',
+      '                "id": "dnd5e",',
+      '                "type": "system",',
+      '                "compatibility": { "minimum": "5.0.0" }',
+      '            }',
+      '        ]',
+      '    },',
+      '    "compatibility": { "minimum": "13", "verified": "13" }',
+      '}',
+      '',
+    ].join('\n');
+    const r = transformManifest(raw, 'module');
+    const out = r?.output ?? '';
+    expect(out).toContain('    "id": "my-module",\n    "type": "module",');
+    expect(out).toContain('"type": "system",');
+    expect(out).toContain('"compatibility": { "minimum": "5.0.0" }');
+    expect(out).toContain('"compatibility": { "minimum": "14", "verified": "14" }');
+    expect(r?.changes.map((c) => c.line)).toEqual([3, 13, 13]);
+    expect(transformManifest(out, 'module')).toBeNull();
+  });
+
   it('leaves a v14 manifest alone and notes a maximum below 14', () => {
     expect(
       transformManifest(
@@ -295,5 +323,37 @@ describe('hook notes', () => {
     expect(r.output).toBe(src);
     expect(r.changes).toEqual([]);
     expect(r.notes[0]?.message).toContain('renderChatMessageHTML');
+  });
+});
+
+describe('namespaced globals', () => {
+  it('renames the bare aliases to their foundry.* path', () => {
+    const r = namespacedGlobals(
+      'class S extends ActorSheet {}\nconst h = await renderTemplate(p, d);\nActors.registerSheet("x", S);\nTextEditor.enrichHTML(t);\n',
+    );
+    expect(r.output).toBe(
+      'class S extends foundry.appv1.sheets.ActorSheet {}\nconst h = await foundry.applications.handlebars.renderTemplate(p, d);\nfoundry.documents.collections.Actors.registerSheet("x", S);\nfoundry.applications.ux.TextEditor.implementation.enrichHTML(t);\n',
+    );
+    expect(r.changes.map((c) => c.line)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('renames a call whose statement is followed by a block, which is not a definition', () => {
+    const r = namespacedGlobals(
+      'const c = await renderTemplate(t);\nnew Dialog({ title: x(y) }).render(true);\nif (c) {\n}\n',
+    );
+    expect(r.output).toContain('foundry.applications.handlebars.renderTemplate(t)');
+  });
+
+  it('leaves keys, properties, declared names, strings and comments alone', () => {
+    const src = [
+      "import { Tabs } from './tabs.mjs';",
+      'const bag = { Token: 1 };',
+      'const t = foundry.canvas.placeables.Token;',
+      'new Tabs();',
+      '// renderTemplate is gone',
+      'ui.notifications.info("Token moved");',
+      '',
+    ].join('\n');
+    expect(namespacedGlobals(src).output).toBe(src);
   });
 });
