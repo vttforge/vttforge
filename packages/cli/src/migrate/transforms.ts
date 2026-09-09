@@ -13,6 +13,7 @@
  * is what the preview is for.
  */
 
+import { bareUsePattern, definesName, LEGACY_GLOBALS } from '../audit/legacy-globals.js';
 import { MASK, maskComments } from '../audit/mask.js';
 import { REMOVED_UTILS } from '../audit/v14-rules.js';
 
@@ -141,6 +142,39 @@ export const removedGlobals: Transform = (source) => {
     });
   }
   return { ...merge(utils, clamped), notes };
+};
+
+/**
+ * Bare v13 global aliases → their `foundry.*` path: `renderTemplate(` →
+ * `foundry.applications.handlebars.renderTemplate(`, `extends ActorSheet` →
+ * `extends foundry.appv1.sheets.ActorSheet`. Same object, no removal date.
+ * A name the file declares or imports, an object key, a property, and a
+ * word inside a string or comment are left alone.
+ */
+export const namespacedGlobals: Transform = (source) => {
+  const changes: Change[] = [];
+  const code = maskComments(source, { strings: true });
+  const edits: Array<{ start: number; end: number; text: string; name: string }> = [];
+  for (const [name, path] of Object.entries(LEGACY_GLOBALS)) {
+    if (definesName(code, name)) continue;
+    for (const match of code.matchAll(bareUsePattern(name))) {
+      const start = match.index ?? 0;
+      edits.push({ start, end: start + name.length, text: path, name });
+    }
+  }
+  let output = source;
+  for (const edit of edits.sort((a, b) => b.start - a.start)) {
+    output = output.slice(0, edit.start) + edit.text + output.slice(edit.end);
+  }
+  for (const edit of edits.sort((a, b) => a.start - b.start)) {
+    changes.push({
+      line: lineAt(source, edit.start),
+      before: edit.name,
+      after: edit.text,
+      rule: 'namespaced-globals',
+    });
+  }
+  return { output, changes, notes: [] };
 };
 
 /**
@@ -606,6 +640,7 @@ export const activeEffectModes: Transform = (source) => {
 /** The transforms, in the order they run. */
 const SOURCE_TRANSFORMS: ReadonlyArray<readonly [string, Transform]> = [
   ['removed-globals', removedGlobals],
+  ['namespaced-globals', namespacedGlobals],
   ['data-operators', dataOperators],
   ['roll-mode', rollMode],
   ['context-menu-keys', contextMenuKeys],

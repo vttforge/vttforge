@@ -8,6 +8,7 @@ import {
   dataOperators,
   hookNotes,
   legacyTransferral,
+  namespacedGlobals,
   removedGlobals,
   rollMode,
   statusEffectsAssignment,
@@ -295,5 +296,30 @@ describe('hook notes', () => {
     expect(r.output).toBe(src);
     expect(r.changes).toEqual([]);
     expect(r.notes[0]?.message).toContain('renderChatMessageHTML');
+  });
+});
+
+describe('namespaced globals', () => {
+  it('renames the bare aliases to their foundry.* path', () => {
+    const r = namespacedGlobals(
+      'class S extends ActorSheet {}\nconst h = await renderTemplate(p, d);\nActors.registerSheet("x", S);\nTextEditor.enrichHTML(t);\n',
+    );
+    expect(r.output).toBe(
+      'class S extends foundry.appv1.sheets.ActorSheet {}\nconst h = await foundry.applications.handlebars.renderTemplate(p, d);\nfoundry.documents.collections.Actors.registerSheet("x", S);\nfoundry.applications.ux.TextEditor.implementation.enrichHTML(t);\n',
+    );
+    expect(r.changes.map((c) => c.line)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('leaves keys, properties, declared names, strings and comments alone', () => {
+    const src = [
+      "import { Tabs } from './tabs.mjs';",
+      'const bag = { Token: 1 };',
+      'const t = foundry.canvas.placeables.Token;',
+      'new Tabs();',
+      '// renderTemplate is gone',
+      'ui.notifications.info("Token moved");',
+      '',
+    ].join('\n');
+    expect(namespacedGlobals(src).output).toBe(src);
   });
 });

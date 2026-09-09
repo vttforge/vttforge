@@ -9,6 +9,7 @@
  *   VTTF-AUDIT-016 (MEDIUM): numeric Active Effect modes, replaced by string change types
  *   VTTF-AUDIT-017 (MEDIUM): the jQuery `renderChatMessage` hook, removed in v15
  *   VTTF-AUDIT-018 (LOW)   : an Application v1 base class, removed in v16
+ *   VTTF-AUDIT-019 (MEDIUM): a bare v13 global alias (`renderTemplate`, `ActorSheet`, ...), removed in v15
  *
  * Regex heuristics like the rest of the source rules, for the same reason:
  * the patterns are short and a TypeScript AST would not make them more
@@ -19,6 +20,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
+import { bareUsePattern, definesName, LEGACY_GLOBALS } from './legacy-globals.js';
 import { maskComments } from './mask.js';
 import { _internal } from './source-rules.js';
 import type { RuleResult } from './types.js';
@@ -291,6 +293,37 @@ function rule018(filePath: string, content: string): RuleResult[] {
   ];
 }
 
+/**
+ * VTTF-AUDIT-019 (MEDIUM): a bare v13 global alias.
+ *
+ * v13 moved these under `foundry.*` and kept the bare name as an alias that
+ * warns; v15 removes the alias. Unlike the v12 utilities of rule 011 nothing
+ * throws on v14, but every one of them is a `ReferenceError` one version
+ * out, and the fix is a rename to the same object.
+ */
+function rule019(filePath: string, content: string): RuleResult[] {
+  const code = maskComments(content, { strings: true });
+  let first: { name: string; index: number } | undefined;
+  for (const name of Object.keys(LEGACY_GLOBALS)) {
+    const match = bareUsePattern(name).exec(code);
+    if (!match || definesName(code, name)) continue;
+    if (first === undefined || match.index < first.index) first = { name, index: match.index };
+  }
+  if (first === undefined) return [];
+  const path = LEGACY_GLOBALS[first.name];
+  return [
+    {
+      ruleId: 'VTTF-AUDIT-019',
+      title: 'A v13 global alias, removed in v15',
+      severity: 'MEDIUM',
+      filePath,
+      line: _internal.lineOf(content, bareUsePattern(first.name)),
+      message: `\`${first.name}\` is a bare alias of \`${path}\`, deprecated since v13 and removed in v15. It warns on every use today and throws ReferenceError on v15.`,
+      remediation: `Use \`${path}\`. \`vttforge migrate\` renames every alias in this list.`,
+    },
+  ];
+}
+
 export async function runV14Rules(cwd: string): Promise<RuleResult[]> {
   const results: RuleResult[] = [];
   for await (const file of _internal.walkSourceFiles(cwd)) {
@@ -313,6 +346,7 @@ export async function runV14Rules(cwd: string): Promise<RuleResult[]> {
       ...rule016(file, content),
       ...rule017(file, content),
       ...rule018(file, content),
+      ...rule019(file, content),
     );
   }
   return results;

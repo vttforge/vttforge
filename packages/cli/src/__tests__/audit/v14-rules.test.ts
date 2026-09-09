@@ -20,7 +20,7 @@ afterEach(async () => {
 async function auditSource(source: string) {
   await writeFile(join(cwd, 'main.mjs'), source, 'utf8');
   const report = await runAudit({ cwd });
-  return report.findings.filter((f) => /VTTF-AUDIT-01[1-8]/.test(f.ruleId));
+  return report.findings.filter((f) => /VTTF-AUDIT-01[1-9]/.test(f.ruleId));
 }
 
 describe('VTTF-AUDIT-011: a global v14 removed', () => {
@@ -235,5 +235,39 @@ describe('vendored libraries', () => {
   it('does not read a minified bundle', async () => {
     await writeFile(join(cwd, 'jszip.min.js'), 'a({"-=x":null});mergeObject(a,b);\n', 'utf8');
     expect(await auditSource('export const x = 1;\n')).toEqual([]);
+  });
+});
+
+describe('VTTF-AUDIT-019: bare v13 global aliases', () => {
+  it('flags a bare alias with its path, and passes the namespaced form', async () => {
+    const findings = await auditSource('const html = await renderTemplate(path, data);\n');
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({ ruleId: 'VTTF-AUDIT-019', severity: 'MEDIUM', line: 1 });
+    expect(findings[0]?.message).toContain('foundry.applications.handlebars.renderTemplate');
+    expect(
+      await auditSource('await foundry.applications.handlebars.renderTemplate(p, d);\n'),
+    ).toEqual([]);
+  });
+
+  it('ignores an object key, a property, a declared name, and a word in a string', async () => {
+    expect(
+      await auditSource(
+        [
+          'const bag = { Token: 1, Items: [] };',
+          'const t = canvas.tokens.Token;',
+          'class Token { move() {} }',
+          'new Token();',
+          'ui.notifications.info("Token moved");',
+          '',
+        ].join('\n'),
+      ),
+    ).toEqual([]);
+  });
+
+  it('flags a class extending a bare v1 sheet, once per file', async () => {
+    const findings = await auditSource(
+      'class A extends ActorSheet {}\nclass B extends ItemSheet {}\n',
+    );
+    expect(findings.filter((f) => f.ruleId === 'VTTF-AUDIT-019')).toHaveLength(1);
   });
 });
