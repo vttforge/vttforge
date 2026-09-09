@@ -17,6 +17,8 @@ export interface MigrateCommandOptions {
   dataModels?: boolean;
   style?: 'plain' | 'sdk';
   lang?: 'js' | 'ts';
+  /** Also generate a V2 sheet file per Application v1 sheet class. */
+  sheets?: boolean;
   /** Custom writer (tests). Defaults to process.stdout.write. */
   out?: (chunk: string) => void;
 }
@@ -36,6 +38,7 @@ export async function runMigrateCommand(
     dataModels: options.dataModels === true,
     style: options.style,
     lang: options.lang,
+    sheets: options.sheets === true,
   });
   out(options.json ? `${JSON.stringify(report, null, 2)}\n` : formatMigrateReport(report));
   return { report, exitCode: 0 };
