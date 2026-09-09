@@ -22,7 +22,7 @@ export default defineConfig({
 - Keeps class names through minification, so a sheet registered by class name keeps its key between builds. Prefer `registerSystem({ sheets })` with an `id`; this is the safety net.
 - Bundles CSS into one stylesheet and rewrites the manifest's `styles` and `esmodules` to the emitted paths.
 - Copies the manifest under Foundry's filename (`system.json` / `module.json`) with `version` synced from `package.json`.
-- Copies `template.json`, `lang/` and `templates/` verbatim. Override the list with `staticAssets`.
+- Copies `template.json`, `lang/`, `templates/` and `packs/` verbatim, plus every directory the manifest's `packs[].path` names. Override the list with `staticAssets`.
 - Emits external source maps with the sources embedded.
 
 ## Options
@@ -33,7 +33,7 @@ export default defineConfig({
 | `kind` | `'system'` | `'system'` or `'module'`. Sets the base path (`/systems/<id>/` vs `/modules/<id>/`) and the manifest filename |
 | `entry` | `'scripts/main.mjs'` | Entry script, relative to the project root |
 | `manifest` | `system.json` / `module.json` | Manifest path, relative to the project root |
-| `staticAssets` | `['template.json', 'lang', 'templates']` | Files and directories copied into `dist/` before each build |
+| `staticAssets` | `['template.json', 'lang', 'templates', 'packs']`, plus the directory of every `packs[].path` the manifest declares | Files and directories copied into `dist/` before each build |
 
 Peer: `vite ^8`. Node 26+.
 

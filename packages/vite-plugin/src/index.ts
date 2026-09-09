@@ -52,7 +52,8 @@ export interface VttforgeOptions {
   /**
    * Paths copied verbatim to `dist/` at the start of every build. Each entry
    * may be a file or a directory; directories are copied recursively.
-   * Default: `['template.json', 'lang', 'templates']`. The manifest is
+   * Default: `['template.json', 'lang', 'templates', 'packs']`, plus the
+   * directory of every `packs[].path` the manifest declares. The manifest is
    * always copied separately so the version sync hook can rewrite it.
    */
   staticAssets?: string[];
@@ -68,7 +69,7 @@ interface ResolvedOptions {
   outDir: string;
 }
 
-const DEFAULT_STATIC = ['template.json', 'lang', 'templates'];
+const DEFAULT_STATIC = ['template.json', 'lang', 'templates', 'packs'];
 
 const JS_ENTRY_FILENAME = 'main.mjs';
 
@@ -136,9 +137,31 @@ function extractStyleEntries(rawStyles: unknown): StyleEntry[] {
   return result;
 }
 
+/**
+ * The directories the manifest's `packs[].path` entries live in. A pack is
+ * data the system ships, and a build that drops it ships a system with
+ * empty compendia; so every declared pack directory is copied, wherever the
+ * author put it, on top of the `staticAssets` list.
+ */
+function packDirectories(opts: ResolvedOptions): string[] {
+  const manifest = readJsonSafe(resolve(opts.root, opts.manifest));
+  const packs = manifest?.packs;
+  if (!Array.isArray(packs)) return [];
+  const dirs = new Set<string>();
+  for (const pack of packs) {
+    const path = (pack as { path?: unknown })?.path;
+    if (typeof path !== 'string' || path.length === 0) continue;
+    // `packs/armor.db` and `packs/armor` both name the `packs` directory.
+    const top = path.replace(/^\.?\//, '').split('/')[0];
+    if (top) dirs.add(top);
+  }
+  return [...dirs];
+}
+
 async function copyStatic(opts: ResolvedOptions): Promise<void> {
   await mkdir(opts.outDir, { recursive: true });
-  for (const entry of opts.staticAssets) {
+  const entries = [...new Set([...opts.staticAssets, ...packDirectories(opts)])];
+  for (const entry of entries) {
     const src = resolve(opts.root, entry);
     if (!existsSync(src)) continue;
     const dest = resolve(opts.outDir, entry);
