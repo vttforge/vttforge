@@ -6,6 +6,7 @@ import {
   activeEffectModes,
   contextMenuKeys,
   dataOperators,
+  hookNotes,
   legacyTransferral,
   removedGlobals,
   rollMode,
@@ -48,6 +49,11 @@ describe('data operators', () => {
     expect(r.changes).toHaveLength(2);
   });
 
+  it('handles a template-literal key with a ${} segment in the prefix', () => {
+    const r = dataOperators('actor.update({ [`flags.${id}.-=item`]: null });\n');
+    expect(r.output).toBe('actor.update({ [`flags.${id}.item`]: _del });\n');
+  });
+
   it('wraps a replacement value of any shape in _replace', () => {
     const r = dataOperators(
       'await a.update({ "==system.stats": { str: 10, list: [1, 2] }, other: 1 });\n',
@@ -78,11 +84,14 @@ describe('roll mode', () => {
     expect(r.notes).toEqual([]);
   });
 
-  it('turns "roll" into undefined, and notes an expression', () => {
-    const r = rollMode('a({ rollMode: "roll" });\nb({ rollMode: chosen });\n');
-    expect(r.output).toBe('a({ messageMode: undefined });\nb({ messageMode: chosen });\n');
-    expect(r.notes).toHaveLength(1);
-    expect(r.notes[0]).toMatchObject({ line: 2 });
+  it('turns "roll" into undefined, and wraps an expression in the mapper', () => {
+    const r = rollMode(
+      'a({ rollMode: "roll" });\nb({ rollMode: chosen });\nc(undefined, { rollMode: secret ? \'gmroll\' : undefined }).then(x);\n',
+    );
+    expect(r.output).toBe(
+      "a({ messageMode: undefined });\nb({ messageMode: Roll._mapLegacyRollMode(chosen) });\nc(undefined, { messageMode: Roll._mapLegacyRollMode(secret ? 'gmroll' : undefined) }).then(x);\n",
+    );
+    expect(r.notes).toEqual([]);
   });
 
   it('replaces the constants and CONFIG.Dice.rollModes', () => {
@@ -197,16 +206,23 @@ describe('status effects and effect modes', () => {
 });
 
 describe('the manifest', () => {
-  it('declares the type next to the id and raises compatibility to 14', () => {
-    const r = transformManifest(
-      '{\n  "id": "my-system",\n  "title": "T",\n  "compatibility": { "minimum": "13", "verified": "13.341" }\n}\n',
-      'system',
+  it('declares the type on the line after id and raises compatibility, keeping the file as written', () => {
+    const raw =
+      '{\n    "id": "my-system",\n    "title": "T",\n    "styles": ["a.css", "b.css"],\n    "compatibility": { "minimum": "13", "verified": "13.341" }\n}';
+    const r = transformManifest(raw, 'system');
+    expect(r?.output).toBe(
+      '{\n    "id": "my-system",\n    "type": "system",\n    "title": "T",\n    "styles": ["a.css", "b.css"],\n    "compatibility": { "minimum": "14", "verified": "14" }\n}',
     );
-    expect(r).not.toBeNull();
-    const parsed = JSON.parse(r?.output ?? '{}');
-    expect(Object.keys(parsed).slice(0, 3)).toEqual(['id', 'type', 'title']);
-    expect(parsed.compatibility).toEqual({ minimum: '14', verified: '14' });
     expect(r?.changes).toHaveLength(3);
+  });
+
+  it('keeps tabs, a numeric minimum, and a missing trailing newline', () => {
+    const raw =
+      '{\n\t"id": "m",\n\t"compatibility": {\n\t\t"minimum": 13.336,\n\t\t"verified": 14\n\t}\n}';
+    const r = transformManifest(raw, 'module');
+    expect(r?.output).toBe(
+      '{\n\t"id": "m",\n\t"type": "module",\n\t"compatibility": {\n\t\t"minimum": "14",\n\t\t"verified": 14\n\t}\n}',
+    );
   });
 
   it('leaves a v14 manifest alone and notes a maximum below 14', () => {
@@ -269,5 +285,15 @@ describe('the whole pipeline', () => {
     expect(r.output).toBe(src);
     expect(r.changes).toEqual([]);
     expect(r.notes).toEqual([]);
+  });
+});
+
+describe('hook notes', () => {
+  it('notes renderChatMessage and changes nothing', () => {
+    const src = 'Hooks.on("renderChatMessage", (m, html) => html.find("a"));\n';
+    const r = hookNotes(src);
+    expect(r.output).toBe(src);
+    expect(r.changes).toEqual([]);
+    expect(r.notes[0]?.message).toContain('renderChatMessageHTML');
   });
 });

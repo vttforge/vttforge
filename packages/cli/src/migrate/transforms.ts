@@ -146,12 +146,15 @@ export const removedGlobals: Transform = (source) => {
 /**
  * `'-=key': null` → `key: _del`; `'==key': value` → `key: _replace(value)`;
  * `performDeletions` → `applyOperators`; `objectsEqual` → `equals`.
+ *
+ * The key may be a template literal with `${...}` segments in the prefix,
+ * which is how a flag deletion is usually written: `` [`flags.${id}.-=old`] ``.
  */
 export const dataOperators: Transform = (source) => {
   const deletions = rewrite(
     source,
-    /(['"])((?:[\w$]+\.)*)-=([\w$.]+)\1\s*:\s*null\b/g,
-    (_m, quote, prefix, key) => `${quote}${prefix}${key}${quote}: _del`,
+    /(['"`])((?:[\w$]+\.|\$\{[^}]*\}\.)*)-=([\w$.]+)\1(\]?)\s*:\s*null\b/g,
+    (_m, quote, prefix, key, bracket) => `${quote}${prefix}${key}${quote}${bracket}: _del`,
     'data-operators',
   );
   // `"==key": <value>` wraps a value of any shape, so the value is scanned to
@@ -175,7 +178,7 @@ export const dataOperators: Transform = (source) => {
 
 function wrapReplacementValues(source: string): TransformResult {
   const changes: Change[] = [];
-  const pattern = /(['"])((?:[\w$]+\.)*)==([\w$.]+)\1\s*:\s*/g;
+  const pattern = /(['"`])((?:[\w$]+\.|\$\{[^}]*\}\.)*)==([\w$.]+)\1(\]?)\s*:\s*/g;
   const code = maskComments(source);
   let out = '';
   let cursor = 0;
@@ -186,8 +189,8 @@ function wrapReplacementValues(source: string): TransformResult {
     const valueEnd = scanValueEnd(source, valueStart);
     if (valueEnd === -1) continue;
     const value = source.slice(valueStart, valueEnd).trimEnd();
-    const [, quote = '"', prefix = '', key = ''] = match;
-    const after = `${quote}${prefix}${key}${quote}: _replace(${value})`;
+    const [, quote = '"', prefix = '', key = '', bracket = ''] = match;
+    const after = `${quote}${prefix}${key}${quote}${bracket}: _replace(${value})`;
     out += source.slice(cursor, start) + after;
     cursor = valueStart + value.length;
     changes.push({
@@ -241,10 +244,11 @@ const ROLL_MODE_CONSTANTS: Record<string, string> = {
  *
  * `"roll"` meant "whatever the user's chat dropdown says", which is what an
  * absent `messageMode` means now, so it becomes `undefined`. A value that is
- * an expression is left for the reader, with a note.
+ * an expression is wrapped in `Roll._mapLegacyRollMode(...)`, which maps a
+ * v13 name and passes a v14 key or `undefined` through unchanged, so the
+ * wrap is safe whatever the expression yields.
  */
 export const rollMode: Transform = (source) => {
-  const notes: Note[] = [];
   const option = rewrite(
     source,
     /\brollMode\s*:\s*(['"])(publicroll|gmroll|blindroll|selfroll|roll)\1/g,
@@ -254,22 +258,9 @@ export const rollMode: Transform = (source) => {
         : `messageMode: ${quote}${ROLL_MODE_VALUES[value]}${quote}`,
     'roll-mode',
   );
-  const key = rewrite(
-    option.output,
-    /\brollMode\s*:/g,
-    (m) => m.replace('rollMode', 'messageMode'),
-    'roll-mode',
-  );
-  for (const change of key.changes) {
-    notes.push({
-      line: change.line,
-      rule: 'roll-mode',
-      message:
-        'The value is an expression. If it can be a v13 mode name, wrap it: `Roll._mapLegacyRollMode(value)`.',
-    });
-  }
+  const expressions = wrapRollModeExpressions(option.output);
   const setting = rewrite(
-    key.output,
+    expressions.output,
     /(['"])core\1\s*,\s*(['"])rollMode\2/g,
     (_m, q1, q2) => `${q1}core${q1}, ${q2}messageMode${q2}`,
     'roll-mode',
@@ -286,7 +277,55 @@ export const rollMode: Transform = (source) => {
     (_m, name) => `"${ROLL_MODE_CONSTANTS[name]}"`,
     'roll-mode',
   );
-  return { ...merge(option, key, setting, modes, constants), notes };
+  return merge(option, expressions, setting, modes, constants);
+};
+
+/** `rollMode: <expr>` → `messageMode: Roll._mapLegacyRollMode(<expr>)`. */
+function wrapRollModeExpressions(source: string): TransformResult {
+  const changes: Change[] = [];
+  const pattern = /\brollMode\s*:\s*/g;
+  const code = maskComments(source);
+  let out = '';
+  let cursor = 0;
+  for (const match of source.matchAll(pattern)) {
+    const start = match.index ?? 0;
+    if (code[start] === MASK) continue;
+    const valueStart = start + match[0].length;
+    const valueEnd = scanValueEnd(source, valueStart);
+    if (valueEnd === -1) continue;
+    const value = source.slice(valueStart, valueEnd).trimEnd();
+    const after = `messageMode: Roll._mapLegacyRollMode(${value})`;
+    out += source.slice(cursor, start) + after;
+    cursor = valueStart + value.length;
+    changes.push({
+      line: lineAt(source, start),
+      before: source.slice(start, cursor),
+      after,
+      rule: 'roll-mode',
+    });
+  }
+  out += source.slice(cursor);
+  return { output: out, changes, notes: [] };
+}
+
+/**
+ * Hooks that changed shape: noted, not rewritten. `renderChatMessage` is
+ * removed in v15 and its replacement hands an element where it handed a
+ * jQuery object, so the handler body is the reader's to change.
+ */
+export const hookNotes: Transform = (source) => {
+  const notes: Note[] = [];
+  const code = maskComments(source);
+  for (const match of source.matchAll(/Hooks\.(?:on|once)\(\s*['"]renderChatMessage['"]/g)) {
+    if (code[match.index ?? 0] === MASK) continue;
+    notes.push({
+      line: lineAt(source, match.index ?? 0),
+      rule: 'hooks',
+      message:
+        '`renderChatMessage` is removed in v15. Listen to `renderChatMessageHTML(message, html, context)`; `html` is the element, so `html.find(x)` becomes `html.querySelector(x)`.',
+    });
+  }
+  return { output: source, changes: [], notes };
 };
 
 /**
@@ -574,6 +613,7 @@ const SOURCE_TRANSFORMS: ReadonlyArray<readonly [string, Transform]> = [
   ['unregister-core-sheets', unregisterCoreSheets],
   ['status-effects', statusEffectsAssignment],
   ['active-effect-modes', activeEffectModes],
+  ['hooks', hookNotes],
 ];
 
 export function transformSource(source: string): TransformResult {
@@ -586,6 +626,12 @@ export function transformSource(source: string): TransformResult {
 /**
  * The manifest: `type` declared, `compatibility` raised to 14 where it is
  * lower. Returns `null` when nothing needed to change.
+ *
+ * Edited as text, not re-serialised: a manifest carries its author's
+ * indentation, key order and one-line arrays, and a diff that reformats the
+ * whole file to add one key is a diff nobody merges. `type` goes on the line
+ * after `id`, with that line's indentation; the compatibility values are
+ * replaced in place.
  */
 export function transformManifest(
   raw: string,
@@ -594,23 +640,67 @@ export function transformManifest(
   const parsed = JSON.parse(raw) as Record<string, unknown>;
   const changes: Change[] = [];
   const notes: Note[] = [];
+  let output = raw;
+
   if (parsed.type !== kind) {
-    parsed.type = kind;
-    changes.push({ line: 1, before: '(no "type")', after: `"type": "${kind}"`, rule: 'manifest' });
+    const typeLine = /^([ \t]*)"type"\s*:\s*"[^"]*"/m.exec(output);
+    if (typeLine) {
+      output = output.replace(typeLine[0], `${typeLine[1]}"type": "${kind}"`);
+      changes.push({
+        line: lineAt(raw, typeLine.index),
+        before: typeLine[0].trim(),
+        after: `"type": "${kind}"`,
+        rule: 'manifest',
+      });
+    } else {
+      const idLine = /^([ \t]*)"id"\s*:\s*"[^"]*"\s*,?[ \t]*$/m.exec(output);
+      if (idLine) {
+        const indent = idLine[1] ?? '';
+        const insertAt = idLine.index + idLine[0].length;
+        output = `${output.slice(0, insertAt)}\n${indent}"type": "${kind}",${output.slice(insertAt)}`;
+        changes.push({
+          line: lineAt(raw, idLine.index) + 1,
+          before: '(no "type")',
+          after: `"type": "${kind}"`,
+          rule: 'manifest',
+        });
+      } else {
+        notes.push({
+          line: 1,
+          rule: 'manifest',
+          message: `Add \`"type": "${kind}"\` next to "id"; the key could not be placed by hand.`,
+        });
+      }
+    }
   }
+
   const compatibility = (parsed.compatibility ?? {}) as Record<string, unknown>;
+  const block = /"compatibility"\s*:\s*\{[^}]*\}/.exec(output);
   for (const field of ['minimum', 'verified'] as const) {
     const current = compatibility[field];
     const major = Number.parseInt(String(current ?? '0'), 10);
-    if (!Number.isFinite(major) || major < 14) {
-      compatibility[field] = '14';
-      changes.push({
-        line: 1,
-        before: `compatibility.${field}: ${JSON.stringify(current ?? null)}`,
-        after: `compatibility.${field}: "14"`,
-        rule: 'manifest',
-      });
+    if (Number.isFinite(major) && major >= 14) continue;
+    if (block && current !== undefined) {
+      const field_ = new RegExp(`("${field}"\\s*:\\s*)("[^"]*"|[\\d.]+)`);
+      const inBlock = field_.exec(block[0]);
+      if (inBlock) {
+        const replaced = block[0].replace(field_, '$1"14"');
+        output = output.replace(block[0], replaced);
+        block[0] = replaced;
+        changes.push({
+          line: lineAt(raw, raw.indexOf(`"${field}"`, raw.indexOf('"compatibility"'))),
+          before: `compatibility.${field}: ${JSON.stringify(current)}`,
+          after: `compatibility.${field}: "14"`,
+          rule: 'manifest',
+        });
+        continue;
+      }
     }
+    notes.push({
+      line: 1,
+      rule: 'manifest',
+      message: `Set compatibility.${field} to "14"; it is ${JSON.stringify(current ?? null)} and could not be edited in place.`,
+    });
   }
   const maximum = compatibility.maximum;
   if (maximum !== undefined && Number.parseInt(String(maximum), 10) < 14) {
@@ -628,15 +718,7 @@ export function transformManifest(
         'gridDistance / gridUnits are ignored on v14. Move them into `"grid": { "type", "distance", "units", "diagonals" }`.',
     });
   }
-  parsed.compatibility = compatibility;
   if (changes.length === 0) return notes.length ? { output: raw, changes, notes } : null;
-  // Keep `type` next to `id`, where the v14 manifests put it.
-  const ordered: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(parsed)) {
-    if (key === 'type') continue;
-    ordered[key] = value;
-    if (key === 'id') ordered.type = parsed.type;
-  }
-  if (!('type' in ordered)) ordered.type = parsed.type;
-  return { output: `${JSON.stringify(ordered, null, 2)}\n`, changes, notes };
+  JSON.parse(output); // an edit that broke the file is a bug here, not the user's problem
+  return { output, changes, notes };
 }

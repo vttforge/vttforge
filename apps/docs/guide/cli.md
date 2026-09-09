@@ -68,7 +68,7 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-004` | MEDIUM | An `HTMLField` or `FilePathField` not listed in `documentTypes`; the server only sanitises declared paths |
 | `VTTF-AUDIT-005` | MEDIUM | A `TypeDataModel` without `prepareBaseData`; Active Effects apply between it and `prepareDerivedData` |
 | `VTTF-AUDIT-006` | LOW | An `_addDataFieldMigrations` override; the signature is not what it looks like |
-| `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field; the token bar degrades with no error |
+| `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field, in a data model or in `template.json`; the token bar degrades with no error |
 | `VTTF-AUDIT-008` | HIGH | A sheet template that opens its own `<form>` when the sheet base already is one; the fields belong to the inner form and every edit is dropped on close |
 | `VTTF-AUDIT-009` | MEDIUM | A subtype declared in `documentTypes` with no `TYPES` label; Foundry prints the raw key as the type's name |
 | `VTTF-AUDIT-010` | HIGH | A `template.json` listing a type whose `documentTypes` entry declares `htmlFields`, `filePathFields` or `gmOnlyFields`; Foundry replaces the entry and drops them |
@@ -78,8 +78,10 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-014` | MEDIUM | `CONFIG.statusEffects = [...]`; the setter empties the collection first and drops what other packages added |
 | `VTTF-AUDIT-015` | MEDIUM | `legacyTransferral`; v14 removed the flag and applies Item effects in place |
 | `VTTF-AUDIT-016` | MEDIUM | `CONST.ACTIVE_EFFECT_MODES`; changes now live in `system.changes` with a string `type`, removed in v16 |
+| `VTTF-AUDIT-017` | MEDIUM | The jQuery `renderChatMessage` hook; removed in v15, `renderChatMessageHTML` hands the element |
+| `VTTF-AUDIT-018` | LOW | A class extending an Application v1 base (`Application`, `FormApplication`, `Dialog`, `ActorSheet`, `ItemSheet`); removed in v16 |
 
-Rules 011 to 016 blank out comments before they match, so a call quoted in a
+Rules 011 to 018 blank out comments before they match, so a call quoted in a
 JSDoc block is not a finding. Rules 004 and 007 read the schema whether it is a `static defineSchema()` or
 a function handed to `BaseTypeDataModel`, and scope it to the class
 registered for that document. Rule 008 only looks at templates a
@@ -104,9 +106,10 @@ with `--write`, then run `vttforge audit`.
 | Rewrite | Before | After |
 |---|---|---|
 | Removed globals | `mergeObject(a, b)`, `Math.clamped(x, 0, 1)` | `foundry.utils.mergeObject(a, b)`, `Math.clamp(x, 0, 1)` |
-| Data operators | `'-=system.bio': null`, `"==system.stats": {...}` | `'system.bio': _del`, `"system.stats": _replace({...})` |
+| Data operators | `'-=system.bio': null`, `` [`flags.${id}.-=old`]: null ``, `"==system.stats": {...}` | `'system.bio': _del`, `` [`flags.${id}.old`]: _del ``, `"system.stats": _replace({...})` |
 | | `performDeletions: true`, `foundry.utils.objectsEqual` | `applyOperators: true`, `foundry.utils.equals` |
 | Roll modes | `rollMode: 'gmroll'`, `game.settings.get('core', 'rollMode')` | `messageMode: 'gm'`, `game.settings.get('core', 'messageMode')` |
+| | `rollMode: chosen` | `messageMode: Roll._mapLegacyRollMode(chosen)` |
 | | `CONFIG.Dice.rollModes`, `CONST.DICE_ROLL_MODES.PRIVATE` | `CONFIG.ChatMessage.modes`, `"gm"` |
 | Context menus and header controls | `name`, `condition`, `callback` | `label`, `visible`, `onClick` |
 | Active Effects | `mode: CONST.ACTIVE_EFFECT_MODES.ADD` | `type: "add"` |
@@ -116,10 +119,12 @@ with `--write`, then run `vttforge audit`.
 
 What it will not decide, it reports as "needs a decision": a `game.template`
 read (which becomes `game.model` or a `documentTypes` lookup depending on what
-was read), a `rollMode` whose value is an expression, the parameter list of a
-renamed `callback` (`onClick` receives `(event, target)`), a root-level
+was read), the parameter list of a renamed `callback` (`onClick` receives
+`(event, target)`), a `renderChatMessage` handler (the hook is removed in v15
+and its replacement hands an element, not a jQuery object), a root-level
 `changes` array on an effect (now `system.changes`), a `compatibility.maximum`
-below 14, and the flat `gridDistance` / `gridUnits` keys.
+below 14, and the flat `gridDistance` / `gridUnits` keys. Minified bundles
+(`*.min.js`) are vendored libraries and are skipped, by the audit too.
 
 The rewrites are text-based, like the audit rules they mirror. Comments are
 left alone. A match inside a string literal is rewritten too; the preview is
