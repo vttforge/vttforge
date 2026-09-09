@@ -131,3 +131,30 @@ below 14, and the flat `gridDistance` / `gridUnits` keys. Minified bundles
 The rewrites are text-based, like the audit rules they mirror. Comments are
 left alone. A match inside a string literal is rewritten too; the preview is
 where that is caught.
+
+### `--data-models`
+
+```bash
+vttforge migrate --data-models [--style plain|sdk] [--lang js|ts] [--write]
+```
+
+`template.json` is deprecated since v14 and removed in v16. Its replacement
+is a data model per type, registered on `CONFIG.<Document>.dataModels`, with
+the type names declared under `documentTypes` in the manifest. The template
+already says what each field is, so this reads it and writes the classes:
+one `scripts/data/<document>/<type>-data.mjs` per type, and a
+`templates.mjs` beside them with one function per shared template, which the
+types that listed it spread. A number becomes a `NumberField` (`integer`
+when the default is one), a boolean a `BooleanField`, a string a
+`StringField` (an `HTMLField` when the key reads like rich text), an object a
+`SchemaField`, an array an `ArrayField`. What it had to guess, it says: an
+empty array, a `null`, a template a type lists that the file does not
+define.
+
+`--style plain` writes classes on `foundry.abstract.TypeDataModel` and
+needs nothing installed; `--style sdk` writes them on `BaseTypeDataModel`
+from `@vttforge/core`, which types `this` inside `prepareDerivedData`. The
+report ends with the `documentTypes` block to paste into the manifest and
+the registration to add at `init`. An existing file is never overwritten.
+Delete `template.json` once every type has a model: while it exists, Foundry
+resets each listed type's `documentTypes` entry on every start.

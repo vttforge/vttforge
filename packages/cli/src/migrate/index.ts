@@ -8,9 +8,10 @@
  */
 
 import { existsSync } from 'node:fs';
-import { readFile, stat, writeFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { dirname, join, relative } from 'node:path';
 import { _internal } from '../audit/source-rules.js';
+import { type EmitStyle, planDataModels } from './data-models.js';
 import { type Change, type Note, transformManifest, transformSource } from './transforms.js';
 
 interface FileResult {
@@ -27,12 +28,25 @@ export interface MigrateReport {
   /** Whether the edits were written to disk. */
   written: boolean;
   counts: { files: number; changes: number; notes: number };
+  /** Present when data models were generated from template.json. */
+  dataModels?: {
+    files: string[];
+    documentTypes: Record<string, Record<string, Record<string, unknown>>>;
+    registration: string;
+    notes: string[];
+  };
 }
 
 export interface MigrateOptions {
   cwd: string;
   /** Write the edits. Default false: report only. */
   write?: boolean;
+  /** Also generate a data model per template.json type. */
+  dataModels?: boolean;
+  /** How the generated models are written: bare Foundry classes, or on the SDK's bases. */
+  style?: EmitStyle;
+  /** File extension of the generated models. */
+  lang?: 'js' | 'ts';
 }
 
 export async function runMigrate(options: MigrateOptions): Promise<MigrateReport> {
@@ -77,7 +91,7 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
   }
 
   files.sort((a, b) => a.file.localeCompare(b.file));
-  return {
+  const report: MigrateReport = {
     cwd,
     files,
     written: write,
@@ -87,20 +101,62 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
       notes: files.reduce((n, f) => n + f.notes.length, 0),
     },
   };
+
+  if (options.dataModels) {
+    const templatePath = join(cwd, 'template.json');
+    if (!existsSync(templatePath)) {
+      report.dataModels = {
+        files: [],
+        documentTypes: {},
+        registration: '',
+        notes: ['No template.json here; nothing to generate.'],
+      };
+    } else {
+      const template = JSON.parse(await readFile(templatePath, 'utf8')) as Record<string, unknown>;
+      const plan = planDataModels(template, {
+        style: options.style ?? 'plain',
+        lang: options.lang ?? 'js',
+      });
+      const written: string[] = [];
+      for (const file of plan.files) {
+        const target = join(cwd, file.path);
+        if (existsSync(target)) {
+          plan.notes.unshift(`${file.path} exists and was left alone.`);
+          continue;
+        }
+        if (write) {
+          await mkdir(dirname(target), { recursive: true });
+          await writeFile(target, file.source, 'utf8');
+        }
+        written.push(file.path);
+      }
+      report.dataModels = {
+        files: written,
+        documentTypes: plan.documentTypes,
+        registration: plan.registration,
+        notes: plan.notes,
+      };
+    }
+  }
+
+  return report;
 }
 
 /** The report as text: one block per file, edits then notes. */
 export function formatMigrateReport(report: MigrateReport): string {
   const lines: string[] = [];
-  if (report.files.length === 0) {
+  if (report.files.length === 0 && !report.dataModels) {
     lines.push('Nothing to migrate. The project already reads as v14.');
     return `${lines.join('\n')}\n`;
   }
-  lines.push(
-    report.written
-      ? `Rewrote ${report.counts.changes} place(s) in ${report.counts.files} file(s).`
-      : `Would rewrite ${report.counts.changes} place(s) in ${report.counts.files} file(s). Run again with --write to apply.`,
-  );
+  if (report.files.length === 0) lines.push('Nothing to rewrite in the source or the manifest.');
+  else {
+    lines.push(
+      report.written
+        ? `Rewrote ${report.counts.changes} place(s) in ${report.counts.files} file(s).`
+        : `Would rewrite ${report.counts.changes} place(s) in ${report.counts.files} file(s). Run again with --write to apply.`,
+    );
+  }
   for (const file of report.files) {
     lines.push('', `${file.file}`);
     for (const change of file.changes) {
@@ -118,6 +174,30 @@ export function formatMigrateReport(report: MigrateReport): string {
       '',
       `${report.counts.notes} place(s) need a decision. Run \`vttforge audit\` after editing them.`,
     );
+  }
+  if (report.dataModels) {
+    const dm = report.dataModels;
+    lines.push(
+      '',
+      report.written
+        ? `Wrote ${dm.files.length} data model file(s) from template.json:`
+        : `Would write ${dm.files.length} data model file(s) from template.json:`,
+    );
+    for (const f of dm.files) lines.push(`  ${f}`);
+    if (Object.keys(dm.documentTypes).length > 0) {
+      lines.push(
+        '',
+        'Declare the types in the manifest:',
+        `  "documentTypes": ${JSON.stringify(dm.documentTypes)}`,
+      );
+    }
+    if (dm.registration)
+      lines.push(
+        '',
+        'Register the models at init:',
+        ...dm.registration.split('\n').map((l) => `  ${l}`),
+      );
+    for (const n of dm.notes) lines.push(`  needs a decision: ${n}`);
   }
   return `${lines.join('\n')}\n`;
 }

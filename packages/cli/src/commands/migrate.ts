@@ -13,6 +13,10 @@ export interface MigrateCommandOptions {
   cwd?: string;
   write?: boolean;
   json?: boolean;
+  /** Also generate a data model per template.json type. */
+  dataModels?: boolean;
+  style?: 'plain' | 'sdk';
+  lang?: 'js' | 'ts';
   /** Custom writer (tests). Defaults to process.stdout.write. */
   out?: (chunk: string) => void;
 }
@@ -26,7 +30,13 @@ export async function runMigrateCommand(
     ((chunk: string) => {
       process.stdout.write(chunk);
     });
-  const report = await runMigrate({ cwd, write: options.write === true });
+  const report = await runMigrate({
+    cwd,
+    write: options.write === true,
+    dataModels: options.dataModels === true,
+    style: options.style,
+    lang: options.lang,
+  });
   out(options.json ? `${JSON.stringify(report, null, 2)}\n` : formatMigrateReport(report));
   return { report, exitCode: 0 };
 }
