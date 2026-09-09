@@ -182,3 +182,48 @@ report ends with the `documentTypes` block to paste into the manifest and
 the registration to add at `init`. An existing file is never overwritten.
 Delete `template.json` once every type has a model: while it exists, Foundry
 resets each listed type's `documentTypes` entry on every start.
+
+### `--sheets`
+
+```bash
+vttforge migrate --sheets [--lang js|ts] [--write]
+```
+
+Application v1 sheets (`ActorSheet`, `ItemSheet`) still run on v14 and are
+removed in v16. `--sheets` writes, next to each such class, a file with the
+same name and `.v2` before the extension, holding the class on
+`BaseActorSheet` / `BaseItemSheet` from `@vttforge/core`. The original is
+not touched; the report says where to point `registerSheet` once you have
+read the result.
+
+What is carried over mechanically: `defaultOptions` (classes, size,
+`resizable`, `submitOnChange`) as `DEFAULT_OPTIONS`; `tabs` as `TABS` with
+the ids read from the template; `dragDrop` as `DRAG_DROP`; `template` as
+`PARTS`; `getData` as `_prepareContext` with `actor`/`item`, `system` and
+`items` set on the context; every `html.find(sel).click(handler)` as an
+`actions` entry named after the selector, with the handler's signature
+changed to `(event, target)`; other events (`dblclick`, `change`, ...) as
+listeners in `_onRender`; `_onDropItem` / `_onDropActor` as `onDropItem` /
+`onDropActor`, with the old payload argument read as `item.toDragData()` and
+the old `super._onDropItem` call as the `createEmbeddedDocuments` it used to
+make; `event.currentTarget`, `$(...)`, `.data(...)`, `.parents(...)` and `html.find`
+as their DOM equivalents (`html.find` becomes `this.element.querySelectorAll`, so
+`.length` and `[0]` keep working); `Dialog.confirm` as `DialogV2.confirm`.
+
+What is left as a `// TODO(migrate)` line, and listed in the report with its
+line number: `new Dialog({...})`, `_updateObject`, jQuery calls with no plain
+DOM equivalent, a `get template()` that picks the template at runtime, tab
+ids that were not found in the template, and the v1 lifecycle overrides
+(`setPosition`, `_getHeaderButtons`, `_render`, ...) that ApplicationV2
+replaces with its own hooks.
+
+The generated file is a draft to read, not code to trust: run
+`vttforge lint --fix` on it, then work through the `TODO(migrate)` lines. On
+a real v1 system the hand edits were the per-type template choice, the root
+`<form>` in each sheet template, and one `setPosition` override; everything
+else ran as generated.
+
+The templates the class names get `data-action="<name>"` on the elements
+that matched each selector, `data-action="vttforgeTab"` and `data-group` on
+the tab links, and `data-group` on the panes. A root `<form>` is reported and
+left in place: the old class still renders that template.
