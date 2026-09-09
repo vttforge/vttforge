@@ -79,6 +79,12 @@ goes away in v16. Declare types in `documentTypes` and register a
 `TypeDataModel` per type; the SDK's `registerSystem` already does the second
 half.
 
+**Application v1 sheets are on borrowed time.** `ActorSheet` and `ItemSheet`
+still run on v14 and go away in v16. `vttforge migrate --sheets` writes the
+first draft of the move to `BaseActorSheet` / `BaseItemSheet` next to each
+class, with the `data-action` attributes its templates need; see the CLI
+reference for what it decides and what it leaves as a `TODO`.
+
 **Header controls and context menus** use `label`, `visible` and `onClick` in
 place of `name`, `condition` and `callback`. The old keys warn until v16.
 
