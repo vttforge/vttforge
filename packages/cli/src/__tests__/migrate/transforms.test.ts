@@ -226,6 +226,33 @@ describe('the manifest', () => {
     );
   });
 
+  it('does not touch a nested "type" or "id" inside relationships', () => {
+    const raw = [
+      '{',
+      '    "id": "my-module",',
+      '    "relationships": {',
+      '        "systems": [',
+      '            {',
+      '                "id": "dnd5e",',
+      '                "type": "system",',
+      '                "compatibility": { "minimum": "5.0.0" }',
+      '            }',
+      '        ]',
+      '    },',
+      '    "compatibility": { "minimum": "13", "verified": "13" }',
+      '}',
+      '',
+    ].join('\n');
+    const r = transformManifest(raw, 'module');
+    const out = r?.output ?? '';
+    expect(out).toContain('    "id": "my-module",\n    "type": "module",');
+    expect(out).toContain('"type": "system",');
+    expect(out).toContain('"compatibility": { "minimum": "5.0.0" }');
+    expect(out).toContain('"compatibility": { "minimum": "14", "verified": "14" }');
+    expect(r?.changes.map((c) => c.line)).toEqual([3, 13, 13]);
+    expect(transformManifest(out, 'module')).toBeNull();
+  });
+
   it('leaves a v14 manifest alone and notes a maximum below 14', () => {
     expect(
       transformManifest(
