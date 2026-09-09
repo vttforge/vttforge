@@ -221,6 +221,22 @@ export const migrate = defineCommand({
       default: false,
       description: 'Emit the report as JSON',
     },
+    'data-models': {
+      type: 'boolean',
+      default: false,
+      description:
+        'Also generate a data model per template.json type (template.json is deprecated since v14)',
+    },
+    style: {
+      type: 'string',
+      default: 'plain',
+      description: 'For --data-models: "plain" Foundry classes, or "sdk" classes on @vttforge/core',
+    },
+    lang: {
+      type: 'string',
+      default: 'js',
+      description: 'For --data-models: "js" writes .mjs, "ts" writes .ts',
+    },
   },
   async run({ args }) {
     try {
@@ -228,6 +244,9 @@ export const migrate = defineCommand({
         cwd: args.path ? String(args.path) : undefined,
         write: Boolean(args.write),
         json: Boolean(args.json),
+        dataModels: Boolean(args['data-models']),
+        style: String(args.style) === 'sdk' ? 'sdk' : 'plain',
+        lang: String(args.lang) === 'ts' ? 'ts' : 'js',
       });
       process.exitCode = exitCode;
     } catch (error) {
