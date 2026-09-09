@@ -249,7 +249,8 @@ export const audit = defineCommand({
 export const migrate = defineCommand({
   meta: {
     name: 'migrate',
-    description: 'Rewrite a v13 system or module for Foundry v14 (preview by default)',
+    description:
+      'Rewrite a v13 system or module for Foundry v14 (preview by default); --data-models and --sheets write the v16 replacements',
   },
   args: {
     path: {
@@ -281,7 +282,13 @@ export const migrate = defineCommand({
     lang: {
       type: 'string',
       default: 'js',
-      description: 'For --data-models: "js" writes .mjs, "ts" writes .ts',
+      description: 'For --data-models and --sheets: "js" writes .mjs, "ts" writes .ts',
+    },
+    sheets: {
+      type: 'boolean',
+      default: false,
+      description:
+        'Also write a V2 sheet file (on the SDK bases) next to each Application v1 sheet class, and the data-action attributes its templates need',
     },
   },
   async run({ args }) {
@@ -293,6 +300,7 @@ export const migrate = defineCommand({
         dataModels: Boolean(args['data-models']),
         style: String(args.style) === 'sdk' ? 'sdk' : 'plain',
         lang: String(args.lang) === 'ts' ? 'ts' : 'js',
+        sheets: Boolean(args.sheets),
       });
       process.exitCode = exitCode;
     } catch (error) {

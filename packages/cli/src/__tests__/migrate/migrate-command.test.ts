@@ -1,9 +1,11 @@
 /**
  * The command over a real directory: preview by default, written on request.
  */
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runAudit } from '../../audit/index.js';
 import { runMigrateCommand } from '../../commands/migrate.js';
@@ -85,5 +87,117 @@ describe('vttforge migrate', () => {
     await expect(runMigrateCommand({ cwd: join(cwd, 'nope'), out: () => {} })).rejects.toThrow(
       /not a directory/,
     );
+  });
+});
+
+describe('vttforge migrate --sheets', () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const FIXTURE = readFileSync(join(here, 'fixtures', 'v1-actor-sheet.mjs'), 'utf8');
+  const TEMPLATE =
+    '<form><nav class="tabs"><a data-tab="items">I</a></nav><div class="tab" data-tab="items"><a class="item-create">+</a></div></form>\n';
+
+  async function sheetProject(): Promise<void> {
+    await mkdir(join(cwd, 'module'), { recursive: true });
+    await mkdir(join(cwd, 'templates'), { recursive: true });
+    await writeFile(join(cwd, 'module', 'actor-sheet.mjs'), FIXTURE, 'utf8');
+    await writeFile(join(cwd, 'templates', 'actor-sheet.html'), TEMPLATE, 'utf8');
+  }
+
+  it('previews a V2 file and the template edits, then writes them', async () => {
+    await sheetProject();
+    const preview = await runMigrateCommand({ cwd, sheets: true, json: true, out: () => {} });
+    expect(preview.report.sheets?.files.map((f) => f.to)).toEqual(['module/actor-sheet.v2.mjs']);
+    expect(preview.report.sheets?.files[0]?.actions.map((a) => a.name)).toContain('itemCreate');
+    expect(preview.report.sheets?.templates[0]?.file).toBe('templates/actor-sheet.html');
+    expect(preview.report.sheets?.templates[0]?.edits.length).toBeGreaterThan(0);
+    expect(preview.report.sheets?.templates[0]?.formRoot).toBe(true);
+    expect(existsSync(join(cwd, 'module', 'actor-sheet.v2.mjs'))).toBe(false);
+    expect(await readFile(join(cwd, 'templates', 'actor-sheet.html'), 'utf8')).toBe(TEMPLATE);
+
+    await runMigrateCommand({ cwd, sheets: true, write: true, out: () => {} });
+    const generated = await readFile(join(cwd, 'module', 'actor-sheet.v2.mjs'), 'utf8');
+    expect(generated).toContain('extends BaseActorSheet()');
+    // The tab ids came from the template.
+    expect(generated).toContain("tabs: [{ id: 'items' }]");
+    const template = await readFile(join(cwd, 'templates', 'actor-sheet.html'), 'utf8');
+    expect(template).toContain('data-action="itemCreate"');
+    expect(template).toContain('data-action="vttforgeTab"');
+    const original = await readFile(join(cwd, 'module', 'actor-sheet.mjs'), 'utf8');
+    expect(original).toMatch(/extends (?:foundry\.appv1\.sheets\.)?ActorSheet \{/);
+    expect(original).toContain('activateListeners(html)');
+
+    const again = await runMigrateCommand({ cwd, sheets: true, write: true, out: () => {} });
+    expect(again.report.sheets?.notes.some((n) => /exists and was left alone/.test(n))).toBe(true);
+  });
+
+  it('prints the sheet section in the text report', async () => {
+    await sheetProject();
+    let out = '';
+    await runMigrateCommand({
+      cwd,
+      sheets: true,
+      out: (c) => {
+        out += c;
+      },
+    });
+    expect(out).toMatch(/Would write 1 sheet file/);
+    expect(out).toMatch(/module\/actor-sheet\.v2\.mjs: HeroSheet extends BaseActorSheet\(\)/);
+    expect(out).toMatch(/action itemCreate/);
+    expect(out).toMatch(/registerSheet/);
+    expect(out).toMatch(/Would edit templates:\n {2}templates\/actor-sheet\.html/);
+  });
+
+  it('reads every template when the class builds its path at runtime', async () => {
+    await sheetProject();
+    const dynamic = FIXTURE.replace(
+      "template: 'systems/hero/templates/actor-sheet.html',",
+      '',
+    ).replace(
+      'static get defaultOptions() {',
+      'get template() {\n    return `systems/hero/templates/${this.actor.type}-sheet.html`;\n  }\n\n  static get defaultOptions() {',
+    );
+    await writeFile(join(cwd, 'module', 'actor-sheet.mjs'), dynamic, 'utf8');
+    const { report } = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
+    // An item template in the tree is not a candidate for an actor sheet; shared parts are.
+    await mkdir(join(cwd, 'templates', 'item'), { recursive: true });
+    await mkdir(join(cwd, 'templates', 'actor'), { recursive: true });
+    await writeFile(
+      join(cwd, 'templates', 'item', 'gear-sheet.html'),
+      '<a class="item-create">+</a>\n',
+      'utf8',
+    );
+    await writeFile(
+      join(cwd, 'templates', 'actor', 'npc-sheet.html'),
+      '<a class="item-create">+</a>\n',
+      'utf8',
+    );
+    const second = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
+    expect(second.report.sheets?.templates.map((t) => t.file)).toEqual([
+      'templates/actor-sheet.html',
+      'templates/actor/npc-sheet.html',
+    ]);
+    expect(report.sheets?.templates.map((t) => t.file)).toEqual(['templates/actor-sheet.html']);
+    expect(report.sheets?.files[0]?.todos.some((t) => /chosen at runtime/.test(t.message))).toBe(
+      true,
+    );
+  });
+
+  it('reports a file it cannot parse instead of stopping', async () => {
+    await sheetProject();
+    await writeFile(
+      join(cwd, 'module', 'broken.mjs'),
+      'class B extends ActorSheet { static get x() { return { a: 1 b: 2 }; } }\n',
+      'utf8',
+    );
+    const { report } = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
+    expect(report.sheets?.files.map((f) => f.to)).toEqual(['module/actor-sheet.v2.mjs']);
+    expect(
+      report.sheets?.notes.some((n) => /module\/broken\.mjs.*could not be parsed/.test(n)),
+    ).toBe(true);
+  });
+
+  it('says so when there is no v1 sheet', async () => {
+    const { report } = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
+    expect(report.sheets).toEqual({ files: [], templates: [], notes: [] });
   });
 });

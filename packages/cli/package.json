@@ -45,6 +45,7 @@
     "attw": "attw --pack . --profile esm-only"
   },
   "dependencies": {
+    "@babel/parser": "catalog:",
     "@biomejs/biome": "catalog:",
     "@clack/prompts": "catalog:",
     "archiver": "catalog:",
@@ -52,6 +53,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
+    "@babel/types": "catalog:",
     "@types/archiver": "catalog:",
     "@types/node": "catalog:",
     "@vttforge/dev-module": "workspace:*",

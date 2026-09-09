@@ -1,0 +1,124 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`planSheetFile > matches the snapshot 1`] = `
+"import { BaseActorSheet } from '@vttforge/core';
+import { helper } from '../utils.mjs';
+
+const { DialogV2 } = foundry.applications.api;
+
+export class HeroSheet extends BaseActorSheet() {
+  /** @override */
+  static DEFAULT_OPTIONS = foundry.utils.mergeObject(
+    super.DEFAULT_OPTIONS,
+    {
+      classes: ['hero', 'sheet', 'actor'],
+      position: { width: 600, height: 750 },
+      form: { submitOnChange: true },
+      actions: {
+        itemCreate: HeroSheet.prototype._onItemCreate,
+        itemDelete: HeroSheet.prototype._onItemDelete,
+        restButton: HeroSheet.prototype._onRestButton,
+      },
+    },
+    { inplace: false },
+  );
+
+  /** @override */
+  static TABS = {
+    primary: { tabs: [{ id: 'items' }, { id: 'notes' }], initial: 'items' },
+  };
+
+  /** @override */
+  static DRAG_DROP = [{ dragSelector: '.item-row', dropSelector: null }];
+
+  /** @override */
+  static PARTS = {
+    sheet: { template: 'systems/hero/templates/actor-sheet.html' },
+  };
+
+  get actor() {
+    return this.document;
+  }
+
+  async _prepareContext(options) {
+    const data = await super._prepareContext(options);
+    data.actor = this.document;
+    data.data = this.document;
+    data.system = this.document.system;
+    data.items = [...this.document.items];
+    data.editable = this.isEditable;
+    data.owner = this.document.isOwner;
+    data.items = data.items.sort((a, b) => a.name.localeCompare(b.name));
+    data.enrichedNotes = await TextEditor.enrichHTML(this.actor.system.notes, { async: true });
+    return data;
+  }
+
+  /** @override */
+  _onRender(context, options) {
+    super._onRender(context, options);
+    for (const el of this.element.querySelectorAll('.item-name')) {
+      el.addEventListener('dblclick', (event) => this._onItemEdit(event));
+    }
+    for (const el of this.element.querySelectorAll('[name="system.armed"]')) {
+      el.addEventListener('change', (e) => {
+        if (e.target.checked) this.element.querySelectorAll('[name="system.hidden"]')[0].checked = false;
+      });
+    }
+  }
+
+  async _onItemCreate(event, target) {
+    event.preventDefault();
+    // TODO(migrate): Dialog v1 (removed in v16); rebuild with DialogV2.prompt / DialogV2.wait, buttons as { action, label, callback }
+    new Dialog({
+      title: 'New item',
+      content: '<input name="name">',
+      buttons: {
+        create: {
+          label: 'Create',
+          callback: (html) =>
+            this.actor.createEmbeddedDocuments('Item', [
+              // TODO(migrate): jQuery left here; use the DOM on \`target\` / \`this.element\`
+              { name: html.find('[name=name]').val(), type: 'item' },
+            ]),
+        },
+      },
+    }).render(true);
+  }
+
+  _onItemEdit(event) {
+    const li = event.currentTarget.closest('.item-row');
+    this.actor.items.get(li.dataset.itemId).sheet.render(true);
+  }
+
+  // TODO(migrate): setPosition is an Application v1 lifecycle override; ApplicationV2 sizes, submits and builds its header itself. Review it against the V2 method of the same job, or delete it
+  setPosition(options = {}) {
+    const position = super.setPosition(options);
+    // TODO(migrate): jQuery left here; use the DOM on \`target\` / \`this.element\`
+    this.element.querySelectorAll('.sheet-body').css('height', position.height - 100);
+    return position;
+  }
+
+  _onDragStart(event) {
+    const id = event.currentTarget.dataset.itemId;
+    event.dataTransfer.setData('text/plain', JSON.stringify(this.actor.items.get(id).toDragData()));
+  }
+
+  // TODO(migrate): the base hands the resolved Item as \`droppedItem\`; the old \`itemData\` payload is now \`droppedItem.toDragData()\`, read \`droppedItem\` directly where you can. The old super call created it on the actor, which is what the createEmbeddedDocuments line does now (a drop from the same actor used to re-sort instead). Return true when the drop was handled, undefined to let the base do its default
+  async onDropItem(droppedItem, event) {
+    const item = ((await this.document.createEmbeddedDocuments('Item', [droppedItem.toObject()])) || []).pop();
+    if (item) helper(item);
+    return item;
+  }
+
+  async _onItemDelete(ev, target) {
+    const li = target.closest('.item-row');
+    const ok = await DialogV2.confirm({ window: { title: 'Delete' }, content: '<p>Sure?</p>', yes: { callback: () => true }, no: { callback: () => false } });
+    if (ok) await this.actor.deleteEmbeddedDocuments('Item', [li.dataset.itemId]);
+  }
+
+  async _onRestButton(event, target) {
+    await this.actor.update({ 'system.hp.value': this.actor.system.hp.max });
+  }
+}
+"
+`;

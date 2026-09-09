@@ -11,7 +11,7 @@
 import type { ArgsDef } from 'citty';
 import { parseArgs } from 'citty';
 import { describe, expect, it } from 'vitest';
-import { audit, dev, init, lint, main } from '../cli.js';
+import { audit, dev, init, lint, main, migrate } from '../cli.js';
 
 // `CommandDef.args` is declared as resolvable — it may be a function citty
 // awaits. Ours are always plain objects, so the cast is safe here and keeps
@@ -149,5 +149,14 @@ describe('lint args', () => {
 
   it('is in the command tree', () => {
     expect(Object.keys(main.subCommands ?? {})).toContain('lint');
+  });
+});
+
+describe('migrate args', () => {
+  it('--sheets is off by default and parses with --write', () => {
+    expect(parse(migrate, []).sheets).toBe(false);
+    const args = parse(migrate, ['--sheets', '--write']);
+    expect(args.sheets).toBe(true);
+    expect(args.write).toBe(true);
   });
 });
