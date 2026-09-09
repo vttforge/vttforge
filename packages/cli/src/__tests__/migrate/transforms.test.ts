@@ -310,6 +310,13 @@ describe('namespaced globals', () => {
     expect(r.changes.map((c) => c.line)).toEqual([1, 2, 3, 4]);
   });
 
+  it('renames a call whose statement is followed by a block, which is not a definition', () => {
+    const r = namespacedGlobals(
+      'const c = await renderTemplate(t);\nnew Dialog({ title: x(y) }).render(true);\nif (c) {\n}\n',
+    );
+    expect(r.output).toContain('foundry.applications.handlebars.renderTemplate(t)');
+  });
+
   it('leaves keys, properties, declared names, strings and comments alone', () => {
     const src = [
       "import { Tabs } from './tabs.mjs';",

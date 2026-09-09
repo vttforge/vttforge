@@ -218,11 +218,11 @@ describe('VTTF-AUDIT-017: renderChatMessage', () => {
 
 describe('VTTF-AUDIT-018: Application v1 bases', () => {
   it('flags the v1 bases, bare or namespaced, and passes the V2 ones', async () => {
-    expect(await auditSource('class S extends ActorSheet {}\n')).toHaveLength(1);
-    expect(
-      await auditSource('class M extends foundry.appv1.api.FormApplication {}\n'),
-    ).toHaveLength(1);
-    expect((await auditSource('class D extends Dialog {}\n'))[0]?.severity).toBe('LOW');
+    const only018 = async (src: string) =>
+      (await auditSource(src)).filter((f) => f.ruleId === 'VTTF-AUDIT-018');
+    expect(await only018('class S extends ActorSheet {}\n')).toHaveLength(1);
+    expect(await only018('class M extends foundry.appv1.api.FormApplication {}\n')).toHaveLength(1);
+    expect((await only018('class D extends Dialog {}\n'))[0]?.severity).toBe('LOW');
     expect(
       await auditSource(
         'class S extends foundry.applications.sheets.ActorSheetV2 {}\nclass D extends DialogV2 {}\n',
