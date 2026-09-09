@@ -294,7 +294,10 @@ export function BaseActorSheet(): SheetBaseCtor {
         link.classList.toggle('active', link.dataset.tab === tab);
       }
       for (const section of root.querySelectorAll<HTMLElement>(
-        `section.tab[data-group="${group}"]`,
+        // Any element with the tab class: a pane is a <section> in the
+        // scaffold and a <div> in most systems, and Foundry's own changeTab
+        // accepts either.
+        `.tab[data-group="${group}"]`,
       )) {
         section.classList.toggle('active', section.dataset.tab === tab);
       }

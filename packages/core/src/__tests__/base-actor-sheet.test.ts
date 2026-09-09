@@ -171,6 +171,25 @@ describe('BaseActorSheet — default `tab` action', () => {
     expect(handler).toBeTypeOf('function');
   });
 
+  it('activates a <div class="tab"> pane too, which is what most systems use', () => {
+    const Sub = class extends BaseActorSheet() {};
+    const handler = (
+      Sub as unknown as {
+        DEFAULT_OPTIONS: { actions: { vttforgeTab: (event: Event, target: HTMLElement) => void } };
+      }
+    ).DEFAULT_OPTIONS.actions.vttforgeTab;
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <nav class="tabs"><a data-action="vttforgeTab" data-tab="a" data-group="primary" class="active"></a><a data-action="vttforgeTab" data-tab="b" data-group="primary"></a></nav>
+      <div class="tab active" data-tab="a" data-group="primary"></div>
+      <div class="tab" data-tab="b" data-group="primary"></div>`;
+    const sheet = { tabGroups: {} as Record<string, string>, element: root };
+    const target = root.querySelector('a[data-tab="b"]') as HTMLElement;
+    handler.call(sheet, new Event('click'), target);
+    expect(root.querySelector('div[data-tab="b"]')?.classList.contains('active')).toBe(true);
+    expect(root.querySelector('div[data-tab="a"]')?.classList.contains('active')).toBe(false);
+  });
+
   it('toggles .active on matching nav button and content section, updates tabGroups', () => {
     const Sub = BaseActorSheet();
     const handler = (
