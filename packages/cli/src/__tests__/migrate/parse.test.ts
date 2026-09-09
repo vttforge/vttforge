@@ -39,7 +39,8 @@ describe('findSheetClasses', () => {
 
   it('finds a method by name, kind and staticness', () => {
     const ast = parseSource(SRC, 'js');
-    const hero = findSheetClasses(ast, SRC)[0]!;
+    const hero = findSheetClasses(ast, SRC)[0];
+    if (!hero) throw new Error('fixture has no sheet class');
     expect(methodOf(hero.node, 'defaultOptions', { static: true, kind: 'get' })?.kind).toBe('get');
     expect(methodOf(hero.node, 'getData')?.kind).toBe('method');
     expect(methodOf(hero.node, 'nope')).toBeNull();
