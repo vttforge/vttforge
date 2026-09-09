@@ -38,6 +38,7 @@ const EXPERIMENTAL = new Set([
   'runBuild',
   'runDev',
   'runAuditCommand',
+  'runLintCommand',
   'readManifest',
   'emitZip',
 ]);

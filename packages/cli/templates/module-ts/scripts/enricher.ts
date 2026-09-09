@@ -35,7 +35,9 @@ export const noteEnricher: EnricherRegistration = {
     link.className = '{{ID}}-note-link';
     link.dataset.noteId = id;
     link.draggable = false;
-    link.append(Object.assign(document.createElement('i'), { className: 'fa-solid fa-note-sticky' }));
+    link.append(
+      Object.assign(document.createElement('i'), { className: 'fa-solid fa-note-sticky' }),
+    );
     link.append(note.name);
     return link;
   },

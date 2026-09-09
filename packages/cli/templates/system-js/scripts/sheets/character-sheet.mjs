@@ -123,7 +123,9 @@ export class CharacterSheet extends BaseActorSheet() {
   async onDropItem(item, _event) {
     if (item?.type !== 'gear') {
       ui.notifications?.warn(
-        game.i18n.format('{{LOCALE_PREFIX}}.Sheet.Drop.rejected', { type: item?.type ?? 'unknown' }),
+        game.i18n.format('{{LOCALE_PREFIX}}.Sheet.Drop.rejected', {
+          type: item?.type ?? 'unknown',
+        }),
       );
       return false;
     }

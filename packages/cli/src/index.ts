@@ -42,6 +42,9 @@ export { runDev } from './commands/dev.js';
 export type { InitOptions, ResolvedInitOptions, TemplateVariant } from './commands/init.js';
 /** Supported: scaffold a project. This is what `create-vttforge` calls. */
 export { runInit, ScaffoldError } from './commands/init.js';
+export type { LintOptions, LintResult } from './commands/lint.js';
+/** @experimental The command wrapper around Biome plus the audit. */
+export { runLintCommand } from './commands/lint.js';
 export type { FoundryManifest, PackageType } from './manifest.js';
 /** @experimental Reads `system.json` / `module.json`. Useful, unproven. */
 export { readManifest } from './manifest.js';
