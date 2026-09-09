@@ -1,5 +1,22 @@
 # @vttforge/cli
 
+## 0.11.0
+
+### Minor Changes
+
+- 5aae89d: `vttforge migrate --data-models` writes a data model per `template.json` type: one class per type, one function per shared template that the types spread, the `documentTypes` block for the manifest and the registration for `init`. `--style plain` needs nothing installed; `--style sdk` builds on `@vttforge/core`. What it guessed (empty arrays, nulls, a template a type lists that is not defined) it reports.
+- 4361bcd: What the first run over seven v13 projects taught the audit and the migrate command.
+  
+  - `audit` gains `VTTF-AUDIT-017` (the jQuery `renderChatMessage` hook, removed in v15) and `VTTF-AUDIT-018` (a class on an Application v1 base, removed in v16).
+  - `VTTF-AUDIT-007` resolves the token attributes against `template.json` too, so a system that still declares its types there is not flagged for a bar that works.
+  - Both commands skip minified bundles (`*.min.js`): a vendored library is not the author's to fix.
+  - `migrate` rewrites `rollMode: <expression>` to `messageMode: Roll._mapLegacyRollMode(<expression>)` instead of asking, handles a template-literal deletion key such as `` [`flags.${id}.-=old`] ``, and notes every `renderChatMessage` handler.
+- 89f9013: The bare v13 global aliases (`renderTemplate`, `ActorSheet`, `Actors`, `TextEditor`, `ChatLog` and about ninety more) warn on v14 and throw on v15. `vttforge audit` reports them as `VTTF-AUDIT-019`, and `vttforge migrate` renames each to its `foundry.*` path, which is the same object. A name the file declares or imports, an object key, a property, and a word inside a string are left alone.
+
+### Patch Changes
+
+- 66aaf98: `vttforge migrate` no longer renames the keys of a Dialog button, or of a class body that happens to hold a context-menu entry. An entry is an object whose own keys include `callback` and `name` or `condition`; a button has `icon`, `label` and `callback`, and keeps `callback` on v14.
+
 ## 0.10.1
 
 ### Patch Changes
