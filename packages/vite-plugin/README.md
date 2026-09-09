@@ -22,7 +22,7 @@ export default defineConfig({
 - Keeps class names through minification, so a sheet registered by class name keeps its key between builds. Prefer `registerSystem({ sheets })` with an `id`; this is the safety net.
 - Bundles CSS into one stylesheet and rewrites the manifest's `styles` and `esmodules` to the emitted paths.
 - Copies the manifest under Foundry's filename (`system.json` / `module.json`) with `version` synced from `package.json`.
-- Copies `template.json`, `lang/` and `templates/` verbatim. Override the list with `staticAssets`.
+- Copies `template.json`, `lang/`, `templates/` and `packs/` verbatim, plus every directory the manifest's `packs[].path` names. Override the list with `staticAssets`.
 - Emits external source maps with the sources embedded.
 
 ## Options
