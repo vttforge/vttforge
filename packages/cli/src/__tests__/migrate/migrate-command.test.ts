@@ -56,9 +56,9 @@ describe('vttforge migrate', () => {
     expect(await readFile(join(cwd, 'main.mjs'), 'utf8')).toBe(
       "const merged = foundry.utils.mergeObject(a, b);\nawait actor.update({ 'system.bio': _del });\nroll.toMessage({}, { messageMode: 'gm' });\n",
     );
-    const manifest = JSON.parse(await readFile(join(cwd, 'system.json'), 'utf8'));
-    expect(manifest.type).toBe('system');
-    expect(manifest.compatibility).toEqual({ minimum: '14', verified: '14' });
+    expect(await readFile(join(cwd, 'system.json'), 'utf8')).toBe(
+      '{\n  "id": "my-system",\n  "type": "system",\n  "title": "T",\n  "compatibility": { "minimum": "14", "verified": "14" }\n}\n',
+    );
 
     const audit = await runAudit({ cwd });
     expect(audit.findings.filter((f) => /VTTF-AUDIT-01[1-6]/.test(f.ruleId))).toEqual([]);

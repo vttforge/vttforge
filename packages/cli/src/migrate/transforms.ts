@@ -626,6 +626,12 @@ export function transformSource(source: string): TransformResult {
 /**
  * The manifest: `type` declared, `compatibility` raised to 14 where it is
  * lower. Returns `null` when nothing needed to change.
+ *
+ * Edited as text, not re-serialised: a manifest carries its author's
+ * indentation, key order and one-line arrays, and a diff that reformats the
+ * whole file to add one key is a diff nobody merges. `type` goes on the line
+ * after `id`, with that line's indentation; the compatibility values are
+ * replaced in place.
  */
 export function transformManifest(
   raw: string,
@@ -634,23 +640,67 @@ export function transformManifest(
   const parsed = JSON.parse(raw) as Record<string, unknown>;
   const changes: Change[] = [];
   const notes: Note[] = [];
+  let output = raw;
+
   if (parsed.type !== kind) {
-    parsed.type = kind;
-    changes.push({ line: 1, before: '(no "type")', after: `"type": "${kind}"`, rule: 'manifest' });
+    const typeLine = /^([ \t]*)"type"\s*:\s*"[^"]*"/m.exec(output);
+    if (typeLine) {
+      output = output.replace(typeLine[0], `${typeLine[1]}"type": "${kind}"`);
+      changes.push({
+        line: lineAt(raw, typeLine.index),
+        before: typeLine[0].trim(),
+        after: `"type": "${kind}"`,
+        rule: 'manifest',
+      });
+    } else {
+      const idLine = /^([ \t]*)"id"\s*:\s*"[^"]*"\s*,?[ \t]*$/m.exec(output);
+      if (idLine) {
+        const indent = idLine[1] ?? '';
+        const insertAt = idLine.index + idLine[0].length;
+        output = `${output.slice(0, insertAt)}\n${indent}"type": "${kind}",${output.slice(insertAt)}`;
+        changes.push({
+          line: lineAt(raw, idLine.index) + 1,
+          before: '(no "type")',
+          after: `"type": "${kind}"`,
+          rule: 'manifest',
+        });
+      } else {
+        notes.push({
+          line: 1,
+          rule: 'manifest',
+          message: `Add \`"type": "${kind}"\` next to "id"; the key could not be placed by hand.`,
+        });
+      }
+    }
   }
+
   const compatibility = (parsed.compatibility ?? {}) as Record<string, unknown>;
+  const block = /"compatibility"\s*:\s*\{[^}]*\}/.exec(output);
   for (const field of ['minimum', 'verified'] as const) {
     const current = compatibility[field];
     const major = Number.parseInt(String(current ?? '0'), 10);
-    if (!Number.isFinite(major) || major < 14) {
-      compatibility[field] = '14';
-      changes.push({
-        line: 1,
-        before: `compatibility.${field}: ${JSON.stringify(current ?? null)}`,
-        after: `compatibility.${field}: "14"`,
-        rule: 'manifest',
-      });
+    if (Number.isFinite(major) && major >= 14) continue;
+    if (block && current !== undefined) {
+      const field_ = new RegExp(`("${field}"\\s*:\\s*)("[^"]*"|[\\d.]+)`);
+      const inBlock = field_.exec(block[0]);
+      if (inBlock) {
+        const replaced = block[0].replace(field_, '$1"14"');
+        output = output.replace(block[0], replaced);
+        block[0] = replaced;
+        changes.push({
+          line: lineAt(raw, raw.indexOf(`"${field}"`, raw.indexOf('"compatibility"'))),
+          before: `compatibility.${field}: ${JSON.stringify(current)}`,
+          after: `compatibility.${field}: "14"`,
+          rule: 'manifest',
+        });
+        continue;
+      }
     }
+    notes.push({
+      line: 1,
+      rule: 'manifest',
+      message: `Set compatibility.${field} to "14"; it is ${JSON.stringify(current ?? null)} and could not be edited in place.`,
+    });
   }
   const maximum = compatibility.maximum;
   if (maximum !== undefined && Number.parseInt(String(maximum), 10) < 14) {
@@ -668,15 +718,7 @@ export function transformManifest(
         'gridDistance / gridUnits are ignored on v14. Move them into `"grid": { "type", "distance", "units", "diagonals" }`.',
     });
   }
-  parsed.compatibility = compatibility;
   if (changes.length === 0) return notes.length ? { output: raw, changes, notes } : null;
-  // Keep `type` next to `id`, where the v14 manifests put it.
-  const ordered: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(parsed)) {
-    if (key === 'type') continue;
-    ordered[key] = value;
-    if (key === 'id') ordered.type = parsed.type;
-  }
-  if (!('type' in ordered)) ordered.type = parsed.type;
-  return { output: `${JSON.stringify(ordered, null, 2)}\n`, changes, notes };
+  JSON.parse(output); // an edit that broke the file is a bug here, not the user's problem
+  return { output, changes, notes };
 }

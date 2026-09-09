@@ -206,16 +206,23 @@ describe('status effects and effect modes', () => {
 });
 
 describe('the manifest', () => {
-  it('declares the type next to the id and raises compatibility to 14', () => {
-    const r = transformManifest(
-      '{\n  "id": "my-system",\n  "title": "T",\n  "compatibility": { "minimum": "13", "verified": "13.341" }\n}\n',
-      'system',
+  it('declares the type on the line after id and raises compatibility, keeping the file as written', () => {
+    const raw =
+      '{\n    "id": "my-system",\n    "title": "T",\n    "styles": ["a.css", "b.css"],\n    "compatibility": { "minimum": "13", "verified": "13.341" }\n}';
+    const r = transformManifest(raw, 'system');
+    expect(r?.output).toBe(
+      '{\n    "id": "my-system",\n    "type": "system",\n    "title": "T",\n    "styles": ["a.css", "b.css"],\n    "compatibility": { "minimum": "14", "verified": "14" }\n}',
     );
-    expect(r).not.toBeNull();
-    const parsed = JSON.parse(r?.output ?? '{}');
-    expect(Object.keys(parsed).slice(0, 3)).toEqual(['id', 'type', 'title']);
-    expect(parsed.compatibility).toEqual({ minimum: '14', verified: '14' });
     expect(r?.changes).toHaveLength(3);
+  });
+
+  it('keeps tabs, a numeric minimum, and a missing trailing newline', () => {
+    const raw =
+      '{\n\t"id": "m",\n\t"compatibility": {\n\t\t"minimum": 13.336,\n\t\t"verified": 14\n\t}\n}';
+    const r = transformManifest(raw, 'module');
+    expect(r?.output).toBe(
+      '{\n\t"id": "m",\n\t"type": "module",\n\t"compatibility": {\n\t\t"minimum": "14",\n\t\t"verified": 14\n\t}\n}',
+    );
   });
 
   it('leaves a v14 manifest alone and notes a maximum below 14', () => {
