@@ -12,7 +12,7 @@
  * What is inferred, and what is guessed:
  * - a number is a `NumberField` (`integer` when the default is one), a
  *   boolean a `BooleanField`, a string a `StringField` (`HTMLField` when the
- *   key reads like rich text: description, biography, notes), an object a
+ *   key reads like rich text: description, biography, notes, details), an object a
  *   `SchemaField`, an array an `ArrayField` of whatever its first element is
  *   (`ObjectField` when it is empty or holds objects), `null` an
  *   `ObjectField` marked for review.
@@ -24,7 +24,7 @@
 
 export type EmitStyle = 'plain' | 'sdk';
 
-export interface DataModelFile {
+interface DataModelFile {
   /** Project-relative path to write. */
   path: string;
   source: string;
@@ -49,7 +49,7 @@ interface DocumentTemplate {
   [type: string]: unknown;
 }
 
-const RICH_TEXT_KEYS = /^(description|biography|bio|notes|details|background|text)$/i;
+const RICH_TEXT_KEYS = /^(description|biography|bio|notes|details)$/i;
 
 function fieldFor(
   key: string,
