@@ -33,7 +33,7 @@ export default defineConfig({
 | `kind` | `'system'` | `'system'` or `'module'`. Sets the base path (`/systems/<id>/` vs `/modules/<id>/`) and the manifest filename |
 | `entry` | `'scripts/main.mjs'` | Entry script, relative to the project root |
 | `manifest` | `system.json` / `module.json` | Manifest path, relative to the project root |
-| `staticAssets` | `['template.json', 'lang', 'templates']` | Files and directories copied into `dist/` before each build |
+| `staticAssets` | `['template.json', 'lang', 'templates', 'packs']`, plus the directory of every `packs[].path` the manifest declares | Files and directories copied into `dist/` before each build |
 
 Peer: `vite ^8`. Node 26+.
 

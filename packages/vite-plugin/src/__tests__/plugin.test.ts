@@ -241,6 +241,24 @@ describe('@vttforge/vite-plugin', () => {
       );
     });
 
+    it('copies the compendium packs the manifest declares, wherever they live', async () => {
+      mkdirSync(resolve(workdir, 'packs/armor'), { recursive: true });
+      writeFileSync(resolve(workdir, 'packs/armor/000001.ldb'), 'leveldb', 'utf8');
+      mkdirSync(resolve(workdir, 'data/tables'), { recursive: true });
+      writeFileSync(resolve(workdir, 'data/tables/000001.ldb'), 'leveldb', 'utf8');
+      const manifest = JSON.parse(readFileSync(resolve(workdir, 'system.json'), 'utf8'));
+      manifest.packs = [
+        { name: 'armor', label: 'Armor', path: 'packs/armor.db', type: 'Item' },
+        { name: 'tables', label: 'Tables', path: 'data/tables', type: 'RollTable' },
+      ];
+      writeFileSync(resolve(workdir, 'system.json'), JSON.stringify(manifest), 'utf8');
+
+      await build({ root: workdir, logLevel: 'silent', plugins: [vttforge(defaultOptions())] });
+
+      expect(existsSync(resolve(workdir, 'dist/packs/armor/000001.ldb'))).toBe(true);
+      expect(existsSync(resolve(workdir, 'dist/data/tables/000001.ldb'))).toBe(true);
+    });
+
     it('respects a custom staticAssets list', async () => {
       const plugin = mainPlugin(vttforge(defaultOptions({ staticAssets: ['lang'] })));
       await invokeConfigHook(plugin, workdir);
