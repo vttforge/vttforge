@@ -201,3 +201,32 @@ describe('vttforge migrate --sheets', () => {
     expect(report.sheets).toEqual({ files: [], templates: [], notes: [] });
   });
 });
+
+describe('vttforge migrate and the release workflow', () => {
+  it('lists a workflow that ships the checkout of a project that builds to dist/', async () => {
+    await mkdir(join(cwd, '.github', 'workflows'), { recursive: true });
+    await writeFile(
+      join(cwd, 'vite.config.mjs'),
+      "import vttforge from '@vttforge/vite-plugin';\nexport default { plugins: [vttforge({ id: 'x' })] };\n",
+      'utf8',
+    );
+    await writeFile(
+      join(cwd, '.github', 'workflows', 'main.yml'),
+      'on:\n  release:\n    types: [published]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: zip -r ./system.zip system.json module/ templates/\n',
+      'utf8',
+    );
+    let out = '';
+    const { report } = await runMigrateCommand({
+      cwd,
+      out: (c) => {
+        out += c;
+      },
+    });
+    const workflow = report.files.find((f) => f.file === '.github/workflows/main.yml');
+    expect(workflow?.notes[0]?.rule).toBe('VTTF-AUDIT-020');
+    expect(workflow?.notes[0]?.line).toBe(9);
+    expect(out).toMatch(
+      /\.github\/workflows\/main\.yml\n {2}9: needs a decision: The release workflow zips the checkout without building/,
+    );
+  });
+});

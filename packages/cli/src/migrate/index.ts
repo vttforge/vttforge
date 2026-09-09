@@ -10,6 +10,7 @@
 import { existsSync } from 'node:fs';
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
+import { runReleaseRules } from '../audit/release-rules.js';
 import { _internal } from '../audit/source-rules.js';
 import { type EmitStyle, planDataModels } from './data-models.js';
 import { editTemplate, readTabIds, type TemplateEdit } from './sheet-templates.js';
@@ -98,6 +99,23 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
     if (result.changes.length === 0 && result.notes.length === 0) continue;
     files.push({ file: relative(cwd, path), changes: result.changes, notes: result.notes });
     if (write && result.output !== source) await writeFile(path, result.output, 'utf8');
+  }
+
+  // A project that builds to dist/ with a release workflow written for the old
+  // layout publishes a package with no entry file. Say so here, since the
+  // rewrite is what moves the project onto the build.
+  for (const finding of await runReleaseRules(cwd)) {
+    files.push({
+      file: finding.filePath,
+      changes: [],
+      notes: [
+        {
+          line: finding.line ?? 1,
+          rule: finding.ruleId,
+          message: `${finding.message} ${finding.remediation ?? ''}`.trim(),
+        },
+      ],
+    });
   }
 
   files.sort((a, b) => a.file.localeCompare(b.file));
