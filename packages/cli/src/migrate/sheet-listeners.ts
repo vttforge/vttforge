@@ -20,7 +20,7 @@ export interface ActionBinding {
   isAsync: boolean;
 }
 
-export interface ListenerBinding {
+interface ListenerBinding {
   selector: string;
   event: string;
   handlerText: string;

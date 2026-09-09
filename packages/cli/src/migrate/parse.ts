@@ -6,7 +6,7 @@
 import { parse } from '@babel/parser';
 import type { ClassDeclaration, ClassExpression, ClassMethod, File, Node } from '@babel/types';
 
-export type SheetBase = 'ActorSheet' | 'ItemSheet';
+type SheetBase = 'ActorSheet' | 'ItemSheet';
 
 export interface SheetClass {
   name: string;
