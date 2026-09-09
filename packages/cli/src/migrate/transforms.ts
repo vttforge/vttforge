@@ -291,34 +291,37 @@ export const rollMode: Transform = (source) => {
 
 /**
  * Context-menu entries and header controls: `name` → `label`, `condition` →
- * `visible`, `callback` → `onClick`. Only inside an object literal that has a
- * `callback` and an `icon` or `condition`, so an unrelated `name:` elsewhere
- * is not renamed. The callback's parameters change too, from `(li)` to
- * `(event, target)`, and that is noted rather than rewritten.
+ * `visible`, `callback` → `onClick`.
+ *
+ * Only an object literal whose own keys include `callback` and `name` or
+ * `condition` is an entry. A Dialog button has `icon`, `label` and
+ * `callback`, and keeps `callback` on v14, so `icon` is not a signal; and
+ * only the literal's own keys count, so a class body or a `buttons` bag that
+ * happens to contain an entry is not itself treated as one. The callback's
+ * parameters change too, from `(li)` to `(event, target)`, and that is noted
+ * rather than rewritten.
  */
 export const contextMenuKeys: Transform = (source) => {
   const changes: Change[] = [];
   const notes: Note[] = [];
-  let output = source;
-  // Walk object literals from the innermost out: find `{`, balance to its `}`,
-  // and rewrite the keys of that literal when it looks like a menu entry.
-  const literals = objectLiterals(source);
-  for (const { start, end } of literals.reverse()) {
-    const body = output.slice(start, end);
-    if (!/\bcallback\s*:/.test(body) || !/\b(?:icon|condition)\s*:/.test(body)) continue;
-    const bodyCode = maskComments(body);
-    const KEYS: Record<string, string> = {
-      name: 'label',
-      condition: 'visible',
-      callback: 'onClick',
-    };
-    // One pass, so the offsets checked against the mask are the body's own.
-    const renamed = body.replace(
-      /(^|[{,\s])(name|condition|callback)(\s*:)/g,
-      (m, lead: string, key: string, colon: string, offset: number) =>
-        bodyCode[offset + lead.length] === MASK ? m : `${lead}${KEYS[key]}${colon}`,
-    );
-    if (renamed === body) continue;
+  const RENAME: Record<string, string> = {
+    name: 'label',
+    condition: 'visible',
+    callback: 'onClick',
+  };
+  // Innermost first, so an edit never moves the offsets of a literal still
+  // to be visited: an inner literal sits entirely inside its outer one, and
+  // editing it changes the outer one's end, never its start.
+  const edits: Array<{ start: number; end: number; text: string }> = [];
+  for (const { start, end } of objectLiterals(source).sort((a, b) => b.start - a.start)) {
+    const keys = ownKeys(source, start, end);
+    const names = new Set(keys.map((k) => k.name));
+    if (!names.has('callback') || !(names.has('name') || names.has('condition'))) continue;
+    for (const key of keys) {
+      const to = RENAME[key.name];
+      if (to !== undefined)
+        edits.push({ start: key.offset, end: key.offset + key.name.length, text: to });
+    }
     changes.push({
       line: lineAt(source, start),
       before: lineText(source, start),
@@ -331,10 +334,82 @@ export const contextMenuKeys: Transform = (source) => {
       message:
         '`onClick` receives `(event, target)` where `callback` received the element. Check the parameter list.',
     });
-    output = output.slice(0, start) + renamed + output.slice(end);
+  }
+  let output = source;
+  for (const edit of edits.sort((a, b) => b.start - a.start)) {
+    output = output.slice(0, edit.start) + edit.text + output.slice(edit.end);
   }
   return { output, changes, notes };
 };
+
+/**
+ * The keys an object literal declares itself, with the offset of each name.
+ *
+ * Walks the span between the braces at depth one: a key is an identifier
+ * followed by `:` where a property may start, which is right after the
+ * opening brace or after a comma at that depth. Nested literals, arrays,
+ * calls, strings and comments are stepped over.
+ */
+function ownKeys(
+  source: string,
+  start: number,
+  end: number,
+): Array<{ name: string; offset: number }> {
+  const keys: Array<{ name: string; offset: number }> = [];
+  let depth = 0;
+  let quote: string | null = null;
+  let expectKey = true;
+  for (let i = start; i < end; i += 1) {
+    const ch = source[i] ?? '';
+    const next = source[i + 1] ?? '';
+    if (quote) {
+      if (ch === '\\') i += 1;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '/' && next === '/') {
+      const nl = source.indexOf('\n', i);
+      i = nl === -1 ? end : nl;
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      const close = source.indexOf('*/', i + 2);
+      i = close === -1 ? end : close + 1;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') {
+      quote = ch;
+      expectKey = false;
+      continue;
+    }
+    if (ch === '{' || ch === '[' || ch === '(') {
+      depth += 1;
+      expectKey = depth === 1 && ch === '{';
+      continue;
+    }
+    if (ch === '}' || ch === ']' || ch === ')') {
+      depth -= 1;
+      expectKey = false;
+      continue;
+    }
+    if (depth !== 1) continue;
+    if (ch === ',') {
+      expectKey = true;
+      continue;
+    }
+    if (/\s/.test(ch)) continue;
+    if (expectKey && /[A-Za-z_$]/.test(ch)) {
+      let j = i;
+      while (j < end && /[\w$]/.test(source[j] ?? '')) j += 1;
+      let k = j;
+      while (k < end && /\s/.test(source[k] ?? '')) k += 1;
+      if (source[k] === ':') keys.push({ name: source.slice(i, j), offset: i });
+      i = j - 1;
+    }
+    expectKey = false;
+  }
+  return keys;
+}
 
 /** Every `{ ... }` span in the text, outermost first, strings and comments skipped. */
 function objectLiterals(source: string): Array<{ start: number; end: number }> {
