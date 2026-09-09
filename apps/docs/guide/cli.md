@@ -79,7 +79,8 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-015` | MEDIUM | `legacyTransferral`; v14 removed the flag and applies Item effects in place |
 | `VTTF-AUDIT-016` | MEDIUM | `CONST.ACTIVE_EFFECT_MODES`; changes now live in `system.changes` with a string `type`, removed in v16 |
 
-Rules 004 and 007 read the schema whether it is a `static defineSchema()` or
+Rules 011 to 016 blank out comments before they match, so a call quoted in a
+JSDoc block is not a finding. Rules 004 and 007 read the schema whether it is a `static defineSchema()` or
 a function handed to `BaseTypeDataModel`, and scope it to the class
 registered for that document. Rule 008 only looks at templates a
 `BaseActorSheet` or `BaseItemSheet` names in its `PARTS`, since those are the
@@ -120,5 +121,6 @@ renamed `callback` (`onClick` receives `(event, target)`), a root-level
 `changes` array on an effect (now `system.changes`), a `compatibility.maximum`
 below 14, and the flat `gridDistance` / `gridUnits` keys.
 
-The rewrites are text-based, like the audit rules they mirror. A match inside
-a string literal is rewritten too; the preview is where that is caught.
+The rewrites are text-based, like the audit rules they mirror. Comments are
+left alone. A match inside a string literal is rewritten too; the preview is
+where that is caught.

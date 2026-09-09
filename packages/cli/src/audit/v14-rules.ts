@@ -10,11 +10,14 @@
  *
  * Regex heuristics like the rest of the source rules, for the same reason:
  * the patterns are short and a TypeScript AST would not make them more
- * precise. Each rule reports the first match per file; one finding is enough
- * to send the reader to the file, and the fix is a search-and-replace there.
+ * precise. Comments are blanked first, so prose that mentions a call is not
+ * a finding. Each rule reports the first match per file; one finding is
+ * enough to send the reader to the file, and the fix is a search-and-replace
+ * there.
  */
 
 import { readFile } from 'node:fs/promises';
+import { maskComments } from './mask.js';
 import { _internal } from './source-rules.js';
 import type { RuleResult } from './types.js';
 
@@ -242,6 +245,10 @@ export async function runV14Rules(cwd: string): Promise<RuleResult[]> {
     } catch {
       continue;
     }
+    // Comments are blanked before matching, so a call quoted in a JSDoc
+    // block or a `// TODO: drop mergeObject(` line is not a finding. The
+    // mask keeps every offset, so the line numbers still point at the file.
+    content = maskComments(content);
     results.push(
       ...rule011(file, content),
       ...rule012(file, content),

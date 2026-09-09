@@ -8,11 +8,12 @@
  *
  * Text-based, like the audit rules they mirror (`VTTF-AUDIT-011` to `016`).
  * The patterns are short and mechanical, and a syntax tree would not make
- * `'-=key'` easier to find. The cost is that a match inside a string or a
- * comment is rewritten too; the preview exists so that is seen before it is
- * written.
+ * `'-=key'` easier to find. Comments are left alone: every match has to
+ * start in code. A match inside a string literal is still rewritten, which
+ * is what the preview is for.
  */
 
+import { MASK, maskComments } from '../audit/mask.js';
 import { REMOVED_UTILS } from '../audit/v14-rules.js';
 
 export interface Change {
@@ -67,8 +68,10 @@ function rewrite(
   rule: string,
 ): TransformResult {
   const changes: Change[] = [];
+  const code = maskComments(source);
   const output = source.replace(pattern, (match: string, ...rest: unknown[]) => {
     const offset = rest.find((r): r is number => typeof r === 'number') ?? 0;
+    if (code[offset] === MASK) return match;
     const groups = rest.filter((r): r is string => typeof r === 'string');
     const after = typeof replacement === 'string' ? replacement : replacement(match, ...groups);
     if (after !== match) {
@@ -127,7 +130,9 @@ export const removedGlobals: Transform = (source) => {
     : { output: source, changes: [], notes: [] };
   const clamped = rewrite(utils.output, /\bMath\.clamped\s*\(/g, 'Math.clamp(', 'removed-globals');
   const notes: Note[] = [];
+  const code = maskComments(clamped.output);
   for (const match of clamped.output.matchAll(/\bgame\.template\b/g)) {
+    if (code[match.index ?? 0] === MASK) continue;
     notes.push({
       line: lineAt(clamped.output, match.index ?? 0),
       rule: 'removed-globals',
@@ -171,10 +176,12 @@ export const dataOperators: Transform = (source) => {
 function wrapReplacementValues(source: string): TransformResult {
   const changes: Change[] = [];
   const pattern = /(['"])((?:[\w$]+\.)*)==([\w$.]+)\1\s*:\s*/g;
+  const code = maskComments(source);
   let out = '';
   let cursor = 0;
   for (const match of source.matchAll(pattern)) {
     const start = match.index ?? 0;
+    if (code[start] === MASK) continue;
     const valueStart = start + match[0].length;
     const valueEnd = scanValueEnd(source, valueStart);
     if (valueEnd === -1) continue;
@@ -299,10 +306,18 @@ export const contextMenuKeys: Transform = (source) => {
   for (const { start, end } of literals.reverse()) {
     const body = output.slice(start, end);
     if (!/\bcallback\s*:/.test(body) || !/\b(?:icon|condition)\s*:/.test(body)) continue;
-    const renamed = body
-      .replace(/(^|[{,\s])name\s*:/g, '$1label:')
-      .replace(/(^|[{,\s])condition\s*:/g, '$1visible:')
-      .replace(/(^|[{,\s])callback\s*:/g, '$1onClick:');
+    const bodyCode = maskComments(body);
+    const KEYS: Record<string, string> = {
+      name: 'label',
+      condition: 'visible',
+      callback: 'onClick',
+    };
+    // One pass, so the offsets checked against the mask are the body's own.
+    const renamed = body.replace(
+      /(^|[{,\s])(name|condition|callback)(\s*:)/g,
+      (m, lead: string, key: string, colon: string, offset: number) =>
+        bodyCode[offset + lead.length] === MASK ? m : `${lead}${KEYS[key]}${colon}`,
+    );
     if (renamed === body) continue;
     changes.push({
       line: lineAt(source, start),
@@ -398,8 +413,10 @@ export const statusEffectsAssignment: Transform = (source) => {
   let output = '';
   let cursor = 0;
   const pattern = /\bCONFIG\.statusEffects\s*=(?!=)\s*/g;
+  const code = maskComments(source);
   for (const match of source.matchAll(pattern)) {
     const start = match.index ?? 0;
+    if (code[start] === MASK) continue;
     const valueStart = start + match[0].length;
     const end = scanStatementEnd(source, valueStart);
     if (end === -1) continue;
