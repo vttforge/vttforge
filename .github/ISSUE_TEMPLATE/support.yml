@@ -1,0 +1,49 @@
+name: Support
+description: You are using the SDK or the CLI and something is unclear or does not work for you
+title: "[support] "
+labels: ["support", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a bug with a reproduction, use the bug report. For an open design question, use [Discussions](https://github.com/vttforge/vttforge/discussions). This one is for "I am doing X and I am stuck": a command that does not do what you expected, a sheet that does not render, a step in the docs that does not match what you see.
+
+  - type: input
+    id: version
+    attributes:
+      label: Package and version
+      description: The package you are using and its version, from `pnpm list @vttforge/core` (or the CLI, `npx vttforge --version`).
+      placeholder: "@vttforge/core@0.15.1, @vttforge/cli@0.13.0"
+    validations:
+      required: true
+
+  - type: input
+    id: foundry-version
+    attributes:
+      label: FoundryVTT version
+      placeholder: "v14.x"
+    validations:
+      required: true
+
+  - type: textarea
+    id: doing
+    attributes:
+      label: What are you trying to do?
+      description: The goal, and the command or code you ran. A link to the repository or a branch is the fastest way to get an answer.
+    validations:
+      required: true
+
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened instead?
+      description: The output, the console error, or a screenshot. If there is a `VTTF-NNNN` code, the [error reference](https://vttforge.dev/errors/) may already have the answer.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: audit
+    attributes:
+      label: Output of `vttforge audit`, if it is a system or module
+      render: text

@@ -6,6 +6,6 @@ contact_links:
   - name: FoundryVTT itself
     url: https://foundryvtt.com/community/contact/
     about: VTTForge is not affiliated with Foundry Gaming LLC. Issues with FoundryVTT itself should be reported to them.
-  - name: Discussion / question
+  - name: Discussion / design question
     url: https://github.com/vttforge/vttforge/discussions
     about: For open-ended design questions or "how do I do X?" — use Discussions, not issues.
