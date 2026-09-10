@@ -83,3 +83,16 @@ describe('renderStatics', () => {
     expect(out).toContain('TODO(migrate): tab ids');
   });
 });
+
+describe('defaultOptions that read this', () => {
+  it('is flagged, since a static field runs once', () => {
+    const src = `class S extends FormApplication {
+      static get defaultOptions() { return foundry.utils.mergeObject(super.defaultOptions, { id: \`\${this.namespace}-settings\`, width: 1 }); }
+    }`;
+    const o = options(src);
+    expect(o.usesThis).toBe(true);
+    expect(renderStatics(o, {}, (m) => `// TODO(migrate): ${m}`, 'form', 'S')).toContain(
+      '_initializeApplicationOptions',
+    );
+  });
+});

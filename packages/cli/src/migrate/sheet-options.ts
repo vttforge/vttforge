@@ -27,6 +27,8 @@ export interface SheetOptions {
   tabs: Array<{ navSelector: string; contentSelector: string | null; initial: string | null }>;
   dragDrop: string | null;
   unknown: string[];
+  /** The options literal read `this` (a subclass static, usually). */
+  usesThis: boolean;
 }
 
 function keyName(p: ObjectProperty): string | null {
@@ -91,10 +93,13 @@ export function extractOptions(cls: SheetClass, source: string): SheetOptions {
     tabs: [],
     dragDrop: null,
     unknown: [],
+    usesThis: false,
   };
   const method = methodOf(cls.node, 'defaultOptions', { static: true, kind: 'get' });
   const literal = method ? optionsLiteral(method) : null;
   if (!literal) return out;
+  // A getter ran once per subclass, so `this` was the subclass; a static field runs once, on the class that declares it.
+  out.usesThis = /\bthis\b/.test(text(source, literal));
   for (const [key, value] of props(literal)) {
     switch (key) {
       case 'classes':
@@ -198,6 +203,11 @@ export function renderStatics(
   lines.push('    },');
   lines.push('    { inplace: false },');
   lines.push('  );');
+  if (opts.usesThis) {
+    lines.push(
+      `  ${todo('defaultOptions read `this`, which was the subclass each time the getter ran; a static field runs once on the class that declares it. Move what depends on the subclass into _initializeApplicationOptions(options)')}`,
+    );
+  }
   for (const key of opts.unknown) {
     lines.push(
       `  ${todo(`${key} from defaultOptions has no V2 equivalent here; move it by hand or drop it`)}`,
