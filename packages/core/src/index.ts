@@ -170,4 +170,11 @@ export {
   type SheetRegistration,
 } from './register-sheets.js';
 export { registerSystem, type SystemRegistration } from './register-system.js';
+export {
+  EDIT_IN_PLAY_ATTRIBUTE,
+  MODE_CLASS,
+  type SheetMode,
+  type SheetModesConfig,
+  TOGGLE_MODE_ACTION,
+} from './sheet-modes.js';
 export { SystemConfig } from './system-config.js';

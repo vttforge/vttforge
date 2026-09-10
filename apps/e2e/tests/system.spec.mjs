@@ -126,6 +126,59 @@ test('a character sheet renders its parts and its derived data', async ({ page }
   expect(sheet.derived.strMod).toBe(0);
 });
 
+test('a sheet with MODES opens in play, locks its fields, and edit opens them again', async ({
+  page,
+}) => {
+  await joinWorld(page);
+
+  const result = await page.evaluate(async () => {
+    const actor = await Actor.create({ name: 'End-to-end Mode Hero', type: 'character' });
+    await actor.sheet.render(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const sheet = actor.sheet;
+    const read = () => {
+      const element = sheet.element;
+      const content = element.querySelector('.window-content');
+      return {
+        mode: sheet.mode,
+        classes: [...element.classList].filter((c) => c.startsWith('vttforge-mode-')),
+        nameDisabled: content.querySelector('input[name="name"]').disabled,
+        hpDisabled: content.querySelector('input[name="system.health.value"]').disabled,
+        rollDisabled: content.querySelector('[data-action="rollAbility"]').disabled,
+      };
+    };
+    const play = read();
+    const control = sheet._getHeaderControls().find((c) => c.action === 'vttforgeToggleMode');
+    const controlInPlay = { label: control.label, visible: control.visible.call(sheet) };
+    await sheet.toggleMode();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const edit = read();
+    const controlInEdit = sheet
+      ._getHeaderControls()
+      .find((c) => c.action === 'vttforgeToggleMode').label;
+    // The header control is what the user clicks; drive it through the action.
+    await sheet.element.querySelector('[data-action="vttforgeToggleMode"]')?.click();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return { play, controlInPlay, edit, controlInEdit, afterClick: read().mode };
+  });
+
+  expect(result.play.mode).toBe('play');
+  expect(result.play.classes).toEqual(['vttforge-mode-play']);
+  expect(result.play.nameDisabled).toBe(true);
+  // Hit points sit inside a data-vttforge-edit-in-play wrapper.
+  expect(result.play.hpDisabled).toBe(false);
+  expect(result.play.rollDisabled).toBe(false);
+  expect(result.controlInPlay).toEqual({
+    label: 'VTTFORGE_EXAMPLE.Sheet.Mode.edit',
+    visible: true,
+  });
+
+  expect(result.edit.mode).toBe('edit');
+  expect(result.edit.classes).toEqual(['vttforge-mode-edit']);
+  expect(result.edit.nameDisabled).toBe(false);
+  expect(result.controlInEdit).toBe('VTTFORGE_EXAMPLE.Sheet.Mode.play');
+});
+
 test("the sheet styles compose with the system's own CSS, and yield to modules", async ({
   page,
 }) => {
