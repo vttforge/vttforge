@@ -258,6 +258,18 @@ search the console for `Deprecated since Version 14`. Each warning names
 its replacement. Go through the `TODO(migrate)` lines you have not yet
 touched; each one is a place the codemod could read but not decide.
 
+## For a module
+
+The same steps, with two gone. A module has no `template.json`, so skip
+step 2: a sub-type a module adds is a data model from the start, under a
+key prefixed with the module id, and [Modules](/guide/modules) shows the
+declaration. In step 4 the call is `registerModule`, which takes
+`actorDataModels`, `itemDataModels`, `sheets`, `enrichers`, `onBeforeInit`
+and `onAfterInit`, and prefixes the type keys for you. It has no
+`actorDocumentClass` and no `combat`: those belong to the running system.
+Everything else, `audit`, `migrate`, `migrate --sheets`, the build and the
+check, reads a module the way it reads a system.
+
 What this run left untouched: the Actor class beyond its derived data,
 the macros, the compendium packs, the CSS, and the templates beyond the
 attributes the codemod added and the root element.
