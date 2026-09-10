@@ -14,7 +14,7 @@ pnpm add @vttforge/core
 | `BaseTypeDataModel(defineSchema)` | A `TypeDataModel` whose fields are typed from the schema, so `this.level` is a `number` inside `prepareDerivedData` |
 | `fields()` | `foundry.data.fields`, typed, read lazily so the module imports in Node |
 | `InferSchema<T>` / `Model['$inferData']` | The hand-written interface that drifts from the schema |
-| `BaseActorSheet()` / `BaseItemSheet()` | `static TABS`, `static DRAG_DROP`, typed `onDropItem` and friends on `ActorSheetV2` / `ItemSheetV2` with Handlebars |
+| `BaseActorSheet()` / `BaseItemSheet()` | `static TABS`, `static DRAG_DROP`, `static MODES` (play and edit, with the fields locked in play), typed `onDropItem` and friends on `ActorSheetV2` / `ItemSheetV2` with Handlebars |
 | `BaseDocumentSheet('Actor' \| 'Item')` / `BaseApplication()` | The same plumbing without Handlebars, for a sheet that builds its own element |
 | `SystemConfig` | `game.settings.register/get/set` with the package id filled in and unregistered reads caught |
 | `createMigrationRunner` | The `schemaVersion` setting, the `isNewerVersion` compare and the sequential `await` every system grows |

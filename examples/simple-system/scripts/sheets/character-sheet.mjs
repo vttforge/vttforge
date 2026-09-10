@@ -79,6 +79,20 @@ export class CharacterSheet extends BaseActorSheet() {
     },
   };
 
+  /**
+   * Play and edit modes. The sheet opens in play: every field locked, the
+   * roll buttons live. The header control switches to edit. Hit points stay
+   * open in play through `data-vttforge-edit-in-play` on their wrapper.
+   * @override
+   */
+  static MODES = {
+    initial: 'play',
+    labels: {
+      play: 'VTTFORGE_EXAMPLE.Sheet.Mode.play',
+      edit: 'VTTFORGE_EXAMPLE.Sheet.Mode.edit',
+    },
+  };
+
   /** @override */
   static DRAG_DROP = [
     {
