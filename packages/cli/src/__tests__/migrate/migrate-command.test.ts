@@ -230,3 +230,26 @@ describe('vttforge migrate and the release workflow', () => {
     );
   });
 });
+
+describe('--strict', () => {
+  it('exits 1 when a decision is left, 0 when none is', async () => {
+    await writeFile(
+      join(cwd, 'chat.mjs'),
+      'Hooks.on("renderChatMessage", (m, html) => html.find(".x"));\n',
+      'utf8',
+    );
+    let out = '';
+    const left = await runMigrateCommand({
+      cwd,
+      strict: true,
+      out: (c) => {
+        out += c;
+      },
+    });
+    expect(left.exitCode).toBe(1);
+    expect(out).toContain('--strict: 1 decision(s) left');
+    await rm(join(cwd, 'chat.mjs'));
+    const clean = await runMigrateCommand({ cwd, strict: true, out: () => undefined });
+    expect(clean.exitCode).toBe(0);
+  });
+});

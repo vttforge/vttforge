@@ -46,6 +46,26 @@ export interface MigrateReport {
   };
 }
 
+/** A file the run will write once every rewrite has been computed. */
+interface PendingWrite {
+  path: string;
+  content: string;
+}
+
+/**
+ * The lines the report prints as "needs a decision": the rewrites the run did
+ * not make, the TODO lines in generated files, and the notes on the generated
+ * sets. `--strict` fails the run when any is left.
+ */
+export function countDecisions(report: MigrateReport): number {
+  return (
+    report.counts.notes +
+    (report.dataModels?.notes.length ?? 0) +
+    (report.sheets?.files.reduce((n, f) => n + f.todos.length, 0) ?? 0) +
+    (report.sheets?.notes.length ?? 0)
+  );
+}
+
 export interface MigrateOptions {
   cwd: string;
   /** Write the edits. Default false: report only. */
@@ -68,6 +88,9 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
   }
 
   const files: FileResult[] = [];
+  // Every rewrite is computed before the first write, so a run that stops
+  // halfway (a parser that throws on one file) leaves the tree as it was.
+  const pending: PendingWrite[] = [];
 
   for (const [name, kind] of [
     ['system.json', 'system'],
@@ -85,7 +108,7 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
     const result = transformManifest(raw, kind);
     if (result === null) continue;
     files.push({ file: name, changes: result.changes, notes: result.notes });
-    if (write && result.changes.length > 0) await writeFile(path, result.output, 'utf8');
+    if (write && result.changes.length > 0) pending.push({ path, content: result.output });
   }
 
   for await (const path of _internal.walkSourceFiles(cwd)) {
@@ -98,7 +121,7 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
     const result = transformSource(source);
     if (result.changes.length === 0 && result.notes.length === 0) continue;
     files.push({ file: relative(cwd, path), changes: result.changes, notes: result.notes });
-    if (write && result.output !== source) await writeFile(path, result.output, 'utf8');
+    if (write && result.output !== source) pending.push({ path, content: result.output });
   }
 
   // A project that builds to dist/ with a release workflow written for the old
@@ -152,10 +175,7 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
           plan.notes.unshift(`${file.path} exists and was left alone.`);
           continue;
         }
-        if (write) {
-          await mkdir(dirname(target), { recursive: true });
-          await writeFile(target, file.source, 'utf8');
-        }
+        if (write) pending.push({ path: target, content: file.source });
         written.push(file.path);
       }
       report.dataModels = {
@@ -167,8 +187,12 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
     }
   }
 
-  if (options.sheets) report.sheets = await planSheets(cwd, write, options.lang ?? 'js');
+  if (options.sheets) report.sheets = await planSheets(cwd, write, options.lang ?? 'js', pending);
 
+  for (const { path, content } of pending) {
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, content, 'utf8');
+  }
   return report;
 }
 
@@ -190,6 +214,7 @@ async function planSheets(
   cwd: string,
   write: boolean,
   lang: 'js' | 'ts',
+  pending: PendingWrite[],
 ): Promise<NonNullable<MigrateReport['sheets']>> {
   const files: Array<Omit<SheetPlanFile, 'source'>> = [];
   const templates: Array<{ file: string; edits: TemplateEdit[]; formRoot: boolean }> = [];
@@ -288,7 +313,7 @@ async function planSheets(
           `${t} opens with <form>; the SDK sheet already is one. Make it a <div> once the old class is gone: a part needs one root element (audit rule 008).`,
         );
       }
-      if (write && r.edits.length > 0) await writeFile(join(cwd, t), r.output, 'utf8');
+      if (write && r.edits.length > 0) pending.push({ path: join(cwd, t), content: r.output });
     }
   }
 
@@ -298,10 +323,7 @@ async function planSheets(
       notes.unshift(`${to} exists and was left alone.`);
       continue;
     }
-    if (write) {
-      await mkdir(dirname(target), { recursive: true });
-      await writeFile(target, out, 'utf8');
-    }
+    if (write) pending.push({ path: target, content: out });
   }
   return { files, templates, notes: [...new Set(notes)] };
 }

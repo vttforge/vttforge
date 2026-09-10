@@ -121,13 +121,20 @@ fail, for CI. `--json` prints the report as data.
 ## `vttforge migrate`
 
 ```bash
-vttforge migrate [dir] [--write] [--json]
+vttforge migrate [dir] [--write] [--strict] [--json]
 ```
 
 Rewrites a v13 project for v14. Without `--write` it only reports what it
 would change, one line per edit, so you catch a rewrite that landed in a
 string or a comment before it reaches the file. Run it, read the report, run
 it again with `--write`, then run `vttforge audit`.
+
+A rewrite it cannot make safely is never attempted: it becomes a "needs a
+decision" line and the run goes on. With `--write`, every file is rewritten
+in memory before the first one is written, so a run that throws on one file
+leaves the tree as it was. `--strict` exits 1 when any decision is left,
+which is what a CI step wants: the build fails instead of shipping code
+that still needs a hand.
 
 | Rewrite | Before | After |
 |---|---|---|
