@@ -259,6 +259,12 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
     members.push(rewriteGetData(reindent(text(source, getData)), cls.base, { usesObject }).code);
   }
 
+  const applyDialogs = (code: string): string => {
+    const d = rewriteDialogs(code);
+    if (/DialogV2\./.test(d.code)) usesDialogV2 = true;
+    return d.code;
+  };
+
   // 5. _onRender for the events that are not clicks.
   if (listeners.listeners.length > 0) {
     const body = listeners.listeners
@@ -268,7 +274,7 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
         const handler = isFunction
           ? indentTo(
               rewriteHandlerBody(
-                l.handlerText,
+                applyDialogs(l.handlerText),
                 param,
                 listeners.htmlParam,
                 param ? `${param}.currentTarget` : 'target',
@@ -294,11 +300,6 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
       [...l.handlerText.matchAll(/this\.(\w+)/g)].map((m) => m[1] ?? ''),
     ),
   );
-  const applyDialogs = (code: string): string => {
-    const d = rewriteDialogs(code);
-    if (/DialogV2\./.test(d.code)) usesDialogV2 = true;
-    return d.code;
-  };
   for (const member of cls.node.body.body) {
     if (
       member.type !== 'ClassMethod' &&

@@ -151,3 +151,19 @@ describe('vttforge migrate --data-models', () => {
     expect(again.report.dataModels?.notes[0]).toContain('exists and was left alone');
   });
 });
+
+describe('a template named base', () => {
+  it('is spread like any other when the file defines it', () => {
+    const plan = planDataModels({
+      Item: {
+        types: ['gear'],
+        templates: { base: { description: '' } },
+        gear: { templates: ['base'], weight: 1 },
+      },
+    });
+    const gear = plan.files.find((f) => f.path.endsWith('gear-data.mjs'))?.source ?? '';
+    expect(gear).toContain("import { baseFields } from './templates.mjs';");
+    expect(gear).toContain('...baseFields(f),');
+    expect(plan.notes.join(' ')).not.toMatch(/lists template "base"/);
+  });
+});
