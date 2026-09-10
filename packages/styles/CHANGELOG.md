@@ -1,5 +1,15 @@
 # @vttforge/styles
 
+## 0.5.0
+
+### Minor Changes
+
+- 1b42a83: Styles for the chat card `postRoll()` creates: `.vttf-roll`, its `--crit` and `--fumble` modifiers and the `__tag` label.
+
+### Patch Changes
+
+- c0bd31e: `.vttf-keyword`: the dotted underline for the span the keyword enricher produces.
+
 ## 0.4.1
 
 ### Patch Changes
