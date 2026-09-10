@@ -159,7 +159,7 @@ export default defineConfig({
 
     footer: {
       message: 'MIT licensed.',
-      copyright: 'Not affiliated with Foundry Gaming LLC.',
+      copyright: 'Not affiliated with Foundry Gaming LLC or with The Forge hosting service.',
     },
   },
 });
