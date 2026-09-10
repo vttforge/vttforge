@@ -127,14 +127,14 @@ describe('BaseItemSheet', () => {
     ).toBeTypeOf('function');
   });
 
-  it('binds DragDrop entries declared via static DRAG_DROP', () => {
+  it('binds DragDrop entries declared via static DRAG_DROP', async () => {
     const Base = BaseItemSheet();
     class Sheet extends Base {
       static override DRAG_DROP = [{ dragSelector: '.item' }];
     }
     const instance = new Sheet();
     stub(instance, { element: document.createElement('div'), isEditable: true });
-    instance._onRender({}, {});
+    await instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(1);
     const entry = dragDropBinds[0];
     if (!entry) throw new Error('expected dragDropBinds[0] after length assertion');

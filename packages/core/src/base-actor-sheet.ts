@@ -31,6 +31,16 @@
 
 import { VttfError } from './errors/registry.js';
 import type { DocumentSheetV2Members } from './foundry-base.js';
+import {
+  applyMode,
+  currentMode,
+  decorateHeaderControls,
+  modeContext,
+  type SheetMode,
+  type SheetModesConfig,
+  toggleMode,
+  toggleModeControl,
+} from './sheet-modes.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: Foundry's ActorSheetV2 shape lives in fvtt-types (deferred to @vttforge/types v1.0)
 type AnyConstructor = new (...args: any[]) => any;
@@ -67,6 +77,11 @@ export interface SheetBaseStatics {
   // biome-ignore lint/suspicious/noExplicitAny: a subclass merges arbitrary ApplicationV2 options in; a narrower type would reject the merge
   readonly DEFAULT_OPTIONS: Record<string, any>;
   readonly DRAG_DROP: ReadonlyArray<DragDropConfig>;
+  /**
+   * Opt into play and edit modes. Absent, the sheet is always in edit and
+   * shows no toggle. See `sheet-modes.ts` for what the opt-in gives.
+   */
+  readonly MODES?: SheetModesConfig;
 }
 
 /**
@@ -84,8 +99,16 @@ export interface SheetBaseMembers {
   /** Fills in `context.tabs` for every group in `static TABS`. */
   _prepareContext(options: unknown): Promise<Record<string, unknown>>;
   /** Binds the `static DRAG_DROP` entries. */
-  _onRender(context: unknown, options: unknown): void;
+  _onRender(context: unknown, options: unknown): Promise<void>;
   _onDragStart(event: DragEvent): void;
+  /** `'play'` or `'edit'`; always `'edit'` on a sheet without `static MODES`. */
+  readonly mode: SheetMode;
+  readonly isEditMode: boolean;
+  readonly isPlayMode: boolean;
+  /** Flip the mode, or set the one given, and re-render. */
+  toggleMode(mode?: SheetMode): Promise<void>;
+  /** The header controls, with the mode toggle labelled for where it leads. */
+  _getHeaderControls(): unknown[];
 
   /**
    * The typed drop hooks. Override the one you want; returning `undefined`
@@ -160,7 +183,12 @@ function resolveBases(): { Base: AnyConstructor; mixin: (b: AnyConstructor) => A
 
 function resolveDragDrop(): DragDropCtor | undefined {
   const foundry = (globalThis as Record<string, unknown>).foundry as FoundryGlobal | undefined;
-  const ctor = foundry?.applications?.ux?.DragDrop;
+  // `implementation` is the class a system or module may have swapped in
+  // through CONFIG.ux; the bare class is the fallback for a runtime without it.
+  const dragDrop = foundry?.applications?.ux?.DragDrop as
+    | (DragDropCtor & { implementation?: DragDropCtor })
+    | undefined;
+  const ctor = dragDrop?.implementation ?? dragDrop;
   return typeof ctor === 'function' ? ctor : undefined;
 }
 
@@ -193,6 +221,7 @@ export const VTTFORGE_SHEET_CLASS = 'vttforge';
  *   static DEFAULT_OPTIONS = foundry.utils.mergeObject(
  *     super.DEFAULT_OPTIONS,
  *     { classes: ['my-system'], position: { width: 720 } },
+ *     { inplace: false }, // never edit the parent's static options in place
  *   );
  *   static PARTS = { ... };
  *   static TABS = {
@@ -219,11 +248,14 @@ export function BaseActorSheet(): SheetBaseCtor {
   class VttforgeBaseActorSheet extends Mixed {
     static readonly DEFAULT_OPTIONS = {
       classes: [VTTFORGE_SHEET_CLASS],
-      window: { resizable: true },
+      window: { resizable: true, controls: [toggleModeControl()] },
       position: { width: 600, height: 700 },
       tag: 'form',
       form: { submitOnChange: true, closeOnSubmit: false },
-      actions: { vttforgeTab: VttforgeBaseActorSheet._onTab },
+      actions: {
+        vttforgeTab: VttforgeBaseActorSheet._onTab,
+        vttforgeToggleMode: VttforgeBaseActorSheet._onToggleMode,
+      },
     } as const;
 
     /**
@@ -264,7 +296,38 @@ export function BaseActorSheet(): SheetBaseCtor {
           context.tabs = tabs;
         }
       }
+      Object.assign(context, modeContext(this));
       return context;
+    }
+
+    get mode(): SheetMode {
+      return currentMode(this);
+    }
+
+    get isEditMode(): boolean {
+      return currentMode(this) === 'edit';
+    }
+
+    get isPlayMode(): boolean {
+      return currentMode(this) === 'play';
+    }
+
+    async toggleMode(mode?: SheetMode): Promise<void> {
+      await toggleMode(this, mode);
+    }
+
+    /** The toggle control reads "Play mode" in edit and "Edit mode" in play. */
+    _getHeaderControls(): unknown[] {
+      const superControls = (Mixed.prototype as { _getHeaderControls?: () => unknown[] })
+        ._getHeaderControls;
+      const controls =
+        typeof superControls === 'function' ? (superControls.call(this) as unknown[]) : [];
+      return decorateHeaderControls(this, controls as Array<{ action?: string }>);
+    }
+
+    static _onToggleMode(_event: Event, _target: HTMLElement): void {
+      // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time
+      void toggleMode(this as unknown as object);
     }
 
     /**
@@ -309,19 +372,24 @@ export function BaseActorSheet(): SheetBaseCtor {
      * `_onDragStart` / `_onDrop`. Subclasses extending `_onRender` MUST call
      * `super._onRender(context, options)` to keep DragDrop wired.
      */
-    _onRender(context: unknown, options: unknown): void {
+    async _onRender(context: unknown, options: unknown): Promise<void> {
+      // ApplicationV2 renders asynchronously; the parent's work has to finish
+      // before the DragDrop instances bind to the element it produced.
       const superRender = (
-        Mixed.prototype as { _onRender?: (context: unknown, options: unknown) => void }
+        Mixed.prototype as {
+          _onRender?: (context: unknown, options: unknown) => void | Promise<void>;
+        }
       )._onRender;
       if (typeof superRender === 'function') {
-        superRender.call(this, context, options);
+        await superRender.call(this, context, options);
       }
       const configs = (this.constructor as { DRAG_DROP?: ReadonlyArray<DragDropConfig> }).DRAG_DROP;
-      if (!configs?.length) return;
       const DragDrop = resolveDragDrop();
-      if (!DragDrop) return;
       const element = (this as { element?: HTMLElement }).element;
-      if (!element) return;
+      if (!configs?.length || !DragDrop || !element) {
+        applyMode(this);
+        return;
+      }
       const onDragStart = (this as { _onDragStart?: (event: DragEvent) => void })._onDragStart;
       const onDrop = (this as { _onDrop?: (event: DragEvent) => void })._onDrop;
       for (const cfg of configs) {
@@ -339,6 +407,7 @@ export function BaseActorSheet(): SheetBaseCtor {
           },
         }).bind(element);
       }
+      applyMode(this);
     }
 
     /**
