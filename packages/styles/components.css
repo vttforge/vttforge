@@ -743,6 +743,51 @@
   color: var(--vttf-text-faint);
 }
 
+/* ════════ ROLL CARD ════════ */
+
+/*
+ * The chat card `postRoll()` from @vttforge/core creates. It wraps Foundry's
+ * own `.dice-roll` block; the modifier marks the outcome and the tag names it.
+ */
+
+.vttf-roll {
+  --vttf-roll-accent: transparent;
+  position: relative;
+  padding: var(--vttf-space-2) 0 0;
+  border-left: 3px solid var(--vttf-roll-accent);
+  padding-left: var(--vttf-space-3);
+  margin-left: calc(-1 * var(--vttf-space-3));
+}
+
+.vttf-roll--crit {
+  --vttf-roll-accent: var(--vttf-gold);
+}
+
+.vttf-roll--fumble {
+  --vttf-roll-accent: var(--vttf-rose);
+}
+
+.vttf-roll__tag {
+  display: inline-block;
+  margin-bottom: var(--vttf-space-2);
+  padding: 2px 8px;
+  border-radius: var(--vttf-radius-full);
+  font-family: var(--vttf-font-mono);
+  font-size: 11px;
+  font-weight: var(--vttf-text-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vttf-roll-accent);
+  border: 1px solid color-mix(in oklch, var(--vttf-roll-accent) 40%, transparent);
+  background: color-mix(in oklch, var(--vttf-roll-accent) 10%, transparent);
+}
+
+.vttf-roll--crit .dice-total,
+.vttf-roll--fumble .dice-total {
+  color: var(--vttf-roll-accent);
+  border-color: color-mix(in oklch, var(--vttf-roll-accent) 50%, transparent);
+}
+
 /* ════════ KEYWORD ════════ */
 
 /*

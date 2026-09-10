@@ -47,6 +47,16 @@ export {
   type TypedTypeDataModel,
   type TypedTypeDataModelCtor,
 } from './base-type-data-model.js';
+export {
+  naturalResult,
+  type PostableRoll,
+  type PostRollOptions,
+  postRoll,
+  ROLL_CARD_CLASS,
+  type RollOutcome,
+  type RollThreshold,
+  rollOutcome,
+} from './chat.js';
 export type {
   ArrayFieldOptions,
   BooleanFieldOptions,

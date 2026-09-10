@@ -16,7 +16,7 @@
  *   `<img data-edit="img">` and Foundry's built-in action handles it.
  */
 
-import { BaseActorSheet } from '@vttforge/core';
+import { BaseActorSheet, postRoll } from '@vttforge/core';
 
 const SYSTEM_ID = 'vttforge-example';
 
@@ -193,13 +193,18 @@ export class CharacterSheet extends BaseActorSheet() {
     // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 action handlers are declared static but invoked with `this` bound to the sheet instance
     const actor = this.actor;
     const mod = actor.system.abilities?.[key]?.mod ?? 0;
-    const roll = new Roll(`1d20 + ${mod}`, actor.getRollData());
-    await roll.evaluate();
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor }),
+    const roll = new foundry.dice.Roll(`1d20 + ${mod}`, actor.getRollData());
+    await postRoll(roll, {
+      actor,
       flavor: game.i18n.format('VTTFORGE_EXAMPLE.Sheet.Roll.flavor', {
         ability: game.i18n.localize(`VTTFORGE_EXAMPLE.Ability.${key}`),
       }),
+      crit: 20,
+      fumble: 1,
+      labels: {
+        crit: 'VTTFORGE_EXAMPLE.Sheet.Roll.crit',
+        fumble: 'VTTFORGE_EXAMPLE.Sheet.Roll.fumble',
+      },
     });
   }
 

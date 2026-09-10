@@ -126,6 +126,7 @@ export default defineConfig({
             { text: 'The startup lifecycle', link: '/guide/lifecycle' },
             { text: 'Data models', link: '/guide/data-models' },
             { text: 'Sheets', link: '/guide/sheets' },
+            { text: 'Rolls', link: '/guide/rolls' },
             { text: 'Modules', link: '/guide/modules' },
             { text: 'Settings and migrations', link: '/guide/settings-and-migrations' },
             { text: 'Keywords', link: '/guide/keywords' },

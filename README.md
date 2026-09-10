@@ -46,6 +46,7 @@ The whole guide is at **[vttforge.dev/docs](https://vttforge.dev/docs/)**.
 - [Getting started](https://vttforge.dev/docs/guide/getting-started). Scaffold a project, point Foundry at it, build a release zip.
 - [Data models](https://vttforge.dev/docs/guide/data-models). One schema that types itself, and what each field class quietly defaults to.
 - [Sheets](https://vttforge.dev/docs/guide/sheets). The bases, the drop hooks, and why every sheet needs an id.
+- [Rolls](https://vttforge.dev/docs/guide/rolls). `postRoll`, and how a card gets tagged as a critical or a fumble.
 - [Modules](https://vttforge.dev/docs/guide/modules). Namespaced sub-types, enrichers, and what a module may not touch.
 - [Settings and migrations](https://vttforge.dev/docs/guide/settings-and-migrations). `SystemConfig` and the migration runner.
 - [Keywords](https://vttforge.dev/docs/guide/keywords). Rules terms defined once: `@Keyword[id]` in any text, and a journal the GM's client keeps current.
