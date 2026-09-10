@@ -1,5 +1,18 @@
 # @vttforge/core
 
+## 0.16.0
+
+### Minor Changes
+
+- c0bd31e: `keywords` on `registerSystem` and `registerModule`: a list of rules terms, each an id, a label and a description. `@Keyword[id]` in any rich text becomes the label with the description as tooltip, and on `ready` the GM's client writes all of them to a journal entry (named by `keywordsJournal`, or skipped with `false`) and rewrites it when the list changes. A bad or repeated id is refused with VTTF-0009.
+- 1b42a83: `postRoll(roll, options)` posts a roll to chat as a card. It evaluates the roll if needed, decides a critical or a fumble from the first die by the `crit` and `fumble` thresholds you give (`true`, a number, or a function), tags the card with `vttf-roll--crit` or `vttf-roll--fumble` and a label, and stores the outcome in the message flags as `vttforge.roll` under your package's scope. `rollOutcome()` and `naturalResult()` expose the decision without posting.
+- 12aae87: Play and edit modes for the sheet bases. Opt in with `static MODES = { initial: 'play' }` on a `BaseActorSheet()` or `BaseItemSheet()`: a header control switches between the two, `sheet.mode`, `sheet.toggleMode()` and `context.mode` report it, the sheet element carries `vttforge-mode-play` or `vttforge-mode-edit`, and in play every form field in the window content is disabled except those inside an element with `data-vttforge-edit-in-play`. A sheet without `MODES` behaves as before.
+
+### Patch Changes
+
+- d21b217: `BaseActorSheet` and `BaseItemSheet` now declare `_onRender` as `async` and await the parent's render before binding the `DRAG_DROP` entries; a subclass that overrides it should `await super._onRender(context, options)`. The instances come from `foundry.applications.ux.DragDrop.implementation` when the runtime provides it. The JSDoc examples pass `{ inplace: false }` to `mergeObject`, which the parent's static options need.
+- da45c42: The keywords journal finds its page by flag and rewrites only that page, so pages the GM adds to the journal survive a sync, and a deleted page comes back without touching the others. `postRoll` merges `vttforge.roll` into the scope's existing `vttforge` flags instead of replacing them.
+
 ## 0.15.2
 
 ### Patch Changes

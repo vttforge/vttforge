@@ -1,5 +1,13 @@
 # @vttforge/cli
 
+## 0.15.2
+
+### Patch Changes
+
+- 12aae87: The scaffold templates pin `@vttforge/core` at the version this release publishes.
+- 1b42a83: The scaffold templates pin `@vttforge/core` and `@vttforge/styles` at the versions this release publishes.
+- 12aae87: The scaffold templates pin `@vttforge/core` at the version this release publishes.
+
 ## 0.15.1
 
 ### Patch Changes
