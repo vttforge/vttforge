@@ -187,7 +187,7 @@ MIT, and it stays that way. No paid tier, no open core, nothing held back for a 
 
 ## The part that is still a promise
 
-Foundry v14 is when this gets tested. The argument is that when Foundry moves, the change lands in one place and your module updates a dependency instead of rewriting a sheet. That has not happened yet. The plumbing really is in one place and the audit really does catch the quiet v14 breakages, but neither proves the argument until a version bump does. I will say plainly how it went when it happens.
+The argument is that when Foundry moves, the change lands in one place and your module updates a dependency instead of rewriting a sheet. It has been through one version bump so far. The SDK moved from v13 to v14, and one system built on it followed by updating the dependency and reading the changelog. One bump on one system is not a track record. I will say how each next one goes.
 
 This project can also fail the same way the modules it replaces fail: one maintainer, a quiet repository, and the dependency everyone leaned on goes still. Putting the plumbing in one place only helps if that place has more than one person who understands it. If you want to be one of them, open an issue and say so.
 
