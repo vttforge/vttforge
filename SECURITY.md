@@ -9,7 +9,7 @@ VTTForge is pre-v1.0. Until v1.0 ships, only the **latest released version** of 
 | v0.x       | Latest minor only  |
 | < v0.1     | Not applicable (no release yet) |
 
-Once v1.0 ships, the supported-version policy will be revised to cover the current major plus the most recent previous major for a defined window.
+Once v1.0 ships, we will widen this policy to cover the current major plus the one before it, for a stated window.
 
 ## Reporting a vulnerability
 
@@ -31,21 +31,21 @@ This opens a private security advisory visible only to maintainers and the repor
 In scope:
 
 - Vulnerabilities in any `@vttforge/*` published npm package
-- Supply-chain integrity issues (e.g. compromised publish flow, missing provenance)
+- Supply-chain integrity issues, such as a compromised publish flow or missing provenance
 - Issues that allow code execution, data exfiltration, or privilege escalation in a FoundryVTT system or module that consumes VTTForge
 
 Out of scope:
 
 - Vulnerabilities in FoundryVTT itself. Report those to [Foundry Gaming LLC](https://foundryvtt.com/community/contact/)
 - Vulnerabilities in third-party dependencies. Report upstream first, and let us know if VTTForge needs to take action
-- Issues in user code that merely uses VTTForge APIs
+- Issues in user code that only calls VTTForge APIs
 
 ## Provenance and supply chain
 
-Starting at v0.1, every `@vttforge/*` release is published with [npm provenance attestation](https://docs.npmjs.com/generating-provenance-statements) via GitHub OIDC trusted publishing. Verify any installed package with:
+Since v0.1, every `@vttforge/*` release ships with an [npm provenance attestation](https://docs.npmjs.com/generating-provenance-statements) via GitHub OIDC trusted publishing. Verify an installed package with:
 
 ```bash
 npm audit signatures
 ```
 
-If you suspect a published artefact does not match its source repository commit, treat it as a critical incident and report via the private advisory link above.
+If you suspect a published artefact does not match its source repository commit, treat it as a critical incident and report it through the private advisory link above.

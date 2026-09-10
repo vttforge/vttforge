@@ -19,8 +19,8 @@ the answer in `.vttforge/config.json`. Override with `--foundry-data <path>`
 or `FOUNDRY_DATA_DIR`. If Foundry runs in a container it cannot follow the
 symlink, and the command prints the compose mount to use instead.
 
-Save a template and the open sheet redraws in place; save a stylesheet and the
-CSS swaps. Enable **VTTForge Dev** in the world once; `pnpm dev` links it in.
+A saved template redraws the open sheet in place, and a saved stylesheet swaps
+the CSS. Enable **VTTForge Dev** in the world once; `pnpm dev` links it in.
 
 Then enable **{{TITLE}}** in a world and create a Note from the Items sidebar.
 
@@ -31,27 +31,26 @@ Then enable **{{TITLE}}** in a world and create a Note from the Items sidebar.
 | `module.json` | Manifest. Declares the `note` sub-type under `documentTypes` and the hot-reload paths |
 | `scripts/main.ts` | One `registerModule` call: data model, sheet, enricher, settings, API |
 | `scripts/constants.ts` | `MODULE_ID` and `NOTE_TYPE`, the prefixed key Foundry files the sub-type under |
-| `scripts/data/note-data.ts` | The data model. The schema is a function handed to `BaseTypeDataModel`, which is what makes `this.body` a `string` |
+| `scripts/data/note-data.ts` | The data model. The schema is a function handed to `BaseTypeDataModel`, which makes `this.body` a `string` |
 | `scripts/sheets/note-sheet.ts` | The sheet, on `BaseItemSheet` |
 | `scripts/enricher.ts` | `@Note[id]` → a link that opens the note |
 | `templates/` | Handlebars, using Foundry's own elements (`<prose-mirror>`, `data-action`) |
 | `styles/main.css` | Scoped under `.{{ID}}`, colours from Foundry's variables |
 | `lang/en.json` | Strings, under the `{{LOCALE_PREFIX}}` prefix, plus the `TYPES.Item` label |
 
-## Three things worth knowing before you edit
+## Before you edit
 
-**A module's sub-types are namespaced.** You register `note`; Foundry files it
-as `{{ID}}.note`, and so must the manifest. `registerModule` adds the prefix,
+A module's sub-types are namespaced: you register `note`, Foundry files it as
+`{{ID}}.note`, and the manifest must match. `registerModule` adds the prefix,
 and `NOTE_TYPE` in `constants.ts` is the one place it is spelled out.
 
-**Sheets are registered by id, not by class name.** `registerModule({ sheets })`
-pins each sheet under `{{ID}}.<id>`. Foundry saves that key on every item
-whose owner picked the sheet, and derives it from the class name unless told
-otherwise, and a bundler renames classes between builds. Keep the ids.
+`registerModule({ sheets })` pins each sheet under `{{ID}}.<id>`, and Foundry
+saves that key on every item whose owner picked the sheet. Without an
+explicit id it derives the key from the class name, and a bundler renames
+classes between builds. Keep the ids.
 
-**`this.document` is `unknown` on the sheet bases.** Which document a sheet is
-for is yours to know. The sheet narrows it once in a getter (`item`) and
-everything below reads typed.
+`this.document` is `unknown` on the sheet bases. The sheet narrows it once
+in a getter (`item`), and everything below reads typed.
 
 ## Public API
 

@@ -19,8 +19,8 @@ the answer in `.vttforge/config.json`. Override with `--foundry-data <path>`
 or `FOUNDRY_DATA_DIR`. If Foundry runs in a container it cannot follow the
 symlink, and the command prints the compose mount to use instead.
 
-Save a template and the open sheet redraws in place; save a stylesheet and the
-CSS swaps. Enable **VTTForge Dev** in the world once; `pnpm dev` links it in.
+A saved template redraws the open sheet in place, and a saved stylesheet swaps
+the CSS. Enable **VTTForge Dev** in the world once; `pnpm dev` links it in.
 
 Then create a world on **{{TITLE}}** and open a character.
 
@@ -30,24 +30,23 @@ Then create a world on **{{TITLE}}** and open a character.
 |---|---|
 | `system.json` | Manifest: types, `htmlFields`, hot-reload paths, migration flags |
 | `scripts/main.ts` | One `registerSystem` call: models, sheets, initiative, settings, migrations |
-| `scripts/data/*.ts` | Data models. The schema is a function handed to `BaseTypeDataModel`, which is what makes `this.level` a `number` |
+| `scripts/data/*.ts` | Data models. The schema is a function handed to `BaseTypeDataModel`, which makes `this.level` a `number` |
 | `scripts/sheets/*.ts` | Sheets on `BaseActorSheet` / `BaseItemSheet`: `static TABS`, `static DRAG_DROP`, typed `onDropItem` |
 | `scripts/migrations.ts` | `createMigrationRunner`: versioned, idempotent, GM-gated |
 | `templates/` | Handlebars, using Foundry's own elements (`<prose-mirror>`, `data-action`) |
 | `styles/main.css` | Imports `@vttforge/styles` and scopes your rules under `.{{ID}}` |
 | `lang/en.json` | Strings, under the `{{LOCALE_PREFIX}}` prefix |
 
-## Two things worth knowing before you edit
+## Before you edit
 
-**Sheets are registered by id, not by class name.** `registerSystem({ sheets })`
-pins each sheet under `{{ID}}.<id>`. Foundry saves that key on every actor
-whose owner picked the sheet, and derives it from the class name unless told
-otherwise, and a bundler renames classes between builds. Keep the ids; renaming one
-loses the sheet choice on every document already using it.
+`registerSystem({ sheets })` pins each sheet under `{{ID}}.<id>`, and Foundry
+saves that key on every actor whose owner picked the sheet. Without an
+explicit id it derives the key from the class name, and a bundler renames
+classes between builds. Renaming an id loses the sheet choice on every
+document already using it.
 
-**`this.document` is `unknown` on the sheet bases.** Which document a sheet is
-for is yours to know. Each sheet here narrows it once in a getter (`actor`,
-`item`) and everything below reads typed.
+`this.document` is `unknown` on the sheet bases. Each sheet here narrows it
+once in a getter (`actor`, `item`), and everything below reads typed.
 
 ## Checks
 

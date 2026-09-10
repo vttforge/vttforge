@@ -5,8 +5,8 @@ What you can build on, and what may move.
 ## Before 1.0
 
 Every package is below `1.0.0`. Under semver that means a **minor may break
-you** — and in this project it regularly does, because the API is still meeting
-real systems and modules for the first time.
+you**. In this project it regularly does, because the API is still meeting real
+systems and modules for the first time.
 
 Pin exactly, or accept that `pnpm update` can require code changes:
 
@@ -15,11 +15,11 @@ Pin exactly, or accept that `pnpm update` can require code changes:
 ```
 
 A caret on a `0.x` version pins the minor (`^0.8.0` means `>=0.8.0 <0.9.0`),
-so it is narrower than people expect. That is a feature here.
+so it is narrower than people expect.
 
 ## After 1.0
 
-- No breaking change in a minor. Ever.
+- No breaking change in a minor.
 - A breaking change means a major, and a major comes with a migration note
   saying what to change, not only what changed.
 - Anything marked `@experimental` is exempt. It says so in its own doc comment,
@@ -33,8 +33,7 @@ A stable export that is going away:
 2. Keeps working for **two more minors**, at least 90 days.
 3. Goes in the next major.
 
-If there is no replacement, the tag says that too. "Deprecated, use X instead"
-is a promise; "deprecated, and here is why nothing replaces it" is honest.
+If there is no replacement, the tag says that too, and why nothing replaces it.
 
 ## What each package promises
 
@@ -52,14 +51,13 @@ is a promise; "deprecated, and here is why nothing replaces it" is honest.
 
 Only the packages that run in Node declare an engine floor. `@vttforge/core`,
 `@vttforge/styles`, `@vttforge/types` and `@vttforge/dev-module` run in the
-browser inside Foundry and never touch Node, so they declare none — requiring a
-Node version to install a browser package only blocks people for no reason.
+browser inside Foundry and never touch Node, so they declare none.
 
 | Package | Node |
 |---|---|
 | `@vttforge/cli` | >= 26 |
 | `@vttforge/vite-plugin` | >= 26 |
-| `@vttforge/testing` | >= 22 — its Quench half runs in the browser |
+| `@vttforge/testing` | >= 22. Its Quench half runs in the browser |
 | everything else | not applicable |
 
 ## Foundry
@@ -72,4 +70,4 @@ carrying both.
 ## Peer dependencies
 
 `@vttforge/vite-plugin` peers on `vite`. Nothing else declares a peer, and
-nothing else should — a package that needs something should depend on it.
+nothing else should. A package that needs something should depend on it.

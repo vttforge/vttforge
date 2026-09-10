@@ -1,8 +1,7 @@
 # Binding to Foundry's Theme V2
 
 Since v13 Foundry ships CSS custom properties that follow the user's light/dark
-choice. Using them means your package changes with the rest of the interface
-instead of fighting it.
+choice. Use them and your package changes with the rest of the interface.
 
 ```css
 @layer my-package {
@@ -25,9 +24,9 @@ instead of fighting it.
 
 ## Use a cascade layer
 
-Foundry uses `@layer`. Wrapping your CSS in a named layer means a game system can
-override you without anyone writing `!important`, and means you do not
-accidentally outrank Foundry's own rules by specificity.
+Foundry uses `@layer`. Wrap your CSS in a named layer. A game system can then
+override you without writing `!important`, and your rules do not outrank
+Foundry's own by specificity.
 
 `@vttforge/styles` publishes under `vttforge.*`. Pick your own package id as
 the layer name, never `system`, which Foundry owns.
@@ -38,6 +37,6 @@ the layer name, never `system`, which Foundry owns.
 color: var(--color-text-primary, #f0f0e0);
 ```
 
-Your CSS may load in a context where Foundry's variables are not defined (a
-preview page, a screenshot tool, a test harness), and a missing custom
-property makes the declaration invalid rather than falling back to inherited.
+Your CSS may load where Foundry's variables are not defined: a preview page, a
+screenshot tool, a test harness. A missing custom property makes the
+declaration invalid rather than falling back to inherited.

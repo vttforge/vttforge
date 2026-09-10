@@ -1,6 +1,6 @@
 # VTTForge brand assets
 
-The mark is `{ d20 }` — curly braces signal code, the icosahedron between them signals where that code runs.
+The mark is `{ d20 }`. The curly braces stand for code, and the icosahedron between them for where that code runs.
 
 ## Files
 
@@ -26,7 +26,7 @@ The mark uses exactly four colors. Anything else is off-brand.
 | `--ember-deep` | `oklch(0.520 0.160 38)` | `#b13c11` |
 | `--text-muted` | `oklch(0.745 0.012 70)` | `#b1aba4` |
 
-SVG attributes ship as sRGB hex for universal rasterizer support. Modern surfaces should override to OKLCH via `@vttforge/styles` tokens for wide-gamut display fidelity.
+SVG attributes ship as sRGB hex, which every rasterizer reads. On a wide-gamut display, override to OKLCH through the `@vttforge/styles` tokens so the colors hold.
 
 The favicon plate uses a fifth color (`#130d0a` warm-dark) as backdrop, not part of the mark.
 
@@ -34,9 +34,9 @@ The favicon plate uses a fifth color (`#130d0a` warm-dark) as backdrop, not part
 
 The wordmark is always Bricolage Grotesque 700, with `VTT` in `var(--ember)`.
 
-**Horizontal lockup** — mark 56×56 + wordmark 40px, gap 16px, tracking -0.03em.
-**Stacked lockup** — mark 72×72 + wordmark 28px below, gap 16px, tracking -0.02em.
-**Inline (nav)** — mark 30×30 + wordmark 20px, gap 8px, tracking -0.02em.
+**Horizontal lockup.** Mark 56×56 + wordmark 40px, gap 16px, tracking -0.03em.
+**Stacked lockup.** Mark 72×72 + wordmark 28px below, gap 16px, tracking -0.02em.
+**Inline (nav).** Mark 30×30 + wordmark 20px, gap 8px, tracking -0.02em.
 
 ## Approved backgrounds
 

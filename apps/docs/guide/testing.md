@@ -1,6 +1,7 @@
 # Testing
 
-Two kinds of test, and the line between them is where a window renders.
+Tests split at the point where a window renders. Everything before it runs
+against a mock in CI, and the rest needs a running world.
 
 ## In CI
 
@@ -17,12 +18,12 @@ foundry.restore();
 ```
 
 `withMockFoundry` installs `foundry`, `game`, `CONFIG`, `Hooks`, `ui` and
-`CONST`, and hands back a handle that **records** what your code registered:
-hooks, settings, notifications, sheets, enrichers. You assert on what happened,
-not merely on what did not throw.
+`CONST`, and hands back a handle that records what your code registered:
+hooks, settings, notifications, sheets, enrichers.
 
 `restore()` puts every global back, including deleting the ones that never
 existed.
+
 Anything else your code reads goes in `globals`. Foundry puts every document
 class on the global scope, and the fixed set above does not include them:
 
@@ -34,11 +35,10 @@ const foundry = withMockFoundry({
 
 `restore()` clears those too, and puts back whatever was there before.
 
-
 Importing from this entry also declares the globals, so `game.settings` in a
-test does not produce "Cannot find name 'game'". There is nothing to configure.
+test does not produce "Cannot find name 'game'".
 
-### Assert the sheet key, not the call
+### Assert the sheet key
 
 ```ts
 const foundry = withMockFoundry();
@@ -51,10 +51,9 @@ foundry.callHook('init');
 foundry.sheets.map((s) => s.key); // ['my-system.character']
 ```
 
-`key` is the thing worth pinning. Foundry saves it on every document whose
-owner picked the sheet, and it is built from the class name, which a bundler
-is free to rename between builds. A test that asserts the key is a test that
-the reader's choice survives your next release.
+Pin the `key`. Foundry saves it on every document whose owner picked the
+sheet, and it is built from the class name, which a bundler is free to rename
+between builds.
 
 `foundry.enrichers` reads back the same way, with the namespaced id.
 
@@ -68,8 +67,8 @@ actor.system.hp; // { value: 4, max: 10 }
 actor.updates;   // every delta, in order
 ```
 
-Updates **merge**, and dotted paths expand, both because that is what Foundry
-does. A mock that replaces instead of merging lets a test pass while the real
+Updates merge and dotted paths expand, because that is what Foundry does. A
+mock that replaced instead of merging would let a test pass while the real
 thing drops every sibling key.
 
 ## In a real world
@@ -89,27 +88,23 @@ registerBatch('my-module.sheets', ({ describe, it, assert }) => {
 });
 ```
 
-Safe at module scope: it waits for `quenchReady` rather than assuming Quench
-has loaded, which is the mistake that makes a batch silently never appear.
-Outside Foundry it does nothing, so a file holding both kinds of test still
-imports under Vitest.
+`registerBatch` is safe at module scope, because it waits for `quenchReady`
+before registering. Outside Foundry it does nothing, so a file holding both
+kinds of test still imports under Vitest.
 
 ## Where to draw the line
 
 Anything before `_renderHTML` is testable with a mock. Real rendering, sockets
-with two clients, documents round-tripping through the database. Those need
-the real thing.
-
-Reaching for a mock past that line produces tests that pass and tell you
-nothing. Several bugs in this SDK were found only by opening a real Foundry: a
+with two clients and documents round-tripping through the database need a
+running Foundry, and only a running Foundry caught several bugs in this SDK: a
 sheet registered but unreachable, a class extending the wrong base, an
 annotation layer whose CSS class name did not match what the library styles.
 
-That is also why there is no helper that mounts a sheet against a mock actor
-and hands back its HTML, and there will not be one. Rendering a sheet is the
-Application framework: the Handlebars mixin, `PARTS`, template loading,
-Foundry's own helpers, tabs, form handling. A copy of that inside a mock would
-render something like what Foundry renders, and a test that passes against
-the copy and fails in the real thing is worse than no test. Test the context
-in Vitest, with `_prepareContext`, and test the render in a real world, with
-Quench or the end-to-end run.
+There is no helper that mounts a sheet against a mock actor and hands back its
+HTML, and there will not be one. Rendering a sheet is the Application
+framework: the Handlebars mixin, `PARTS`, template loading, Foundry's own
+helpers, tabs, form handling. A copy of that inside a mock would render
+something like what Foundry renders, and a test that passes against the copy
+and fails in the real thing is worse than no test. Test the context with
+`_prepareContext` under Vitest, and test the render under Quench or the
+end-to-end run.

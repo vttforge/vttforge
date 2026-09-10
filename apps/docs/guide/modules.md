@@ -17,8 +17,8 @@ point, and it has three parts that must agree.
 
 ## 2. Register it under the prefixed key
 
-Foundry files a module's subtype under `<module-id>.<type>`, not `<type>`. A
-system owns bare keys; a module does not.
+Foundry files a module's subtype under `<module-id>.<type>`. Bare keys belong
+to the system.
 
 ```ts
 import { moduleSubType, registerModule } from '@vttforge/core';
@@ -32,12 +32,11 @@ registerModule({
 });
 ```
 
-`registerModule` is not `registerSystem` with a different name. A module must
-not set `CONFIG.Actor.documentClass` or the initiative formula, and must not
-assign `CONFIG.statusEffects`. Those belong to whatever system is running, and a
-module that touches them breaks every world it is installed in. A module may
-add a condition of its own, and `statusEffects` does that by id, prefixed so it
-cannot collide with the system's.
+A module must not set `CONFIG.Actor.documentClass` or the initiative formula,
+and must not assign `CONFIG.statusEffects`. Those belong to the running
+system, and a module that touches them breaks every world it is installed in.
+A module may add a condition of its own, and `statusEffects` does that by id,
+prefixed so it cannot collide with the system's.
 
 ## 3. Register the sheet for the prefixed type
 
@@ -56,8 +55,8 @@ bundler renames classes between builds; see
 
 ## Keep the type key in its own module
 
-The subtype key gets used by the sheet, the API, the enricher, anything that
-looks documents up. Put it somewhere neither of those has to import the entry
+The sheet, the API, the enricher, anything that looks documents up: they all
+use the subtype key. Put it somewhere none of them has to import the entry
 point for:
 
 ```ts
@@ -96,24 +95,22 @@ registerModule({
 ```
 
 `CONFIG.TextEditor.enrichers` is a plain array, so you could push to it
-yourself. Register here instead, because that array has four ways to take an
-entry and then do nothing with it, and Foundry names none of them.
+yourself. Register here instead: that array has four ways to take an entry and
+then do nothing with it, none of them reported.
 
-**`onRender` without an `id` never fires.** Foundry wraps enriched output in a
+`onRender` without an `id` never fires. Foundry wraps enriched output in a
 custom element only when both are present, and only the wrapper fires the
 callback. The text still enriches, so the markup looks right and only the
-behaviour is missing. Registering through VTTForge always supplies an id, so
-this one stops being possible.
+behaviour is missing. Registering through VTTForge always supplies an id.
 
-**A duplicate `id` silently loses.** The wrapper stores the id as an attribute
-and finds the enricher back with `find`, and the first match wins. Two packages both
-using `link` means the first one's `onRender` runs against the second one's
-markup. It only reproduces in a world with both installed, which is not the
-world you are testing in. Ids are namespaced to your package, and a repeat
-within your own package is refused.
+A duplicate `id` silently loses. The wrapper stores the id as an attribute and
+finds the enricher back with `find`, and the first match wins. Two packages
+both using `link` means the first one's `onRender` runs against the second
+one's markup, and it only reproduces in a world with both installed. Ids are
+namespaced to your package, and a repeat within your own package is refused.
 
-**A pattern without the `g` flag throws.** Enrichment matches with `matchAll`,
+A pattern without the `g` flag throws. Enrichment matches with `matchAll`,
 which rejects a non-global regex, and that throw is outside the handler Foundry
-wraps enrichers in. Checked when you register instead.
+wraps enrichers in. VTTForge checks the flag when you register.
 
 `registerSystem` takes the same option.

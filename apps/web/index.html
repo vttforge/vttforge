@@ -78,7 +78,7 @@
           <span class="status-pill"><span class="blip"></span> on npm · Foundry v14+</span>
           <h1 class="hero-title">Forge sheets,<br />not <em>boilerplate</em>.</h1>
           <p class="hero-sub">
-            A modern SDK for building FoundryVTT v14+ systems and modules.
+            An SDK for building FoundryVTT v14+ systems and modules.
             Typed data models, sheets that already know their tabs and drops, and a dev loop that reloads in place.
           </p>
 
@@ -110,12 +110,11 @@
             <span class="bk-eyebrow">Why this exists</span>
             <h2 class="bk-title">Good modules die<br />at every Foundry version.</h2>
             <p class="bk-sub">
-              What breaks is almost never the interesting part. It is the sheet plumbing,
-              the registration boilerplate, the class that moved namespace. VTTForge holds
-              that in one place, so when Foundry moves it, you update a dependency instead
-              of rewriting a sheet. And if this project ever goes quiet, the output is
-              plain ES modules Foundry loads natively: delete it and your code is still
-              your code.
+              What breaks is the sheet plumbing, the registration boilerplate, the class
+              that moved namespace. VTTForge holds that in one place, so when Foundry
+              moves it, you update a dependency instead of rewriting a sheet. If this
+              project ever goes quiet, the output is plain ES modules Foundry loads
+              natively: delete it and your code is still your code.
             </p>
           </div>
 
@@ -201,9 +200,9 @@
         <div class="shell">
           <div class="bk-head">
             <span class="bk-eyebrow">What you get</span>
-            <h2 class="bk-title">Proven on a shipped module<br />before it ships here.</h2>
+            <h2 class="bk-title">Used in a shipped module<br />before it lands here.</h2>
             <p class="bk-sub">
-              Every API is used by a published Foundry module before it lands in the SDK. Where Foundry already does something well, the SDK leaves it alone.
+              A published Foundry module runs every API before it lands in the SDK. Where Foundry already does something well, the SDK leaves it alone.
             </p>
           </div>
 
@@ -211,19 +210,19 @@
             <article class="feat">
               <div class="ico">{ }</div>
               <h3>Declarative sheet bases</h3>
-              <p><span class="mono">BaseActorSheet</span> and <span class="mono">BaseItemSheet</span> handle drag-drop wiring, tab state, and <span class="mono">fromUuid</span> resolution. You write the rules of your game, not plumbing.</p>
+              <p><span class="mono">BaseActorSheet</span> and <span class="mono">BaseItemSheet</span> handle drag-drop wiring, tab state, and <span class="mono">fromUuid</span> resolution. What is left to write is the rules of your game.</p>
               <div class="nub">@vttforge/core</div>
             </article>
             <article class="feat">
               <div class="ico">T</div>
               <h3>Schema-to-type inference</h3>
-              <p>One <span class="mono">defineSchema()</span> drives both runtime validation and your TypeScript types via <span class="mono">InferSchema&lt;T&gt;</span>. One declaration, not two to keep in sync.</p>
+              <p>One <span class="mono">defineSchema()</span> drives both runtime validation and your TypeScript types via <span class="mono">InferSchema&lt;T&gt;</span>. There is no second declaration to keep in sync.</p>
               <div class="nub">@vttforge/core</div>
             </article>
             <article class="feat">
               <div class="ico">≡</div>
               <h3>Cascade-layer CSS</h3>
-              <p><span class="mono">@vttforge/styles</span> nests under Foundry's <span class="mono">system</span> layer with a vendored prefix, no specificity wars, no <span class="mono">!important</span>. Inherits Theme V2 for free.</p>
+              <p><span class="mono">@vttforge/styles</span> nests under Foundry's <span class="mono">system</span> layer with a vendored prefix, so your rules win without <span class="mono">!important</span>, and it inherits Theme V2.</p>
               <div class="nub">@vttforge/styles</div>
             </article>
             <article class="feat">
@@ -252,8 +251,8 @@
         <div class="shell">
           <div class="bk-head">
             <span class="bk-eyebrow">Packages</span>
-            <h2 class="bk-title">Seven packages,<br />one monorepo.</h2>
-            <p class="bk-sub">Cherry-pick what you need. <span class="mono">@vttforge/core</span> is enough for a system; the rest layer on top. All on npm, with provenance.</p>
+            <h2 class="bk-title">Eight packages,<br />one monorepo.</h2>
+            <p class="bk-sub">Install what you need. <span class="mono">@vttforge/core</span> is enough for a system; the rest layer on top. All on npm, with provenance.</p>
           </div>
 
           <div class="pkg-table-wrap">
@@ -269,7 +268,7 @@
               </tr>
               <tr>
                 <td class="pkg-name">@vttforge/cli</td>
-                <td class="pkg-desc">vttforge init / dev / build / audit: four templates, the symlink-and-watch dev loop, the release zip, a v14 manifest and source linter</td>
+                <td class="pkg-desc">vttforge init / dev / build / audit / migrate / lint: four templates, the symlink-and-watch dev loop, the release zip, the v14 audit, the v13-to-v14 codemod and a bundled linter</td>
                 <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
               </tr>
               <tr>
@@ -374,7 +373,7 @@
         <div class="shell">
           <div class="bk-head">
             <span class="bk-eyebrow">Roadmap</span>
-            <h2 class="bk-title">What shipped.<br />And the road to 1.0.</h2>
+            <h2 class="bk-title">What shipped,<br />and what is left before 1.0.</h2>
           </div>
 
           <div class="roadmap">
@@ -383,8 +382,8 @@
               <div class="rm-step done"><div class="dot"></div><div class="ver">v0.1</div><div class="nm">Core runtime · sheet bases · styles</div></div>
               <div class="rm-step done"><div class="dot"></div><div class="ver">v0.2</div><div class="nm">Vite plugin · dev loop · manifest sync</div></div>
               <div class="rm-step done"><div class="dot"></div><div class="ver">v0.3</div><div class="nm">CLI · four templates · audit · docs site</div></div>
-              <div class="rm-step now"><div class="dot"></div><div class="ver">now</div><div class="nm">Typed Foundry surface · adopters · the gaps they find</div></div>
-              <div class="rm-step"><div class="dot"></div><div class="ver">v1.0</div><div class="nm">Stable API · full inference · decorators</div></div>
+              <div class="rm-step now"><div class="dot"></div><div class="ver">now</div><div class="nm">Typed Foundry surface · decorators · v14 audit and migrate · adopters and the gaps they find</div></div>
+              <div class="rm-step"><div class="dot"></div><div class="ver">v1.0</div><div class="nm">Stable API · full inference</div></div>
             </div>
           </div>
         </div>
@@ -393,7 +392,7 @@
       <section>
         <div class="shell">
           <div class="cta-strip">
-            <h2>Built one Foundry system the hard way?<br />Try building the next one with VTTForge.</h2>
+            <h2>Build the next system<br />on VTTForge.</h2>
             <p>Every package is on npm. Scaffold one, read the guide, or file an issue with the boilerplate you keep writing by hand.</p>
             <div class="row">
               <a href="https://github.com/vttforge/vttforge" class="top-cta">Star on GitHub →</a>
@@ -410,7 +409,7 @@
         <div class="cols">
           <div>
             <h4>VTTForge</h4>
-            <p style="color: var(--vttf-text-muted); max-width: 32ch; font-size: 13px; margin: 0;">A modern SDK and CLI for building FoundryVTT v14+ systems and modules. MIT licensed, community first.</p>
+            <p style="color: var(--vttf-text-muted); max-width: 32ch; font-size: 13px; margin: 0;">An SDK and CLI for building FoundryVTT v14+ systems and modules. MIT licensed.</p>
           </div>
           <div>
             <h4>Documentation</h4>

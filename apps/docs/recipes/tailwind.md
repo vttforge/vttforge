@@ -1,7 +1,7 @@
 # Tailwind in a Foundry package
 
-Tailwind works inside a Foundry system or module. Three things go wrong by
-default, and each has a one-line fix.
+Tailwind works inside a Foundry system or module once you change a few
+defaults.
 
 ## Turn preflight off
 
@@ -17,8 +17,7 @@ export default {
 };
 ```
 
-`@vttforge/styles` already ships a reset scoped to its own layer, so nothing
-is lost.
+`@vttforge/styles` already ships a reset scoped to its own layer.
 
 ## Scope the utilities
 
@@ -33,8 +32,7 @@ export default {
 };
 ```
 
-The prefix is the safer of the two. `important` raises specificity, which
-is what cascade layers exist to avoid.
+The prefix is the safer of the two, because `important` raises specificity.
 
 ## Point `content` at the templates
 
@@ -57,8 +55,8 @@ export default { plugins: { tailwindcss: {}, autoprefixer: {} } };
 @tailwind utilities;
 ```
 
-Only `utilities`. `base` is preflight under another name, and `components`
-is empty until you add to it.
+Import only `utilities`: `base` is preflight under another name, and
+`components` is empty until you add to it.
 
 ## Keep the tokens
 
@@ -77,4 +75,4 @@ theme: {
 ```
 
 Now `my-bg-surface` follows the theme, and a custom theme built the way
-[the theme recipe](/recipes/custom-theme) describes restyles it for free.
+[the theme recipe](/recipes/custom-theme) describes restyles it too.

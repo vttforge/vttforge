@@ -37,7 +37,7 @@ dev` prints the compose mount line to use instead.
 
 A system with one Actor type, one Item type, sheets for both, a migration
 runner, and a settings registration. All of it is real code you are meant to
-edit, not a framework you configure.
+edit.
 
 Run `vttforge audit` at any point. It checks the manifest and source against
 the v14 catalog of things that break quietly.

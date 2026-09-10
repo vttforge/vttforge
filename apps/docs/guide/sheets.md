@@ -28,23 +28,20 @@ export class CharacterSheet extends BaseActorSheet() {
 
 `static TABS` fills in `context.tabs` for you, and `static DRAG_DROP` binds the
 drag-drop wiring on render. The typed drop hooks (`onDropItem`, `onDropActor`,
-`onDropFolder`, `onDropActiveEffect`) receive the resolved document, so you are
-not parsing a UUID out of a payload. Return `undefined` to hand the drop back
-to Foundry.
+`onDropFolder`, `onDropActiveEffect`) receive the resolved document. Return
+`undefined` to hand the drop back to Foundry.
 
 `BaseItemSheet` is the same without the drop dispatch.
 
 ### A sheet that is not a template
 
-`BaseActorSheet` and `BaseItemSheet` mix in Handlebars, which is right when the
-sheet is `static PARTS` and templates. It is wrong when the content is a canvas,
-an embedded PDF, or a Svelte or Lit mount. Those build an element and hand it
-over.
+`BaseActorSheet` and `BaseItemSheet` mix in Handlebars, which suits a sheet
+built from `static PARTS` and templates. Content that is a canvas, an embedded
+PDF, or a Svelte or Lit mount builds an element and hands it over.
 
-Using the Handlebars baseline for one of those does not fail loudly. The mixin
-expects a map of part id to markup, gets an element, and renders nothing: the
-window opens empty and no error names the mismatch. `BaseDocumentSheet` is the
-same document-sheet plumbing without the mixin.
+The mixin expects a map of part id to markup; given an element it renders
+nothing, so the window opens empty and no error names the mismatch.
+`BaseDocumentSheet` is the same document-sheet plumbing without the mixin.
 
 ```ts
 import { BaseDocumentSheet } from '@vttforge/core';
@@ -86,14 +83,13 @@ export class CharacterSheet extends BaseActorSheet() {
 }
 ```
 
-The interface names what the sheet reads. Grow it as the sheet grows; it is
-the one place to change when a real Foundry type package lands.
+The interface names what the sheet reads, and it is the one place to change
+when a real Foundry type package lands.
 
 ### `override` is not optional
 
-The base declares these members, so TypeScript requires the keyword. That is
-deliberate: it means the compiler can tell you when you misspell a hook name,
-which it could not do while these returned `any`.
+The base declares these members, so TypeScript requires the keyword and the
+compiler catches a misspelled hook name.
 
 ## Everything else
 
@@ -112,18 +108,15 @@ export class PdfConfig extends BaseApplication() {
 }
 ```
 
-`BaseApplication` exists because raw `ApplicationV2` has two traps.
+Raw `ApplicationV2` splits rendering in two: `_renderHTML` builds the content
+and `_replaceHTML` puts it in the window. Implement only the first and the
+class is silently unrenderable. Foundry reports it when something tries to open
+the window, as an error about abstract methods that points at Foundry rather
+than at your class. `BaseApplication` provides `_replaceHTML`; override it for
+a window that updates in place. A missing `_renderHTML` fails just as late, so
+`BaseApplication` checks for it at construction and names the class.
 
-**It splits rendering in two.** `_renderHTML` builds the content, `_replaceHTML`
-puts it in the window. Implement only the first and the class is silently
-unrenderable. Foundry reports it when something tries to open the window, as an
-error about abstract methods, which points at Foundry rather than at your class.
-`_replaceHTML` is provided; override it for a window that updates in place.
-
-**A missing `_renderHTML` fails late** for the same reason. This checks at
-construction and names the class.
-
-### Actor sheets are not plain applications
+### Actor sheets need `ActorSheetV2`
 
 If you are registering a sheet for an actor, it must extend `ActorSheetV2`, and
 `BaseActorSheet()` does. A plain `ApplicationV2` leaves `actor.sheet` as `null`
@@ -151,13 +144,12 @@ Foundry keys a sheet by `${package id}.${class name}` and writes that key onto
 every document whose owner picked the sheet. The key is saved data derived from
 a JavaScript class name.
 
-That is fine unbundled and broken once you ship a build. A minifier renames
-classes and does not promise the same name twice, so the same sheet registers as
-`mo` in one release and `vo` in the next. Every saved choice then names a sheet
-that no longer exists, Foundry falls back to the default, and the reader's sheet
-is gone with nothing in the console.
+That holds unbundled. Once you ship a build, a minifier renames classes and
+does not promise the same name twice, so the same sheet registers as `mo` in
+one release and `vo` in the next. Every saved choice then names a sheet that no
+longer exists, Foundry falls back to the default, and the reader's sheet is
+gone with nothing in the console.
 
 Passing an `id` fixes the class name to it before registering, so the key is
-written down instead of inferred. Pick it once and keep it: renaming the `id`
-later loses the sheet choice on every document already using it, the same way
-renaming a database column would.
+written down instead of inferred. Renaming the `id` later loses the sheet
+choice on every document already using it.

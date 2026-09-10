@@ -1,5 +1,5 @@
 <!--
-Thanks for your PR! Fill in what's relevant — sections that don't apply can be removed.
+Thanks for the PR. Fill in what applies, and delete the sections that don't.
 -->
 
 ## What & why
@@ -43,4 +43,4 @@ Closes #
 
 ## Additional notes
 
-<!-- Anything the reviewer should know: trade-offs, follow-ups, screenshots, etc. -->
+<!-- Anything the reviewer should know: trade-offs, follow-ups, screenshots. -->

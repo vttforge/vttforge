@@ -1,8 +1,8 @@
 # A theme of your own
 
 `@vttforge/styles` ships one theme, Forge. Every colour, font and radius in it
-is a `--vttf-*` custom property, and the component CSS reads only those. So a
-theme is a class that sets the tokens; the components follow.
+is a `--vttf-*` custom property, and the component CSS reads only those. A
+theme is a class that sets the tokens.
 
 ## Start from an example
 
@@ -34,8 +34,8 @@ static DEFAULT_OPTIONS = {
 };
 ```
 
-Nothing else changes. The tabs, the pills, the inputs and the buttons all
-read the tokens from the nearest ancestor that sets them.
+The tabs, the pills, the inputs and the buttons all read the tokens from the
+nearest ancestor that sets them.
 
 ## The tokens to set
 
@@ -51,13 +51,13 @@ and on the [design system page](https://vttforge.dev/design-system/).
 
 ## Two rules
 
-**Do not restyle components.** If a button looks wrong in your theme, the
-fix is a token, not a `.vttf-button` override. Component CSS is what the
-package updates; a token is a contract.
+Do not restyle components. If a button looks wrong in your theme, change a
+token instead of overriding `.vttf-button`. Component CSS changes with the
+package, and the tokens are the stable surface.
 
-**Set every token you care about.** A theme that only sets `--vttf-bg`
-inherits Forge's text colour, and Forge is dark. Set the surfaces and the
-text together, or the sheet is unreadable in one of the two.
+Set every token you care about. A theme that only sets `--vttf-bg` inherits
+Forge's text colour, and Forge is dark. Set the surfaces and the text
+together, or the sheet is unreadable.
 
 ## Following the GM's theme
 

@@ -8,13 +8,13 @@ body:
       value: |
         Thanks for taking the time to file a bug report.
 
-        Before filing, please check the [error code reference](https://vttforge.dev/errors/) if you have a `VTTF-NNNN` code in your error message — many issues have a documented cause and fix there.
+        Before filing, check the [error code reference](https://vttforge.dev/errors/) if your error message carries a `VTTF-NNNN` code. Many issues have a documented cause and fix there.
 
   - type: input
     id: vttforge-version
     attributes:
       label: VTTForge version
-      description: Run `pnpm list @vttforge/core` (or the package you're using) — paste the version here.
+      description: Run `pnpm list @vttforge/core` (or the package you use) and paste the version here.
       placeholder: "e.g. @vttforge/core@0.1.2"
     validations:
       required: true
@@ -48,7 +48,7 @@ body:
     id: description
     attributes:
       label: What happened?
-      description: A clear description of what went wrong vs. what you expected.
+      description: What went wrong, and what you expected instead.
     validations:
       required: true
 
@@ -57,11 +57,11 @@ body:
     attributes:
       label: Reproduction steps
       description: |
-        Minimal steps to reproduce. A link to a public repo or a minimal code snippet helps the most.
+        Minimal steps to reproduce. A link to a public repo or a short code snippet helps most.
       placeholder: |
         1. Create a system with `vttforge init`
         2. Define a `BaseTypeDataModel` with field X
-        3. Open the sheet — observe Y
+        3. Open the sheet. Observe Y
     validations:
       required: true
 
