@@ -209,4 +209,4 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Disclaimer
 
-VTTForge is an independent, community-developed project. It is not affiliated with, endorsed by, or sponsored by Foundry Gaming LLC. "Foundry Virtual Tabletop", "Foundry VTT", and "FVTT" are trademarks of Foundry Gaming LLC.
+VTTForge is an independent, community-developed project. It is not affiliated with, endorsed by, or sponsored by Foundry Gaming LLC. "Foundry Virtual Tabletop", "Foundry VTT", and "FVTT" are trademarks of Foundry Gaming LLC. It is also not related to The Forge, the Foundry hosting service; the name is a coincidence.
