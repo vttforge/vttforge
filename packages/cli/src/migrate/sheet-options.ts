@@ -13,8 +13,15 @@ export interface SheetOptions {
   classes: string | null;
   width: number | null;
   height: number | null;
+  /** `height: "auto"`, which V2 also accepts. */
+  heightAuto: boolean;
   resizable: boolean | null;
   submitOnChange: boolean | null;
+  /** FormApplication only. */
+  closeOnSubmit: boolean | null;
+  /** Application only: `id` and `title` (the window title). */
+  id: string | null;
+  title: string | null;
   template: string | null;
   templateGetter: ClassMethod | null;
   tabs: Array<{ navSelector: string; contentSelector: string | null; initial: string | null }>;
@@ -73,8 +80,12 @@ export function extractOptions(cls: SheetClass, source: string): SheetOptions {
     classes: null,
     width: null,
     height: null,
+    heightAuto: false,
     resizable: null,
     submitOnChange: null,
+    closeOnSubmit: null,
+    id: null,
+    title: null,
     template: null,
     templateGetter: methodOf(cls.node, 'template', { kind: 'get', static: false }),
     tabs: [],
@@ -94,6 +105,16 @@ export function extractOptions(cls: SheetClass, source: string): SheetOptions {
         break;
       case 'height':
         out.height = num(value);
+        out.heightAuto = str(value) === 'auto';
+        break;
+      case 'closeOnSubmit':
+        out.closeOnSubmit = bool(value);
+        break;
+      case 'id':
+        out.id = text(source, value);
+        break;
+      case 'title':
+        out.title = text(source, value);
         break;
       case 'resizable':
         out.resizable = bool(value);
@@ -136,26 +157,43 @@ function readTabs(value: Expression): SheetOptions['tabs'] {
 
 const q = (s: string) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 
+/** What the class is: a document sheet on the SDK base, a FormApplication, or a plain Application. */
+export type StaticsKind = 'sheet' | 'form' | 'app';
+
 export function renderStatics(
   opts: SheetOptions,
   tabIds: Record<string, string[]>,
   todo: (msg: string) => string,
+  kind: StaticsKind = 'sheet',
+  className = '',
 ): string {
   const lines: string[] = [];
   lines.push('  /** @override */');
   lines.push('  static DEFAULT_OPTIONS = foundry.utils.mergeObject(');
   lines.push('    super.DEFAULT_OPTIONS,');
   lines.push('    {');
+  if (kind !== 'sheet' && opts.id) lines.push(`      id: ${opts.id},`);
   if (opts.classes) lines.push(`      classes: ${opts.classes},`);
-  if (opts.width !== null || opts.height !== null) {
+  if (kind === 'form') lines.push(`      tag: 'form',`);
+  if (opts.width !== null || opts.height !== null || opts.heightAuto) {
     const parts = [
       opts.width !== null ? `width: ${opts.width}` : '',
-      opts.height !== null ? `height: ${opts.height}` : '',
+      opts.height !== null ? `height: ${opts.height}` : opts.heightAuto ? `height: 'auto'` : '',
     ].filter(Boolean);
     lines.push(`      position: { ${parts.join(', ')} },`);
   }
-  if (opts.resizable !== null) lines.push(`      window: { resizable: ${opts.resizable} },`);
-  lines.push(`      form: { submitOnChange: ${opts.submitOnChange ?? true} },`);
+  const win = [
+    kind !== 'sheet' && opts.title ? `title: ${opts.title}` : '',
+    opts.resizable !== null ? `resizable: ${opts.resizable}` : '',
+  ].filter(Boolean);
+  if (win.length > 0) lines.push(`      window: { ${win.join(', ')} },`);
+  if (kind === 'sheet')
+    lines.push(`      form: { submitOnChange: ${opts.submitOnChange ?? true} },`);
+  if (kind === 'form') {
+    lines.push(
+      `      form: { handler: ${className}.formHandler, submitOnChange: ${opts.submitOnChange ?? false}, closeOnSubmit: ${opts.closeOnSubmit ?? true} },`,
+    );
+  }
   lines.push('      actions: {}, // filled below');
   lines.push('    },');
   lines.push('    { inplace: false },');
@@ -186,13 +224,14 @@ export function renderStatics(
   if (opts.dragDrop) {
     lines.push('', '  /** @override */', `  static DRAG_DROP = ${opts.dragDrop};`);
   }
+  const part = kind === 'sheet' ? 'sheet' : kind === 'form' ? 'form' : 'content';
   lines.push('', '  /** @override */', '  static PARTS = {');
   if (opts.template) {
-    lines.push(`    sheet: { template: ${q(opts.template)} },`);
+    lines.push(`    ${part}: { template: ${q(opts.template)} },`);
   } else {
     lines.push(
       `    ${todo('the template is chosen at runtime (get template); name one part per type here or override _configureRenderParts')}`,
-      `    sheet: { template: '' },`,
+      `    ${part}: { template: '' },`,
     );
   }
   lines.push('  };');

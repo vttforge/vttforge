@@ -117,3 +117,57 @@ export class HeroSheet extends BaseActorSheet() {
 }
 "
 `;
+
+exports[`planSheetFile on a FormApplication > matches the snapshot 1`] = `
+"const { ApplicationV2, DialogV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
+export class HeroSettingsForm extends HandlebarsApplicationMixin(ApplicationV2) {
+  /** @override */
+  static DEFAULT_OPTIONS = foundry.utils.mergeObject(
+    super.DEFAULT_OPTIONS,
+    {
+      id: 'hero-settings',
+      classes: ['hero', 'settings-menu'],
+      tag: 'form',
+      position: { width: 550, height: 'auto' },
+      window: { title: 'HERO.Settings.Title' },
+      form: { handler: HeroSettingsForm.formHandler, submitOnChange: false, closeOnSubmit: false },
+      actions: {
+        reset: HeroSettingsForm.prototype._onReset,
+      },
+    },
+    { inplace: false },
+  );
+
+  /** @override */
+  static PARTS = {
+    form: { template: 'modules/hero/templates/settings.hbs' },
+  };
+
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    context.object = this.object;
+    context.settings = Object.entries(this.constructor.SETTINGS).map(([key, setting]) => ({
+      ...setting,
+      key,
+      value: game.settings.get('hero', key),
+    }));
+    return context;
+  }
+
+  async _onReset(event, target) {
+    event.preventDefault();
+    const ok = await DialogV2.confirm({ window: { title: 'Reset' }, content: '<p>Reset all?</p>', yes: { callback: () => true }, no: { callback: () => false } });
+    if (ok) await this.render();
+  }
+
+  // TODO(migrate): this was _updateObject; ApplicationV2 calls the form handler with \`this\` bound to the app, and the flat form data is \`formData.object\`
+  static async formHandler(_event, form, formData) {
+    const data = foundry.utils.expandObject(formData.object);
+    for (const key of Object.keys(data)) {
+      await game.settings.set('hero', key, data[key]);
+    }
+  }
+}
+"
+`;

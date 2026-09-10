@@ -189,12 +189,13 @@ resets each listed type's `documentTypes` entry on every start.
 vttforge migrate --sheets [--lang js|ts] [--write]
 ```
 
-Application v1 sheets (`ActorSheet`, `ItemSheet`) still run on v14 and are
-removed in v16. `--sheets` writes, next to each such class, a file with the
-same name and `.v2` before the extension, holding the class on
-`BaseActorSheet` / `BaseItemSheet` from `@vttforge/core`. The original is
-not touched; the report says where to point `registerSheet` once you have
-read the result.
+Application v1 classes still run on v14 and are removed in v16. `--sheets`
+writes, next to each such class, a file with the same name and `.v2` before
+the extension: an `ActorSheet` / `ItemSheet` lands on `BaseActorSheet` /
+`BaseItemSheet` from `@vttforge/core`; a `FormApplication` / `Application`
+lands on `HandlebarsApplicationMixin(ApplicationV2)` with no SDK import. The
+original is not touched; the report says where to point `registerSheet`, or
+whatever constructs the app, once you have read the result.
 
 What is carried over mechanically: `defaultOptions` (classes, size,
 `resizable`, `submitOnChange`) as `DEFAULT_OPTIONS`; `tabs` as `TABS` with
@@ -208,11 +209,21 @@ listeners in `_onRender`; `_onDropItem` / `_onDropActor` as `onDropItem` /
 the old `super._onDropItem` call as the `createEmbeddedDocuments` it used to
 make; `event.currentTarget`, `$(...)`, `.data(...)`, `.parents(...)` and `html.find`
 as their DOM equivalents (`html.find` becomes `this.element.querySelectorAll`, so
-`.length` and `[0]` keep working); `Dialog.confirm` as `DialogV2.confirm`.
+`.length` and `[0]` keep working); `Dialog.confirm` as `DialogV2.confirm`;
+`new Dialog({...}).render(true)` as `DialogV2.wait({...})` with the `buttons`
+object as a list (`default` marks the button, the `<i>` icon becomes its
+class) and each `(html) => ...` callback on the `(event, button, dialog)`
+signature with `html[0]` and `html.find` read from `dialog.element`;
+`Dialog.prompt` as `DialogV2.prompt`. On a `FormApplication`, `id`, `title`
+and `closeOnSubmit` move into `DEFAULT_OPTIONS` (`tag: 'form'`, `window`,
+`form.handler`) and `_updateObject(event, data)` becomes the static
+`formHandler(event, form, formData)` with `data` read from
+`formData.object`.
 
 What is left as a `// TODO(migrate)` line, and listed in the report with its
-line number: `new Dialog({...})`, `_updateObject`, jQuery calls with no plain
-DOM equivalent, a `get template()` that picks the template at runtime, tab
+line number: a `new Dialog` whose options are not a plain literal, a
+`_updateObject` on a document sheet, jQuery calls with no plain DOM
+equivalent, `this.object` on a FormApplication, a `get template()` that picks the template at runtime, tab
 ids that were not found in the template, and the v1 lifecycle overrides
 (`setPosition`, `_getHeaderButtons`, `_render`, ...) that ApplicationV2
 replaces with its own hooks.

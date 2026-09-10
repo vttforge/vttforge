@@ -118,7 +118,10 @@ export function rewriteHandlerBody(
  * assigned right after the `super` call — unless the method assigns them
  * itself without reading the old value first.
  */
-export function rewriteGetData(methodText: string, base: 'ActorSheet' | 'ItemSheet'): Rewritten {
+export function rewriteGetData(
+  methodText: string,
+  base: 'ActorSheet' | 'ItemSheet' | 'Application' | 'FormApplication',
+): Rewritten {
   const todos: string[] = [];
   const sig = /^(\s*)(async\s+)?getData\s*\(([^)]*)\)/.exec(methodText);
   const params = sig?.[3]?.trim() ?? '';
@@ -132,20 +135,28 @@ export function rewriteGetData(methodText: string, base: 'ActorSheet' | 'ItemShe
   const varMatch =
     /(?:const|let|var)\s+(\w+)\s*=\s*(?:await\s+)?super\._prepareContext\(options\)\s*;/.exec(code);
   const v = varMatch?.[1] ?? 'context';
+  const isSheet = base === 'ActorSheet' || base === 'ItemSheet';
   const own = base === 'ActorSheet' ? 'actor' : 'item';
   // What v1's getData handed the template and V2's _prepareContext does not:
   // the document under its own name and as `data`, its system, the items,
-  // and the two flags every v1 template gates on.
-  const wanted: Array<[string, string]> = [
-    [own, `${v}.${own} = this.document;`],
-    ['data', `${v}.data = this.document;`],
-    ['system', `${v}.system = this.document.system;`],
-  ];
+  // and the two flags every v1 template gates on. An Application had none of
+  // that; a FormApplication had `object`.
+  const wanted: Array<[string, string]> = isSheet
+    ? [
+        [own, `${v}.${own} = this.document;`],
+        ['data', `${v}.data = this.document;`],
+        ['system', `${v}.system = this.document.system;`],
+      ]
+    : base === 'FormApplication'
+      ? [['object', `${v}.object = this.object;`]]
+      : [];
   if (base === 'ActorSheet') wanted.push(['items', `${v}.items = [...this.document.items];`]);
-  wanted.push(
-    ['editable', `${v}.editable = this.isEditable;`],
-    ['owner', `${v}.owner = this.document.isOwner;`],
-  );
+  if (isSheet) {
+    wanted.push(
+      ['editable', `${v}.editable = this.isEditable;`],
+      ['owner', `${v}.owner = this.document.isOwner;`],
+    );
+  }
 
   const masked = maskComments(code, { strings: true });
   const inject = wanted
@@ -180,6 +191,30 @@ export function rewriteGetData(methodText: string, base: 'ActorSheet' | 'ItemShe
  * resolves the dropped document before it calls the hook, so the raw drop
  * payload the v1 body read is gone.
  */
+/**
+ * `_updateObject(event, formData)` becomes the static form handler ApplicationV2
+ * calls with `(event, form, formData)`; `formData.object` is the flat form
+ * data, expanded here so the body reads it the way v1 handed it.
+ */
+export function rewriteUpdateObject(methodText: string): Rewritten {
+  const sig = /^(\s*)(async\s+)?_updateObject\s*\(\s*(\w+)?\s*,?\s*(\w+)?\s*\)\s*\{/.exec(
+    methodText,
+  );
+  if (!sig) return { code: methodText, todos: [] };
+  const indent = sig[1] ?? '';
+  const eventName = sig[3] || 'event';
+  const dataName = sig[4] || 'formData';
+  const head = `${indent}static async formHandler(${eventName}, form, formData) {`;
+  const first =
+    dataName === 'formData'
+      ? ''
+      : `\n${indent}  const ${dataName} = foundry.utils.expandObject(formData.object);`;
+  const code = `${head}${first}${methodText.slice(sig[0].length)}`;
+  const msg =
+    'this was _updateObject; ApplicationV2 calls the form handler with `this` bound to the app, and the flat form data is `formData.object`';
+  return { code: todoAt(code, code.indexOf('{') + 1, msg), todos: [msg] };
+}
+
 export function rewriteDropMethod(methodText: string, which: 'Item' | 'Actor'): Rewritten {
   const lower = which.toLowerCase();
   const sig = new RegExp(`_onDrop${which}\\s*\\(\\s*(\\w+)\\s*,\\s*(\\w+)\\s*\\)`);

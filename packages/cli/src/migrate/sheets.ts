@@ -21,16 +21,17 @@ import {
   rewriteDropMethod,
   rewriteGetData,
   rewriteHandlerBody,
+  rewriteUpdateObject,
   TODO,
 } from './sheet-bodies.js';
 import { type ActionBinding, extractListeners } from './sheet-listeners.js';
-import { extractOptions, renderStatics } from './sheet-options.js';
+import { extractOptions, renderStatics, type StaticsKind } from './sheet-options.js';
 
 export interface SheetPlanFile {
   from: string;
   to: string;
   className: string;
-  base: 'BaseActorSheet' | 'BaseItemSheet';
+  base: 'BaseActorSheet' | 'BaseItemSheet' | 'ApplicationV2';
   source: string;
   actions: Array<{ name: string; selector: string; method: string }>;
   todos: Array<{ line: number; message: string }>;
@@ -181,8 +182,14 @@ interface ClassOutput {
 }
 
 function planClass(cls: SheetClass, source: string, tabIds: Record<string, string[]>): ClassOutput {
+  const isSheet = cls.base === 'ActorSheet' || cls.base === 'ItemSheet';
   const base: SheetPlanFile['base'] =
-    cls.base === 'ActorSheet' ? 'BaseActorSheet' : 'BaseItemSheet';
+    cls.base === 'ActorSheet'
+      ? 'BaseActorSheet'
+      : cls.base === 'ItemSheet'
+        ? 'BaseItemSheet'
+        : 'ApplicationV2';
+  const kind: StaticsKind = isSheet ? 'sheet' : cls.base === 'FormApplication' ? 'form' : 'app';
   const own = cls.base === 'ActorSheet' ? 'actor' : 'item';
   const options = extractOptions(cls, source);
   const listeners = extractListeners(cls, source);
@@ -215,11 +222,18 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
       : `      actions: {\n${actionEntries.map((a) => `        ${a.name}: ${cls.name}.prototype.${a.method},`).join('\n')}\n      },`;
   // A runtime `get template()` decides the template; a static one next to it is not the whole story.
   const statics = options.templateGetter ? { ...options, template: null } : options;
-  members.push(renderStatics(statics, tabIds, todo).replace(ACTIONS_PLACEHOLDER, actionsBlock));
+  members.push(
+    renderStatics(statics, tabIds, todo, kind, cls.name).replace(ACTIONS_PLACEHOLDER, actionsBlock),
+  );
 
   // 2. The document getter.
-  if (!methodOf(cls.node, own, { kind: 'get' })) {
+  if (isSheet && !methodOf(cls.node, own, { kind: 'get' })) {
     members.push(`  get ${own}() {\n    return this.document;\n  }`);
+  }
+  if (cls.base === 'FormApplication' && /\bthis\.object\b/.test(text(source, cls.node))) {
+    members.push(
+      `  ${todo('FormApplication carried the edited value as this.object; ApplicationV2 does not. Take it in the constructor and keep it on a field: constructor(object, options) { super(options); this.object = object; }')}`,
+    );
   }
 
   // 3. The template getter, when dynamic.
@@ -294,7 +308,9 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
       code = `  ${todo(`${name} is an Application v1 lifecycle override; ApplicationV2 sizes, submits and builds its header itself. Review it against the V2 method of the same job, or delete it`)}\n${code}`;
     }
     if (name === '_updateObject') {
-      code = `  ${todo('_updateObject is gone on V2; DocumentSheetV2 submits the form itself. Move any shaping into _prepareSubmitData or delete this')}\n${code}`;
+      code = isSheet
+        ? `  ${todo('_updateObject is gone on V2; DocumentSheetV2 submits the form itself. Move any shaping into _prepareSubmitData or delete this')}\n${code}`
+        : rewriteUpdateObject(code).code;
     }
     members.push(code);
   }
@@ -321,7 +337,8 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
   }
 
   const exported = isExported(source, cls);
-  const block = `${exported ? 'export ' : ''}class ${cls.name} extends ${base}() {\n${members.join('\n\n')}\n}`;
+  const extendsExpr = isSheet ? `${base}()` : 'HandlebarsApplicationMixin(ApplicationV2)';
+  const block = `${exported ? 'export ' : ''}class ${cls.name} extends ${extendsExpr} {\n${members.join('\n\n')}\n}`;
   return {
     block,
     base,
@@ -350,10 +367,23 @@ export function planSheetFile(
   const to = `${relPath.slice(0, dot)}.v2${relPath.slice(dot)}`;
   const outputs = classes.map((cls) => ({ cls, out: planClass(cls, source, opts.tabIds) }));
 
-  const bases = [...new Set(outputs.map((o) => o.out.base))].join(', ');
-  const header = [`import { ${bases} } from '@vttforge/core';`, ...importLines(source, lang)];
-  if (outputs.some((o) => o.out.usesDialogV2))
-    header.push('', 'const { DialogV2 } = foundry.applications.api;');
+  const sdkBases = [
+    ...new Set(outputs.map((o) => o.out.base).filter((b) => b !== 'ApplicationV2')),
+  ];
+  const header = [
+    ...(sdkBases.length > 0 ? [`import { ${sdkBases.join(', ')} } from '@vttforge/core';`] : []),
+    ...importLines(source, lang),
+  ];
+  const fromApi = [
+    ...(outputs.some((o) => o.out.base === 'ApplicationV2')
+      ? ['ApplicationV2', 'HandlebarsApplicationMixin']
+      : []),
+    ...(outputs.some((o) => o.out.usesDialogV2) ? ['DialogV2'] : []),
+  ].sort();
+  if (fromApi.length > 0) {
+    if (header.length > 0) header.push('');
+    header.push(`const { ${fromApi.join(', ')} } = foundry.applications.api;`);
+  }
   const fileSource = `${header.join('\n')}\n\n${outputs.map((o) => o.out.block).join('\n\n')}\n`;
   const marker = 'TODO(migrate): ';
   const todos = fileSource.split('\n').flatMap((line, i) => {

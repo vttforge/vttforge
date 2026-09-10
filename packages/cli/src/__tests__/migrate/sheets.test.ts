@@ -117,15 +117,57 @@ describe('planSheetFile', () => {
   });
 
   it('reports an unsupported base and ignores files with no sheet', () => {
-    const src = 'export class P extends FormApplication {}';
+    const src = 'export class P extends Dialog {}';
     const p = planSheetFile('module/p.mjs', src, { lang: 'js', tabIds: {} });
     expect(p.files).toEqual([]);
-    expect(p.notes[0]).toMatch(/FormApplication/);
+    expect(p.notes[0]).toMatch(/Dialog/);
     expect(
       planSheetFile('module/x.mjs', 'export const a = 1;', { lang: 'js', tabIds: {} }),
     ).toEqual({
       files: [],
       notes: [],
     });
+  });
+});
+
+describe('planSheetFile on a FormApplication', () => {
+  const FORM = readFileSync(join(here, 'fixtures', 'v1-settings-form.mjs'), 'utf8');
+  const plan = planSheetFile('scripts/settings-form.mjs', FORM, { lang: 'js', tabIds: {} });
+  const file = plan.files[0];
+  if (!file) throw new Error('the fixture produced no file');
+
+  it('lands on HandlebarsApplicationMixin(ApplicationV2) with the form wired', () => {
+    expect(file.base).toBe('ApplicationV2');
+    expect(file.source).not.toContain('@vttforge/core');
+    expect(file.source).toContain(
+      'const { ApplicationV2, DialogV2, HandlebarsApplicationMixin } = foundry.applications.api;',
+    );
+    expect(file.source).toContain(
+      'export class HeroSettingsForm extends HandlebarsApplicationMixin(ApplicationV2) {',
+    );
+    expect(file.source).toContain("      id: 'hero-settings',");
+    expect(file.source).toContain("      tag: 'form',");
+    expect(file.source).toContain("      position: { width: 550, height: 'auto' },");
+    expect(file.source).toContain("      window: { title: 'HERO.Settings.Title' },");
+    expect(file.source).toContain(
+      '      form: { handler: HeroSettingsForm.formHandler, submitOnChange: false, closeOnSubmit: false },',
+    );
+    expect(file.source).toContain("    form: { template: 'modules/hero/templates/settings.hbs' },");
+    expect(file.source).not.toContain('get actor()');
+  });
+
+  it('turns _updateObject into the static form handler and keeps the context plain', () => {
+    expect(file.source).toContain('// TODO(migrate): this was _updateObject');
+    expect(file.source).toContain('  static async formHandler(_event, form, formData) {');
+    expect(file.source).toContain('    const data = foundry.utils.expandObject(formData.object);');
+    expect(file.source).toContain('    const context = await super._prepareContext(options);');
+    expect(file.source).not.toContain('context.actor');
+    expect(file.source).not.toContain('context.editable');
+    expect(file.source).toContain('reset: HeroSettingsForm.prototype._onReset,');
+    expect(file.source).toContain('DialogV2.confirm({');
+  });
+
+  it('matches the snapshot', () => {
+    expect(file.source).toMatchSnapshot();
   });
 });

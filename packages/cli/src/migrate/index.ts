@@ -214,7 +214,7 @@ async function planSheets(
     } catch {
       continue;
     }
-    if (!/\b(?:ActorSheet|ItemSheet)\b/.test(raw)) continue;
+    if (!/\b(?:ActorSheet|ItemSheet|FormApplication|Application)\b/.test(raw)) continue;
     // The generated file starts from the v14 rewrite of the source, so the bare
     // v13 aliases are already namespaced in it whether or not --write ran.
     const source = transformSource(raw).output;
@@ -239,9 +239,14 @@ async function planSheets(
       const every = await allTemplates(cwd);
       // Leave out the other document's folder (item templates for an actor sheet and the
       // reverse); shared parts and dialogs stay in, since a sheet's rows often live there.
+      const first = probe.files[0]?.base;
       const other =
-        probe.files[0]?.base === 'BaseItemSheet' ? /(?:^|\/)actors?\//i : /(?:^|\/)items?\//i;
-      templatePaths = every.filter((t) => !other.test(t));
+        first === 'BaseItemSheet'
+          ? /(?:^|\/)actors?\//i
+          : first === 'BaseActorSheet'
+            ? /(?:^|\/)items?\//i
+            : null;
+      templatePaths = other ? every.filter((t) => !other.test(t)) : every;
     }
     const navSelectors = [...new Set(probe.files.flatMap((f) => f.tabNavSelectors))];
     const tabIds: Record<string, string[]> = {};
@@ -260,7 +265,9 @@ async function planSheets(
       files.push(rest);
       generated.set(f.to, out);
       notes.push(
-        `Point registerSheet at ${f.className} from ${f.to} (a written key such as "<id>.${f.base === 'BaseActorSheet' ? 'actor' : 'item'}"), then delete the old class.`,
+        f.base === 'ApplicationV2'
+          ? `Point whatever constructs ${f.className} (a settings menu, a macro, a button) at ${f.to}, then delete the old class.`
+          : `Point registerSheet at ${f.className} from ${f.to} (a written key such as "<id>.${f.base === 'BaseActorSheet' ? 'actor' : 'item'}"), then delete the old class.`,
       );
     }
     const actions = plan.files.flatMap((f) =>
