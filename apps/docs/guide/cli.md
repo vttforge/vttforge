@@ -243,4 +243,6 @@ one `setPosition` override; everything else ran as generated.
 Each template the class names gets `data-action="<name>"` on the elements
 that matched each selector, `data-action="vttforgeTab"` and `data-group` on
 the tab links, and `data-group` on the panes. It reports a root `<form>` and
-leaves it in place: the old class still renders that template.
+leaves it in place: the old class still renders that template. Once the old
+class is gone, make that root a `<div>`, not nothing: a part has to render
+one element.

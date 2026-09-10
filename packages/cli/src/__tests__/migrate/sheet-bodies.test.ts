@@ -283,3 +283,22 @@ describe('enrichHTML on v14', () => {
     );
   });
 });
+
+describe('a sync getData', () => {
+  it('awaits the super call it now makes and the enrichHTML it called sync', () => {
+    const r = rewriteGetData(
+      'getData() { const context = super.getData(); context.bio = TextEditor.enrichHTML(this.actor.system.bio, { async: false }); return context; }',
+      'ActorSheet',
+    );
+    expect(r.code).toContain('const context = await super._prepareContext(options);');
+    expect(r.code).toContain('context.bio = await TextEditor.enrichHTML(this.actor.system.bio);');
+  });
+});
+
+describe('enrichHTML with async: false in a handler', () => {
+  it('loses the option and gets a TODO to await it', () => {
+    const r = rewriteHandlerBody('{ const html = enrichHTML(x, { async: false }); }', null, null);
+    expect(r.code).toContain('const html = enrichHTML(x);');
+    expect(r.todos.join(' ')).toMatch(/await it/);
+  });
+});

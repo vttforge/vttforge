@@ -186,3 +186,22 @@ describe('drops on an item sheet', () => {
     expect(p.files[0]?.source).not.toContain('onDropItem(item, event)');
   });
 });
+
+describe('a dialog opened from a render listener', () => {
+  it('is moved to DialogV2 like one opened from a click', () => {
+    const src = `export class S extends ActorSheet {
+      activateListeners(html) {
+        super.activateListeners(html);
+        html.find('.name').on('dblclick', (ev) => {
+          new Dialog({ title: 'T', content: '<p>x</p>', buttons: { ok: { label: 'OK' } }, default: 'ok' }).render(true);
+        });
+      }
+    }`;
+    const p = planSheetFile('s.mjs', src, { lang: 'js', tabIds: {} });
+    const out = p.files[0]?.source ?? '';
+    expect(out).toContain("DialogV2.wait({\n          window: { title: 'T' },");
+    expect(out).toContain("{ action: 'ok', label: 'OK', default: true }");
+    expect(out).toContain('const { DialogV2 } = foundry.applications.api;');
+    expect(out).not.toContain('new Dialog(');
+  });
+});

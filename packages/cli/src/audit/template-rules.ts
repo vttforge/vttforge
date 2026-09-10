@@ -160,7 +160,7 @@ export async function runTemplateRules(cwd: string): Promise<RuleResult[]> {
       message:
         'This template is rendered by a sheet built on BaseActorSheet or BaseItemSheet, which set `tag: "form"`, so the application element already is a form. A nested form owns the fields inside it, so the submit reads the outer element and finds nothing. Every edit is dropped when the window closes, with no error.',
       remediation:
-        'Replace the `<form>` wrapper with a `<div>`, or drop it entirely. The fields belong to the application element, and `submitOnChange` saves them as they change.',
+        'Replace the `<form>` wrapper with a `<div>`. Keep one root element: a part that renders several top-level elements fails to render. The fields belong to the application element, and `submitOnChange` saves them as they change.',
     });
   }
   return [...results, ...removedHelpers];

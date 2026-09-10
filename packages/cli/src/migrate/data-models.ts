@@ -176,9 +176,10 @@ export function planDataModels(
     const modelNames: string[] = [];
     for (const type of types) {
       const own = (doc[type] ?? {}) as Record<string, unknown>;
-      const listed = ((own.templates as string[] | undefined) ?? []).filter((t) => t !== 'base');
+      const listed = (own.templates as string[] | undefined) ?? [];
       for (const t of listed) {
-        if (!(t in templates))
+        // Many files list a `base` the templates block never defines; that one is not worth a note.
+        if (!(t in templates) && t !== 'base')
           notes.push(
             `${document}.${type}: lists template "${t}", which template.json does not define; it was skipped.`,
           );

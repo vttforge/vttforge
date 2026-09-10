@@ -826,6 +826,39 @@ CONFIG.Actor.dataModels['other-module.vehicle'] = VehicleData;`,
   });
 
   describe('rule 007 actor scoping', () => {
+    it('accepts a SchemaField declared in a shared fragment several models spread', async () => {
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({ id: 'my-system', version: '1.0.0', primaryTokenAttribute: 'hp' }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'templates.mjs'),
+        `export function baseFields(f) {
+  return {
+    hp: new f.SchemaField({
+      value: new f.NumberField({ integer: true, initial: 10 }),
+      max: new f.NumberField({ integer: true, initial: 10 }),
+    }),
+  };
+}`,
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `import { baseFields } from './templates.mjs';
+function defineCharacterSchema() {
+  const f = fields();
+  return { ...baseFields(f), level: new f.NumberField() };
+}
+class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {}
+CONFIG.Actor.dataModels.character = CharacterData;`,
+        'utf8',
+      );
+      const seven = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-007');
+      expect(seven).toHaveLength(0);
+    });
+
     it('does not accept an Item model as the token attribute source', async () => {
       await writeFile(
         join(cwd, 'system.json'),

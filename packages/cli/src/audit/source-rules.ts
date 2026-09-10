@@ -747,9 +747,11 @@ async function sourceHasValueMaxSchemaAtPath(
       // With none found there is no ground truth to narrow by, so every
       // declaration counts, the same fallback rule 004 takes when it cannot
       // resolve a class to its subtypes.
+      // A declaration outside any class is a shared fragment (a `baseFields(f)`
+      // several models spread); it is not an Item model, so it counts.
       if (actorClasses.size > 0) {
         const owner = classes.find((c) => decl.index > c.openIdx && decl.index < c.endIdx);
-        if (!owner || !actorClasses.has(owner.className)) continue;
+        if (owner && !actorClasses.has(owner.className)) continue;
       }
       const topKeys = extractTopLevelKeys(decl.body);
       if (topKeys.has('value') && topKeys.has('max')) return true;

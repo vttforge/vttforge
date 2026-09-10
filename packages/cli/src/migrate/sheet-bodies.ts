@@ -50,6 +50,7 @@ const LEFTOVER_JQUERY =
   /\$\(|\.(?:val|text|html|prop|toggle|slideToggle|slideUp|slideDown|show|hide|addClass|removeClass|toggleClass|siblings|children|find|css|each)\(/g;
 
 const JQUERY_MSG = 'jQuery left here; use the DOM on `target` / `this.element`';
+const ENRICH_MSG = 'enrichHTML returns a promise on v14; await it, and make this method async';
 
 /**
  * A handler body from `activateListeners`, with `event.currentTarget` folded
@@ -98,6 +99,14 @@ export function rewriteHandlerBody(
   code = replaceCode(code, /,\s*\{\s*async:\s*true\s*\}\s*\)/g, () => ')');
   code = replaceCode(code, /\basync:\s*true\s*,\s*/g, () => '');
   code = replaceCode(code, /,\s*async:\s*true\b/g, () => '');
+  // The sync form returned a string; on v14 it returns a promise, and this body may not be async.
+  if (/\basync:\s*false\b/.test(code)) {
+    code = replaceCode(code, /,\s*\{\s*async:\s*false\s*\}\s*\)/g, () => ')');
+    code = replaceCode(code, /\basync:\s*false\s*,\s*/g, () => '');
+    code = replaceCode(code, /,\s*async:\s*false\b/g, () => '');
+    todos.push(ENRICH_MSG);
+    code = todoAt(code, code.indexOf('{') + 1, ENRICH_MSG);
+  }
   // `this.element` was jQuery on v1 and is an HTMLElement on V2.
   // A jQuery collection reads as a NodeList: `.length`, `[0]` and `forEach` keep working.
   code = replaceCode(code, /this\.element\.find\(/g, () => 'this.element.querySelectorAll(');
@@ -135,6 +144,21 @@ export function rewriteGetData(
     (_m, indent: string) => `${indent}async _prepareContext(options)`,
   );
   code = replaceCode(code, /super\.getData\(\s*[^)]*\)/g, () => 'super._prepareContext(options)');
+  // getData was sync; _prepareContext is not, and this method is async now.
+  code = replaceCode(
+    code,
+    /(?<!await\s)super\._prepareContext\(options\)/g,
+    () => 'await super._prepareContext(options)',
+  );
+  // enrichHTML always returns a promise on v14, so the sync form must be awaited.
+  code = replaceCode(code, /,\s*\{\s*async:\s*false\s*\}\s*\)/g, () => ')');
+  code = replaceCode(code, /\basync:\s*false\s*,\s*/g, () => '');
+  code = replaceCode(code, /,\s*async:\s*false\b/g, () => '');
+  code = replaceCode(
+    code,
+    /(?<!await\s)(?<![\w$.])(?:[\w$]+\.)*enrichHTML\(/g,
+    (call) => `await ${call}`,
+  );
 
   // The variable that received super's result.
   const varMatch =

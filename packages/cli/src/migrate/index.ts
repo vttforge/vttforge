@@ -285,7 +285,7 @@ async function planSheets(
       templates.push({ file: t, edits: r.edits, formRoot: r.formRoot });
       if (r.formRoot) {
         notes.push(
-          `${t} opens with <form>; the SDK sheet already is one. Remove it once the old class is gone (audit rule 008).`,
+          `${t} opens with <form>; the SDK sheet already is one. Make it a <div> once the old class is gone: a part needs one root element (audit rule 008).`,
         );
       }
       if (write && r.edits.length > 0) await writeFile(join(cwd, t), r.output, 'utf8');
