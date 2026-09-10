@@ -238,6 +238,38 @@ describe('registerSystem', () => {
     expect(enrichers.map((e) => e.id)).toEqual(['my-system.spell']);
   });
 
+  it('registers the keyword enricher with the others, and a ready hook for the journal', () => {
+    const { hooks, config } = setupFoundryGlobals();
+    const enrichers: Array<{ id: string }> = [];
+    (config as unknown as { TextEditor: unknown }).TextEditor = { enrichers };
+    registerSystem({
+      id: 'my-system',
+      enrichers: [{ id: 'spell', pattern: /@Spell\[(.+?)\]/g, enricher: () => null }],
+      keywords: [{ id: 'reach', label: 'Reach', description: 'Far.' }],
+    });
+    const staged = hooks.once.mock.calls.map((call) => call[0]);
+    expect(staged).toEqual(['init', 'ready']);
+    const initCallback = hooks.once.mock.calls[0]?.[1] as () => void;
+    initCallback();
+    expect(enrichers.map((e) => e.id)).toEqual(['my-system.spell', 'my-system.keyword']);
+  });
+
+  it('skips the journal hook with keywordsJournal: false, and refuses a bad keyword at once', () => {
+    const { hooks } = setupFoundryGlobals();
+    registerSystem({
+      id: 'my-system',
+      keywords: [{ id: 'reach', label: 'Reach', description: 'Far.' }],
+      keywordsJournal: false,
+    });
+    expect(hooks.once.mock.calls.map((call) => call[0])).toEqual(['init']);
+    expect(() =>
+      registerSystem({
+        id: 'other-system',
+        keywords: [{ id: 'a.b', label: 'Reach', description: 'Far.' }],
+      }),
+    ).toThrow(/VTTF-0009/);
+  });
+
   it('does not register i18nInit or setup hooks when their callbacks are omitted', () => {
     const { hooks } = setupFoundryGlobals();
     registerSystem({ id: 'my-system' });

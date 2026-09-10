@@ -36,6 +36,13 @@
   "VTTFORGE_EXAMPLE.Sheet.Drop.label": "Drop item to add",
   "VTTFORGE_EXAMPLE.Sheet.Drop.rejected": "Cannot drop {type} items on a character — only gear is accepted.",
 
+  "VTTFORGE_EXAMPLE.Keyword.category.gear": "Gear",
+  "VTTFORGE_EXAMPLE.Keyword.stowed.label": "Stowed",
+  "VTTFORGE_EXAMPLE.Keyword.stowed.description": "Packed away. Drawing it takes an action.",
+  "VTTFORGE_EXAMPLE.Keyword.equipped.label": "Equipped",
+  "VTTFORGE_EXAMPLE.Keyword.equipped.description": "In hand or worn, and ready to use.",
+  "VTTFORGE_EXAMPLE.Keyword.initiative.label": "Initiative",
+  "VTTFORGE_EXAMPLE.Keyword.initiative.description": "1d20 plus the Dexterity modifier, rolled when combat starts.",
   "VTTFORGE_EXAMPLE.Ability.str": "Strength",
   "VTTFORGE_EXAMPLE.Ability.dex": "Dexterity",
   "VTTFORGE_EXAMPLE.Ability.con": "Constitution",

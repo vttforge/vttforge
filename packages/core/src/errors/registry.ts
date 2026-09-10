@@ -70,6 +70,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'A status effect reached registerSystem() or registerModule() without a string id. Foundry v14 keys CONFIG.statusEffects by id, so it cannot file an entry that lacks one. Give every condition an id; a module prefixes it with its own id.',
   }),
+  'VTTF-0009': Object.freeze({
+    code: 'VTTF-0009',
+    name: 'InvalidKeyword',
+    summary:
+      'A keyword reached registerSystem() or registerModule() with an id that cannot go inside @Keyword[...] (letters, digits and hyphens only), with an id another keyword of the same package already uses, or without a string label and description.',
+  }),
 });
 
 /**

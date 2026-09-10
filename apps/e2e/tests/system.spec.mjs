@@ -181,6 +181,74 @@ test("the sheet styles compose with the system's own CSS, and yield to modules",
   expect(cascade.versusModule, seen).toBe('99px');
 });
 
+test('a keyword enriches in chat with its tooltip, and the GM has the keywords journal', async ({
+  page,
+}) => {
+  await joinWorld(page);
+
+  const seen = await page.evaluate(async () => {
+    const TextEditor = foundry.applications.ux.TextEditor.implementation;
+    const enriched = await TextEditor.enrichHTML(
+      'Keep it @Keyword[stowed] or @Keyword[equipped]{in hand}. @Keyword[unknown] stays.',
+    );
+    const holder = document.createElement('div');
+    holder.innerHTML = enriched;
+    const spans = [...holder.querySelectorAll('.vttf-keyword')].map((span) => ({
+      id: span.dataset.vttforgeKeyword,
+      text: span.textContent,
+      tooltip: span.dataset.tooltip,
+    }));
+
+    const message = await ChatMessage.create({ content: 'A @Keyword[stowed] blade.' });
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const inChat = document.querySelector(
+      `#chat .message[data-message-id="${message.id}"] .vttf-keyword`,
+    );
+
+    // The journal was written on ready, before this test joined.
+    const journal = game.journal.find(
+      (entry) => entry.getFlag(game.system.id, 'vttforge.keywords') === true,
+    );
+    const pageContent = journal?.pages.contents[0]?.text.content ?? '';
+    return {
+      spans,
+      unknownKept: holder.textContent.includes('@Keyword[unknown]'),
+      inChat: inChat && {
+        text: inChat.textContent,
+        underline: getComputedStyle(inChat).textDecorationStyle,
+      },
+      journal: journal && {
+        name: journal.name,
+        pages: journal.pages.size,
+        headings: [
+          ...new DOMParser().parseFromString(pageContent, 'text/html').querySelectorAll('h2'),
+        ].map((h) => h.textContent),
+        terms: [
+          ...new DOMParser().parseFromString(pageContent, 'text/html').querySelectorAll('dt'),
+        ].map((dt) => dt.textContent),
+      },
+      journalsWithFlag: game.journal.filter(
+        (entry) => entry.getFlag(game.system.id, 'vttforge.keywords') === true,
+      ).length,
+    };
+  });
+
+  expect(seen.spans).toEqual([
+    { id: 'stowed', text: 'Stowed', tooltip: 'Packed away. Drawing it takes an action.' },
+    { id: 'equipped', text: 'in hand', tooltip: 'In hand or worn, and ready to use.' },
+  ]);
+  expect(seen.unknownKept).toBe(true);
+  expect(seen.inChat).toEqual({ text: 'Stowed', underline: 'dotted' });
+  expect(seen.journal).toEqual({
+    name: 'VTTForge Example System keywords',
+    pages: 1,
+    headings: ['Gear'],
+    terms: ['Initiative', 'Equipped', 'Stowed'],
+  });
+  // One journal, however many times ready has fired.
+  expect(seen.journalsWithFlag).toBe(1);
+});
+
 test('the module contributes a namespaced sub-type once enabled', async ({ page }) => {
   await joinWorld(page);
 

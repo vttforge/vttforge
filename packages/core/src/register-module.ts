@@ -16,6 +16,7 @@
 
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
 import type { FoundryConfig, HooksApi, StatusEffectConfig } from './foundry-globals.js';
+import { assertKeywords, type Keyword, keywordEnricher, syncKeywordJournal } from './keywords.js';
 import { type EnricherRegistration, registerEnrichers } from './register-enrichers.js';
 import { registerSheets, type SheetRegistration } from './register-sheets.js';
 import { addStatusEffects } from './status-effects.js';
@@ -61,6 +62,19 @@ export interface ModuleRegistration {
    * with it. See `registerEnrichers`.
    */
   readonly enrichers?: readonly EnricherRegistration[];
+
+  /**
+   * Rules terms this module defines. Each becomes `@Keyword[id]` in rich text,
+   * shown as its label with the description as tooltip, and all of them are
+   * written to a journal entry on the GM's client at `ready`. See `Keyword`.
+   */
+  readonly keywords?: readonly Keyword[];
+
+  /**
+   * The name of the keywords journal. Default: the package title followed by
+   * "keywords". `false` registers the enricher and writes no journal.
+   */
+  readonly keywordsJournal?: string | false;
 
   /** Runs before any CONFIG mutation: the usual home for the module API. */
   readonly onBeforeInit?: () => void;
@@ -182,6 +196,15 @@ export function registerModule(config: ModuleRegistration): ModuleRegistration {
       void config.onSetup?.();
     });
   }
+  if (config.keywords !== undefined && config.keywords.length > 0) {
+    assertKeywords(config.id, config.keywords);
+    if (config.keywordsJournal !== false) {
+      const { id, keywords, keywordsJournal } = config;
+      hooks.once('ready', () => {
+        void syncKeywordJournal(id, keywords, keywordsJournal);
+      });
+    }
+  }
   if (config.onReady !== undefined) {
     hooks.once('ready', () => {
       void config.onReady?.();
@@ -204,8 +227,12 @@ function applyInit(config: ModuleRegistration): void {
   if (config.statusEffects !== undefined && config.statusEffects.length > 0) {
     addStatusEffects(config.id, config.statusEffects, CONFIG);
   }
-  if (config.enrichers !== undefined && config.enrichers.length > 0) {
-    registerEnrichers(config.id, config.enrichers);
+  const enrichers = [...(config.enrichers ?? [])];
+  if (config.keywords !== undefined && config.keywords.length > 0) {
+    enrichers.push(keywordEnricher(config.keywords));
+  }
+  if (enrichers.length > 0) {
+    registerEnrichers(config.id, enrichers);
   }
   if (config.sheets !== undefined && config.sheets.length > 0) {
     registerSheets(config.id, config.sheets, {

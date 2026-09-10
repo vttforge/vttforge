@@ -48,6 +48,7 @@ The whole guide is at **[vttforge.dev/docs](https://vttforge.dev/docs/)**.
 - [Sheets](https://vttforge.dev/docs/guide/sheets). The bases, the drop hooks, and why every sheet needs an id.
 - [Modules](https://vttforge.dev/docs/guide/modules). Namespaced sub-types, enrichers, and what a module may not touch.
 - [Settings and migrations](https://vttforge.dev/docs/guide/settings-and-migrations). `SystemConfig` and the migration runner.
+- [Keywords](https://vttforge.dev/docs/guide/keywords). Rules terms defined once: `@Keyword[id]` in any text, and a journal the GM's client keeps current.
 - [The dev loop](https://vttforge.dev/docs/guide/dev-loop). What reloads in place and what does not.
 - [Testing](https://vttforge.dev/docs/guide/testing). `withMockFoundry` in Vitest, Quench for what a mock cannot answer.
 - [CLI reference](https://vttforge.dev/docs/guide/cli). Every command, and every rule `vttforge audit` checks.
