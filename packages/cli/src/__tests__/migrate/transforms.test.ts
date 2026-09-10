@@ -357,3 +357,12 @@ describe('namespaced globals', () => {
     expect(namespacedGlobals(src).output).toBe(src);
   });
 });
+
+describe('a one-line manifest', () => {
+  it('gets "type" inline after "id" and still parses', () => {
+    const r = transformManifest('{ "id": "s", "compatibility": { "minimum": "13" } }\n', 'system');
+    expect(r?.output).toBe(
+      '{ "id": "s", "type": "system", "compatibility": { "minimum": "14" } }\n',
+    );
+  });
+});

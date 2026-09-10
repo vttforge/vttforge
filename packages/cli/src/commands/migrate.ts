@@ -3,16 +3,23 @@
  *
  * Exit codes:
  *   0: ran, whether or not anything changed
- *   1: the target is not a directory
+ *   1: the target is not a directory, or --strict and a decision was left
  */
 
 import { resolve } from 'node:path';
-import { formatMigrateReport, type MigrateReport, runMigrate } from '../migrate/index.js';
+import {
+  countDecisions,
+  formatMigrateReport,
+  type MigrateReport,
+  runMigrate,
+} from '../migrate/index.js';
 
 export interface MigrateCommandOptions {
   cwd?: string;
   write?: boolean;
   json?: boolean;
+  /** Exit 1 when the report leaves anything that needs a decision. */
+  strict?: boolean;
   /** Also generate a data model per template.json type. */
   dataModels?: boolean;
   style?: 'plain' | 'sdk';
@@ -41,5 +48,10 @@ export async function runMigrateCommand(
     sheets: options.sheets === true,
   });
   out(options.json ? `${JSON.stringify(report, null, 2)}\n` : formatMigrateReport(report));
+  const decisions = countDecisions(report);
+  if (options.strict === true && decisions > 0) {
+    if (!options.json) out(`--strict: ${decisions} decision(s) left; exiting 1.\n`);
+    return { report, exitCode: 1 };
+  }
   return { report, exitCode: 0 };
 }

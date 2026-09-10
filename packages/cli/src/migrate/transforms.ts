@@ -694,11 +694,18 @@ export function transformManifest(
         const indent = output.slice(lineStart, idKey.keyStart);
         const after = output.indexOf('\n', idKey.valueEnd);
         const insertAt = after === -1 ? output.length : after;
-        const needsComma = !/,\s*$/.test(output.slice(idKey.valueEnd, insertAt));
-        const head = needsComma
-          ? `${output.slice(0, idKey.valueEnd)},${output.slice(idKey.valueEnd, insertAt)}`
-          : output.slice(0, insertAt);
-        output = `${head}\n${indent}"type": "${kind}",${output.slice(insertAt)}`;
+        const rest = output.slice(idKey.valueEnd, insertAt);
+        if (/^\s*,?\s*$/.test(rest)) {
+          // "id" ends its line: the new key gets the next line, same indent.
+          const needsComma = !/,\s*$/.test(rest);
+          const head = needsComma
+            ? `${output.slice(0, idKey.valueEnd)},${rest}`
+            : output.slice(0, insertAt);
+          output = `${head}\n${indent}"type": "${kind}",${output.slice(insertAt)}`;
+        } else {
+          // More keys follow on the same line (a one-line manifest): stay inline.
+          output = `${output.slice(0, idKey.valueEnd)}, "type": "${kind}"${output.slice(idKey.valueEnd)}`;
+        }
         changes.push({
           line: lineAt(raw, idKey.keyStart) + 1,
           before: '(no "type")',

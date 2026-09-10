@@ -36,14 +36,41 @@ export interface MigrateReport {
     files: string[];
     documentTypes: Record<string, Record<string, Record<string, unknown>>>;
     registration: string;
+    /** What happened, for the reader: a file left alone, nothing to generate. */
     notes: string[];
+    /** What the generator could not decide: a guessed field, a template.json to delete. */
+    decisions: string[];
   };
   /** Present when V2 sheet files were generated from Application v1 classes. */
   sheets?: {
     files: Array<Omit<SheetPlanFile, 'source'>>;
     templates: Array<{ file: string; edits: TemplateEdit[]; formRoot: boolean }>;
+    /** What to do next: point registerSheet at the file, run the audit again. */
     notes: string[];
+    /** What the codemod could not decide: a class it skipped, a root form to replace. */
+    decisions: string[];
   };
+}
+
+/** A file the run will write once every rewrite has been computed. */
+interface PendingWrite {
+  path: string;
+  content: string;
+}
+
+/**
+ * The lines the report prints as "needs a decision": the rewrites the run did
+ * not make, the TODO lines in generated files, and what the generators could
+ * not decide. `--strict` fails the run when any is left. A note that only says
+ * what happened (a file left alone, where to point registerSheet) is not one.
+ */
+export function countDecisions(report: MigrateReport): number {
+  return (
+    report.counts.notes +
+    (report.dataModels?.decisions.length ?? 0) +
+    (report.sheets?.files.reduce((n, f) => n + f.todos.length, 0) ?? 0) +
+    (report.sheets?.decisions.length ?? 0)
+  );
 }
 
 export interface MigrateOptions {
@@ -68,6 +95,9 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
   }
 
   const files: FileResult[] = [];
+  // Every rewrite is computed before the first write, so a run that stops
+  // halfway (a parser that throws on one file) leaves the tree as it was.
+  const pending: PendingWrite[] = [];
 
   for (const [name, kind] of [
     ['system.json', 'system'],
@@ -85,7 +115,7 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
     const result = transformManifest(raw, kind);
     if (result === null) continue;
     files.push({ file: name, changes: result.changes, notes: result.notes });
-    if (write && result.changes.length > 0) await writeFile(path, result.output, 'utf8');
+    if (write && result.changes.length > 0) pending.push({ path, content: result.output });
   }
 
   for await (const path of _internal.walkSourceFiles(cwd)) {
@@ -98,7 +128,7 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
     const result = transformSource(source);
     if (result.changes.length === 0 && result.notes.length === 0) continue;
     files.push({ file: relative(cwd, path), changes: result.changes, notes: result.notes });
-    if (write && result.output !== source) await writeFile(path, result.output, 'utf8');
+    if (write && result.output !== source) pending.push({ path, content: result.output });
   }
 
   // A project that builds to dist/ with a release workflow written for the old
@@ -138,6 +168,7 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
         documentTypes: {},
         registration: '',
         notes: ['No template.json here; nothing to generate.'],
+        decisions: [],
       };
     } else {
       const template = JSON.parse(await readFile(templatePath, 'utf8')) as Record<string, unknown>;
@@ -146,29 +177,32 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
         lang: options.lang ?? 'js',
       });
       const written: string[] = [];
+      const info: string[] = [];
       for (const file of plan.files) {
         const target = join(cwd, file.path);
         if (existsSync(target)) {
-          plan.notes.unshift(`${file.path} exists and was left alone.`);
+          info.push(`${file.path} exists and was left alone.`);
           continue;
         }
-        if (write) {
-          await mkdir(dirname(target), { recursive: true });
-          await writeFile(target, file.source, 'utf8');
-        }
+        if (write) pending.push({ path: target, content: file.source });
         written.push(file.path);
       }
       report.dataModels = {
         files: written,
         documentTypes: plan.documentTypes,
         registration: plan.registration,
-        notes: plan.notes,
+        notes: info,
+        decisions: plan.notes,
       };
     }
   }
 
-  if (options.sheets) report.sheets = await planSheets(cwd, write, options.lang ?? 'js');
+  if (options.sheets) report.sheets = await planSheets(cwd, write, options.lang ?? 'js', pending);
 
+  for (const { path, content } of pending) {
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, content, 'utf8');
+  }
   return report;
 }
 
@@ -190,10 +224,12 @@ async function planSheets(
   cwd: string,
   write: boolean,
   lang: 'js' | 'ts',
+  pending: PendingWrite[],
 ): Promise<NonNullable<MigrateReport['sheets']>> {
   const files: Array<Omit<SheetPlanFile, 'source'>> = [];
   const templates: Array<{ file: string; edits: TemplateEdit[]; formRoot: boolean }> = [];
   const notes: string[] = [];
+  const decisions: string[] = [];
   const generated = new Map<string, string>();
 
   for await (const path of _internal.walkSourceFiles(cwd)) {
@@ -221,10 +257,10 @@ async function planSheets(
       probe = planSheetFile(rel, source, { lang, tabIds: {} });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      notes.push(`${rel} could not be parsed and was skipped: ${reason}`);
+      decisions.push(`${rel} could not be parsed and was skipped: ${reason}`);
       continue;
     }
-    notes.push(...probe.notes);
+    decisions.push(...probe.notes);
     if (probe.files.length === 0) continue;
     let templatePaths = [...new Set(probe.files.flatMap((f) => f.templates))]
       .map((t) => localTemplate(cwd, t))
@@ -284,11 +320,11 @@ async function planSheets(
       if (r.edits.length === 0) continue;
       templates.push({ file: t, edits: r.edits, formRoot: r.formRoot });
       if (r.formRoot) {
-        notes.push(
+        decisions.push(
           `${t} opens with <form>; the SDK sheet already is one. Make it a <div> once the old class is gone: a part needs one root element (audit rule 008).`,
         );
       }
-      if (write && r.edits.length > 0) await writeFile(join(cwd, t), r.output, 'utf8');
+      if (write && r.edits.length > 0) pending.push({ path: join(cwd, t), content: r.output });
     }
   }
 
@@ -298,12 +334,9 @@ async function planSheets(
       notes.unshift(`${to} exists and was left alone.`);
       continue;
     }
-    if (write) {
-      await mkdir(dirname(target), { recursive: true });
-      await writeFile(target, out, 'utf8');
-    }
+    if (write) pending.push({ path: target, content: out });
   }
-  return { files, templates, notes: [...new Set(notes)] };
+  return { files, templates, notes: [...new Set(notes)], decisions: [...new Set(decisions)] };
 }
 
 /** The report as text: one block per file, edits then notes. */
@@ -361,7 +394,8 @@ export function formatMigrateReport(report: MigrateReport): string {
         'Register the models at init:',
         ...dm.registration.split('\n').map((l) => `  ${l}`),
       );
-    for (const n of dm.notes) lines.push(`  needs a decision: ${n}`);
+    for (const n of dm.notes) lines.push(`  ${n}`);
+    for (const n of dm.decisions) lines.push(`  needs a decision: ${n}`);
   }
   if (report.sheets) {
     const s = report.sheets;
@@ -391,7 +425,8 @@ export function formatMigrateReport(report: MigrateReport): string {
         }
       }
     }
-    for (const n of s.notes) lines.push(`  needs a decision: ${n}`);
+    for (const n of s.notes) lines.push(`  ${n}`);
+    for (const n of s.decisions) lines.push(`  needs a decision: ${n}`);
   }
   return `${lines.join('\n')}\n`;
 }

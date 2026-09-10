@@ -192,13 +192,13 @@ describe('vttforge migrate --sheets', () => {
     const { report } = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
     expect(report.sheets?.files.map((f) => f.to)).toEqual(['module/actor-sheet.v2.mjs']);
     expect(
-      report.sheets?.notes.some((n) => /module\/broken\.mjs.*could not be parsed/.test(n)),
+      report.sheets?.decisions.some((n) => /module\/broken\.mjs.*could not be parsed/.test(n)),
     ).toBe(true);
   });
 
   it('says so when there is no v1 sheet', async () => {
     const { report } = await runMigrateCommand({ cwd, sheets: true, out: () => {} });
-    expect(report.sheets).toEqual({ files: [], templates: [], notes: [] });
+    expect(report.sheets).toEqual({ files: [], templates: [], notes: [], decisions: [] });
   });
 });
 
@@ -228,5 +228,77 @@ describe('vttforge migrate and the release workflow', () => {
     expect(out).toMatch(
       /\.github\/workflows\/main\.yml\n {2}9: needs a decision: The release workflow zips the checkout without building/,
     );
+  });
+});
+
+describe('--strict', () => {
+  it('exits 1 when a decision is left, 0 when none is', async () => {
+    await writeFile(
+      join(cwd, 'chat.mjs'),
+      'Hooks.on("renderChatMessage", (m, html) => html.find(".x"));\n',
+      'utf8',
+    );
+    let out = '';
+    const left = await runMigrateCommand({
+      cwd,
+      strict: true,
+      out: (c) => {
+        out += c;
+      },
+    });
+    expect(left.exitCode).toBe(1);
+    expect(out).toContain('--strict: 1 decision(s) left');
+    await rm(join(cwd, 'chat.mjs'));
+    const clean = await runMigrateCommand({ cwd, strict: true, out: () => undefined });
+    expect(clean.exitCode).toBe(0);
+  });
+
+  it('does not fail on the notes that only say what to do next', async () => {
+    // A sheet with nothing the codemod could not decide, and no template.json.
+    await mkdir(join(cwd, 'templates'), { recursive: true });
+    await writeFile(
+      join(cwd, 'templates', 'hero.html'),
+      '<form><a class="roll">r</a></form>\n',
+      'utf8',
+    );
+    await writeFile(
+      join(cwd, 'sheet.mjs'),
+      `export class HeroSheet extends ActorSheet {
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, { template: 'systems/s/templates/hero.html' });
+  }
+  activateListeners(html) { super.activateListeners(html); html.find('.roll').click(() => this._onRoll()); }
+  _onRoll() { return 1; }
+}
+`,
+      'utf8',
+    );
+    const r = await runMigrateCommand({
+      cwd,
+      strict: true,
+      sheets: true,
+      dataModels: true,
+      out: () => undefined,
+    });
+    expect(r.report.sheets?.files).toHaveLength(1);
+    expect(r.report.sheets?.notes.length).toBeGreaterThan(0);
+    expect(r.report.dataModels?.notes).toEqual(['No template.json here; nothing to generate.']);
+    // The root <form> is the one real decision left; drop it and the run is clean.
+    expect(r.report.sheets?.decisions).toHaveLength(1);
+    expect(r.exitCode).toBe(1);
+    await writeFile(
+      join(cwd, 'templates', 'hero.html'),
+      '<div><a class="roll">r</a></div>\n',
+      'utf8',
+    );
+    const clean = await runMigrateCommand({
+      cwd,
+      strict: true,
+      sheets: true,
+      dataModels: true,
+      out: () => undefined,
+    });
+    expect(clean.report.sheets?.decisions).toEqual([]);
+    expect(clean.exitCode).toBe(0);
   });
 });

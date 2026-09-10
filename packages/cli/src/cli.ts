@@ -268,6 +268,11 @@ export const migrate = defineCommand({
       default: false,
       description: 'Emit the report as JSON',
     },
+    strict: {
+      type: 'boolean',
+      default: false,
+      description: 'Exit 1 when anything is left that needs a decision, for CI',
+    },
     'data-models': {
       type: 'boolean',
       default: false,
@@ -297,6 +302,7 @@ export const migrate = defineCommand({
         cwd: args.path ? String(args.path) : undefined,
         write: Boolean(args.write),
         json: Boolean(args.json),
+        strict: Boolean(args.strict),
         dataModels: Boolean(args['data-models']),
         style: String(args.style) === 'sdk' ? 'sdk' : 'plain',
         lang: String(args.lang) === 'ts' ? 'ts' : 'js',
