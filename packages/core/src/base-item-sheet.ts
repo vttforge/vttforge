@@ -17,6 +17,15 @@
 import type { DragDropConfig, SheetBaseCtor } from './base-actor-sheet.js';
 import { VTTFORGE_SHEET_CLASS } from './base-actor-sheet.js';
 import { VttfError } from './errors/registry.js';
+import {
+  applyMode,
+  currentMode,
+  decorateHeaderControls,
+  modeContext,
+  type SheetMode,
+  toggleMode,
+  toggleModeControl,
+} from './sheet-modes.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: Foundry's ItemSheetV2 class is resolved at runtime; the members the SDK stands on are in @vttforge/types
 type AnyConstructor = new (...args: any[]) => any;
@@ -106,11 +115,14 @@ export function BaseItemSheet(): SheetBaseCtor {
   class VttforgeBaseItemSheet extends Mixed {
     static readonly DEFAULT_OPTIONS = {
       classes: [VTTFORGE_SHEET_CLASS],
-      window: { resizable: true },
+      window: { resizable: true, controls: [toggleModeControl()] },
       position: { width: 520, height: 480 },
       tag: 'form',
       form: { submitOnChange: true, closeOnSubmit: false },
-      actions: { vttforgeTab: VttforgeBaseItemSheet._onTab },
+      actions: {
+        vttforgeTab: VttforgeBaseItemSheet._onTab,
+        vttforgeToggleMode: VttforgeBaseItemSheet._onToggleMode,
+      },
     } as const;
 
     static readonly DRAG_DROP: ReadonlyArray<DragDropConfig> = [];
@@ -143,7 +155,37 @@ export function BaseItemSheet(): SheetBaseCtor {
           context.tabs = tabs;
         }
       }
+      Object.assign(context, modeContext(this));
       return context;
+    }
+
+    get mode(): SheetMode {
+      return currentMode(this);
+    }
+
+    get isEditMode(): boolean {
+      return currentMode(this) === 'edit';
+    }
+
+    get isPlayMode(): boolean {
+      return currentMode(this) === 'play';
+    }
+
+    async toggleMode(mode?: SheetMode): Promise<void> {
+      await toggleMode(this, mode);
+    }
+
+    _getHeaderControls(): unknown[] {
+      const superControls = (Mixed.prototype as { _getHeaderControls?: () => unknown[] })
+        ._getHeaderControls;
+      const controls =
+        typeof superControls === 'function' ? (superControls.call(this) as unknown[]) : [];
+      return decorateHeaderControls(this, controls as Array<{ action?: string }>);
+    }
+
+    static _onToggleMode(_event: Event, _target: HTMLElement): void {
+      // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time
+      void toggleMode(this as unknown as object);
     }
 
     static _onTab(_event: Event, target: HTMLElement): void {
@@ -182,11 +224,12 @@ export function BaseItemSheet(): SheetBaseCtor {
         await superRender.call(this, context, options);
       }
       const configs = (this.constructor as { DRAG_DROP?: ReadonlyArray<DragDropConfig> }).DRAG_DROP;
-      if (!configs?.length) return;
       const DragDrop = resolveDragDrop();
-      if (!DragDrop) return;
       const element = (this as { element?: HTMLElement }).element;
-      if (!element) return;
+      if (!configs?.length || !DragDrop || !element) {
+        applyMode(this);
+        return;
+      }
       const onDragStart = (this as { _onDragStart?: (event: DragEvent) => void })._onDragStart;
       const onDrop = (this as { _onDrop?: (event: DragEvent) => void })._onDrop;
       for (const cfg of configs) {
@@ -204,6 +247,7 @@ export function BaseItemSheet(): SheetBaseCtor {
           },
         }).bind(element);
       }
+      applyMode(this);
     }
 
     #isEditable(): boolean {

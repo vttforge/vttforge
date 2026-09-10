@@ -122,6 +122,40 @@ If you are registering a sheet for an actor, it must extend `ActorSheetV2`, and
 `BaseActorSheet()` does. A plain `ApplicationV2` leaves `actor.sheet` as `null`
 and reports nothing anywhere.
 
+## Play and edit modes
+
+A sheet in play is read: the numbers, the buttons that roll, the tabs. A
+sheet in edit is written. Opt in on any sheet built on `BaseActorSheet()`,
+`BaseItemSheet()` or `BaseDocumentSheet()`:
+
+```ts
+class CharacterSheet extends BaseActorSheet() {
+  static MODES = {
+    initial: 'play',
+    labels: { play: 'MY_SYSTEM.Mode.play', edit: 'MY_SYSTEM.Mode.edit' },
+  };
+}
+```
+
+What that gives, and nothing of it happens without the opt-in:
+
+- A header control that reads "Edit mode" in play and "Play mode" in edit,
+  shown to users who can edit the document. Its action is `vttforgeToggleMode`.
+- `sheet.mode`, `sheet.isEditMode`, `sheet.isPlayMode` and
+  `sheet.toggleMode(mode?)`, which re-renders.
+- `context.mode`, `context.isEditMode` and `context.isPlayMode` for the
+  templates.
+- The class `vttforge-mode-play` or `vttforge-mode-edit` on the sheet element
+  after every render, for the CSS.
+- In play, every form field inside the window content is `disabled`: inputs,
+  selects, textareas and Foundry's own elements such as `<prose-mirror>`. A
+  `<button>` is an action, not a field, so rolls keep working. A field that
+  must stay open in play, hit points say, sits inside an element with
+  `data-vttforge-edit-in-play`.
+
+The mode lives on the sheet instance. It resets when the window is closed
+and opened again, and it is never written to a setting.
+
 ## Registering a sheet
 
 Register through `registerSystem` or `registerModule`, and give each sheet an
