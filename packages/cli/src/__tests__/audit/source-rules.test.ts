@@ -170,6 +170,42 @@ registerSystem({ id: 'my-system', actorDataModels: { character: PersonData, npc:
       expect(four[0]?.message).toContain('Actor.npc');
     });
 
+    it('accepts a path that template.json declares at the document level', async () => {
+      // While template.json exists the server copies its document-level
+      // htmlFields onto every type it lists, so the field is declared.
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({ id: 'my-system', version: '1.0.0' }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'template.json'),
+        JSON.stringify({
+          Actor: { types: ['hero', 'npc'], htmlFields: ['description'], hero: {}, npc: {} },
+          Item: { types: ['gear'], htmlFields: ['notes'], gear: {} },
+        }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `class HeroData extends TypeDataModel {
+  static defineSchema() {
+    return { description: new fields.HTMLField(), bio: new fields.HTMLField() };
+  }
+}
+class GearData extends TypeDataModel {
+  static defineSchema() {
+    return { notes: new fields.HTMLField() };
+  }
+}
+CONFIG.Actor.dataModels.hero = HeroData;
+CONFIG.Item.dataModels.gear = GearData;`,
+        'utf8',
+      );
+      const four = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-004');
+      expect(four.map((f) => f.message)).toEqual([expect.stringContaining('`bio`')]);
+    });
+
     it('flags HTMLField that is missing from manifest documentTypes', async () => {
       await writeFile(
         join(cwd, 'system.json'),

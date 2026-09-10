@@ -950,6 +950,51 @@ async function collectDeclaredRichFields(cwd: string): Promise<{
       }
     }
   }
+  // A system that still ships template.json declares its rich fields there,
+  // at the document level. While the file exists the server resets each
+  // listed type's documentTypes entry and copies that document-level block
+  // back, so those paths are declared for every type the file lists.
+  const templatePath = join(cwd, 'template.json');
+  if (existsSync(templatePath)) {
+    let template: unknown;
+    try {
+      template = JSON.parse(await readFile(templatePath, 'utf8'));
+    } catch {
+      template = null;
+    }
+    if (template && typeof template === 'object' && !Array.isArray(template)) {
+      for (const [docName, doc] of Object.entries(template as Record<string, unknown>)) {
+        if (!doc || typeof doc !== 'object' || Array.isArray(doc)) continue;
+        const { types, htmlFields, filePathFields } = doc as {
+          types?: unknown;
+          htmlFields?: unknown;
+          filePathFields?: unknown;
+        };
+        if (!Array.isArray(types)) continue;
+        const html = Array.isArray(htmlFields)
+          ? htmlFields.filter((e): e is string => typeof e === 'string').map(normalizeDeclaredPath)
+          : [];
+        const filePath = declaredFilePathKeys(filePathFields).map(normalizeDeclaredPath);
+        for (const type of types) {
+          if (typeof type !== 'string') continue;
+          const key = `${docName}.${type}`;
+          const entry = perSubtype.get(key) ?? {
+            html: new Set<string>(),
+            filePath: new Set<string>(),
+          };
+          for (const path of html) {
+            entry.html.add(path);
+            globalHtml.add(path);
+          }
+          for (const path of filePath) {
+            entry.filePath.add(path);
+            globalFilePath.add(path);
+          }
+          perSubtype.set(key, entry);
+        }
+      }
+    }
+  }
   return {
     declared: { perSubtype, packageId, globalHtml, globalFilePath },
     manifestPath,

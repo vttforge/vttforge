@@ -86,7 +86,7 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-001` | HIGH | `flags.hotReload` in the wrong shape, so hot reload is silently off |
 | `VTTF-AUDIT-002` | HIGH | Top-level `gridDistance` / `gridUnits`; v14 dropped the shim, so the system falls back to the default grid with no warning |
 | `VTTF-AUDIT-003` | LOW | `styles` as an array of strings, the v12 shape |
-| `VTTF-AUDIT-004` | MEDIUM | An `HTMLField` or `FilePathField` not listed in `documentTypes`; the server only sanitises declared paths |
+| `VTTF-AUDIT-004` | MEDIUM | An `HTMLField` or `FilePathField` not listed in `documentTypes`, nor at the document level of a `template.json` that still lists the type; the server only sanitises declared paths |
 | `VTTF-AUDIT-005` | MEDIUM | A `TypeDataModel` without `prepareBaseData`; Active Effects apply between it and `prepareDerivedData` |
 | `VTTF-AUDIT-006` | LOW | An `_addDataFieldMigrations` override; the signature is not what it looks like |
 | `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field, in a data model or in `template.json`; the token bar degrades with no error |
