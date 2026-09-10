@@ -135,6 +135,7 @@ describe('syncKeywordJournal', () => {
         name: 'My System keywords',
         type: 'text',
         text: { content: keywordJournalContent(KEYWORDS), format: 1 },
+        flags: { 'my-system': { vttforge: { keywords: true } } },
       },
     ]);
   });
@@ -146,34 +147,69 @@ describe('syncKeywordJournal', () => {
     expect((create.mock.calls[1] as [{ name: string }])[0].name).toBe('Glossary');
   });
 
-  it('finds its journal by flag and rewrites the page only when the content changed', async () => {
-    const update = vi.fn(async () => undefined);
+  it('finds its journal and page by flag, rewrites only that page, and only when the content changed', async () => {
+    const flags = { 'my-system': { vttforge: { keywords: true } } };
+    const updateEmbeddedDocuments = vi.fn(async () => undefined);
+    const createEmbeddedDocuments = vi.fn(async () => undefined);
     const journal = {
       id: 'j1',
       name: 'Renamed by the GM',
-      flags: { 'my-system': { vttforge: { keywords: true } } },
-      pages: [{ id: 'p1', text: { content: keywordJournalContent(KEYWORDS) } }],
-      update,
+      flags,
+      pages: [
+        { id: 'gm', flags: {}, text: { content: '<p>House rules</p>' } },
+        { id: 'p1', flags, text: { content: keywordJournalContent(KEYWORDS) } },
+      ],
+      updateEmbeddedDocuments,
+      createEmbeddedDocuments,
     };
-    const other = { id: 'j0', name: 'Other', flags: {}, pages: [], update: vi.fn() };
+    const other = {
+      id: 'j0',
+      name: 'Other',
+      flags: {},
+      pages: [],
+      updateEmbeddedDocuments: vi.fn(),
+      createEmbeddedDocuments: vi.fn(),
+    };
     (globalThis as { game: { journal: unknown[] } }).game.journal = [other, journal];
 
     expect(await syncKeywordJournal('my-system', KEYWORDS)).toBe('unchanged');
-    expect(update).not.toHaveBeenCalled();
+    expect(updateEmbeddedDocuments).not.toHaveBeenCalled();
 
     const more = [...KEYWORDS, { id: 'heavy', label: 'Heavy', description: 'Two hands.' }];
     expect(await syncKeywordJournal('my-system', more)).toBe('updated');
-    expect(update).toHaveBeenCalledWith({
-      pages: [
-        {
-          _id: 'p1',
-          name: 'My System keywords',
-          type: 'text',
-          text: { content: keywordJournalContent(more), format: 1 },
-        },
-      ],
-    });
-    expect(other.update).not.toHaveBeenCalled();
+    expect(updateEmbeddedDocuments).toHaveBeenCalledWith('JournalEntryPage', [
+      {
+        _id: 'p1',
+        name: 'My System keywords',
+        text: { content: keywordJournalContent(more), format: 1 },
+      },
+    ]);
+    expect(createEmbeddedDocuments).not.toHaveBeenCalled();
+    expect(other.updateEmbeddedDocuments).not.toHaveBeenCalled();
     expect(create).not.toHaveBeenCalled();
+  });
+
+  it('adds its page back when the GM deleted it, leaving the other pages alone', async () => {
+    const flags = { 'my-system': { vttforge: { keywords: true } } };
+    const createEmbeddedDocuments = vi.fn(async () => undefined);
+    const journal = {
+      id: 'j1',
+      flags,
+      pages: [{ id: 'gm', flags: {}, text: { content: '<p>House rules</p>' } }],
+      updateEmbeddedDocuments: vi.fn(),
+      createEmbeddedDocuments,
+    };
+    (globalThis as { game: { journal: unknown[] } }).game.journal = [journal];
+
+    expect(await syncKeywordJournal('my-system', KEYWORDS)).toBe('updated');
+    expect(createEmbeddedDocuments).toHaveBeenCalledWith('JournalEntryPage', [
+      {
+        name: 'My System keywords',
+        type: 'text',
+        text: { content: keywordJournalContent(KEYWORDS), format: 1 },
+        flags,
+      },
+    ]);
+    expect(journal.updateEmbeddedDocuments).not.toHaveBeenCalled();
   });
 });

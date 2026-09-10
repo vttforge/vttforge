@@ -102,7 +102,7 @@ describe('postRoll', () => {
       labels: { crit: 'X.Crit' },
       messageMode: 'gm',
       scope: 'my-module',
-      flags: { 'my-module': { a: 1 }, other: { b: 2 } },
+      flags: { 'my-module': { a: 1, vttforge: { keep: true } }, other: { b: 2 } },
     });
     expect(roll.evaluate).not.toHaveBeenCalled();
     expect(getSpeaker).not.toHaveBeenCalled();
@@ -114,7 +114,10 @@ describe('postRoll', () => {
     expect(data.content).toContain('class="vttf-roll vttf-roll--crit" data-vttforge-roll="crit"');
     expect(data.content).toContain('<span class="vttf-roll__tag">Natural twenty</span>');
     expect(data.flags).toEqual({
-      'my-module': { a: 1, vttforge: { roll: { natural: 20, crit: true, fumble: false } } },
+      'my-module': {
+        a: 1,
+        vttforge: { keep: true, roll: { natural: 20, crit: true, fumble: false } },
+      },
       other: { b: 2 },
     });
     expect(options).toEqual({ messageMode: 'gm' });

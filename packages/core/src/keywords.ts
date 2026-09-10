@@ -22,6 +22,7 @@
 
 import { VttfError } from './errors/registry.js';
 import type { EnricherRegistration } from './register-enrichers.js';
+import { escapeHtml, localize } from './text.js';
 
 export interface Keyword {
   /** One segment of letters, digits and hyphens: what goes in `@Keyword[id]`. */
@@ -53,15 +54,19 @@ interface Game {
   journal?: Iterable<JournalLike>;
 }
 
+interface PageLike {
+  readonly id?: string;
+  readonly flags?: Record<string, unknown>;
+  readonly text?: { readonly content?: string };
+}
+
 interface JournalLike {
   readonly id?: string;
   readonly name?: string;
   readonly flags?: Record<string, unknown>;
-  readonly pages?: Iterable<{
-    readonly id?: string;
-    readonly text?: { readonly content?: string };
-  }>;
-  update(data: Record<string, unknown>): Promise<unknown>;
+  readonly pages?: Iterable<PageLike>;
+  updateEmbeddedDocuments(name: string, updates: Record<string, unknown>[]): Promise<unknown>;
+  createEmbeddedDocuments(name: string, data: Record<string, unknown>[]): Promise<unknown>;
 }
 
 interface JournalClass {
@@ -70,27 +75,6 @@ interface JournalClass {
 
 function game(): Game | undefined {
   return (globalThis as Record<string, unknown>).game as Game | undefined;
-}
-
-function localize(text: string): string {
-  return game()?.i18n?.localize?.(text) ?? text;
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (char) => {
-    switch (char) {
-      case '&':
-        return '&amp;';
-      case '<':
-        return '&lt;';
-      case '>':
-        return '&gt;';
-      case '"':
-        return '&quot;';
-      default:
-        return '&#39;';
-    }
-  });
 }
 
 /** Refuse ids that cannot appear in `@Keyword[id]` or repeat within the package. */
@@ -170,8 +154,16 @@ function packageTitle(packageId: string): string {
   return current?.modules?.get?.(packageId)?.title ?? packageId;
 }
 
-function isOurJournal(journal: JournalLike, packageId: string): boolean {
-  const scoped = journal.flags?.[packageId] as { vttforge?: { keywords?: unknown } } | undefined;
+/** The journal and its page both carry this; the rest of the journal is the GM's. */
+function ourFlags(packageId: string): Record<string, unknown> {
+  return { [packageId]: { vttforge: { keywords: true } } };
+}
+
+function isOurs(
+  document: { readonly flags?: Record<string, unknown> },
+  packageId: string,
+): boolean {
+  const scoped = document.flags?.[packageId] as { vttforge?: { keywords?: unknown } } | undefined;
   return scoped?.vttforge?.keywords === true;
 }
 
@@ -179,8 +171,9 @@ function isOurJournal(journal: JournalLike, packageId: string): boolean {
  * Create the keywords journal, or rewrite its page when the content changed.
  * Runs on the GM's client only; other clients return at once.
  *
- * The journal is found by a flag under the package's scope, not by name, so
- * renaming it in the world is safe.
+ * The journal and its page are found by a flag under the package's scope, not
+ * by name or position, so the GM can rename the journal and add pages of
+ * their own; only the flagged page is ever rewritten.
  */
 export async function syncKeywordJournal(
   packageId: string,
@@ -194,25 +187,24 @@ export async function syncKeywordJournal(
 
   let existing: JournalLike | undefined;
   for (const journal of current.journal ?? []) {
-    if (isOurJournal(journal, packageId)) {
+    if (isOurs(journal, packageId)) {
       existing = journal;
       break;
     }
   }
 
   if (existing) {
-    const page = [...(existing.pages ?? [])][0];
+    const page = [...(existing.pages ?? [])].find((candidate) => isOurs(candidate, packageId));
     if (page?.text?.content === content) return 'unchanged';
-    await existing.update({
-      pages: [
-        {
-          ...(page?.id ? { _id: page.id } : {}),
-          name: pageName,
-          type: 'text',
-          text: { content, format: 1 },
-        },
-      ],
-    });
+    if (page?.id) {
+      await existing.updateEmbeddedDocuments('JournalEntryPage', [
+        { _id: page.id, name: pageName, text: { content, format: 1 } },
+      ]);
+    } else {
+      await existing.createEmbeddedDocuments('JournalEntryPage', [
+        { name: pageName, type: 'text', text: { content, format: 1 }, flags: ourFlags(packageId) },
+      ]);
+    }
     return 'updated';
   }
 
@@ -228,8 +220,10 @@ export async function syncKeywordJournal(
   }
   await JournalEntry.create({
     name: pageName,
-    pages: [{ name: pageName, type: 'text', text: { content, format: 1 } }],
-    flags: { [packageId]: { vttforge: { keywords: true } } },
+    pages: [
+      { name: pageName, type: 'text', text: { content, format: 1 }, flags: ourFlags(packageId) },
+    ],
+    flags: ourFlags(packageId),
   });
   return 'created';
 }
