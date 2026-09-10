@@ -26,6 +26,13 @@ npx @vttforge/cli@latest audit
 Every finding names a file and a line. Most of them go away in the next
 two steps.
 
+The codemods read v13 code. A system that last ran on v12 goes through
+[Migrating from v12](/recipes/migrating-from-v12) first. One from v10 or
+v11 needs the older breaks done by hand before anything here helps: the
+`data.data` to `system` rename above all, since every rewrite below
+looks for `system`. `audit` still runs on that code and names what it
+sees, but `migrate` will not carry it across those versions.
+
 ## 1. v14 first
 
 ```bash
