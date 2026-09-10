@@ -68,21 +68,16 @@ export class HeroSheet extends BaseActorSheet() {
 
   async _onItemCreate(event, target) {
     event.preventDefault();
-    // TODO(migrate): Dialog v1 (removed in v16); rebuild with DialogV2.prompt / DialogV2.wait, buttons as { action, label, callback }
-    new Dialog({
-      title: 'New item',
+    DialogV2.wait({
+      window: { title: 'New item' },
       content: '<input name="name">',
-      buttons: {
-        create: {
-          label: 'Create',
-          callback: (html) =>
+      buttons: [
+        { action: 'create', label: 'Create', callback: (event, button, dialog) =>
             this.actor.createEmbeddedDocuments('Item', [
-              // TODO(migrate): jQuery left here; use the DOM on \`target\` / \`this.element\`
-              { name: html.find('[name=name]').val(), type: 'item' },
-            ]),
-        },
-      },
-    }).render(true);
+              { name: dialog.element.querySelector('[name=name]').value, type: 'item' },
+            ]) },
+      ],
+    });
   }
 
   _onItemEdit(event) {

@@ -318,6 +318,229 @@ function readConfirmOptions(inner: string): { code: string | null; missing: stri
   return { code: `DialogV2.confirm({ ${parts.join(', ')} })`, missing };
 }
 
+/** Index just past the `)` that closes the call opened at `open` (which must point at `(`), or -1. */
+function closingParen(text: string, open: number): number {
+  const masked = maskComments(text, { strings: true });
+  let depth = 0;
+  for (let i = open; i < masked.length; i += 1) {
+    const ch = masked[i];
+    if (ch === MASK) continue;
+    if (ch === '(' || ch === '[' || ch === '{') depth += 1;
+    else if (ch === ')' || ch === ']' || ch === '}') {
+      depth -= 1;
+      if (depth === 0) return i + 1;
+    }
+  }
+  return -1;
+}
+
+/** Strip one pair of outer braces from an object literal's text. */
+function innerOf(objectText: string): string | null {
+  const t = objectText.trim();
+  if (!t.startsWith('{') || !t.endsWith('}')) return null;
+  return t.slice(1, -1);
+}
+
+/** `'<i class="fas fa-check"></i>'` → `'fas fa-check'`; anything else stays. */
+function iconClass(value: string): string {
+  const m = /<i\s+class=(["'])([^"']+)\1/.exec(value);
+  if (!m) return value;
+  const q = value.trim().startsWith('"') ? '"' : "'";
+  return `${q}${m[2]}${q}`;
+}
+
+/**
+ * A v1 dialog callback `(html) => ...` on the V2 signature. `html` was the
+ * dialog's jQuery content; V2 hands `(event, button, dialog)`, so `html[0]`
+ * is `dialog.element` and `html.find(sel)` is a query on it.
+ */
+function v2Callback(fn: string, signature: string, elementExpr: string): string {
+  const arrow = /^(async\s+)?\(?\s*([\w$]*)\s*\)?\s*=>/.exec(fn.trim());
+  const classic = /^(async\s+)?function\s*\(\s*([\w$]*)\s*\)/.exec(fn.trim());
+  const m = arrow ?? classic;
+  if (!m) return fn;
+  const param = m[2] ?? '';
+  const head = arrow ? `${m[1] ?? ''}(${signature}) =>` : `${m[1] ?? ''}function (${signature})`;
+  let body = fn.trim().slice(m[0].length);
+  if (param) {
+    const p = esc(param);
+    body = replaceCode(body, new RegExp(`\\b${p}\\[0\\]`, 'g'), () => elementExpr);
+    body = replaceCode(
+      body,
+      new RegExp(`\\b${p}\\.find\\(`, 'g'),
+      () => `${elementExpr}.querySelector(`,
+    );
+    body = replaceCode(body, new RegExp(`\\$\\(\\s*${p}\\s*\\)`, 'g'), () => elementExpr);
+    body = replaceCode(body, new RegExp(`\\b${p}\\b(?!\\s*:)`, 'g'), () => elementExpr);
+  }
+  body = replaceCode(body, /\.val\(\)/g, () => '.value');
+  return `${head}${body}`;
+}
+
+const NEW_DIALOG_WAIT_NOTE =
+  'DialogV2.wait opens the dialog itself and resolves with the pressed button; drop any later .render(true) on this value and await it where the result matters';
+
+interface DialogRead {
+  code: string;
+  missing: string[];
+}
+
+/** `new Dialog({...})` options → the `DialogV2.wait({...})` call, or null when unreadable. */
+function readDialogOptions(inner: string, indent: string): DialogRead | null {
+  if (!balanced(inner)) return null;
+  const missing: string[] = [];
+  const found: Record<string, string> = {};
+  for (const pair of topLevelPairs(inner)) {
+    if (pair.spread) {
+      missing.push(`the spread ${pair.key}`);
+      continue;
+    }
+    const key = pair.key.replace(/^['"]|['"]$/g, '');
+    if (['title', 'content', 'buttons', 'default', 'render', 'close'].includes(key))
+      found[key] = pair.value;
+    else missing.push(key);
+  }
+  const pad = `${indent}  `;
+  const parts: string[] = [];
+  if (found.title) parts.push(`window: { title: ${found.title} }`);
+  if (found.content) parts.push(`content: ${found.content}`);
+  if (found.buttons) {
+    const buttonsInner = innerOf(found.buttons);
+    if (buttonsInner === null || !balanced(buttonsInner)) return null;
+    const defaultKey = found.default?.replace(/^['"]|['"]$/g, '');
+    const buttons: string[] = [];
+    for (const b of topLevelPairs(buttonsInner)) {
+      if (b.spread) {
+        missing.push(`the spread ${b.key} in buttons`);
+        continue;
+      }
+      const action = b.key.replace(/^['"]|['"]$/g, '');
+      const fields = innerOf(b.value);
+      if (fields === null) {
+        missing.push(`button ${action}`);
+        continue;
+      }
+      const entry: string[] = [`action: '${action}'`];
+      for (const f of topLevelPairs(fields)) {
+        const k = f.key.replace(/^['"]|['"]$/g, '');
+        if (k === 'icon') entry.push(`icon: ${iconClass(f.value)}`);
+        else if (k === 'label') entry.push(`label: ${f.value}`);
+        else if (k === 'callback')
+          entry.push(`callback: ${v2Callback(f.value, 'event, button, dialog', 'dialog.element')}`);
+        else missing.push(`button ${action}.${k}`);
+      }
+      if (defaultKey && defaultKey === action) entry.push('default: true');
+      buttons.push(`${pad}  { ${entry.join(', ')} },`);
+    }
+    parts.push(`buttons: [\n${buttons.join('\n')}\n${pad}]`);
+  }
+  if (found.render)
+    parts.push(`render: ${v2Callback(found.render, 'event, dialog', 'dialog.element')}`);
+  if (found.close) parts.push(`close: ${found.close}`);
+  const code = `DialogV2.wait({\n${parts.map((p) => `${pad}${p},`).join('\n')}\n${indent}})`;
+  return { code, missing };
+}
+
+/** `Dialog.prompt({...})` options → `DialogV2.prompt({...})`, or null when unreadable. */
+function readPromptOptions(inner: string): DialogRead | null {
+  if (!balanced(inner)) return null;
+  const missing: string[] = [];
+  const found: Record<string, string> = {};
+  for (const pair of topLevelPairs(inner)) {
+    if (pair.spread) {
+      missing.push(`the spread ${pair.key}`);
+      continue;
+    }
+    const key = pair.key.replace(/^['"]|['"]$/g, '');
+    if (['title', 'content', 'label', 'callback', 'rejectClose'].includes(key))
+      found[key] = pair.value;
+    else missing.push(key);
+  }
+  const parts: string[] = [];
+  if (found.title) parts.push(`window: { title: ${found.title} }`);
+  if (found.content) parts.push(`content: ${found.content}`);
+  const ok: string[] = [];
+  if (found.label) ok.push(`label: ${found.label}`);
+  if (found.callback)
+    ok.push(`callback: ${v2Callback(found.callback, 'event, button, dialog', 'dialog.element')}`);
+  if (ok.length > 0) parts.push(`ok: { ${ok.join(', ')} }`);
+  if (found.rejectClose) parts.push(`rejectClose: ${found.rejectClose}`);
+  return { code: `DialogV2.prompt({ ${parts.join(', ')} })`, missing };
+}
+
+/**
+ * Replace each `<pattern>({...}[, more])` whose first argument is a readable
+ * object literal; leave the rest as written with a TODO above it.
+ */
+function rewriteCalls(
+  code: string,
+  pattern: RegExp,
+  read: (inner: string, indent: string) => DialogRead | null,
+  label: string,
+  todos: string[],
+): string {
+  const masked = maskComments(code, { strings: true });
+  const hits: Array<{
+    start: number;
+    end: number;
+    read: DialogRead | null;
+    trailingRender: boolean;
+  }> = [];
+  for (const m of code.matchAll(pattern)) {
+    const start = m.index ?? 0;
+    if (masked[start] === MASK) continue;
+    const open = start + m[0].length - 1;
+    const end = closingParen(code, open);
+    if (end === -1) continue;
+    const args = code.slice(open + 1, end - 1);
+    // The first argument is the options literal; anything after its closing brace is a second one.
+    const firstBrace = args.indexOf('{');
+    const firstEnd = firstBrace === -1 ? -1 : closingParen(args, firstBrace);
+    const argsInner =
+      firstEnd === -1 || args.slice(0, firstBrace).trim() !== ''
+        ? null
+        : innerOf(args.slice(firstBrace, firstEnd));
+    const secondArg = firstEnd !== -1 && /^\s*,\s*\S/.test(args.slice(firstEnd));
+    const lineStart = code.lastIndexOf('\n', start - 1) + 1;
+    const indent = /^[ \t]*/.exec(code.slice(lineStart))?.[0] ?? '';
+    const result = argsInner === null ? null : read(argsInner, indent);
+    if (result && secondArg) result.missing.push('the second argument (the Application options)');
+    let renderEnd = end;
+    let trailingRender = false;
+    const after = /^\s*\.render\((?:true)?\)/.exec(code.slice(end));
+    if (after) {
+      renderEnd = end + after[0].length;
+      trailingRender = true;
+    }
+    hits.push({ start, end: renderEnd, read: result, trailingRender });
+  }
+  let out = code;
+  for (const hit of hits.reverse()) {
+    if (hit.read === null) {
+      out = todoAt(
+        out,
+        hit.start,
+        `${label} here could not be read; rewrite it on DialogV2 by hand (${NEW_DIALOG_MSG})`,
+      );
+      todos.unshift(
+        `${label} here could not be read; rewrite it on DialogV2 by hand (${NEW_DIALOG_MSG})`,
+      );
+      continue;
+    }
+    out = `${out.slice(0, hit.start)}${hit.read.code}${out.slice(hit.end)}`;
+    if (hit.read.missing.length > 0) {
+      const msg = `${label} options left behind: ${hit.read.missing.join(', ')}; move them onto the DialogV2 call by hand`;
+      out = todoAt(out, hit.start, msg);
+      todos.unshift(msg);
+    }
+    if (label === 'new Dialog' && !hit.trailingRender) {
+      out = todoAt(out, hit.start, NEW_DIALOG_WAIT_NOTE);
+      todos.unshift(NEW_DIALOG_WAIT_NOTE);
+    }
+  }
+  return out;
+}
+
 export function rewriteDialogs(code: string): Rewritten {
   const todos: string[] = [];
   const confirmMask = maskComments(code, { strings: true });
@@ -342,15 +565,21 @@ export function rewriteDialogs(code: string): Rewritten {
     }
   }
 
-  const dialogMask = maskComments(out, { strings: true });
-  const starts: number[] = [];
-  for (const m of out.matchAll(NEW_DIALOG)) {
-    const at = m.index ?? 0;
-    if (dialogMask[at] !== MASK) starts.push(at);
-  }
-  for (const at of starts.reverse()) {
-    out = todoAt(out, at, NEW_DIALOG_MSG);
-    todos.push(NEW_DIALOG_MSG);
-  }
+  // Dialog.prompt({...}) → DialogV2.prompt({...})
+  out = rewriteCalls(
+    out,
+    /\bDialog\.prompt\s*\(/g,
+    (inner) => readPromptOptions(inner),
+    'Dialog.prompt',
+    todos,
+  );
+  // new Dialog({...}).render(true) → DialogV2.wait({...})
+  out = rewriteCalls(
+    out,
+    NEW_DIALOG,
+    (inner, indent) => readDialogOptions(inner, indent),
+    'new Dialog',
+    todos,
+  );
   return { code: out, todos };
 }

@@ -148,10 +148,61 @@ describe('rewriteDialogs', () => {
     expect(r.todos).toEqual([]);
   });
 
-  it('marks new Dialog', () => {
-    const r = rewriteDialogs(`new Dialog({ title: "x", buttons: {} }).render(true);`);
-    expect(r.code).toMatch(/TODO\(migrate\).*DialogV2/);
-    expect(r.todos).toHaveLength(1);
+  it('turns new Dialog({...}).render(true) into DialogV2.wait with the buttons as a list', () => {
+    const src = `    new Dialog({
+      title: game.i18n.localize("X.Create"),
+      content,
+      buttons: {
+        create: {
+          icon: '<i class="fas fa-check"></i>',
+          label: game.i18n.localize("X.Create"),
+          callback: (html) => {
+            const form = html[0].querySelector("form");
+            const name = html.find("[name=name]").val();
+            this.actor.createOwnedItem({ name: form.itemname.value, alt: name });
+          },
+        },
+        cancel: { label: "Cancel" },
+      },
+      default: "create",
+    }).render(true);`;
+    const r = rewriteDialogs(src);
+    expect(r.todos).toEqual([]);
+    expect(r.code).toContain('DialogV2.wait({');
+    expect(r.code).toContain('window: { title: game.i18n.localize("X.Create") },');
+    expect(r.code).toContain('content,');
+    expect(r.code).toContain(
+      "{ action: 'create', icon: 'fas fa-check', label: game.i18n.localize(\"X.Create\"), callback: (event, button, dialog) => {",
+    );
+    expect(r.code).toContain('const form = dialog.element.querySelector("form");');
+    expect(r.code).toContain('const name = dialog.element.querySelector("[name=name]").value;');
+    expect(r.code).toContain('default: true },');
+    expect(r.code).toContain('{ action: \'cancel\', label: "Cancel" },');
+    expect(r.code).not.toContain('.render(true)');
+    expect(r.code).not.toContain('new Dialog');
+  });
+
+  it('notes a new Dialog kept in a variable, and marks one it cannot read', () => {
+    const kept = rewriteDialogs(
+      `const d = new Dialog({ title: t, content: c, buttons: {} });\nd.render(true);`,
+    );
+    expect(kept.code).toContain('const d = DialogV2.wait({');
+    expect(kept.todos.some((m) => /drop any later \.render/.test(m))).toBe(true);
+
+    const unreadable = rewriteDialogs('new Dialog(makeOptions()).render(true);');
+    expect(unreadable.code).toContain('new Dialog(makeOptions()).render(true);');
+    expect(unreadable.code).toMatch(/TODO\(migrate\): new Dialog here could not be read/);
+    expect(unreadable.todos).toHaveLength(1);
+  });
+
+  it('turns Dialog.prompt into DialogV2.prompt', () => {
+    const r = rewriteDialogs(
+      `await Dialog.prompt({ title: t, content: c, label: "Go", callback: (html) => html.find("input").val(), rejectClose: false });`,
+    );
+    expect(r.code).toBe(
+      'await DialogV2.prompt({ window: { title: t }, content: c, ok: { label: "Go", callback: (event, button, dialog) => dialog.element.querySelector("input").value }, rejectClose: false });',
+    );
+    expect(r.todos).toEqual([]);
   });
 
   it('leaves the call as written when the options defeat the pattern', () => {

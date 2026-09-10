@@ -100,7 +100,8 @@ describe('planSheetFile', () => {
   });
 
   it('leaves TODOs where it stopped, and lists them with their lines', () => {
-    expect(file.source).toContain('// TODO(migrate): Dialog v1');
+    expect(file.source).toContain('DialogV2.wait({');
+    expect(file.source).not.toContain('new Dialog(');
     expect(file.todos.length).toBeGreaterThanOrEqual(2);
     const lines = file.source.split('\n');
     for (const t of file.todos) expect(lines[t.line - 1]).toContain('TODO(migrate)');

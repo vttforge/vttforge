@@ -279,7 +279,7 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
     const name = member.type === 'ClassMethod' ? methodName(member) : null;
     if (name && HANDLED.has(name)) continue;
     if (name === 'template' && member.type === 'ClassMethod' && member.kind === 'get') continue;
-    let code = reindent(text(source, member));
+    let code = applyDialogs(reindent(text(source, member)));
     if (name && handlerNames.has(name)) {
       const sig = handlerSignature(code, name);
       code = rewriteHandlerBody(sig.code, sig.eventParam, null).code;
@@ -296,7 +296,7 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
     if (name === '_updateObject') {
       code = `  ${todo('_updateObject is gone on V2; DocumentSheetV2 submits the form itself. Move any shaping into _prepareSubmitData or delete this')}\n${code}`;
     }
-    members.push(applyDialogs(code));
+    members.push(code);
   }
   for (const which of ['Item', 'Actor'] as const) {
     const m = methodOf(cls.node, `_onDrop${which}`);
@@ -308,7 +308,7 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
   const inline: ActionBinding[] = listeners.actions.filter((a) => a.kind === 'inline');
   for (const a of inline) {
     const method = `_on${pascal(a.name)}`;
-    const rewritten = applyDialogs(rewriteHandlerBody(a.body ?? '{}', a.param, null).code).trim();
+    const rewritten = rewriteHandlerBody(applyDialogs(a.body ?? '{}'), a.param, null).code.trim();
     const body = rewritten.startsWith('{')
       ? dedentBlock(rewritten)
       : `{\n    return ${rewritten};\n  }`;
