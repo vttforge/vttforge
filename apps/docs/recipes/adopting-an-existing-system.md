@@ -16,7 +16,7 @@ Work on a branch. Every step below is a commit you can read.
 
 ## Before you start
 
-You need Node 24 or later, a package manager, and a Foundry v14 to test
+You need Node 26 or later, a package manager, and a Foundry v14 to test
 on. Run the audit first and read the report:
 
 ```bash
