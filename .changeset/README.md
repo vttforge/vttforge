@@ -8,7 +8,7 @@ Add one with:
 pnpm changeset
 ```
 
-The walkthrough asks which packages changed and at what semver level (patch / minor / major). Changesets are consumed by the release workflow (`.github/workflows/changesets.yml`) which opens a Version PR that bumps versions and updates each package's `CHANGELOG.md`.
+The walkthrough asks which packages changed and at what semver level (patch / minor / major). Changesets are consumed by the release workflow (`.github/workflows/changesets.yml`) which opens a Version PR that bumps versions and updates each package's `CHANGELOG.md`. Merging that PR runs `publish.yml`, which publishes the new versions to npm and tags them.
 
 Only published packages get a changeset. A changeset that names a private
 package (`apps/*`, `examples/*`) is skipped by `changeset version` and

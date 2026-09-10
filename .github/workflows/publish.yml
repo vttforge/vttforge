@@ -1,11 +1,17 @@
 name: Publish to npm
 
-# Tagged release (v*) triggers publish under npm Trusted Publishing (OIDC).
-# No NPM_TOKEN, no --provenance flag — both handled server-side under OIDC.
-# Per-package npmjs.com Trusted Publisher config must point at this repo +
-# this workflow filename.
+# Runs when the Version PR from changesets lands on main (its squash commit
+# keeps the PR title), on a manual dispatch, or on a v* tag. Publishing uses
+# npm Trusted Publishing (OIDC): no NPM_TOKEN, no --provenance flag, both
+# handled server-side. Per-package npmjs.com Trusted Publisher config must
+# point at this repo + this workflow filename.
+#
+# The tags this workflow pushes are `<package>@<version>`, created after the
+# publish, so a tag can never be what starts a release; the merge is.
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
   workflow_dispatch: {}
@@ -25,6 +31,12 @@ concurrency:
 jobs:
   publish:
     name: Verify + publish (OIDC)
+    # On a push to main, only the merged Version PR publishes. `pnpm publish -r`
+    # skips versions already on the registry, so a re-run is harmless.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_type == 'tag' ||
+      startsWith(github.event.head_commit.message, 'chore(release): version packages')
     # GitHub-hosted on purpose, unlike CI. npm attaches sigstore provenance to
     # public packages and refuses it from a self-hosted runner — only
     # github-hosted ones are accepted. This surfaced the moment the repository
