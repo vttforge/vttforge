@@ -29,6 +29,11 @@ const TEMPLATE_RE = /template:\s*[`'"]([^`'"]*\.hbs)[`'"]/g;
 const FORM_TAG_RE = /<form[\s>]/i;
 const HANDLEBARS_COMMENT_RE = /\{\{!--[\s\S]*?--\}\}|\{\{![^}]*\}\}/g;
 
+/** Blank out Handlebars comments, keeping their newlines so line numbers still point at the source. */
+function withoutComments(source: string): string {
+  return source.replace(HANDLEBARS_COMMENT_RE, (m) => m.replace(/[^\n]/g, ''));
+}
+
 /**
  * The templates a form-tagged sheet declares, as paths inside the project.
  *
@@ -67,7 +72,58 @@ function templatesOfFormSheets(source: string): string[] {
  * HIGH because of how it fails. There is no error and no warning. The sheet
  * looks right, accepts what you type, and drops it when the window closes.
  */
+/**
+ * VTTF-AUDIT-021 (HIGH) — a Handlebars helper v14 removed.
+ *
+ * `{{#select}}` and `{{colorPicker}}` are gone. A template that still calls
+ * one fails to render with "Missing helper", and the sheet, dialog or settings
+ * form it belongs to never opens. Every `.hbs` / `.html` in the project is
+ * read, since the failing template can belong to anything.
+ */
+const REMOVED_HELPERS: ReadonlyArray<{ pattern: RegExp; name: string; fix: string }> = [
+  {
+    pattern: /\{\{#?select\b/,
+    name: '{{#select}}',
+    fix: 'Replace the block with `{{selectOptions choices selected=value}}` (add `localize=true` when the labels are keys), or write the `<option>` list with `{{#each}}` and a `selected` attribute you compute yourself.',
+  },
+  {
+    pattern: /\{\{colorPicker\b/,
+    name: '{{colorPicker}}',
+    fix: 'Replace it with the `<color-picker>` element, `<color-picker name="..." value="{{value}}"></color-picker>`.',
+  },
+];
+
+async function runRemovedHelperRule(cwd: string): Promise<RuleResult[]> {
+  const results: RuleResult[] = [];
+  const files: string[] = [];
+  for await (const file of _internal.walkTemplateFiles(cwd)) files.push(file);
+  for (const path of files.sort()) {
+    let source: string;
+    try {
+      source = await readFile(path, 'utf8');
+    } catch {
+      continue;
+    }
+    const markup = withoutComments(source);
+    for (const helper of REMOVED_HELPERS) {
+      if (!helper.pattern.test(markup)) continue;
+      const line = markup.split('\n').findIndex((text) => helper.pattern.test(text)) + 1;
+      results.push({
+        ruleId: 'VTTF-AUDIT-021',
+        title: 'Template calls a Handlebars helper v14 removed',
+        severity: 'HIGH',
+        filePath: relative(cwd, path),
+        line: line > 0 ? line : 1,
+        message: `${helper.name} was removed in v14. Rendering this template throws "Missing helper", so whatever renders it never opens.`,
+        remediation: helper.fix,
+      });
+    }
+  }
+  return results;
+}
+
 export async function runTemplateRules(cwd: string): Promise<RuleResult[]> {
+  const removedHelpers = await runRemovedHelperRule(cwd);
   const templates = new Set<string>();
   for await (const file of _internal.walkSourceFiles(cwd)) {
     let content: string;
@@ -90,7 +146,7 @@ export async function runTemplateRules(cwd: string): Promise<RuleResult[]> {
       // problem, and Foundry reports that one itself.
       continue;
     }
-    const markup = source.replace(HANDLEBARS_COMMENT_RE, '');
+    const markup = withoutComments(source);
     if (!FORM_TAG_RE.test(markup)) continue;
 
     const lines = markup.split('\n');
@@ -107,5 +163,5 @@ export async function runTemplateRules(cwd: string): Promise<RuleResult[]> {
         'Replace the `<form>` wrapper with a `<div>`, or drop it entirely. The fields belong to the application element, and `submitOnChange` saves them as they change.',
     });
   }
-  return results;
+  return [...results, ...removedHelpers];
 }

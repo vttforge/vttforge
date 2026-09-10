@@ -1,0 +1,5 @@
+---
+"@vttforge/cli": minor
+---
+
+`vttforge migrate --sheets` covers the rest of Application v1: `new Dialog({...}).render(true)` becomes `DialogV2.wait({...})` with the buttons as a list and the callbacks on the `(event, button, dialog)` signature, `Dialog.prompt` becomes `DialogV2.prompt` (the `yes`, `no` and `close` callbacks of `Dialog.confirm` and `new Dialog` move to the V2 signature too, and `rejectClose` is kept when written), `enrichHTML(x, { async: true })` loses the dead option, and a `FormApplication` or `Application` class gets its `.v2` file on `HandlebarsApplicationMixin(ApplicationV2)`, with `_updateObject` turned into the static form handler. What cannot be read stays as written with a `TODO(migrate)` line: a `new Dialog` without `buttons`, a second `tabs` entry, an `_onDropItem` on an item sheet. The report reminds you to run `vttforge audit` on the generated files. `vttforge audit` rule `VTTF-AUDIT-021` (HIGH) flags a template that calls `{{select}}`, `{{#select}}` or `{{colorPicker}}`, all removed in v14; the reported line stays right past a multi-line Handlebars comment.

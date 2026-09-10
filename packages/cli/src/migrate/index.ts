@@ -8,7 +8,7 @@
  */
 
 import { existsSync } from 'node:fs';
-import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { runReleaseRules } from '../audit/release-rules.js';
 import { _internal } from '../audit/source-rules.js';
@@ -172,19 +172,10 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
   return report;
 }
 
-/** Every `.hbs` / `.html` under `templates/`, project-relative. */
+/** Every `.hbs` / `.html` in the project, project-relative. */
 async function allTemplates(cwd: string): Promise<string[]> {
-  const root = join(cwd, 'templates');
-  if (!existsSync(root)) return [];
   const out: string[] = [];
-  const visit = async (dir: string): Promise<void> => {
-    for (const entry of await readdir(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) await visit(full);
-      else if (/\.(?:hbs|html)$/.test(entry.name)) out.push(relative(cwd, full));
-    }
-  };
-  await visit(root);
+  for await (const file of _internal.walkTemplateFiles(cwd)) out.push(relative(cwd, file));
   return out.sort();
 }
 
@@ -214,7 +205,12 @@ async function planSheets(
     } catch {
       continue;
     }
-    if (!/\b(?:ActorSheet|ItemSheet)\b/.test(raw)) continue;
+    if (
+      !/\bextends\s+(?:foundry\.appv1\.\w+\.)?(?:ActorSheet|ItemSheet|FormApplication|Application)\b/.test(
+        raw,
+      )
+    )
+      continue;
     // The generated file starts from the v14 rewrite of the source, so the bare
     // v13 aliases are already namespaced in it whether or not --write ran.
     const source = transformSource(raw).output;
@@ -239,9 +235,14 @@ async function planSheets(
       const every = await allTemplates(cwd);
       // Leave out the other document's folder (item templates for an actor sheet and the
       // reverse); shared parts and dialogs stay in, since a sheet's rows often live there.
+      const first = probe.files[0]?.base;
       const other =
-        probe.files[0]?.base === 'BaseItemSheet' ? /(?:^|\/)actors?\//i : /(?:^|\/)items?\//i;
-      templatePaths = every.filter((t) => !other.test(t));
+        first === 'BaseItemSheet'
+          ? /(?:^|\/)actors?\//i
+          : first === 'BaseActorSheet'
+            ? /(?:^|\/)items?\//i
+            : null;
+      templatePaths = other ? every.filter((t) => !other.test(t)) : every;
     }
     const navSelectors = [...new Set(probe.files.flatMap((f) => f.tabNavSelectors))];
     const tabIds: Record<string, string[]> = {};
@@ -260,7 +261,12 @@ async function planSheets(
       files.push(rest);
       generated.set(f.to, out);
       notes.push(
-        `Point registerSheet at ${f.className} from ${f.to} (a written key such as "<id>.${f.base === 'BaseActorSheet' ? 'actor' : 'item'}"), then delete the old class.`,
+        `Run \`vttforge audit\` again after reading ${f.to}: the v14 rules also apply to the generated file.`,
+      );
+      notes.push(
+        f.base === 'ApplicationV2'
+          ? `Point whatever constructs ${f.className} (a settings menu, a macro, a button) at ${f.to}, then delete the old class.`
+          : `Point registerSheet at ${f.className} from ${f.to} (a written key such as "<id>.${f.base === 'BaseActorSheet' ? 'actor' : 'item'}"), then delete the old class.`,
       );
     }
     const actions = plan.files.flatMap((f) =>
@@ -268,7 +274,12 @@ async function planSheets(
     );
     for (const t of templatePaths) {
       const tpl = await readFile(join(cwd, t), 'utf8');
-      const r = editTemplate(tpl, { actions, navSelectors });
+      const primaryNav = navSelectors[0];
+      const r = editTemplate(tpl, {
+        actions,
+        navSelectors,
+        tabIds: primaryNav === undefined ? undefined : tabIds[primaryNav],
+      });
       // A template the class never touched (a dialog, a chat card) is not a sheet; its form is its own.
       if (r.edits.length === 0) continue;
       templates.push({ file: t, edits: r.edits, formRoot: r.formRoot });
@@ -362,7 +373,9 @@ export function formatMigrateReport(report: MigrateReport): string {
         : `Would write ${targets.length} sheet file(s) on the SDK bases:`,
     );
     for (const f of s.files) {
-      lines.push(`  ${f.to}: ${f.className} extends ${f.base}()`);
+      lines.push(
+        `  ${f.to}: ${f.className} extends ${f.base === 'ApplicationV2' ? 'HandlebarsApplicationMixin(ApplicationV2)' : `${f.base}()`}`,
+      );
       for (const a of f.actions) lines.push(`    action ${a.name} ← ${a.selector} (${a.method})`);
       for (const t of f.todos) lines.push(`    ${t.line}: needs a decision: ${t.message}`);
     }

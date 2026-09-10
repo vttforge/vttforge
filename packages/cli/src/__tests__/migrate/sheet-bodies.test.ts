@@ -4,6 +4,7 @@ import {
   rewriteDropMethod,
   rewriteGetData,
   rewriteHandlerBody,
+  rewriteUpdateObject,
 } from '../../migrate/sheet-bodies.js';
 
 describe('rewriteHandlerBody', () => {
@@ -143,15 +144,72 @@ describe('rewriteDialogs', () => {
     const src = `const ok = await Dialog.confirm({ title: t, content: c, yes: () => true, no: () => false, defaultYes: false });`;
     const r = rewriteDialogs(src);
     expect(r.code).toBe(
-      `const ok = await DialogV2.confirm({ window: { title: t }, content: c, yes: { callback: () => true }, no: { callback: () => false } });`,
+      `const ok = await DialogV2.confirm({ window: { title: t }, content: c, yes: { callback: (event, button, dialog) => true }, no: { callback: (event, button, dialog) => false } });`,
+    );
+    const withHtml = rewriteDialogs(
+      `await Dialog.confirm({ title: t, content: c, yes: (html) => html.find("input").val(), rejectClose: false });`,
+    );
+    expect(withHtml.code).toBe(
+      `await DialogV2.confirm({ window: { title: t }, content: c, yes: { callback: (event, button, dialog) => dialog.element.querySelector("input").value }, rejectClose: false });`,
     );
     expect(r.todos).toEqual([]);
   });
 
-  it('marks new Dialog', () => {
-    const r = rewriteDialogs(`new Dialog({ title: "x", buttons: {} }).render(true);`);
-    expect(r.code).toMatch(/TODO\(migrate\).*DialogV2/);
-    expect(r.todos).toHaveLength(1);
+  it('turns new Dialog({...}).render(true) into DialogV2.wait with the buttons as a list', () => {
+    const src = `    new Dialog({
+      title: game.i18n.localize("X.Create"),
+      content,
+      buttons: {
+        create: {
+          icon: '<i class="fas fa-check"></i>',
+          label: game.i18n.localize("X.Create"),
+          callback: (html) => {
+            const form = html[0].querySelector("form");
+            const name = html.find("[name=name]").val();
+            this.actor.createOwnedItem({ name: form.itemname.value, alt: name });
+          },
+        },
+        cancel: { label: "Cancel" },
+      },
+      default: "create",
+    }).render(true);`;
+    const r = rewriteDialogs(src);
+    expect(r.todos).toEqual([]);
+    expect(r.code).toContain('DialogV2.wait({');
+    expect(r.code).toContain('window: { title: game.i18n.localize("X.Create") },');
+    expect(r.code).toContain('content,');
+    expect(r.code).toContain(
+      "{ action: 'create', icon: 'fas fa-check', label: game.i18n.localize(\"X.Create\"), callback: (event, button, dialog) => {",
+    );
+    expect(r.code).toContain('const form = dialog.element.querySelector("form");');
+    expect(r.code).toContain('const name = dialog.element.querySelector("[name=name]").value;');
+    expect(r.code).toContain('default: true },');
+    expect(r.code).toContain('{ action: \'cancel\', label: "Cancel" },');
+    expect(r.code).not.toContain('.render(true)');
+    expect(r.code).not.toContain('new Dialog');
+  });
+
+  it('notes a new Dialog kept in a variable, and marks one it cannot read', () => {
+    const kept = rewriteDialogs(
+      `const d = new Dialog({ title: t, content: c, buttons: {} });\nd.render(true);`,
+    );
+    expect(kept.code).toContain('const d = DialogV2.wait({');
+    expect(kept.todos.some((m) => /drop any later \.render/.test(m))).toBe(true);
+
+    const unreadable = rewriteDialogs('new Dialog(makeOptions()).render(true);');
+    expect(unreadable.code).toContain('new Dialog(makeOptions()).render(true);');
+    expect(unreadable.code).toMatch(/TODO\(migrate\): new Dialog here could not be read/);
+    expect(unreadable.todos).toHaveLength(1);
+  });
+
+  it('turns Dialog.prompt into DialogV2.prompt', () => {
+    const r = rewriteDialogs(
+      `await Dialog.prompt({ title: t, content: c, label: "Go", callback: (html) => html.find("input").val(), rejectClose: false });`,
+    );
+    expect(r.code).toBe(
+      'await DialogV2.prompt({ window: { title: t }, content: c, ok: { label: "Go", callback: (event, button, dialog) => dialog.element.querySelector("input").value }, rejectClose: false });',
+    );
+    expect(r.todos).toEqual([]);
   });
 
   it('leaves the call as written when the options defeat the pattern', () => {
@@ -172,5 +230,56 @@ describe('rewriteDialogs', () => {
   it('ignores a dialog named inside a comment or a string', () => {
     const src = `// new Dialog({}) was here\nconst s = 'new Dialog({})';`;
     expect(rewriteDialogs(src)).toEqual({ code: src, todos: [] });
+  });
+});
+
+describe('rewriteUpdateObject', () => {
+  it('reads TypeScript annotations and a return type', () => {
+    const src = `  async _updateObject(event: Event, data: Record<string, unknown>): Promise<void> {
+    await save(data);
+  }`;
+    const r = rewriteUpdateObject(src);
+    expect(r.code).toContain('static async formHandler(event, form, formData) {');
+    expect(r.code).toContain('const data = foundry.utils.expandObject(formData.object);');
+  });
+
+  it('moves the parameter aside when the body called it formData', () => {
+    const r = rewriteUpdateObject(
+      '  async _updateObject(event, formData) {\n    for (const k of Object.keys(formData)) use(k);\n  }',
+    );
+    expect(r.code).toContain('static async formHandler(event, form, submission) {');
+    expect(r.code).toContain('const formData = foundry.utils.expandObject(submission.object);');
+  });
+});
+
+describe('the dialog callback parameter', () => {
+  it('is replaced in a ternary and left alone as an object key', () => {
+    const r = rewriteDialogs(
+      'await Dialog.prompt({ title: t, content: c, label: "Go", callback: (html) => ({ html: 1, el: ok ? html : null }) });',
+    );
+    expect(r.code).toContain('({ html: 1, el: ok ? dialog.element : null })');
+  });
+});
+
+describe('the rest of a v1 dialog literal', () => {
+  it('moves close to the (event, dialog) signature and asks for buttons when there are none', () => {
+    const r = rewriteDialogs(
+      `new Dialog({ title: t, content: c, close: (html) => html.find("x").val() }).render(true);`,
+    );
+    expect(r.code).toContain('close: (event, dialog) => dialog.element.querySelector("x").value');
+    expect(r.todos.join(' ')).toMatch(/buttons/);
+  });
+});
+
+describe('enrichHTML on v14', () => {
+  it('drops the async option', () => {
+    const r = rewriteHandlerBody(
+      '{ a = await TextEditor.enrichHTML(x, { async: true }); b = await enrichHTML(y, { async: true, secrets: true }); c = await enrichHTML(z, { secrets: true, async: true }); }',
+      null,
+      null,
+    );
+    expect(r.code).toBe(
+      '{ a = await TextEditor.enrichHTML(x); b = await enrichHTML(y, { secrets: true }); c = await enrichHTML(z, { secrets: true }); }',
+    );
   });
 });

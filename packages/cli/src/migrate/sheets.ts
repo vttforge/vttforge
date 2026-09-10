@@ -21,16 +21,17 @@ import {
   rewriteDropMethod,
   rewriteGetData,
   rewriteHandlerBody,
+  rewriteUpdateObject,
   TODO,
 } from './sheet-bodies.js';
 import { type ActionBinding, extractListeners } from './sheet-listeners.js';
-import { extractOptions, renderStatics } from './sheet-options.js';
+import { extractOptions, renderStatics, type StaticsKind } from './sheet-options.js';
 
 export interface SheetPlanFile {
   from: string;
   to: string;
   className: string;
-  base: 'BaseActorSheet' | 'BaseItemSheet';
+  base: 'BaseActorSheet' | 'BaseItemSheet' | 'ApplicationV2';
   source: string;
   actions: Array<{ name: string; selector: string; method: string }>;
   todos: Array<{ line: number; message: string }>;
@@ -181,8 +182,14 @@ interface ClassOutput {
 }
 
 function planClass(cls: SheetClass, source: string, tabIds: Record<string, string[]>): ClassOutput {
+  const isSheet = cls.base === 'ActorSheet' || cls.base === 'ItemSheet';
   const base: SheetPlanFile['base'] =
-    cls.base === 'ActorSheet' ? 'BaseActorSheet' : 'BaseItemSheet';
+    cls.base === 'ActorSheet'
+      ? 'BaseActorSheet'
+      : cls.base === 'ItemSheet'
+        ? 'BaseItemSheet'
+        : 'ApplicationV2';
+  const kind: StaticsKind = isSheet ? 'sheet' : cls.base === 'FormApplication' ? 'form' : 'app';
   const own = cls.base === 'ActorSheet' ? 'actor' : 'item';
   const options = extractOptions(cls, source);
   const listeners = extractListeners(cls, source);
@@ -203,11 +210,24 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
   const members: string[] = [];
   const todo = (msg: string) => TODO(msg);
 
-  // 1. Statics, with the actions block filled in.
+  // 1. Statics, with the actions block filled in. An inline handler becomes a
+  // method named after its action; a name the class already uses (often the
+  // very method the handler calls) gets `Action` appended.
+  const memberNames = new Set(
+    cls.node.body.body.flatMap((m) =>
+      (m.type === 'ClassMethod' || m.type === 'ClassProperty') && m.key.type === 'Identifier'
+        ? [m.key.name]
+        : [],
+    ),
+  );
+  const inlineMethodName = (name: string): string => {
+    const plain = `_on${pascal(name)}`;
+    return memberNames.has(plain) ? `${plain}Action` : plain;
+  };
   const actionEntries = listeners.actions.map((a) => ({
     name: a.name,
     selector: a.selector,
-    method: a.kind === 'method' && a.method ? a.method : `_on${pascal(a.name)}`,
+    method: a.kind === 'method' && a.method ? a.method : inlineMethodName(a.name),
   }));
   const actionsBlock =
     actionEntries.length === 0
@@ -215,11 +235,19 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
       : `      actions: {\n${actionEntries.map((a) => `        ${a.name}: ${cls.name}.prototype.${a.method},`).join('\n')}\n      },`;
   // A runtime `get template()` decides the template; a static one next to it is not the whole story.
   const statics = options.templateGetter ? { ...options, template: null } : options;
-  members.push(renderStatics(statics, tabIds, todo).replace(ACTIONS_PLACEHOLDER, actionsBlock));
+  members.push(
+    renderStatics(statics, tabIds, todo, kind, cls.name).replace(ACTIONS_PLACEHOLDER, actionsBlock),
+  );
 
   // 2. The document getter.
-  if (!methodOf(cls.node, own, { kind: 'get' })) {
+  if (isSheet && !methodOf(cls.node, own, { kind: 'get' })) {
     members.push(`  get ${own}() {\n    return this.document;\n  }`);
+  }
+  const usesObject = /\bthis\.object\b/.test(text(source, cls.node));
+  if (cls.base === 'FormApplication' && usesObject) {
+    members.push(
+      `  ${todo('FormApplication carried the edited value as this.object; ApplicationV2 does not. Take it in the constructor and keep it on a field: constructor(object, options) { super(options); this.object = object; }')}`,
+    );
   }
 
   // 3. The template getter, when dynamic.
@@ -227,7 +255,9 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
 
   // 4. getData → _prepareContext.
   const getData = methodOf(cls.node, 'getData');
-  if (getData) members.push(rewriteGetData(reindent(text(source, getData)), cls.base).code);
+  if (getData) {
+    members.push(rewriteGetData(reindent(text(source, getData)), cls.base, { usesObject }).code);
+  }
 
   // 5. _onRender for the events that are not clicks.
   if (listeners.listeners.length > 0) {
@@ -250,7 +280,7 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
       })
       .join('\n');
     members.push(
-      `  /** @override */\n  _onRender(context, options) {\n    super._onRender(context, options);\n${body}\n  }`,
+      `  /** @override */\n  async _onRender(context, options) {\n    await super._onRender(context, options);\n${body}\n  }`,
     );
   }
 
@@ -279,7 +309,7 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
     const name = member.type === 'ClassMethod' ? methodName(member) : null;
     if (name && HANDLED.has(name)) continue;
     if (name === 'template' && member.type === 'ClassMethod' && member.kind === 'get') continue;
-    let code = reindent(text(source, member));
+    let code = applyDialogs(reindent(text(source, member)));
     if (name && handlerNames.has(name)) {
       const sig = handlerSignature(code, name);
       code = rewriteHandlerBody(sig.code, sig.eventParam, null).code;
@@ -294,21 +324,30 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
       code = `  ${todo(`${name} is an Application v1 lifecycle override; ApplicationV2 sizes, submits and builds its header itself. Review it against the V2 method of the same job, or delete it`)}\n${code}`;
     }
     if (name === '_updateObject') {
-      code = `  ${todo('_updateObject is gone on V2; DocumentSheetV2 submits the form itself. Move any shaping into _prepareSubmitData or delete this')}\n${code}`;
+      code = isSheet
+        ? `  ${todo('_updateObject is gone on V2; DocumentSheetV2 submits the form itself. Move any shaping into _prepareSubmitData or delete this')}\n${code}`
+        : rewriteUpdateObject(code).code;
     }
-    members.push(applyDialogs(code));
+    members.push(code);
   }
   for (const which of ['Item', 'Actor'] as const) {
     const m = methodOf(cls.node, `_onDrop${which}`);
     if (!m) continue;
-    members.push(applyDialogs(rewriteDropMethod(reindent(text(source, m)), which).code));
+    if (cls.base === 'ActorSheet') {
+      members.push(applyDialogs(rewriteDropMethod(reindent(text(source, m)), which).code));
+    } else {
+      // Only an actor sheet resolves item and actor drops; on anything else the method would never run.
+      members.push(
+        `  ${todo(`_onDrop${which} only runs on an actor sheet; ItemSheetV2 dispatches active-effect drops alone. Move this logic or delete it`)}\n${reindent(text(source, m))}`,
+      );
+    }
   }
 
   // 7. Inline handlers become methods.
   const inline: ActionBinding[] = listeners.actions.filter((a) => a.kind === 'inline');
   for (const a of inline) {
-    const method = `_on${pascal(a.name)}`;
-    const rewritten = applyDialogs(rewriteHandlerBody(a.body ?? '{}', a.param, null).code).trim();
+    const method = inlineMethodName(a.name);
+    const rewritten = rewriteHandlerBody(applyDialogs(a.body ?? '{}'), a.param, null).code.trim();
     const body = rewritten.startsWith('{')
       ? dedentBlock(rewritten)
       : `{\n    return ${rewritten};\n  }`;
@@ -321,7 +360,8 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
   }
 
   const exported = isExported(source, cls);
-  const block = `${exported ? 'export ' : ''}class ${cls.name} extends ${base}() {\n${members.join('\n\n')}\n}`;
+  const extendsExpr = isSheet ? `${base}()` : 'HandlebarsApplicationMixin(ApplicationV2)';
+  const block = `${exported ? 'export ' : ''}class ${cls.name} extends ${extendsExpr} {\n${members.join('\n\n')}\n}`;
   return {
     block,
     base,
@@ -342,7 +382,7 @@ export function planSheetFile(
   const classes = findSheetClasses(ast, source);
   const notes = unsupportedBases(ast, source).map(
     (u) =>
-      `${relPath}:${u.line} ${u.name} extends ${u.superText}; only ActorSheet and ItemSheet are converted, this one stays as it is`,
+      `${relPath}:${u.line} ${u.name} extends ${u.superText}; Dialog and DocumentSheet subclasses are not converted, this one stays as it is`,
   );
   if (classes.length === 0) return { files: [], notes };
 
@@ -350,10 +390,23 @@ export function planSheetFile(
   const to = `${relPath.slice(0, dot)}.v2${relPath.slice(dot)}`;
   const outputs = classes.map((cls) => ({ cls, out: planClass(cls, source, opts.tabIds) }));
 
-  const bases = [...new Set(outputs.map((o) => o.out.base))].join(', ');
-  const header = [`import { ${bases} } from '@vttforge/core';`, ...importLines(source, lang)];
-  if (outputs.some((o) => o.out.usesDialogV2))
-    header.push('', 'const { DialogV2 } = foundry.applications.api;');
+  const sdkBases = [
+    ...new Set(outputs.map((o) => o.out.base).filter((b) => b !== 'ApplicationV2')),
+  ];
+  const header = [
+    ...(sdkBases.length > 0 ? [`import { ${sdkBases.join(', ')} } from '@vttforge/core';`] : []),
+    ...importLines(source, lang),
+  ];
+  const fromApi = [
+    ...(outputs.some((o) => o.out.base === 'ApplicationV2')
+      ? ['ApplicationV2', 'HandlebarsApplicationMixin']
+      : []),
+    ...(outputs.some((o) => o.out.usesDialogV2) ? ['DialogV2'] : []),
+  ].sort();
+  if (fromApi.length > 0) {
+    if (header.length > 0) header.push('');
+    header.push(`const { ${fromApi.join(', ')} } = foundry.applications.api;`);
+  }
   const fileSource = `${header.join('\n')}\n\n${outputs.map((o) => o.out.block).join('\n\n')}\n`;
   const marker = 'TODO(migrate): ';
   const todos = fileSource.split('\n').flatMap((line, i) => {

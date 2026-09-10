@@ -50,6 +50,19 @@ function isSourceFile(name: string): boolean {
   return SOURCE_EXTENSIONS.some((ext) => name.endsWith(ext));
 }
 
+/** Every `.hbs` / `.html` in the project, outside the build and dependency folders. */
+async function* walkTemplateFiles(cwd: string): AsyncGenerator<string> {
+  const entries = await readdir(cwd, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      if (EXCLUDED_DIRS.has(entry.name)) continue;
+      yield* walkTemplateFiles(join(cwd, entry.name));
+    } else if (entry.isFile() && /\.(?:hbs|html)$/.test(entry.name)) {
+      yield join(cwd, entry.name);
+    }
+  }
+}
+
 async function* walkSourceFiles(cwd: string): AsyncGenerator<string> {
   const entries = await readdir(cwd, { withFileTypes: true });
   for (const entry of entries) {
@@ -1029,6 +1042,7 @@ export async function runSourceRules(cwd: string): Promise<RuleResult[]> {
 // pulling in the orchestrator's manifest dependency.
 export const _internal = {
   walkSourceFiles,
+  walkTemplateFiles,
   isSourceFile,
   lineOf,
   lastSegment,

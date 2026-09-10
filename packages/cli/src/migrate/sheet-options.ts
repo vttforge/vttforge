@@ -13,13 +13,22 @@ export interface SheetOptions {
   classes: string | null;
   width: number | null;
   height: number | null;
+  /** `height: "auto"`, which V2 also accepts. */
+  heightAuto: boolean;
   resizable: boolean | null;
   submitOnChange: boolean | null;
+  /** FormApplication only. */
+  closeOnSubmit: boolean | null;
+  /** Application only: `id` and `title` (the window title). */
+  id: string | null;
+  title: string | null;
   template: string | null;
   templateGetter: ClassMethod | null;
   tabs: Array<{ navSelector: string; contentSelector: string | null; initial: string | null }>;
   dragDrop: string | null;
   unknown: string[];
+  /** The options literal read `this` (a subclass static, usually). */
+  usesThis: boolean;
 }
 
 function keyName(p: ObjectProperty): string | null {
@@ -40,8 +49,13 @@ function props(obj: ObjectExpression): Array<[string, Expression]> {
   return out;
 }
 
+/** A string literal, or a template literal with nothing interpolated. */
 function str(e: Expression): string | null {
-  return e.type === 'StringLiteral' ? e.value : null;
+  if (e.type === 'StringLiteral') return e.value;
+  if (e.type === 'TemplateLiteral' && e.expressions.length === 0) {
+    return e.quasis.map((q) => q.value.cooked ?? q.value.raw).join('');
+  }
+  return null;
 }
 function num(e: Expression): number | null {
   return e.type === 'NumericLiteral' ? e.value : null;
@@ -73,17 +87,24 @@ export function extractOptions(cls: SheetClass, source: string): SheetOptions {
     classes: null,
     width: null,
     height: null,
+    heightAuto: false,
     resizable: null,
     submitOnChange: null,
+    closeOnSubmit: null,
+    id: null,
+    title: null,
     template: null,
     templateGetter: methodOf(cls.node, 'template', { kind: 'get', static: false }),
     tabs: [],
     dragDrop: null,
     unknown: [],
+    usesThis: false,
   };
   const method = methodOf(cls.node, 'defaultOptions', { static: true, kind: 'get' });
   const literal = method ? optionsLiteral(method) : null;
   if (!literal) return out;
+  // A getter ran once per subclass, so `this` was the subclass; a static field runs once, on the class that declares it.
+  out.usesThis = /\bthis\b/.test(text(source, literal));
   for (const [key, value] of props(literal)) {
     switch (key) {
       case 'classes':
@@ -94,6 +115,16 @@ export function extractOptions(cls: SheetClass, source: string): SheetOptions {
         break;
       case 'height':
         out.height = num(value);
+        out.heightAuto = str(value) === 'auto';
+        break;
+      case 'closeOnSubmit':
+        out.closeOnSubmit = bool(value);
+        break;
+      case 'id':
+        out.id = text(source, value);
+        break;
+      case 'title':
+        out.title = text(source, value);
         break;
       case 'resizable':
         out.resizable = bool(value);
@@ -136,30 +167,55 @@ function readTabs(value: Expression): SheetOptions['tabs'] {
 
 const q = (s: string) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 
+/** What the class is: a document sheet on the SDK base, a FormApplication, or a plain Application. */
+export type StaticsKind = 'sheet' | 'form' | 'app';
+
 export function renderStatics(
   opts: SheetOptions,
   tabIds: Record<string, string[]>,
   todo: (msg: string) => string,
+  kind: StaticsKind = 'sheet',
+  className?: string,
 ): string {
+  if (kind === 'form' && !className) {
+    throw new Error('renderStatics needs the class name to wire form.handler');
+  }
   const lines: string[] = [];
   lines.push('  /** @override */');
   lines.push('  static DEFAULT_OPTIONS = foundry.utils.mergeObject(');
   lines.push('    super.DEFAULT_OPTIONS,');
   lines.push('    {');
+  if (kind !== 'sheet' && opts.id) lines.push(`      id: ${opts.id},`);
   if (opts.classes) lines.push(`      classes: ${opts.classes},`);
-  if (opts.width !== null || opts.height !== null) {
+  if (kind === 'form') lines.push(`      tag: 'form',`);
+  if (opts.width !== null || opts.height !== null || opts.heightAuto) {
     const parts = [
       opts.width !== null ? `width: ${opts.width}` : '',
-      opts.height !== null ? `height: ${opts.height}` : '',
+      opts.height !== null ? `height: ${opts.height}` : opts.heightAuto ? `height: 'auto'` : '',
     ].filter(Boolean);
     lines.push(`      position: { ${parts.join(', ')} },`);
   }
-  if (opts.resizable !== null) lines.push(`      window: { resizable: ${opts.resizable} },`);
-  lines.push(`      form: { submitOnChange: ${opts.submitOnChange ?? true} },`);
+  const win = [
+    kind !== 'sheet' && opts.title ? `title: ${opts.title}` : '',
+    opts.resizable !== null ? `resizable: ${opts.resizable}` : '',
+  ].filter(Boolean);
+  if (win.length > 0) lines.push(`      window: { ${win.join(', ')} },`);
+  if (kind === 'sheet')
+    lines.push(`      form: { submitOnChange: ${opts.submitOnChange ?? true} },`);
+  if (kind === 'form') {
+    lines.push(
+      `      form: { handler: ${className}.formHandler, submitOnChange: ${opts.submitOnChange ?? false}, closeOnSubmit: ${opts.closeOnSubmit ?? true} },`,
+    );
+  }
   lines.push('      actions: {}, // filled below');
   lines.push('    },');
   lines.push('    { inplace: false },');
   lines.push('  );');
+  if (opts.usesThis) {
+    lines.push(
+      `  ${todo('defaultOptions read `this`, which was the subclass each time the getter ran; a static field runs once on the class that declares it. Move what depends on the subclass into _initializeApplicationOptions(options)')}`,
+    );
+  }
   for (const key of opts.unknown) {
     lines.push(
       `  ${todo(`${key} from defaultOptions has no V2 equivalent here; move it by hand or drop it`)}`,
@@ -169,7 +225,15 @@ export function renderStatics(
   if (opts.tabs.length > 0) {
     lines.push('', '  /** @override */', '  static TABS = {');
     for (const [i, tab] of opts.tabs.entries()) {
-      const group = i === 0 ? 'primary' : `group${i + 1}`;
+      // The template edits wire one group. A second nav keeps its v1 markup and needs its own
+      // group here plus data-group on its links and panes.
+      if (i > 0) {
+        lines.push(
+          `    ${todo(`${tab.navSelector} is a second tab group; add it here and put data-group on its nav links and panes`)}`,
+        );
+        continue;
+      }
+      const group = 'primary';
       const ids = tabIds[tab.navSelector] ?? [];
       const initial = tab.initial ?? ids[0] ?? '';
       if (ids.length === 0) {
@@ -186,13 +250,14 @@ export function renderStatics(
   if (opts.dragDrop) {
     lines.push('', '  /** @override */', `  static DRAG_DROP = ${opts.dragDrop};`);
   }
+  const part = kind === 'sheet' ? 'sheet' : kind === 'form' ? 'form' : 'content';
   lines.push('', '  /** @override */', '  static PARTS = {');
   if (opts.template) {
-    lines.push(`    sheet: { template: ${q(opts.template)} },`);
+    lines.push(`    ${part}: { template: ${q(opts.template)} },`);
   } else {
     lines.push(
       `    ${todo('the template is chosen at runtime (get template); name one part per type here or override _configureRenderParts')}`,
-      `    sheet: { template: '' },`,
+      `    ${part}: { template: '' },`,
     );
   }
   lines.push('  };');

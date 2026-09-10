@@ -35,24 +35,26 @@ describe('planSheetFile', () => {
     );
     expect(file.source).toContain("sheet: { template: 'systems/hero/templates/actor-sheet.html' }");
     expect(file.source).toContain(
-      '      actions: {\n        itemCreate: HeroSheet.prototype._onItemCreate,\n        itemDelete: HeroSheet.prototype._onItemDelete,\n        restButton: HeroSheet.prototype._onRestButton,\n      },',
+      '      actions: {\n        itemCreate: HeroSheet.prototype._onItemCreate,\n        itemDelete: HeroSheet.prototype._onItemDeleteAction,\n        restButton: HeroSheet.prototype._onRestButton,\n      },',
     );
     expect(file.actions.map((a) => [a.name, a.method])).toEqual([
       ['itemCreate', '_onItemCreate'],
-      ['itemDelete', '_onItemDelete'],
+      ['itemDelete', '_onItemDeleteAction'],
       ['restButton', '_onRestButton'],
     ]);
   });
 
   it('carries the methods over with the V2 signatures', () => {
     expect(file.source).toContain('  async _onItemCreate(event, target) {');
+    // The inline handler keeps clear of the method it calls.
     expect(file.source).toContain(
-      "  async _onItemDelete(ev, target) {\n    const li = target.closest('.item-row');",
+      "  async _onItemDeleteAction(ev, target) {\n    const li = target.closest('.item-row');",
     );
+    expect(file.source).toContain('if (ok) await this._onItemDelete(li.dataset.itemId);');
+    expect(file.source).toContain('  async _onItemDelete(itemId) {');
     expect(file.source).toContain(
-      "DialogV2.confirm({ window: { title: 'Delete' }, content: '<p>Sure?</p>', yes: { callback: () => true }, no: { callback: () => false } })",
+      "DialogV2.confirm({ window: { title: 'Delete' }, content: '<p>Sure?</p>', yes: { callback: (event, button, dialog) => true }, no: { callback: (event, button, dialog) => false } })",
     );
-    expect(file.source).toContain('[li.dataset.itemId]');
     expect(file.source).toContain('  async _onRestButton(event, target) {');
     expect(file.source).toContain(
       '  async _prepareContext(options) {\n    const data = await super._prepareContext(options);\n    data.actor = this.document;',
@@ -86,7 +88,7 @@ describe('planSheetFile', () => {
 
   it('adds the render listener for the dblclick', () => {
     expect(file.source).toContain(
-      "  /** @override */\n  _onRender(context, options) {\n    super._onRender(context, options);\n    for (const el of this.element.querySelectorAll('.item-name')) {\n      el.addEventListener('dblclick', (event) => this._onItemEdit(event));\n    }",
+      "  /** @override */\n  async _onRender(context, options) {\n    await super._onRender(context, options);\n    for (const el of this.element.querySelectorAll('.item-name')) {\n      el.addEventListener('dblclick', (event) => this._onItemEdit(event));\n    }",
     );
   });
 
@@ -100,7 +102,8 @@ describe('planSheetFile', () => {
   });
 
   it('leaves TODOs where it stopped, and lists them with their lines', () => {
-    expect(file.source).toContain('// TODO(migrate): Dialog v1');
+    expect(file.source).toContain('DialogV2.wait({');
+    expect(file.source).not.toContain('new Dialog(');
     expect(file.todos.length).toBeGreaterThanOrEqual(2);
     const lines = file.source.split('\n');
     for (const t of file.todos) expect(lines[t.line - 1]).toContain('TODO(migrate)');
@@ -116,15 +119,70 @@ describe('planSheetFile', () => {
   });
 
   it('reports an unsupported base and ignores files with no sheet', () => {
-    const src = 'export class P extends FormApplication {}';
+    const src = 'export class P extends Dialog {}';
     const p = planSheetFile('module/p.mjs', src, { lang: 'js', tabIds: {} });
     expect(p.files).toEqual([]);
-    expect(p.notes[0]).toMatch(/FormApplication/);
+    expect(p.notes[0]).toMatch(/Dialog and DocumentSheet subclasses are not converted/);
     expect(
       planSheetFile('module/x.mjs', 'export const a = 1;', { lang: 'js', tabIds: {} }),
     ).toEqual({
       files: [],
       notes: [],
     });
+  });
+});
+
+describe('planSheetFile on a FormApplication', () => {
+  const FORM = readFileSync(join(here, 'fixtures', 'v1-settings-form.mjs'), 'utf8');
+  const plan = planSheetFile('scripts/settings-form.mjs', FORM, { lang: 'js', tabIds: {} });
+  const file = plan.files[0];
+  if (!file) throw new Error('the fixture produced no file');
+
+  it('lands on HandlebarsApplicationMixin(ApplicationV2) with the form wired', () => {
+    expect(file.base).toBe('ApplicationV2');
+    expect(file.source).not.toContain('@vttforge/core');
+    expect(file.source).toContain(
+      'const { ApplicationV2, DialogV2, HandlebarsApplicationMixin } = foundry.applications.api;',
+    );
+    expect(file.source).toContain(
+      'export class HeroSettingsForm extends HandlebarsApplicationMixin(ApplicationV2) {',
+    );
+    expect(file.source).toContain("      id: 'hero-settings',");
+    expect(file.source).toContain("      tag: 'form',");
+    expect(file.source).toContain("      position: { width: 550, height: 'auto' },");
+    expect(file.source).toContain("      window: { title: 'HERO.Settings.Title' },");
+    expect(file.source).toContain(
+      '      form: { handler: HeroSettingsForm.formHandler, submitOnChange: false, closeOnSubmit: false },',
+    );
+    expect(file.source).toContain("    form: { template: 'modules/hero/templates/settings.hbs' },");
+    expect(file.source).not.toContain('get actor()');
+  });
+
+  it('turns _updateObject into the static form handler and keeps the context plain', () => {
+    expect(file.source).toContain('// TODO(migrate): this was _updateObject');
+    expect(file.source).toContain('  static async formHandler(_event, form, formData) {');
+    expect(file.source).toContain('    const data = foundry.utils.expandObject(formData.object);');
+    expect(file.source).toContain('    const context = await super._prepareContext(options);');
+    // The fixture never reads this.object, so nothing is injected for it.
+    expect(file.source).not.toContain('context.object');
+    expect(file.source).not.toContain('context.actor');
+    expect(file.source).not.toContain('context.editable');
+    expect(file.source).toContain('reset: HeroSettingsForm.prototype._onReset,');
+    expect(file.source).toContain('DialogV2.confirm({');
+  });
+
+  it('matches the snapshot', () => {
+    expect(file.source).toMatchSnapshot();
+  });
+});
+
+describe('drops on an item sheet', () => {
+  it('are kept with a note instead of a handler the base never calls', () => {
+    const src = `export class GearSheet extends ItemSheet {
+      async _onDropItem(event, data) { return super._onDropItem(event, data); }
+    }`;
+    const p = planSheetFile('gear.mjs', src, { lang: 'js', tabIds: {} });
+    expect(p.files[0]?.source).toContain('TODO(migrate): _onDropItem only runs on an actor sheet');
+    expect(p.files[0]?.source).not.toContain('onDropItem(item, event)');
   });
 });

@@ -83,3 +83,44 @@ describe('renderStatics', () => {
     expect(out).toContain('TODO(migrate): tab ids');
   });
 });
+
+describe('defaultOptions that read this', () => {
+  it('is flagged, since a static field runs once', () => {
+    const src = `class S extends FormApplication {
+      static get defaultOptions() { return foundry.utils.mergeObject(super.defaultOptions, { id: \`\${this.namespace}-settings\`, width: 1 }); }
+    }`;
+    const o = options(src);
+    expect(o.usesThis).toBe(true);
+    expect(renderStatics(o, {}, (m) => `// TODO(migrate): ${m}`, 'form', 'S')).toContain(
+      '_initializeApplicationOptions',
+    );
+  });
+});
+
+describe('a template path in backticks', () => {
+  it('reads as a path when nothing is interpolated', () => {
+    const o = options(
+      'class S extends FormApplication { static get defaultOptions() { return mergeObject(super.defaultOptions, { template: `modules/x/templates/menu.hbs` }); } }',
+    );
+    expect(o.template).toBe('modules/x/templates/menu.hbs');
+  });
+});
+
+describe('a second tabs entry', () => {
+  it('becomes a TODO instead of a group the template never marks', () => {
+    const opts = options(
+      `class S extends ActorSheet { static get defaultOptions() { return foundry.utils.mergeObject(super.defaultOptions, { tabs: [{ navSelector: ".tabs", contentSelector: ".content", initial: "items" }, { navSelector: ".sub-tabs", contentSelector: ".sub", initial: "a" }] }); } }`,
+    );
+    const out = renderStatics(
+      opts,
+      { '.tabs': ['items', 'notes'], '.sub-tabs': ['a', 'b'] },
+      (t) => `// TODO(migrate): ${t}`,
+      'sheet',
+    );
+    expect(out).toContain(
+      "primary: { tabs: [{ id: 'items' }, { id: 'notes' }], initial: 'items' }",
+    );
+    expect(out).not.toContain('group2');
+    expect(out).toContain('.sub-tabs is a second tab group');
+  });
+});

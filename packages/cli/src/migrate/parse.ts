@@ -6,7 +6,7 @@
 import { parse } from '@babel/parser';
 import type { ClassDeclaration, ClassExpression, ClassMethod, File, Node } from '@babel/types';
 
-type SheetBase = 'ActorSheet' | 'ItemSheet';
+type SheetBase = 'ActorSheet' | 'ItemSheet' | 'Application' | 'FormApplication';
 
 export interface SheetClass {
   name: string;
@@ -16,8 +16,8 @@ export interface SheetClass {
   superText: string;
 }
 
-const CONVERTED = new Set<string>(['ActorSheet', 'ItemSheet']);
-const UNSUPPORTED = new Set(['Application', 'FormApplication', 'Dialog', 'DocumentSheet']);
+const CONVERTED = new Set<string>(['ActorSheet', 'ItemSheet', 'Application', 'FormApplication']);
+const UNSUPPORTED = new Set(['Dialog', 'DocumentSheet']);
 
 export function parseSource(source: string, lang: 'js' | 'ts'): File {
   return parse(source, {

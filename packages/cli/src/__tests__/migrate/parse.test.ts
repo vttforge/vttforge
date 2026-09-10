@@ -9,6 +9,7 @@ export class HeroSheet extends ActorSheet {
 }
 export class GearSheet extends foundry.appv1.sheets.ItemSheet {}
 export class Picker extends FormApplication {}
+export class Ask extends Dialog {}
 const Anon = class extends ActorSheet {};
 export default class extends ItemSheet {}
 `;
@@ -20,6 +21,7 @@ describe('findSheetClasses', () => {
     expect(found).toEqual([
       ['HeroSheet', 'ActorSheet', 'ActorSheet'],
       ['GearSheet', 'ItemSheet', 'foundry.appv1.sheets.ItemSheet'],
+      ['Picker', 'FormApplication', 'FormApplication'],
       ['Anon', 'ActorSheet', 'ActorSheet'],
       ['DefaultItemSheet', 'ItemSheet', 'ItemSheet'],
     ]);
@@ -27,9 +29,7 @@ describe('findSheetClasses', () => {
 
   it('reports the v1 bases it does not convert', () => {
     const ast = parseSource(SRC, 'js');
-    expect(unsupportedBases(ast, SRC)).toEqual([
-      { name: 'Picker', superText: 'FormApplication', line: 8 },
-    ]);
+    expect(unsupportedBases(ast, SRC)).toEqual([{ name: 'Ask', superText: 'Dialog', line: 9 }]);
   });
 
   it('parses TypeScript when asked', () => {
