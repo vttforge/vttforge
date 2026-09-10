@@ -261,6 +261,9 @@ async function planSheets(
       files.push(rest);
       generated.set(f.to, out);
       notes.push(
+        `Run \`vttforge audit\` again after reading ${f.to}: the v14 rules also apply to the generated file.`,
+      );
+      notes.push(
         f.base === 'ApplicationV2'
           ? `Point whatever constructs ${f.className} (a settings menu, a macro, a button) at ${f.to}, then delete the old class.`
           : `Point registerSheet at ${f.className} from ${f.to} (a written key such as "<id>.${f.base === 'BaseActorSheet' ? 'actor' : 'item'}"), then delete the old class.`,
@@ -271,7 +274,12 @@ async function planSheets(
     );
     for (const t of templatePaths) {
       const tpl = await readFile(join(cwd, t), 'utf8');
-      const r = editTemplate(tpl, { actions, navSelectors });
+      const primaryNav = navSelectors[0];
+      const r = editTemplate(tpl, {
+        actions,
+        navSelectors,
+        tabIds: primaryNav === undefined ? undefined : tabIds[primaryNav],
+      });
       // A template the class never touched (a dialog, a chat card) is not a sheet; its form is its own.
       if (r.edits.length === 0) continue;
       templates.push({ file: t, edits: r.edits, formRoot: r.formRoot });

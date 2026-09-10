@@ -280,7 +280,7 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
       })
       .join('\n');
     members.push(
-      `  /** @override */\n  _onRender(context, options) {\n    super._onRender(context, options);\n${body}\n  }`,
+      `  /** @override */\n  async _onRender(context, options) {\n    await super._onRender(context, options);\n${body}\n  }`,
     );
   }
 
@@ -333,7 +333,14 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
   for (const which of ['Item', 'Actor'] as const) {
     const m = methodOf(cls.node, `_onDrop${which}`);
     if (!m) continue;
-    members.push(applyDialogs(rewriteDropMethod(reindent(text(source, m)), which).code));
+    if (cls.base === 'ActorSheet') {
+      members.push(applyDialogs(rewriteDropMethod(reindent(text(source, m)), which).code));
+    } else {
+      // Only an actor sheet resolves item and actor drops; on anything else the method would never run.
+      members.push(
+        `  ${todo(`_onDrop${which} only runs on an actor sheet; ItemSheetV2 dispatches active-effect drops alone. Move this logic or delete it`)}\n${reindent(text(source, m))}`,
+      );
+    }
   }
 
   // 7. Inline handlers become methods.

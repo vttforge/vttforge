@@ -53,7 +53,7 @@ describe('planSheetFile', () => {
     expect(file.source).toContain('if (ok) await this._onItemDelete(li.dataset.itemId);');
     expect(file.source).toContain('  async _onItemDelete(itemId) {');
     expect(file.source).toContain(
-      "DialogV2.confirm({ window: { title: 'Delete' }, content: '<p>Sure?</p>', yes: { callback: () => true }, no: { callback: () => false } })",
+      "DialogV2.confirm({ window: { title: 'Delete' }, content: '<p>Sure?</p>', yes: { callback: (event, button, dialog) => true }, no: { callback: (event, button, dialog) => false } })",
     );
     expect(file.source).toContain('  async _onRestButton(event, target) {');
     expect(file.source).toContain(
@@ -88,7 +88,7 @@ describe('planSheetFile', () => {
 
   it('adds the render listener for the dblclick', () => {
     expect(file.source).toContain(
-      "  /** @override */\n  _onRender(context, options) {\n    super._onRender(context, options);\n    for (const el of this.element.querySelectorAll('.item-name')) {\n      el.addEventListener('dblclick', (event) => this._onItemEdit(event));\n    }",
+      "  /** @override */\n  async _onRender(context, options) {\n    await super._onRender(context, options);\n    for (const el of this.element.querySelectorAll('.item-name')) {\n      el.addEventListener('dblclick', (event) => this._onItemEdit(event));\n    }",
     );
   });
 
@@ -173,5 +173,16 @@ describe('planSheetFile on a FormApplication', () => {
 
   it('matches the snapshot', () => {
     expect(file.source).toMatchSnapshot();
+  });
+});
+
+describe('drops on an item sheet', () => {
+  it('are kept with a note instead of a handler the base never calls', () => {
+    const src = `export class GearSheet extends ItemSheet {
+      async _onDropItem(event, data) { return super._onDropItem(event, data); }
+    }`;
+    const p = planSheetFile('gear.mjs', src, { lang: 'js', tabIds: {} });
+    expect(p.files[0]?.source).toContain('TODO(migrate): _onDropItem only runs on an actor sheet');
+    expect(p.files[0]?.source).not.toContain('onDropItem(item, event)');
   });
 });

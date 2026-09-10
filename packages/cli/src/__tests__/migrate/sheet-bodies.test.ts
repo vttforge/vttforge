@@ -144,7 +144,13 @@ describe('rewriteDialogs', () => {
     const src = `const ok = await Dialog.confirm({ title: t, content: c, yes: () => true, no: () => false, defaultYes: false });`;
     const r = rewriteDialogs(src);
     expect(r.code).toBe(
-      `const ok = await DialogV2.confirm({ window: { title: t }, content: c, yes: { callback: () => true }, no: { callback: () => false } });`,
+      `const ok = await DialogV2.confirm({ window: { title: t }, content: c, yes: { callback: (event, button, dialog) => true }, no: { callback: (event, button, dialog) => false } });`,
+    );
+    const withHtml = rewriteDialogs(
+      `await Dialog.confirm({ title: t, content: c, yes: (html) => html.find("input").val(), rejectClose: false });`,
+    );
+    expect(withHtml.code).toBe(
+      `await DialogV2.confirm({ window: { title: t }, content: c, yes: { callback: (event, button, dialog) => dialog.element.querySelector("input").value }, rejectClose: false });`,
     );
     expect(r.todos).toEqual([]);
   });
@@ -252,5 +258,28 @@ describe('the dialog callback parameter', () => {
       'await Dialog.prompt({ title: t, content: c, label: "Go", callback: (html) => ({ html: 1, el: ok ? html : null }) });',
     );
     expect(r.code).toContain('({ html: 1, el: ok ? dialog.element : null })');
+  });
+});
+
+describe('the rest of a v1 dialog literal', () => {
+  it('moves close to the (event, dialog) signature and asks for buttons when there are none', () => {
+    const r = rewriteDialogs(
+      `new Dialog({ title: t, content: c, close: (html) => html.find("x").val() }).render(true);`,
+    );
+    expect(r.code).toContain('close: (event, dialog) => dialog.element.querySelector("x").value');
+    expect(r.todos.join(' ')).toMatch(/buttons/);
+  });
+});
+
+describe('enrichHTML on v14', () => {
+  it('drops the async option', () => {
+    const r = rewriteHandlerBody(
+      '{ a = await TextEditor.enrichHTML(x, { async: true }); b = await enrichHTML(y, { async: true, secrets: true }); c = await enrichHTML(z, { secrets: true, async: true }); }',
+      null,
+      null,
+    );
+    expect(r.code).toBe(
+      '{ a = await TextEditor.enrichHTML(x); b = await enrichHTML(y, { secrets: true }); c = await enrichHTML(z, { secrets: true }); }',
+    );
   });
 });

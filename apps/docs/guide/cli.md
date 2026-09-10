@@ -205,24 +205,29 @@ the ids read from the template; `dragDrop` as `DRAG_DROP`; `template` as
 `items` set on the context; every `html.find(sel).click(handler)` as an
 `actions` entry named after the selector, with the handler's signature
 changed to `(event, target)`; other events (`dblclick`, `change`, ...) as
-listeners in `_onRender`; `_onDropItem` / `_onDropActor` as `onDropItem` /
-`onDropActor`, with the old payload argument read as `item.toDragData()` and
-the old `super._onDropItem` call as the `createEmbeddedDocuments` it used to
-make; `event.currentTarget`, `$(...)`, `.data(...)`, `.parents(...)` and `html.find`
+listeners in `_onRender`; on an actor sheet, `_onDropItem` / `_onDropActor`
+as `onDropItem` / `onDropActor`, with the old payload argument read as
+`item.toDragData()` and the old `super._onDropItem` call as the
+`createEmbeddedDocuments` it used to make; `enrichHTML(x, { async: true })`
+as `enrichHTML(x)`; `event.currentTarget`, `$(...)`, `.data(...)`, `.parents(...)` and `html.find`
 as their DOM equivalents (`html.find` becomes `this.element.querySelectorAll`, so
 `.length` and `[0]` keep working); `Dialog.confirm` as `DialogV2.confirm`;
 `new Dialog({...}).render(true)` as `DialogV2.wait({...})` with the `buttons`
 object as a list (`default` marks the button, the `<i>` icon becomes its
 class) and each `(html) => ...` callback on the `(event, button, dialog)`
 signature with `html[0]` and `html.find` read from `dialog.element`;
-`Dialog.prompt` as `DialogV2.prompt`. On a `FormApplication`, `id`, `title`
+`Dialog.prompt` as `DialogV2.prompt`, with the `yes`, `no` and `close`
+callbacks moved the same way and `rejectClose` kept when it was written. On a
+`FormApplication`, `id`, `title`
 and `closeOnSubmit` move into `DEFAULT_OPTIONS` (`tag: 'form'`, `window`,
 `form.handler`) and `_updateObject(event, data)` becomes the static
 `formHandler(event, form, formData)` with `data` read from
 `formData.object`.
 
 What is left as a `// TODO(migrate)` line, and listed in the report with its
-line number: a `new Dialog` whose options are not a plain literal, a
+line number: a `new Dialog` whose options are not a plain literal or that
+has no `buttons`, a second `tabs` entry (only the first nav is wired), a
+`_onDropItem` on an item sheet (the base never calls it there), a
 `_updateObject` on a document sheet, jQuery calls with no plain DOM
 equivalent, `this.object` on a FormApplication, a `get template()` that picks the template at runtime, tab
 ids that were not found in the template, and the v1 lifecycle overrides
@@ -230,7 +235,8 @@ ids that were not found in the template, and the v1 lifecycle overrides
 replaces with its own hooks.
 
 The generated file is a draft to read, not code to trust: run
-`vttforge lint --fix` on it, then work through the `TODO(migrate)` lines. On
+`vttforge lint --fix` on it, work through the `TODO(migrate)` lines, then
+run `vttforge audit` again, since the v14 rules apply to the new file too. On
 a real v1 system the hand edits were the per-type template choice, the root
 `<form>` in each sheet template, and one `setPosition` override; everything
 else ran as generated.

@@ -29,6 +29,11 @@ const TEMPLATE_RE = /template:\s*[`'"]([^`'"]*\.hbs)[`'"]/g;
 const FORM_TAG_RE = /<form[\s>]/i;
 const HANDLEBARS_COMMENT_RE = /\{\{!--[\s\S]*?--\}\}|\{\{![^}]*\}\}/g;
 
+/** Blank out Handlebars comments, keeping their newlines so line numbers still point at the source. */
+function withoutComments(source: string): string {
+  return source.replace(HANDLEBARS_COMMENT_RE, (m) => m.replace(/[^\n]/g, ''));
+}
+
 /**
  * The templates a form-tagged sheet declares, as paths inside the project.
  *
@@ -77,7 +82,7 @@ function templatesOfFormSheets(source: string): string[] {
  */
 const REMOVED_HELPERS: ReadonlyArray<{ pattern: RegExp; name: string; fix: string }> = [
   {
-    pattern: /\{\{#select\b/,
+    pattern: /\{\{#?select\b/,
     name: '{{#select}}',
     fix: 'Replace the block with `{{selectOptions choices selected=value}}` (add `localize=true` when the labels are keys), or write the `<option>` list with `{{#each}}` and a `selected` attribute you compute yourself.',
   },
@@ -99,7 +104,7 @@ async function runRemovedHelperRule(cwd: string): Promise<RuleResult[]> {
     } catch {
       continue;
     }
-    const markup = source.replace(HANDLEBARS_COMMENT_RE, '');
+    const markup = withoutComments(source);
     for (const helper of REMOVED_HELPERS) {
       if (!helper.pattern.test(markup)) continue;
       const line = markup.split('\n').findIndex((text) => helper.pattern.test(text)) + 1;
@@ -141,7 +146,7 @@ export async function runTemplateRules(cwd: string): Promise<RuleResult[]> {
       // problem, and Foundry reports that one itself.
       continue;
     }
-    const markup = source.replace(HANDLEBARS_COMMENT_RE, '');
+    const markup = withoutComments(source);
     if (!FORM_TAG_RE.test(markup)) continue;
 
     const lines = markup.split('\n');

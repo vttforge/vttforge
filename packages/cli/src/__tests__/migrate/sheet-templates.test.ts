@@ -155,3 +155,27 @@ describe('mustaches inside the opening tag', () => {
     expect(r.edits.map((e) => e.line)).toEqual([2, 4, 6]);
   });
 });
+
+describe('a template with two navs', () => {
+  it('wires the first nav and its panes and leaves the second alone', () => {
+    const tpl = [
+      '<nav class="tabs"><a data-tab="items">I</a></nav>',
+      '<nav class="sub-tabs"><a data-tab="a">A</a></nav>',
+      '<div class="tab" data-tab="items"></div>',
+      '<div class="tab" data-tab="a"></div>',
+    ].join('\n');
+    const r = editTemplate(tpl, {
+      actions: [],
+      navSelectors: ['.tabs', '.sub-tabs'],
+      tabIds: ['items'],
+    });
+    expect(r.output).toBe(
+      [
+        '<nav class="tabs"><a data-tab="items" data-action="vttforgeTab" data-group="primary" class="{{tabs.items.cssClass}}">I</a></nav>',
+        '<nav class="sub-tabs"><a data-tab="a">A</a></nav>',
+        '<div class="tab {{tabs.items.cssClass}}" data-tab="items" data-group="primary"></div>',
+        '<div class="tab" data-tab="a"></div>',
+      ].join('\n'),
+    );
+  });
+});

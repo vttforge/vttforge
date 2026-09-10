@@ -54,8 +54,8 @@ export class HeroSheet extends BaseActorSheet() {
   }
 
   /** @override */
-  _onRender(context, options) {
-    super._onRender(context, options);
+  async _onRender(context, options) {
+    await super._onRender(context, options);
     for (const el of this.element.querySelectorAll('.item-name')) {
       el.addEventListener('dblclick', (event) => this._onItemEdit(event));
     }
@@ -111,7 +111,7 @@ export class HeroSheet extends BaseActorSheet() {
 
   async _onItemDeleteAction(ev, target) {
     const li = target.closest('.item-row');
-    const ok = await DialogV2.confirm({ window: { title: 'Delete' }, content: '<p>Sure?</p>', yes: { callback: () => true }, no: { callback: () => false } });
+    const ok = await DialogV2.confirm({ window: { title: 'Delete' }, content: '<p>Sure?</p>', yes: { callback: (event, button, dialog) => true }, no: { callback: (event, button, dialog) => false } });
     if (ok) await this._onItemDelete(li.dataset.itemId);
   }
 
@@ -160,7 +160,7 @@ export class HeroSettingsForm extends HandlebarsApplicationMixin(ApplicationV2) 
 
   async _onReset(event, target) {
     event.preventDefault();
-    const ok = await DialogV2.confirm({ window: { title: 'Reset' }, content: '<p>Reset all?</p>', yes: { callback: () => true }, no: { callback: () => false } });
+    const ok = await DialogV2.confirm({ window: { title: 'Reset' }, content: '<p>Reset all?</p>', yes: { callback: (event, button, dialog) => true }, no: { callback: (event, button, dialog) => false } });
     if (ok) await this.render();
   }
 

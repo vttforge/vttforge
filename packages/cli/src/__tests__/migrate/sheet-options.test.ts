@@ -105,3 +105,22 @@ describe('a template path in backticks', () => {
     expect(o.template).toBe('modules/x/templates/menu.hbs');
   });
 });
+
+describe('a second tabs entry', () => {
+  it('becomes a TODO instead of a group the template never marks', () => {
+    const opts = options(
+      `class S extends ActorSheet { static get defaultOptions() { return foundry.utils.mergeObject(super.defaultOptions, { tabs: [{ navSelector: ".tabs", contentSelector: ".content", initial: "items" }, { navSelector: ".sub-tabs", contentSelector: ".sub", initial: "a" }] }); } }`,
+    );
+    const out = renderStatics(
+      opts,
+      { '.tabs': ['items', 'notes'], '.sub-tabs': ['a', 'b'] },
+      (t) => `// TODO(migrate): ${t}`,
+      'sheet',
+    );
+    expect(out).toContain(
+      "primary: { tabs: [{ id: 'items' }, { id: 'notes' }], initial: 'items' }",
+    );
+    expect(out).not.toContain('group2');
+    expect(out).toContain('.sub-tabs is a second tab group');
+  });
+});

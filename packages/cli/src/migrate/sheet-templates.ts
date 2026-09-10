@@ -126,10 +126,17 @@ export function readTabIds(template: string, navSelector: string): string[] {
  */
 export function editTemplate(
   template: string,
-  opts: { actions: Array<{ name: string; selector: string }>; navSelectors: string[] },
+  opts: {
+    actions: Array<{ name: string; selector: string }>;
+    /** Only the first one is wired; the rest stay as they are. */
+    navSelectors: string[];
+    /** Tab ids of that first nav. A pane outside the list belongs to another group and is left alone. */
+    tabIds?: string[];
+  },
 ): TemplateResult {
   const edits: TemplateEdit[] = [];
   const navRanges = opts.navSelectors
+    .slice(0, 1)
     .map((selector) => elementRange(template, selector))
     .filter((range): range is [number, number] => range !== null);
   const inNav = (index: number) => navRanges.some(([start, end]) => index >= start && index < end);
@@ -151,7 +158,11 @@ export function editTemplate(
       const needsGroup = attr(attrs, 'data-group') === null;
       let withClass = attrs;
       const isNavLink = tab !== null && inNav(offset);
-      const isPane = tab !== null && !isNavLink && hasClass(attrs, 'tab');
+      const isPane =
+        tab !== null &&
+        !isNavLink &&
+        hasClass(attrs, 'tab') &&
+        (opts.tabIds === undefined || opts.tabIds.includes(tab));
       if (isNavLink) {
         if (!hasAction && !add.some((one) => one.startsWith('data-action='))) {
           add.push('data-action="vttforgeTab"');

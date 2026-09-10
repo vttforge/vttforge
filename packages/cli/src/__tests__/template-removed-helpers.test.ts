@@ -34,6 +34,16 @@ describe('VTTF-AUDIT-021', () => {
     expect(findings[0]?.remediation).toMatch(/selectOptions/);
   });
 
+  it('matches the block-less {{select}} form and keeps line numbers past a multi-line comment', async () => {
+    await writeFile(
+      join(cwd, 'templates', 'x.hbs'),
+      '{{!-- a\n   b\n   c --}}\n<select>{{select value}}</select>\n',
+      'utf8',
+    );
+    const f = (await runTemplateRules(cwd)).filter((f) => f.ruleId === 'VTTF-AUDIT-021');
+    expect(f.map((x) => [x.filePath, x.line])).toEqual([['templates/x.hbs', 4]]);
+  });
+
   it('reads templates outside templates/ too', async () => {
     await mkdir(join(cwd, 'src', 'ui'), { recursive: true });
     await writeFile(join(cwd, 'src', 'ui', 'picker.html'), '{{colorPicker name="c"}}\n', 'utf8');

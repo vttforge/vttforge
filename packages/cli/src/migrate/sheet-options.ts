@@ -225,7 +225,15 @@ export function renderStatics(
   if (opts.tabs.length > 0) {
     lines.push('', '  /** @override */', '  static TABS = {');
     for (const [i, tab] of opts.tabs.entries()) {
-      const group = i === 0 ? 'primary' : `group${i + 1}`;
+      // The template edits wire one group. A second nav keeps its v1 markup and needs its own
+      // group here plus data-group on its links and panes.
+      if (i > 0) {
+        lines.push(
+          `    ${todo(`${tab.navSelector} is a second tab group; add it here and put data-group on its nav links and panes`)}`,
+        );
+        continue;
+      }
+      const group = 'primary';
       const ids = tabIds[tab.navSelector] ?? [];
       const initial = tab.initial ?? ids[0] ?? '';
       if (ids.length === 0) {

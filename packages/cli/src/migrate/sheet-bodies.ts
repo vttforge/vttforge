@@ -94,6 +94,10 @@ export function rewriteHandlerBody(
       () => 'this.element.querySelectorAll(',
     );
   }
+  // enrichHTML is always async on v14; the option is gone.
+  code = replaceCode(code, /,\s*\{\s*async:\s*true\s*\}\s*\)/g, () => ')');
+  code = replaceCode(code, /\basync:\s*true\s*,\s*/g, () => '');
+  code = replaceCode(code, /,\s*async:\s*true\b/g, () => '');
   // `this.element` was jQuery on v1 and is an HTMLElement on V2.
   // A jQuery collection reads as a NodeList: `.length`, `[0]` and `forEach` keep working.
   code = replaceCode(code, /this\.element\.find\(/g, () => 'this.element.querySelectorAll(');
@@ -345,13 +349,19 @@ function readConfirmOptions(inner: string): { code: string | null; missing: stri
     const key = pair.key.replace(/^['"]|['"]$/g, '');
     if (key === 'title' || key === 'content' || key === 'yes' || key === 'no')
       found[key] = pair.value;
-    else if (key !== 'defaultYes' && key !== 'rejectClose' && key !== 'options') missing.push(key);
+    else if (key === 'rejectClose') found.rejectClose = pair.value;
+    else if (key !== 'defaultYes' && key !== 'options') missing.push(key);
   }
   const parts = [
     found.title ? `window: { title: ${found.title} }` : '',
     found.content ? `content: ${found.content}` : '',
-    found.yes ? `yes: { callback: ${found.yes} }` : '',
-    found.no ? `no: { callback: ${found.no} }` : '',
+    found.yes
+      ? `yes: { callback: ${v2Callback(found.yes, 'event, button, dialog', 'dialog.element')} }`
+      : '',
+    found.no
+      ? `no: { callback: ${v2Callback(found.no, 'event, button, dialog', 'dialog.element')} }`
+      : '',
+    found.rejectClose ? `rejectClose: ${found.rejectClose}` : '',
   ].filter(Boolean);
   return { code: `DialogV2.confirm({ ${parts.join(', ')} })`, missing };
 }
@@ -479,9 +489,11 @@ function readDialogOptions(inner: string, indent: string): DialogRead | null {
     }
     parts.push(`buttons: [\n${buttons.join('\n')}\n${pad}]`);
   }
+  if (!found.buttons) missing.push('buttons (DialogV2 needs at least one; add an ok button)');
   if (found.render)
     parts.push(`render: ${v2Callback(found.render, 'event, dialog', 'dialog.element')}`);
-  if (found.close) parts.push(`close: ${found.close}`);
+  if (found.close)
+    parts.push(`close: ${v2Callback(found.close, 'event, dialog', 'dialog.element')}`);
   const code = `DialogV2.wait({\n${parts.map((p) => `${pad}${p},`).join('\n')}\n${indent}})`;
   return { code, missing };
 }
