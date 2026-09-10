@@ -75,7 +75,12 @@ function resolveBases(): { Base: AnyConstructor; mixin: (b: AnyConstructor) => A
 
 function resolveDragDrop(): DragDropCtor | undefined {
   const foundry = (globalThis as Record<string, unknown>).foundry as FoundryGlobal | undefined;
-  const ctor = foundry?.applications?.ux?.DragDrop;
+  // `implementation` is the class a system or module may have swapped in
+  // through CONFIG.ux; the bare class is the fallback for a runtime without it.
+  const dragDrop = foundry?.applications?.ux?.DragDrop as
+    | (DragDropCtor & { implementation?: DragDropCtor })
+    | undefined;
+  const ctor = dragDrop?.implementation ?? dragDrop;
   return typeof ctor === 'function' ? ctor : undefined;
 }
 
@@ -88,6 +93,7 @@ function resolveDragDrop(): DragDropCtor | undefined {
  *   static DEFAULT_OPTIONS = foundry.utils.mergeObject(
  *     super.DEFAULT_OPTIONS,
  *     { classes: ['my-system'], position: { width: 540 } },
+ *     { inplace: false }, // never edit the parent's static options in place
  *   );
  *   static PARTS = { ... };
  *   static TABS = {
@@ -206,12 +212,16 @@ export function BaseItemSheet(): SheetBaseCtor {
       }
     }
 
-    _onRender(context: unknown, options: unknown): void {
+    async _onRender(context: unknown, options: unknown): Promise<void> {
+      // ApplicationV2 renders asynchronously; the parent's work has to finish
+      // before the DragDrop instances bind to the element it produced.
       const superRender = (
-        Mixed.prototype as { _onRender?: (context: unknown, options: unknown) => void }
+        Mixed.prototype as {
+          _onRender?: (context: unknown, options: unknown) => void | Promise<void>;
+        }
       )._onRender;
       if (typeof superRender === 'function') {
-        superRender.call(this, context, options);
+        await superRender.call(this, context, options);
       }
       const configs = (this.constructor as { DRAG_DROP?: ReadonlyArray<DragDropConfig> }).DRAG_DROP;
       const DragDrop = resolveDragDrop();

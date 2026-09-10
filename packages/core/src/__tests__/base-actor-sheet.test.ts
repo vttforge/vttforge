@@ -217,15 +217,15 @@ describe('BaseActorSheet — default `tab` action', () => {
 });
 
 describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
-  it('does nothing when DRAG_DROP is empty', () => {
+  it('does nothing when DRAG_DROP is empty', async () => {
     const Sub = BaseActorSheet();
     const instance = new Sub();
     stub(instance, { element: document.createElement('div') });
-    instance._onRender({}, {});
+    await instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(0);
   });
 
-  it('binds one DragDrop per static DRAG_DROP entry with default permissions and callbacks', () => {
+  it('binds one DragDrop per static DRAG_DROP entry with default permissions and callbacks', async () => {
     const Base = BaseActorSheet();
     class Sheet extends Base {
       static override DRAG_DROP: ReadonlyArray<DragDropConfig> = [
@@ -236,7 +236,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     const instance = new Sheet();
     const element = document.createElement('div');
     stub(instance, { element: element, isEditable: true });
-    instance._onRender({}, {});
+    await instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(2);
     const first = dragDropBinds[0];
     if (!first) throw new Error('expected dragDropBinds[0] after length assertion');
@@ -250,7 +250,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     expect(typeof callbacks.drop).toBe('function');
   });
 
-  it('honours user-supplied permissions and callbacks (user wins over defaults)', () => {
+  it('honours user-supplied permissions and callbacks (user wins over defaults)', async () => {
     const Base = BaseActorSheet();
     const customDrag = vi.fn();
     class Sheet extends Base {
@@ -264,7 +264,7 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     }
     const instance = new Sheet();
     stub(instance, { element: document.createElement('div'), isEditable: true });
-    instance._onRender({}, {});
+    await instance._onRender({}, {});
     expect(dragDropBinds).toHaveLength(1);
     const entry = dragDropBinds[0];
     if (!entry) throw new Error('expected dragDropBinds[0] after length assertion');
@@ -275,14 +275,14 @@ describe('BaseActorSheet — DRAG_DROP wiring in _onRender', () => {
     expect(callbacks.dragstart).toBe(customDrag);
   });
 
-  it('isEditable false locks dragstart and drop', () => {
+  it('isEditable false locks dragstart and drop', async () => {
     const Base = BaseActorSheet();
     class Sheet extends Base {
       static override DRAG_DROP: ReadonlyArray<DragDropConfig> = [{ dragSelector: '.item' }];
     }
     const instance = new Sheet();
     stub(instance, { element: document.createElement('div'), isEditable: false });
-    instance._onRender({}, {});
+    await instance._onRender({}, {});
     const lockedEntry = dragDropBinds[0];
     if (!lockedEntry) throw new Error('expected dragDropBinds[0]');
     const perms = lockedEntry.config.permissions as {
