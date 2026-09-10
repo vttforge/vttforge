@@ -89,6 +89,27 @@ describe('watchDist', () => {
     return true;
   };
 
+  /**
+   * A new file reaches the watcher as two events: the create, then the
+   * write. A slow machine can fire the debounce between them and read the
+   * file empty, so the first payload is not always the one to assert on.
+   */
+  const waitForFrame = async (
+    fn: { mock: { calls: unknown[][] } },
+    matches: (frame: Record<string, unknown>) => boolean,
+    timeoutMs = 3000,
+  ) => {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+      const hit = fn.mock.calls.find((call) =>
+        matches(JSON.parse(call[0] as string) as Record<string, unknown>),
+      );
+      if (hit) return JSON.parse(hit[0] as string) as Record<string, unknown>;
+      if (Date.now() > deadline) return null;
+      await settle(10);
+    }
+  };
+
   it('emits a payload the dev module can read', async () => {
     const onPayload = vi.fn();
     const watcher = watchDist({
@@ -101,10 +122,9 @@ describe('watchDist', () => {
     await ready();
 
     await writeFile(join(dist, 'styles', 'main.css'), 'body { color: red; }', 'utf8');
-    expect(await waitForCalls(onPayload)).toBe(true);
+    const frame = await waitForFrame(onPayload, (f) => f.content === 'body { color: red; }');
     watcher.close();
 
-    const frame = JSON.parse(onPayload.mock.calls.at(-1)?.[0] as string);
     expect(frame).toMatchObject({
       packageType: 'system',
       packageId: 'my-system',
@@ -175,12 +195,12 @@ describe('watchDist', () => {
     writeFileSync(file, 'body{content:"first"}', 'utf8');
     expect(await waitForCalls(onPayload)).toBe(true);
     writeFileSync(file, 'body{content:"second"}', 'utf8');
-    expect(await waitForCalls(onPayload, 2)).toBe(true);
+    // Debouncing must not swallow the next edit — it only merges one burst.
+    const second = await waitForFrame(onPayload, (f) => String(f.content).includes('"second"'));
     watcher.close();
 
-    // Debouncing must not swallow the next edit — it only merges one burst.
+    expect(second).not.toBeNull();
     expect(onPayload.mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(JSON.parse(onPayload.mock.calls.at(-1)?.[0] as string).content).toContain('"second"');
   });
 
   it('stays quiet when a rebuild rewrites a file without changing it', async () => {
@@ -222,10 +242,10 @@ describe('watchDist', () => {
     await settle(80);
 
     writeFileSync(file, 'body{color:blue}', 'utf8');
-    expect(await waitForCalls(onPayload)).toBe(true);
+    const frame = await waitForFrame(onPayload, (f) => String(f.content).includes('blue'));
     watcher.close();
 
-    expect(JSON.parse(onPayload.mock.calls.at(-1)?.[0] as string).content).toContain('blue');
+    expect(frame).not.toBeNull();
   });
 
   it('emits nothing more once closed', async () => {
