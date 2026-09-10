@@ -9,3 +9,8 @@ pnpm changeset
 ```
 
 The walkthrough asks which packages changed and at what semver level (patch / minor / major). Changesets are consumed by the release workflow (`.github/workflows/changesets.yml`) which opens a Version PR that bumps versions and updates each package's `CHANGELOG.md`.
+
+Only published packages get a changeset. A changeset that names a private
+package (`apps/*`, `examples/*`) is skipped by `changeset version` and
+never deleted, and the release workflow then opens an empty Version PR after
+every push until someone removes the file by hand.
