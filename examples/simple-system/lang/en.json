@@ -33,6 +33,8 @@
 
   "VTTFORGE_EXAMPLE.Sheet.Roll.label": "Roll",
   "VTTFORGE_EXAMPLE.Sheet.Roll.flavor": "{ability} check",
+  "VTTFORGE_EXAMPLE.Sheet.Roll.crit": "Critical",
+  "VTTFORGE_EXAMPLE.Sheet.Roll.fumble": "Fumble",
   "VTTFORGE_EXAMPLE.Sheet.Drop.label": "Drop item to add",
   "VTTFORGE_EXAMPLE.Sheet.Drop.rejected": "Cannot drop {type} items on a character — only gear is accepted.",
 

@@ -9,6 +9,7 @@
  * name so the key Foundry persists survives a rebuild, and until now nothing
  * had ever read that key back out of a running Foundry.
  */
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { baseUrl } from '../scripts/foundry.mjs';
 
@@ -24,6 +25,9 @@ const consoleErrors = [];
  * example is on borrowed time, and that should fail here rather than in v16.
  */
 const deprecations = [];
+
+/** What Foundry plays for a roll: the value of `CONFIG.sounds.dice`. */
+const CONFIG_DICE_SOUND = 'sounds/dice.wav';
 
 test.beforeEach(async ({ page }) => {
   page.on('console', (message) => {
@@ -179,6 +183,150 @@ test("the sheet styles compose with the system's own CSS, and yield to modules",
   // systems. This fails if anyone sets `"layer": null` on the manifest entry
   // to jump that queue.
   expect(cascade.versusModule, seen).toBe('99px');
+});
+
+test('a roll from the sheet lands in chat as a tagged card', async ({ page }) => {
+  await joinWorld(page);
+
+  const posted = await page.evaluate(async () => {
+    const actor = await Actor.create({ name: 'End-to-end Roller', type: 'character' });
+    await actor.sheet.render(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const before = game.messages.size;
+    actor.sheet.element.querySelector('[data-action="rollAbility"][data-ability="str"]').click();
+    for (let i = 0; i < 50 && game.messages.size === before; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    const message = game.messages.contents.at(-1);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const card = document.querySelector(
+      `#chat .message[data-message-id="${message.id}"] .vttf-roll`,
+    );
+    const roll = message.rolls[0];
+    return {
+      count: game.messages.size - before,
+      isRoll: message.isRoll,
+      flavor: message.flavor,
+      alias: message.speaker.alias,
+      flag: message.getFlag(game.system.id, 'vttforge.roll'),
+      natural: roll.dice[0].results[0].result,
+      rendered: Boolean(card),
+      kind: card?.dataset.vttforgeRoll,
+      classes: card ? [...card.classList] : [],
+      tag: card?.querySelector('.vttf-roll__tag')?.textContent ?? null,
+      diceBlock: Boolean(card?.querySelector('.dice-roll .dice-total')),
+      sound: message.sound,
+    };
+  });
+
+  expect(posted.count).toBe(1);
+  expect(posted.isRoll).toBe(true);
+  expect(posted.flavor).toBe('Strength check');
+  expect(posted.alias).toBe('End-to-end Roller');
+  expect(posted.rendered).toBe(true);
+  expect(posted.diceBlock).toBe(true);
+  expect(posted.sound).toBe(CONFIG_DICE_SOUND);
+  // The flag and the card agree with the die that was rolled.
+  expect(posted.flag.natural).toBe(posted.natural);
+  const expected =
+    posted.natural === 20
+      ? { kind: 'crit', className: 'vttf-roll--crit', tag: 'Critical' }
+      : posted.natural === 1
+        ? { kind: 'fumble', className: 'vttf-roll--fumble', tag: 'Fumble' }
+        : { kind: 'plain', className: null, tag: null };
+  expect(posted.flag).toEqual({
+    natural: posted.natural,
+    crit: expected.kind === 'crit',
+    fumble: expected.kind === 'fumble',
+  });
+  expect(posted.kind).toBe(expected.kind);
+  expect(posted.tag).toBe(expected.tag);
+  expect(posted.classes.includes('vttf-roll')).toBe(true);
+  expect(posted.classes.filter((c) => c.startsWith('vttf-roll--'))).toEqual(
+    expected.className ? [expected.className] : [],
+  );
+});
+
+test('postRoll tags a critical and a fumble, and honours the message mode', async ({ page }) => {
+  await joinWorld(page);
+
+  // The sheet rolls a real d20, so the test above takes whatever comes up.
+  // This one needs both outcomes, so it loads the built core package into the
+  // page and hands `postRoll` rolls with a fixed result.
+  const core = readFileSync(new URL('../../../packages/core/dist/index.mjs', import.meta.url));
+  await page.addScriptTag({
+    type: 'module',
+    content: `import * as core from "data:text/javascript;base64,${core.toString('base64')}"; globalThis.__vttforgeCore = core;`,
+  });
+  await page.waitForFunction(() => typeof globalThis.__vttforgeCore?.postRoll === 'function');
+
+  const posted = await page.evaluate(async () => {
+    const { postRoll } = globalThis.__vttforgeCore;
+    const fixed = (result) =>
+      foundry.dice.Roll.fromData({
+        class: 'Roll',
+        formula: '1d20',
+        evaluated: true,
+        total: result,
+        terms: [
+          {
+            class: 'Die',
+            number: 1,
+            faces: 20,
+            results: [{ result, active: true }],
+            evaluated: true,
+            modifiers: [],
+          },
+        ],
+      });
+    const actor = await Actor.create({ name: 'Fixed Roller', type: 'character' });
+    const options = { actor, crit: 20, fumble: 1 };
+    const crit = await postRoll(fixed(20), { ...options, flavor: 'High' });
+    const fumble = await postRoll(fixed(1), { ...options, flavor: 'Low', messageMode: 'gm' });
+    const plain = await postRoll(fixed(10), { ...options, flavor: 'Middle' });
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const read = ({ message }) => {
+      const card = document.querySelector(
+        `#chat .message[data-message-id="${message.id}"] .vttf-roll`,
+      );
+      const tag = card?.querySelector('.vttf-roll__tag');
+      return {
+        kind: card?.dataset.vttforgeRoll,
+        tag: tag?.textContent ?? null,
+        tagColor: tag ? getComputedStyle(tag).color : null,
+        total: card?.querySelector('.dice-total')?.textContent.trim(),
+        flag: message.getFlag(game.system.id, 'vttforge.roll'),
+        whispered: message.whisper.length > 0,
+      };
+    };
+    return { crit: read(crit), fumble: read(fumble), plain: read(plain) };
+  });
+
+  expect(posted.crit).toMatchObject({
+    kind: 'crit',
+    tag: 'Critical',
+    total: '20',
+    flag: { natural: 20, crit: true, fumble: false },
+    whispered: false,
+  });
+  expect(posted.fumble).toMatchObject({
+    kind: 'fumble',
+    tag: 'Fumble',
+    total: '1',
+    flag: { natural: 1, crit: false, fumble: true },
+    // messageMode 'gm' became a whisper to the GM.
+    whispered: true,
+  });
+  expect(posted.plain).toMatchObject({
+    kind: 'plain',
+    tag: null,
+    total: '10',
+    flag: { natural: 10, crit: false, fumble: false },
+  });
+  // The styles package coloured the two tags differently.
+  expect(posted.crit.tagColor).not.toBe(posted.fumble.tagColor);
 });
 
 test('the module contributes a namespaced sub-type once enabled', async ({ page }) => {
