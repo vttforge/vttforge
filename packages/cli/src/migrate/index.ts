@@ -8,7 +8,7 @@
  */
 
 import { existsSync } from 'node:fs';
-import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { runReleaseRules } from '../audit/release-rules.js';
 import { _internal } from '../audit/source-rules.js';
@@ -172,19 +172,10 @@ export async function runMigrate(options: MigrateOptions): Promise<MigrateReport
   return report;
 }
 
-/** Every `.hbs` / `.html` under `templates/`, project-relative. */
+/** Every `.hbs` / `.html` in the project, project-relative. */
 async function allTemplates(cwd: string): Promise<string[]> {
-  const root = join(cwd, 'templates');
-  if (!existsSync(root)) return [];
   const out: string[] = [];
-  const visit = async (dir: string): Promise<void> => {
-    for (const entry of await readdir(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) await visit(full);
-      else if (/\.(?:hbs|html)$/.test(entry.name)) out.push(relative(cwd, full));
-    }
-  };
-  await visit(root);
+  for await (const file of _internal.walkTemplateFiles(cwd)) out.push(relative(cwd, file));
   return out.sort();
 }
 
@@ -214,7 +205,12 @@ async function planSheets(
     } catch {
       continue;
     }
-    if (!/\b(?:ActorSheet|ItemSheet|FormApplication|Application)\b/.test(raw)) continue;
+    if (
+      !/\bextends\s+(?:foundry\.appv1\.\w+\.)?(?:ActorSheet|ItemSheet|FormApplication|Application)\b/.test(
+        raw,
+      )
+    )
+      continue;
     // The generated file starts from the v14 rewrite of the source, so the bare
     // v13 aliases are already namespaced in it whether or not --write ran.
     const source = transformSource(raw).output;

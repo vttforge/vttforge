@@ -4,6 +4,7 @@ import {
   rewriteDropMethod,
   rewriteGetData,
   rewriteHandlerBody,
+  rewriteUpdateObject,
 } from '../../migrate/sheet-bodies.js';
 
 describe('rewriteHandlerBody', () => {
@@ -223,5 +224,33 @@ describe('rewriteDialogs', () => {
   it('ignores a dialog named inside a comment or a string', () => {
     const src = `// new Dialog({}) was here\nconst s = 'new Dialog({})';`;
     expect(rewriteDialogs(src)).toEqual({ code: src, todos: [] });
+  });
+});
+
+describe('rewriteUpdateObject', () => {
+  it('reads TypeScript annotations and a return type', () => {
+    const src = `  async _updateObject(event: Event, data: Record<string, unknown>): Promise<void> {
+    await save(data);
+  }`;
+    const r = rewriteUpdateObject(src);
+    expect(r.code).toContain('static async formHandler(event, form, formData) {');
+    expect(r.code).toContain('const data = foundry.utils.expandObject(formData.object);');
+  });
+
+  it('moves the parameter aside when the body called it formData', () => {
+    const r = rewriteUpdateObject(
+      '  async _updateObject(event, formData) {\n    for (const k of Object.keys(formData)) use(k);\n  }',
+    );
+    expect(r.code).toContain('static async formHandler(event, form, submission) {');
+    expect(r.code).toContain('const formData = foundry.utils.expandObject(submission.object);');
+  });
+});
+
+describe('the dialog callback parameter', () => {
+  it('is replaced in a ternary and left alone as an object key', () => {
+    const r = rewriteDialogs(
+      'await Dialog.prompt({ title: t, content: c, label: "Go", callback: (html) => ({ html: 1, el: ok ? html : null }) });',
+    );
+    expect(r.code).toContain('({ html: 1, el: ok ? dialog.element : null })');
   });
 });

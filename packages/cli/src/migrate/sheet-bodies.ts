@@ -47,7 +47,7 @@ function todoAt(code: string, index: number, msg: string): string {
 
 /** The jQuery calls with no one-to-one DOM rewrite. */
 const LEFTOVER_JQUERY =
-  /\$\(|\.(?:val|text|html|prop|toggle|slideToggle|slideUp|slideDown|show|hide|addClass|removeClass|toggleClass|siblings|children|find|css)\(/g;
+  /\$\(|\.(?:val|text|html|prop|toggle|slideToggle|slideUp|slideDown|show|hide|addClass|removeClass|toggleClass|siblings|children|find|css|each)\(/g;
 
 const JQUERY_MSG = 'jQuery left here; use the DOM on `target` / `this.element`';
 
@@ -121,6 +121,7 @@ export function rewriteHandlerBody(
 export function rewriteGetData(
   methodText: string,
   base: 'ActorSheet' | 'ItemSheet' | 'Application' | 'FormApplication',
+  opts: { usesObject?: boolean } = {},
 ): Rewritten {
   const todos: string[] = [];
   const sig = /^(\s*)(async\s+)?getData\s*\(([^)]*)\)/.exec(methodText);
@@ -147,7 +148,7 @@ export function rewriteGetData(
         ['data', `${v}.data = this.document;`],
         ['system', `${v}.system = this.document.system;`],
       ]
-    : base === 'FormApplication'
+    : base === 'FormApplication' && opts.usesObject === true
       ? [['object', `${v}.object = this.object;`]]
       : [];
   if (base === 'ActorSheet') wanted.push(['items', `${v}.items = [...this.document.items];`]);
@@ -197,18 +198,20 @@ export function rewriteGetData(
  * data, expanded here so the body reads it the way v1 handed it.
  */
 export function rewriteUpdateObject(methodText: string): Rewritten {
-  const sig = /^(\s*)(async\s+)?_updateObject\s*\(\s*(\w+)?\s*,?\s*(\w+)?\s*\)\s*\{/.exec(
-    methodText,
-  );
+  // Parameters may carry TypeScript annotations; the return type may sit before the brace.
+  const sig =
+    /^(\s*)(async\s+)?_updateObject\s*\(\s*(\w+)?(?:\s*:\s*(?:[^,)<]|<[^>]*>)*)?\s*,?\s*(\w+)?(?:\s*:\s*(?:[^,)<]|<[^>]*>)*)?\s*\)\s*(?::[^{]*)?\{/.exec(
+      methodText,
+    );
   if (!sig) return { code: methodText, todos: [] };
   const indent = sig[1] ?? '';
   const eventName = sig[3] || 'event';
-  const dataName = sig[4] || 'formData';
-  const head = `${indent}static async formHandler(${eventName}, form, formData) {`;
-  const first =
-    dataName === 'formData'
-      ? ''
-      : `\n${indent}  const ${dataName} = foundry.utils.expandObject(formData.object);`;
+  const dataName = sig[4] || 'data';
+  // The V2 handler receives a FormDataExtended; the body expects the expanded object the
+  // v1 hook got, under the name it used. When that name is `formData`, the parameter moves aside.
+  const param = dataName === 'formData' ? 'submission' : 'formData';
+  const head = `${indent}static async formHandler(${eventName}, form, ${param}) {`;
+  const first = `\n${indent}  const ${dataName} = foundry.utils.expandObject(${param}.object);`;
   const code = `${head}${first}${methodText.slice(sig[0].length)}`;
   const msg =
     'this was _updateObject; ApplicationV2 calls the form handler with `this` bound to the app, and the flat form data is `formData.object`';
@@ -400,13 +403,20 @@ function v2Callback(fn: string, signature: string, elementExpr: string): string 
   if (param) {
     const p = esc(param);
     body = replaceCode(body, new RegExp(`\\b${p}\\[0\\]`, 'g'), () => elementExpr);
+    // A dialog callback reads single fields (`html.find(sel).val()`), so one element, not a list;
+    // the sheet handlers keep the list because `.length` and `[0]` are what they read.
     body = replaceCode(
       body,
       new RegExp(`\\b${p}\\.find\\(`, 'g'),
       () => `${elementExpr}.querySelector(`,
     );
     body = replaceCode(body, new RegExp(`\\$\\(\\s*${p}\\s*\\)`, 'g'), () => elementExpr);
-    body = replaceCode(body, new RegExp(`\\b${p}\\b(?!\\s*:)`, 'g'), () => elementExpr);
+    // Every other use of the parameter, except as an object key (`{ html: x }`, `, html: x`).
+    body = replaceCode(
+      body,
+      new RegExp(`(?<![{,]\\s*)\\b${p}\\b|\\b${p}\\b(?!\\s*:)`, 'g'),
+      () => elementExpr,
+    );
   }
   body = replaceCode(body, /\.val\(\)/g, () => '.value');
   return `${head}${body}`;

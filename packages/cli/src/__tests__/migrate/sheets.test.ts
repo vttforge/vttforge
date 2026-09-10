@@ -122,7 +122,7 @@ describe('planSheetFile', () => {
     const src = 'export class P extends Dialog {}';
     const p = planSheetFile('module/p.mjs', src, { lang: 'js', tabIds: {} });
     expect(p.files).toEqual([]);
-    expect(p.notes[0]).toMatch(/Dialog/);
+    expect(p.notes[0]).toMatch(/Dialog and DocumentSheet subclasses are not converted/);
     expect(
       planSheetFile('module/x.mjs', 'export const a = 1;', { lang: 'js', tabIds: {} }),
     ).toEqual({
@@ -163,6 +163,8 @@ describe('planSheetFile on a FormApplication', () => {
     expect(file.source).toContain('  static async formHandler(_event, form, formData) {');
     expect(file.source).toContain('    const data = foundry.utils.expandObject(formData.object);');
     expect(file.source).toContain('    const context = await super._prepareContext(options);');
+    // The fixture never reads this.object, so nothing is injected for it.
+    expect(file.source).not.toContain('context.object');
     expect(file.source).not.toContain('context.actor');
     expect(file.source).not.toContain('context.editable');
     expect(file.source).toContain('reset: HeroSettingsForm.prototype._onReset,');

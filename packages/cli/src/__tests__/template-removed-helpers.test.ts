@@ -34,6 +34,13 @@ describe('VTTF-AUDIT-021', () => {
     expect(findings[0]?.remediation).toMatch(/selectOptions/);
   });
 
+  it('reads templates outside templates/ too', async () => {
+    await mkdir(join(cwd, 'src', 'ui'), { recursive: true });
+    await writeFile(join(cwd, 'src', 'ui', 'picker.html'), '{{colorPicker name="c"}}\n', 'utf8');
+    const findings = (await runTemplateRules(cwd)).filter((f) => f.ruleId === 'VTTF-AUDIT-021');
+    expect(findings.map((f) => f.filePath)).toEqual(['src/ui/picker.html']);
+  });
+
   it('ignores a helper named only in a Handlebars comment, and the new forms', async () => {
     await writeFile(
       join(cwd, 'templates', 'ok.hbs'),

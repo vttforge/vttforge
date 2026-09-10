@@ -8,8 +8,7 @@
  * looks there.
  */
 
-import { existsSync } from 'node:fs';
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { _internal } from './source-rules.js';
 import type { RuleResult } from './types.js';
@@ -73,7 +72,7 @@ function templatesOfFormSheets(source: string): string[] {
  *
  * `{{#select}}` and `{{colorPicker}}` are gone. A template that still calls
  * one fails to render with "Missing helper", and the sheet, dialog or settings
- * form it belongs to never opens. Every `.hbs` / `.html` under `templates/` is
+ * form it belongs to never opens. Every `.hbs` / `.html` in the project is
  * read, since the failing template can belong to anything.
  */
 const REMOVED_HELPERS: ReadonlyArray<{ pattern: RegExp; name: string; fix: string }> = [
@@ -89,24 +88,11 @@ const REMOVED_HELPERS: ReadonlyArray<{ pattern: RegExp; name: string; fix: strin
   },
 ];
 
-async function allTemplateFiles(cwd: string): Promise<string[]> {
-  const root = join(cwd, 'templates');
-  if (!existsSync(root)) return [];
-  const out: string[] = [];
-  const visit = async (dir: string): Promise<void> => {
-    for (const entry of await readdir(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) await visit(full);
-      else if (/\.(?:hbs|html)$/.test(entry.name)) out.push(full);
-    }
-  };
-  await visit(root);
-  return out.sort();
-}
-
 async function runRemovedHelperRule(cwd: string): Promise<RuleResult[]> {
   const results: RuleResult[] = [];
-  for (const path of await allTemplateFiles(cwd)) {
+  const files: string[] = [];
+  for await (const file of _internal.walkTemplateFiles(cwd)) files.push(file);
+  for (const path of files.sort()) {
     let source: string;
     try {
       source = await readFile(path, 'utf8');

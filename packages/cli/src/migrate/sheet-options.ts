@@ -175,8 +175,11 @@ export function renderStatics(
   tabIds: Record<string, string[]>,
   todo: (msg: string) => string,
   kind: StaticsKind = 'sheet',
-  className = '',
+  className?: string,
 ): string {
+  if (kind === 'form' && !className) {
+    throw new Error('renderStatics needs the class name to wire form.handler');
+  }
   const lines: string[] = [];
   lines.push('  /** @override */');
   lines.push('  static DEFAULT_OPTIONS = foundry.utils.mergeObject(');

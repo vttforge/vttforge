@@ -243,7 +243,8 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
   if (isSheet && !methodOf(cls.node, own, { kind: 'get' })) {
     members.push(`  get ${own}() {\n    return this.document;\n  }`);
   }
-  if (cls.base === 'FormApplication' && /\bthis\.object\b/.test(text(source, cls.node))) {
+  const usesObject = /\bthis\.object\b/.test(text(source, cls.node));
+  if (cls.base === 'FormApplication' && usesObject) {
     members.push(
       `  ${todo('FormApplication carried the edited value as this.object; ApplicationV2 does not. Take it in the constructor and keep it on a field: constructor(object, options) { super(options); this.object = object; }')}`,
     );
@@ -254,7 +255,9 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
 
   // 4. getData → _prepareContext.
   const getData = methodOf(cls.node, 'getData');
-  if (getData) members.push(rewriteGetData(reindent(text(source, getData)), cls.base).code);
+  if (getData) {
+    members.push(rewriteGetData(reindent(text(source, getData)), cls.base, { usesObject }).code);
+  }
 
   // 5. _onRender for the events that are not clicks.
   if (listeners.listeners.length > 0) {
@@ -372,7 +375,7 @@ export function planSheetFile(
   const classes = findSheetClasses(ast, source);
   const notes = unsupportedBases(ast, source).map(
     (u) =>
-      `${relPath}:${u.line} ${u.name} extends ${u.superText}; only ActorSheet and ItemSheet are converted, this one stays as it is`,
+      `${relPath}:${u.line} ${u.name} extends ${u.superText}; Dialog and DocumentSheet subclasses are not converted, this one stays as it is`,
   );
   if (classes.length === 0) return { files: [], notes };
 

@@ -150,7 +150,6 @@ export class HeroSettingsForm extends HandlebarsApplicationMixin(ApplicationV2) 
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    context.object = this.object;
     context.settings = Object.entries(this.constructor.SETTINGS).map(([key, setting]) => ({
       ...setting,
       key,
