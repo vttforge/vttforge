@@ -210,11 +210,24 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
   const members: string[] = [];
   const todo = (msg: string) => TODO(msg);
 
-  // 1. Statics, with the actions block filled in.
+  // 1. Statics, with the actions block filled in. An inline handler becomes a
+  // method named after its action; a name the class already uses (often the
+  // very method the handler calls) gets `Action` appended.
+  const memberNames = new Set(
+    cls.node.body.body.flatMap((m) =>
+      (m.type === 'ClassMethod' || m.type === 'ClassProperty') && m.key.type === 'Identifier'
+        ? [m.key.name]
+        : [],
+    ),
+  );
+  const inlineMethodName = (name: string): string => {
+    const plain = `_on${pascal(name)}`;
+    return memberNames.has(plain) ? `${plain}Action` : plain;
+  };
   const actionEntries = listeners.actions.map((a) => ({
     name: a.name,
     selector: a.selector,
-    method: a.kind === 'method' && a.method ? a.method : `_on${pascal(a.name)}`,
+    method: a.kind === 'method' && a.method ? a.method : inlineMethodName(a.name),
   }));
   const actionsBlock =
     actionEntries.length === 0
@@ -323,7 +336,7 @@ function planClass(cls: SheetClass, source: string, tabIds: Record<string, strin
   // 7. Inline handlers become methods.
   const inline: ActionBinding[] = listeners.actions.filter((a) => a.kind === 'inline');
   for (const a of inline) {
-    const method = `_on${pascal(a.name)}`;
+    const method = inlineMethodName(a.name);
     const rewritten = rewriteHandlerBody(applyDialogs(a.body ?? '{}'), a.param, null).code.trim();
     const body = rewritten.startsWith('{')
       ? dedentBlock(rewritten)

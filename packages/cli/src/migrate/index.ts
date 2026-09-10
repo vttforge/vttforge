@@ -369,7 +369,9 @@ export function formatMigrateReport(report: MigrateReport): string {
         : `Would write ${targets.length} sheet file(s) on the SDK bases:`,
     );
     for (const f of s.files) {
-      lines.push(`  ${f.to}: ${f.className} extends ${f.base}()`);
+      lines.push(
+        `  ${f.to}: ${f.className} extends ${f.base === 'ApplicationV2' ? 'HandlebarsApplicationMixin(ApplicationV2)' : `${f.base}()`}`,
+      );
       for (const a of f.actions) lines.push(`    action ${a.name} ← ${a.selector} (${a.method})`);
       for (const t of f.todos) lines.push(`    ${t.line}: needs a decision: ${t.message}`);
     }

@@ -8,7 +8,8 @@
  * looks there.
  */
 
-import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { _internal } from './source-rules.js';
 import type { RuleResult } from './types.js';
@@ -67,7 +68,71 @@ function templatesOfFormSheets(source: string): string[] {
  * HIGH because of how it fails. There is no error and no warning. The sheet
  * looks right, accepts what you type, and drops it when the window closes.
  */
+/**
+ * VTTF-AUDIT-021 (HIGH) — a Handlebars helper v14 removed.
+ *
+ * `{{#select}}` and `{{colorPicker}}` are gone. A template that still calls
+ * one fails to render with "Missing helper", and the sheet, dialog or settings
+ * form it belongs to never opens. Every `.hbs` / `.html` under `templates/` is
+ * read, since the failing template can belong to anything.
+ */
+const REMOVED_HELPERS: ReadonlyArray<{ pattern: RegExp; name: string; fix: string }> = [
+  {
+    pattern: /\{\{#select\b/,
+    name: '{{#select}}',
+    fix: 'Replace the block with `{{selectOptions choices selected=value}}` (add `localize=true` when the labels are keys), or write the `<option>` list with `{{#each}}` and a `selected` attribute you compute yourself.',
+  },
+  {
+    pattern: /\{\{colorPicker\b/,
+    name: '{{colorPicker}}',
+    fix: 'Replace it with the `<color-picker>` element, `<color-picker name="..." value="{{value}}"></color-picker>`.',
+  },
+];
+
+async function allTemplateFiles(cwd: string): Promise<string[]> {
+  const root = join(cwd, 'templates');
+  if (!existsSync(root)) return [];
+  const out: string[] = [];
+  const visit = async (dir: string): Promise<void> => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) await visit(full);
+      else if (/\.(?:hbs|html)$/.test(entry.name)) out.push(full);
+    }
+  };
+  await visit(root);
+  return out.sort();
+}
+
+async function runRemovedHelperRule(cwd: string): Promise<RuleResult[]> {
+  const results: RuleResult[] = [];
+  for (const path of await allTemplateFiles(cwd)) {
+    let source: string;
+    try {
+      source = await readFile(path, 'utf8');
+    } catch {
+      continue;
+    }
+    const markup = source.replace(HANDLEBARS_COMMENT_RE, '');
+    for (const helper of REMOVED_HELPERS) {
+      if (!helper.pattern.test(markup)) continue;
+      const line = markup.split('\n').findIndex((text) => helper.pattern.test(text)) + 1;
+      results.push({
+        ruleId: 'VTTF-AUDIT-021',
+        title: 'Template calls a Handlebars helper v14 removed',
+        severity: 'HIGH',
+        filePath: relative(cwd, path),
+        line: line > 0 ? line : 1,
+        message: `${helper.name} was removed in v14. Rendering this template throws "Missing helper", so whatever renders it never opens.`,
+        remediation: helper.fix,
+      });
+    }
+  }
+  return results;
+}
+
 export async function runTemplateRules(cwd: string): Promise<RuleResult[]> {
+  const removedHelpers = await runRemovedHelperRule(cwd);
   const templates = new Set<string>();
   for await (const file of _internal.walkSourceFiles(cwd)) {
     let content: string;
@@ -107,5 +172,5 @@ export async function runTemplateRules(cwd: string): Promise<RuleResult[]> {
         'Replace the `<form>` wrapper with a `<div>`, or drop it entirely. The fields belong to the application element, and `submitOnChange` saves them as they change.',
     });
   }
-  return results;
+  return [...results, ...removedHelpers];
 }

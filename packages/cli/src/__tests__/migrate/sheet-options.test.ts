@@ -96,3 +96,12 @@ describe('defaultOptions that read this', () => {
     );
   });
 });
+
+describe('a template path in backticks', () => {
+  it('reads as a path when nothing is interpolated', () => {
+    const o = options(
+      'class S extends FormApplication { static get defaultOptions() { return mergeObject(super.defaultOptions, { template: `modules/x/templates/menu.hbs` }); } }',
+    );
+    expect(o.template).toBe('modules/x/templates/menu.hbs');
+  });
+});

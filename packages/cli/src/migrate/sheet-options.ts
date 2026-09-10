@@ -49,8 +49,13 @@ function props(obj: ObjectExpression): Array<[string, Expression]> {
   return out;
 }
 
+/** A string literal, or a template literal with nothing interpolated. */
 function str(e: Expression): string | null {
-  return e.type === 'StringLiteral' ? e.value : null;
+  if (e.type === 'StringLiteral') return e.value;
+  if (e.type === 'TemplateLiteral' && e.expressions.length === 0) {
+    return e.quasis.map((q) => q.value.cooked ?? q.value.raw).join('');
+  }
+  return null;
 }
 function num(e: Expression): number | null {
   return e.type === 'NumericLiteral' ? e.value : null;

@@ -16,7 +16,7 @@ export class HeroSheet extends BaseActorSheet() {
       form: { submitOnChange: true },
       actions: {
         itemCreate: HeroSheet.prototype._onItemCreate,
-        itemDelete: HeroSheet.prototype._onItemDelete,
+        itemDelete: HeroSheet.prototype._onItemDeleteAction,
         restButton: HeroSheet.prototype._onRestButton,
       },
     },
@@ -80,6 +80,10 @@ export class HeroSheet extends BaseActorSheet() {
     });
   }
 
+  async _onItemDelete(itemId) {
+    await this.actor.deleteEmbeddedDocuments('Item', [itemId]);
+  }
+
   _onItemEdit(event) {
     const li = event.currentTarget.closest('.item-row');
     this.actor.items.get(li.dataset.itemId).sheet.render(true);
@@ -105,10 +109,10 @@ export class HeroSheet extends BaseActorSheet() {
     return item;
   }
 
-  async _onItemDelete(ev, target) {
+  async _onItemDeleteAction(ev, target) {
     const li = target.closest('.item-row');
     const ok = await DialogV2.confirm({ window: { title: 'Delete' }, content: '<p>Sure?</p>', yes: { callback: () => true }, no: { callback: () => false } });
-    if (ok) await this.actor.deleteEmbeddedDocuments('Item', [li.dataset.itemId]);
+    if (ok) await this._onItemDelete(li.dataset.itemId);
   }
 
   async _onRestButton(event, target) {

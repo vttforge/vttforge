@@ -34,7 +34,7 @@ export class HeroSheet extends ActorSheet {
         yes: () => true,
         no: () => false,
       });
-      if (ok) await this.actor.deleteEmbeddedDocuments('Item', [li.data('itemId')]);
+      if (ok) await this._onItemDelete(li.data('itemId'));
     });
     html.find('.item-name').dblclick((event) => this._onItemEdit(event));
     html.find('[name="system.armed"]').change((e) => {
@@ -60,6 +60,10 @@ export class HeroSheet extends ActorSheet {
         },
       },
     }).render(true);
+  }
+
+  async _onItemDelete(itemId) {
+    await this.actor.deleteEmbeddedDocuments('Item', [itemId]);
   }
 
   _onItemEdit(event) {

@@ -35,24 +35,26 @@ describe('planSheetFile', () => {
     );
     expect(file.source).toContain("sheet: { template: 'systems/hero/templates/actor-sheet.html' }");
     expect(file.source).toContain(
-      '      actions: {\n        itemCreate: HeroSheet.prototype._onItemCreate,\n        itemDelete: HeroSheet.prototype._onItemDelete,\n        restButton: HeroSheet.prototype._onRestButton,\n      },',
+      '      actions: {\n        itemCreate: HeroSheet.prototype._onItemCreate,\n        itemDelete: HeroSheet.prototype._onItemDeleteAction,\n        restButton: HeroSheet.prototype._onRestButton,\n      },',
     );
     expect(file.actions.map((a) => [a.name, a.method])).toEqual([
       ['itemCreate', '_onItemCreate'],
-      ['itemDelete', '_onItemDelete'],
+      ['itemDelete', '_onItemDeleteAction'],
       ['restButton', '_onRestButton'],
     ]);
   });
 
   it('carries the methods over with the V2 signatures', () => {
     expect(file.source).toContain('  async _onItemCreate(event, target) {');
+    // The inline handler keeps clear of the method it calls.
     expect(file.source).toContain(
-      "  async _onItemDelete(ev, target) {\n    const li = target.closest('.item-row');",
+      "  async _onItemDeleteAction(ev, target) {\n    const li = target.closest('.item-row');",
     );
+    expect(file.source).toContain('if (ok) await this._onItemDelete(li.dataset.itemId);');
+    expect(file.source).toContain('  async _onItemDelete(itemId) {');
     expect(file.source).toContain(
       "DialogV2.confirm({ window: { title: 'Delete' }, content: '<p>Sure?</p>', yes: { callback: () => true }, no: { callback: () => false } })",
     );
-    expect(file.source).toContain('[li.dataset.itemId]');
     expect(file.source).toContain('  async _onRestButton(event, target) {');
     expect(file.source).toContain(
       '  async _prepareContext(options) {\n    const data = await super._prepareContext(options);\n    data.actor = this.document;',
