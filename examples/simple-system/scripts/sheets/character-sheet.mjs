@@ -84,6 +84,7 @@ export class CharacterSheet extends BaseActorSheet() {
    * roll buttons live. The header control switches to edit. Hit points stay
    * open in play through `data-vttforge-edit-in-play` on their wrapper.
    * @override
+   * @type {import('@vttforge/core').SheetModesConfig}
    */
   static MODES = {
     initial: 'play',
