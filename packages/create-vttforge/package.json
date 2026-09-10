@@ -1,6 +1,6 @@
 {
   "name": "create-vttforge",
-  "version": "0.3.23",
+  "version": "0.3.24",
   "description": "Scaffold a Foundry VTT system or module with VTTForge. Runs `@vttforge/cli init`.",
   "type": "module",
   "license": "MIT",
