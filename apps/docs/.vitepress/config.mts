@@ -142,6 +142,7 @@ export default defineConfig({
             { text: 'Overview', link: '/recipes/' },
             { text: 'Migrating from v12', link: '/recipes/migrating-from-v12' },
             { text: 'Migrating to v14', link: '/recipes/migrating-to-v14' },
+            { text: 'Adopting an existing system', link: '/recipes/adopting-an-existing-system' },
             { text: 'Theme V2 binding', link: '/recipes/theme-v2' },
             { text: 'A theme of your own', link: '/recipes/custom-theme' },
             { text: 'Tailwind', link: '/recipes/tailwind' },
