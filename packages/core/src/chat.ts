@@ -23,6 +23,8 @@
  * a package id, which is why the outcome is not filed under `vttforge`.
  */
 
+import { escapeHtml, localize } from './text.js';
+
 /** How to decide a critical or a fumble. */
 export type RollThreshold = boolean | number | ((roll: PostableRoll) => boolean);
 
@@ -119,30 +121,6 @@ function systemId(): string | undefined {
   return game?.system?.id;
 }
 
-function localize(text: string): string {
-  const game = (globalThis as Record<string, unknown>).game as
-    | { i18n?: { localize?: (key: string) => string } }
-    | undefined;
-  return game?.i18n?.localize?.(text) ?? text;
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (char) => {
-    switch (char) {
-      case '&':
-        return '&amp;';
-      case '<':
-        return '&lt;';
-      case '>':
-        return '&gt;';
-      case '"':
-        return '&quot;';
-      default:
-        return '&#39;';
-    }
-  });
-}
-
 /** The first active result of the first die term. */
 export function naturalResult(roll: PostableRoll): number | undefined {
   const die = roll.dice?.[0];
@@ -216,12 +194,18 @@ export async function postRoll(
       'postRoll() needs a flag scope: pass `scope` (your system or module id) when game.system is not available',
     );
   }
+  // Merge into whatever the caller already put under the scope, including
+  // its own `vttforge` keys; only `vttforge.roll` is ours.
   const scoped = (options.flags?.[scope] ?? {}) as Record<string, unknown>;
+  const ours = (scoped.vttforge ?? {}) as Record<string, unknown>;
   const data: Record<string, unknown> = {
     content,
     rolls: [roll],
     speaker: options.speaker ?? ChatMessage.getSpeaker({ actor: options.actor }),
-    flags: { ...options.flags, [scope]: { ...scoped, vttforge: { roll: outcome } } },
+    flags: {
+      ...options.flags,
+      [scope]: { ...scoped, vttforge: { ...ours, roll: outcome } },
+    },
   };
   if (options.flavor !== undefined) data.flavor = options.flavor;
   const sound = diceSound();
