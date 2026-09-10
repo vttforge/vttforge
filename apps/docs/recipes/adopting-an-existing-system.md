@@ -1,7 +1,7 @@
 # Adopting the SDK in an existing system
 
-You have a system that runs on v13 or v14, with sheets on Application v1
-and types in `template.json`. This is how to move it onto the SDK, in the
+You have a system that runs on v12, v13 or v14, with sheets on
+Application v1 and types in `template.json`. This is how to move it onto the SDK, in the
 order that worked on a real one: a small system with two actor types, two
 item types, jQuery sheets and a `template.json`. The whole run took an
 afternoon. The CLI does most of the typing; the hand edits are listed at
@@ -26,12 +26,12 @@ npx @vttforge/cli@latest audit
 Every finding names a file and a line. Most of them go away in the next
 two steps.
 
-The codemods read v13 code. A system that last ran on v12 goes through
-[Migrating from v12](/recipes/migrating-from-v12) first. One from v10 or
-v11 needs the older breaks done by hand before anything here helps: the
-`data.data` to `system` rename above all, since every rewrite below
-looks for `system`. `audit` still runs on that code and names what it
-sees, but `migrate` will not carry it across those versions.
+The oldest code the commands read is v12. A v13 system goes straight
+through the steps below. A v12 system goes through
+[Migrating from v12](/recipes/migrating-from-v12) first, for the breaks
+between v12 and v13 that no command rewrites. Anything older needs the
+`data.data` to `system` rename by hand before any of this helps, since
+every rewrite below looks for `system`.
 
 ## 1. v14 first
 
