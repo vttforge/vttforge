@@ -20,7 +20,7 @@ Forge is `@vttforge/styles`'s official theme. The four files in this folder show
 </div>
 ```
 
-Each file is one CSS class. Drop it on the sheet root, the components re-theme. Nothing else in the markup changes.
+Each file is one CSS class. Drop it on the sheet root and the components re-theme, with no other change to the markup.
 
 ## Authoring your own theme
 
@@ -33,4 +33,4 @@ Each file is one CSS class. Drop it on the sheet root, the components re-theme. 
    - Optional: semantic accents (`--vttf-steel`, `--vttf-mint`, `--vttf-gold`, `--vttf-rose`, `--vttf-violet`), fonts (`--vttf-font-display`, `--vttf-font-body`, `--vttf-font-mono`), radii (`--vttf-radius-sm`/`-md`/`-lg`/`-xl`).
 4. Drop the class on a sheet root and verify in your system.
 
-Do not touch component CSS. A theme changes tokens, nothing else.
+Do not touch component CSS. A theme changes token values only.

@@ -17,11 +17,11 @@ Pin exactly, or accept that `pnpm update` can require code changes:
 ```
 
 A caret on a `0.x` version pins the minor (`^0.8.0` means `>=0.8.0 <0.9.0`),
-so it is narrower than people expect. Here that narrowness helps.
+so it is narrower than people expect.
 
 ## After 1.0
 
-- No breaking change in a minor. Ever.
+- No breaking change in a minor.
 - A breaking change means a major, and a major comes with a migration note
   saying what to change, not only what changed.
 - Anything marked `@experimental` is exempt. It says so in its own doc comment,
@@ -35,8 +35,7 @@ A stable export that is going away:
 2. Keeps working for **two more minors**, at least 90 days.
 3. Goes in the next major.
 
-If there is no replacement, the tag says that too. "Deprecated, use X instead"
-is a promise; "deprecated, and here is why nothing replaces it" is honest.
+If there is no replacement, the tag says that too, and why nothing replaces it.
 
 ## What each package promises
 
@@ -52,8 +51,9 @@ is a promise; "deprecated, and here is why nothing replaces it" is honest.
 
 ## What is in the public surface
 
-The check on every export is **reachability**: can you arrive at it by using
-the documented API, or only by importing it by name?
+The check on every export is **reachability**. An export is in the public
+surface if the documented API leads you to it. If the only way to reach it is
+importing it by name, it is not.
 
 A type reached through a signature is part of the contract even if you never
 write its name. `SystemRegistration` is the argument to `registerSystem`, and
@@ -95,8 +95,7 @@ supported export.
 
 Only the packages that run in Node declare an engine floor. `@vttforge/core`,
 `@vttforge/styles`, `@vttforge/types` and `@vttforge/dev-module` run in the
-browser inside Foundry and never touch Node, so they declare none. Requiring a
-Node version to install a browser package blocks people for nothing.
+browser inside Foundry and never touch Node, so they declare none.
 
 | Package | Node |
 |---|---|

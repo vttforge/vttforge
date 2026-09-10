@@ -46,23 +46,23 @@ Foundry has already put this file in a layer by the time you see it. A system's 
 "styles": [{ "src": "styles/my-system.css" }]
 ```
 
-So the question is never whether these rules are layered. It is how they sort against the rest of what is in that same layer, which is your own CSS.
+These rules are layered either way. What varies is how they sort against the rest of that layer, which is your own CSS.
 
-An unlayered rule beats every layered one in the same layer, whatever the specificity. That is why only `vttforge.tokens` and `vttforge.reset` sit in a sub-layer here, and base, components and the theme do not. Sub-layer the components and this wins every time:
+An unlayered rule beats every layered one in the same layer, whatever the specificity. Only `vttforge.tokens` and `vttforge.reset` sit in a sub-layer here; base, components and the theme do not. Sub-layer the components and this would win every time:
 
 ```css
 /* your stylesheet, in the same layer as this package */
 button { border-radius: 55px; }   /* would beat .vttf-btn */
 ```
 
-Nothing you wrote could lose, which sounds convenient until a broad selector meant for one corner restyles every component. Unlayered, the two compose on specificity: `.vttf-btn` holds, and `.my-system .vttf-btn` wins.
+Nothing you wrote could lose, so a broad selector meant for one corner would restyle every component. Unlayered, the two compose on specificity: `.vttf-btn` holds, and `.my-system .vttf-btn` wins.
 
-Tokens and the reset lose that fight on purpose. Tokens are custom properties you must be able to override with one plain declaration, and a reset that outranks real rules is a bug.
+Tokens and the reset are sub-layered on purpose. Tokens are custom properties, so one plain declaration has to override them, and a reset should never outrank a real rule.
 
-None of this affects other modules, and it should not. Foundry orders `system` before `modules`, so a module's CSS overrides a system's by design. You can opt out by setting `"layer": null` on the manifest entry, which makes your stylesheet unlayered and puts it above everything. Do not, unless you have a reason worth the fight: it takes your system out of the order every module author expects.
+The sub-layering above only sorts these rules against your own CSS. Between packages, Foundry orders `system` before `modules`, so a module's CSS overrides a system's by design. Setting `"layer": null` on the manifest entry makes your stylesheet unlayered and puts it above everything, including every module. That also takes your system out of the order module authors expect, so it needs a reason.
 
-The `styles.layer.css` entry wraps everything in one `@layer vttforge` nested inside Foundry's. That gives up composing on specificity, in exchange for ordering these styles as a block against layers of your own.
+The `styles.layer.css` entry wraps everything in one `@layer vttforge` nested inside Foundry's. Specificity no longer composes between these styles and yours; instead the block sorts as a whole against layers you declare.
 
-## See it
+## Design system
 
 The design system page shows every token and primitive: <https://vttforge.dev/design-system/>.

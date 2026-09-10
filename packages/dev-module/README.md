@@ -4,7 +4,7 @@ The Foundry side of `vttforge dev`. It applies stylesheet, template and
 language changes to a running world without a page reload.
 
 Development only. It opens a socket to your machine and applies whatever
-arrives; nothing about that belongs in a world you care about.
+arrives, so keep it out of a world holding real data.
 
 ## Why it exists
 
@@ -13,8 +13,8 @@ the right flag and the files sit where its watcher looks. `vttforge dev`
 builds with Vite instead, so the files Foundry serves are build output that
 its watcher never sees.
 
-So this module delivers the changes itself: `vttforge dev` pushes a
-payload per changed file, and this end applies it.
+This module delivers the changes itself: `vttforge dev` pushes a payload
+per changed file, and this end applies it.
 
 ## What it does with each file
 
@@ -41,12 +41,12 @@ Hooks.on('hotReload', (data) => {
 ## Pointing it somewhere else
 
 It connects to `ws://localhost:31313`, or to `host.docker.internal` when
-Foundry is not served from a local address, which is what a containerised
-Foundry needs to reach the CLI on your machine. To override:
+Foundry is not served from a local address, so a containerised Foundry can
+reach the CLI on your machine. To override:
 
 ```js
 globalThis.VTTFORGE_DEV_SERVER_URL = 'ws://192.168.1.10:31313';
 ```
 
 Expect the connection to drop: the CLI stops between runs. Reconnection
-backs off rather than hammering a closed port.
+backs off.

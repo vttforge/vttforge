@@ -2,21 +2,21 @@
 
 Thanks for considering it. Every package is on npm and below 1.0, so the API still moves. That makes these the most useful contributions today:
 
-- **Boilerplate reports.** Open an issue with a pattern from your own Foundry system or module that VTTForge could take off your hands.
-- **API feedback.** Where the shape feels wrong, say so before it hardens at 1.0.
-- **Bug reports with a reproduction.** A scaffolded project plus the diff that breaks it is ideal.
-- **Docs fixes.** Always welcome.
+- Boilerplate reports. Open an issue with a pattern from your own Foundry system or module that VTTForge could take off your hands.
+- API feedback. Where the shape feels wrong, say so before it hardens at 1.0.
+- Bug reports with a reproduction. A scaffolded project plus the diff that breaks it is ideal.
+- Docs fixes. Always welcome.
 
-Code contributions are welcome too. The workflow is below.
+Code contributions are welcome too.
 
 ## Prerequisites
 
-- **Node.js 26 or higher.**
-- **Corepack enabled.** It picks the pinned `pnpm` from `package.json#packageManager`:
+- Node.js 26 or higher.
+- Corepack enabled. It picks the pinned `pnpm` from `package.json#packageManager`:
   ```bash
   corepack enable
   ```
-- **A Foundry VTT v14 installation**, or Docker plus a foundryvtt.com license, for anything that touches sheets or the dev loop.
+- A Foundry VTT v14 installation, or Docker plus a foundryvtt.com license, for anything that touches sheets or the dev loop.
 
 ## Setup
 
@@ -38,7 +38,7 @@ pnpm format         # Biome, writing fixes
 pnpm knip           # unused exports and dependencies
 ```
 
-`pnpm lint` may print a Biome out-of-memory warning under some terminals. It is the parent shell's TTY setup, not the code: run it as `bash -c "pnpm lint"` and it goes away.
+`pnpm lint` may print a Biome out-of-memory warning under some terminals. It comes from the parent shell's TTY setup: run it as `bash -c "pnpm lint"` and it goes away.
 
 ## Running Foundry locally
 
@@ -83,8 +83,7 @@ ever driving Foundry's setup screens.
 
 In CI it runs on every push to `main`, against the maintainer's licence. It
 never runs on a pull request from a fork, because GitHub does not hand secrets
-to those workflows, and a check that cannot pass is a check everyone learns to
-ignore.
+to those workflows.
 
 ## Changesets
 

@@ -28,16 +28,15 @@ type CharacterSystem = CharacterData['$inferData'];
 ```
 
 You write the schema once. There is no second type declaration to keep in
-sync, and `this.level` inside `prepareDerivedData` is a `number` because the
-schema said so.
+sync, and `this.level` inside `prepareDerivedData` is a `number`.
 
-It has to be a function, not an object: `fields()` reads a Foundry global that
-does not exist when your module is first evaluated.
+It has to be a function: `fields()` reads a Foundry global that does not exist
+when your module is first evaluated.
 
 ### Declare your derived values
 
-`armorClass` is not in the schema, so it is not on the type. Declaring it is
-how you say "this exists after `prepareDerivedData` runs".
+`armorClass` is not in the schema, so it is not on the type. Declaring it
+puts it on the type as a value that exists once `prepareDerivedData` has run.
 
 In JavaScript there is no `declare`, and a plain class field would emit and
 reset the property to `undefined` after every data preparation. Put derived
@@ -45,11 +44,9 @@ values in the schema instead, as a `NumberField` with `initial: 0`, and
 assign them in `prepareDerivedData`. The scaffold's JavaScript template does
 this for the ability modifiers.
 
-## Say what you mean about null
+## Nullability defaults
 
-This part surprises people.
-
-**Every field class picks its own defaults, and they disagree.**
+Every field class picks its own defaults, and they disagree.
 
 | Field | With no options | Why |
 |---|---|---|
@@ -61,16 +58,16 @@ This part surprises people.
 | `FilePathField` | `string \| null` | starts at `null` |
 | `ArrayField` / `SetField` | never absent | required, builds its own empty value |
 
-So `new f.NumberField()` is not a `number`. Declare what you meant:
+So `new f.NumberField()` is not a `number`. Pass the options explicitly:
 
 ```ts
 new f.NumberField({ required: true, nullable: false, initial: 0 })
 ```
 
 The inference reads the literal types of what you pass. An options object
-held in a variable widens `nullable: false` to `boolean`, which says nothing,
-and the field's own default applies again. Pin it with `as const`, or build the
-field in a small factory so the literals stay inline.
+held in a variable widens `nullable: false` to `boolean`, and the field's own
+default applies again. Pin it with `as const`, or build the field in a small
+factory so the literals stay inline.
 
 ## Fields that are not what they look like
 

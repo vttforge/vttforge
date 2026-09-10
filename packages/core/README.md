@@ -21,7 +21,7 @@ pnpm add @vttforge/core
 | `moduleSubType` | The `<module id>.<type>` prefix Foundry files a module's sub-types under |
 | `VttfError` | Runtime errors with a stable `VTTF-NNNN` code and a docs URL |
 
-## A sheet, registered so its key does not move
+## Registering a sheet
 
 ```ts
 import { BaseActorSheet, registerSystem } from '@vttforge/core';
@@ -37,7 +37,7 @@ registerSystem({
 });
 ```
 
-Foundry keys a sheet by its class name and saves that key on every document. A bundler renames classes between builds; the `id` is written down, so the key stays.
+Foundry keys a sheet by its class name and saves that key on every document. A bundler renames classes between builds, so `registerSystem` uses the `id` for the key instead.
 
 ## Docs
 

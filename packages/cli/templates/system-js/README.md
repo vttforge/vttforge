@@ -19,8 +19,8 @@ the answer in `.vttforge/config.json`. Override with `--foundry-data <path>`
 or `FOUNDRY_DATA_DIR`. If Foundry runs in a container it cannot follow the
 symlink, and the command prints the compose mount to use instead.
 
-Save a template and the open sheet redraws in place; save a stylesheet and the
-CSS swaps. Enable **VTTForge Dev** in the world once; `pnpm dev` links it in.
+A saved template redraws the open sheet in place, and a saved stylesheet swaps
+the CSS. Enable **VTTForge Dev** in the world once; `pnpm dev` links it in.
 
 Then create a world on **{{TITLE}}** and open a character.
 
@@ -37,17 +37,17 @@ Then create a world on **{{TITLE}}** and open a character.
 | `styles/main.css` | Imports `@vttforge/styles` and scopes your rules under `.{{ID}}` |
 | `lang/en.json` | Strings, under the `{{LOCALE_PREFIX}}` prefix |
 
-## Two things worth knowing before you edit
+## Before you edit
 
-**A sheet's key comes from its id, not its class name.** `registerSystem({ sheets })`
-pins each sheet under `{{ID}}.<id>`. Foundry saves that key on every actor
-whose owner picked the sheet. Without an explicit id it derives the key from
-the class name, and a bundler renames classes between builds. Keep the ids;
-renaming one loses the sheet choice on every document already using it.
+`registerSystem({ sheets })` pins each sheet under `{{ID}}.<id>`, and Foundry
+saves that key on every actor whose owner picked the sheet. Without an
+explicit id it derives the key from the class name, and a bundler renames
+classes between builds. Renaming an id loses the sheet choice on every
+document already using it.
 
-**Derived values live in the schema.** `prepareDerivedData` computes `mod` on
-each ability, but the schema declares it as a field. JavaScript has no
-`declare`: a plain class field would emit and reset the property to
+Derived values live in the schema. `prepareDerivedData` computes `mod` on each
+ability, and the schema still declares it as a field. JavaScript has no
+`declare`, so a plain class field would emit and reset the property to
 `undefined` after every data preparation.
 
 ## Checks

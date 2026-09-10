@@ -1,6 +1,6 @@
 # VTTForge brand assets
 
-The mark is `{ d20 }`. The curly braces signal code; the icosahedron between them signals where that code runs.
+The mark is `{ d20 }`. The curly braces stand for code, and the icosahedron between them for where that code runs.
 
 ## Files
 

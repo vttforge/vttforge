@@ -1,4 +1,4 @@
-# End-to-end: the SDK inside a real Foundry
+# End-to-end tests
 
 Boots Foundry v14 in Docker with `examples/simple-system` and
 `examples/simple-module` installed, joins the world as the Gamemaster, and
@@ -23,29 +23,26 @@ Any console error naming VTTForge fails the run.
 
 ## How it boots
 
-The harness never drives Foundry's setup screens, because that is the part
-that would rot. Three plain steps replace them:
+The harness never drives Foundry's setup screens, which would break on every
+UI change. Three steps replace them:
 
 1. The end-user licence is a real HTML form. One POST signs it.
 2. A world is a directory with a manifest. Writing `world.json` declares it.
 3. `Config/options.json` has a `world` field. Setting it launches that world
    on the next start, which also creates the Gamemaster.
 
-The browser only joins a world that is already running.
-
 ## Running inside a container
 
 CI runs this from a container that shares the host's Docker daemon, which
-moves two things:
+moves paths and the network:
 
-- **Paths.** The host resolves every path in a `docker` command, not this
-  process, so a bind mount and a `writeFileSync` to the same string are two
-  different directories. The harness seeds everything through `docker cp` into
-  a named volume instead, which crosses that boundary from either side.
-- **The network.** A published port lands on the host, which is not this
-  process's `localhost`. When there is a container to join, Foundry joins its
-  network and answers by name; otherwise it publishes the port and answers on
-  localhost. The harness works this out on its own.
+- The host resolves every path in a `docker` command, not this process, so a
+  bind mount and a `writeFileSync` to the same string are two different
+  directories. The harness seeds everything through `docker cp` into a named
+  volume instead, which crosses that boundary from either side.
+- A published port lands on the host, which is not this process's `localhost`.
+  When there is a container to join, Foundry joins its network and answers by
+  name; otherwise it publishes the port and answers on localhost.
 
 ## Credentials
 

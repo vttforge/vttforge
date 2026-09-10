@@ -5,8 +5,7 @@ title: Transparency
 # Transparency
 
 VTTForge is two halves. One runs inside Foundry, in your players' browsers. The
-other runs on your own machine, in your terminal. They deserve different
-answers.
+other runs on your own machine, in your terminal.
 
 ## What runs inside Foundry
 
@@ -30,8 +29,7 @@ does not inspect your actors, your players, or your compendia.
 
 ## What runs on your machine
 
-`@vttforge/cli` is a different kind of trust. It is a program you run in your
-terminal, so here is everything it touches.
+`@vttforge/cli` is a program you run in your terminal. Everything it touches:
 
 | It does | Where |
 |---|---|
@@ -59,11 +57,10 @@ npm audit signatures
 
 ## How it is built
 
-I write VTTForge with the help of AI coding agents. That is worth saying
-plainly rather than leaving for someone to notice.
+I write VTTForge with the help of AI coding agents.
 
-What decides whether a change ships is not who typed it. Every change, mine or
-an agent's, goes through a pull request and has to pass the same gates:
+Every change, mine or an agent's, goes through a pull request and has to pass
+the same gates:
 
 | Gate | What it does |
 |---|---|
@@ -74,21 +71,19 @@ an agent's, goes through a pull request and has to pass the same gates:
 | Package quality | `publint` and `attw`, so the published shape is correct |
 | A real Foundry | Every push to `main` boots Foundry v14 in a container, installs the example system and module, joins a world, and drives them. Any console error naming VTTForge fails it |
 
-That last one is the one I care about most. The unit tests run against a mocked
-Foundry, so they prove the SDK calls the right things. Only a running Foundry
-proves Foundry accepted them.
+The unit tests run against a mocked Foundry, so they prove the SDK calls the
+right things. Only a running Foundry proves Foundry accepted them.
 
 I read what ships and I merge it. No agent merges its own work or publishes a
 release.
 
-A list of gates is only worth what it leaves out, so here are the gaps. There
-are no staged release channels, no visual regression captures, and the
-end-to-end run covers v14 only. Every package is below 1.0, and a minor may
-break you. The [stability policy](/stability) says exactly how much.
+The gaps: there are no staged release channels, no visual regression captures,
+and the end-to-end run covers v14 only. Every package is below 1.0, and a minor
+may break you. The [stability policy](/stability) says exactly how much.
 
 ## If you would rather not
 
-Some people would rather not build on AI-assisted software. That is fair.
+Some people would rather not build on AI-assisted software, which is fair.
 Nothing here is hidden: the repository is public, every change went through a
 pull request you can read, and the packages carry provenance back to the commit
 that built them. Pin a version and stay on it, or read the code before you

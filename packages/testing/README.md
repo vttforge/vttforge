@@ -2,7 +2,7 @@
 
 Helpers for testing Foundry VTT packages.
 
-Two entry points, because the two kinds of test run in different places.
+Two entry points, one for each place a test can run.
 
 ## `@vttforge/testing/vitest`
 
@@ -24,9 +24,8 @@ foundry.restore();
 
 `withMockFoundry` installs `foundry`, `game`, `CONFIG`, `Hooks`, `ui` and
 `CONST`, and hands back a handle that records what your code registered (hooks,
-settings, notifications) so a test can assert on what happened rather than only
-on what did not throw. `restore()` puts every global back, including deleting the
-ones that never existed.
+settings, notifications) so a test can assert on what happened. `restore()`
+puts every global back, including deleting the ones that never existed.
 
 Anything else your code reads goes in `globals`. Foundry puts every document
 class on the global scope, and the fixed set above does not include them:
@@ -40,14 +39,14 @@ const foundry = withMockFoundry({
 `restore()` clears those too.
 
 The mock documents behave like real ones where it counts: `update` merges rather
-than replacing, and dotted paths expand. Both matter: a mock that replaces lets
-a test pass while the real thing drops every sibling key.
+than replacing, and dotted paths expand. A mock that replaces lets a test pass
+while the real thing drops every sibling key.
 
 ### Naming the globals
 
 A test that reads `game.settings` would otherwise get "Cannot find name
 'game'". Importing from this entry declares them, so there is nothing to
-configure. The import a test already writes is what brings them.
+configure.
 
 ## `@vttforge/testing/quench`
 
@@ -70,17 +69,15 @@ registerBatch('my-module.sheets', ({ describe, it, assert }) => {
 });
 ```
 
-Safe to call at module scope: it waits for `quenchReady` rather than assuming
-Quench has loaded, which is the mistake that makes a batch silently never
-appear. Outside Foundry it is a no-op, so a file holding both kinds of test can
-still be imported by the vitest run.
+Safe to call at module scope: it waits for `quenchReady`. Code that assumes
+Quench has already loaded registers a batch that never appears. Outside
+Foundry it is a no-op, so a file holding both kinds of test can still be
+imported by the vitest run.
 
-## Where the line sits
+## What to test where
 
-Anything before `_renderHTML` is testable in Vitest. Real rendering is Quench's
-half. Reaching for a mock past that line produces tests that pass and tell you
-nothing. So there is no helper that mounts a sheet against a mock actor and
-returns its HTML, and there will not be one: a copy of the Application
-framework inside a mock renders something like Foundry, and a test that passes
-against the copy is worse than none. Test the context in Vitest and the render
-in a real world.
+Anything before `_renderHTML` is testable in Vitest, and real rendering belongs
+to Quench. There is no helper that mounts a sheet against a mock actor and
+returns its HTML, and none is planned: a copy of the Application framework
+inside a mock renders something like Foundry, so a test that passes against the
+copy says nothing about the real one.

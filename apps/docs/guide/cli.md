@@ -154,8 +154,8 @@ below 14, and the flat `gridDistance` / `gridUnits` keys. Minified bundles
 (`*.min.js`) are vendored libraries; migrate skips them, and so does the audit.
 
 The rewrites are text-based, like the audit rules they mirror. They leave
-comments alone. They rewrite a match inside a string literal too, which is
-what the preview catches.
+comments alone, and they rewrite a match inside a string literal too, which
+the preview reports.
 
 ### `--data-models`
 
@@ -234,12 +234,11 @@ ids that were not found in the template, and the v1 lifecycle overrides
 (`setPosition`, `_getHeaderButtons`, `_render`, ...) that ApplicationV2
 replaces with its own hooks.
 
-The generated file is a draft to read, not code to trust: run
-`vttforge lint --fix` on it, work through the `TODO(migrate)` lines, then
-run `vttforge audit` again, since the v14 rules apply to the new file too. On
-a real v1 system the hand edits were the per-type template choice, the root
-`<form>` in each sheet template, and one `setPosition` override; everything
-else ran as generated.
+The generated file is a draft to read: run `vttforge lint --fix` on it, work
+through the `TODO(migrate)` lines, then run `vttforge audit` again, since the
+v14 rules apply to the new file too. On a real v1 system the hand edits were
+the per-type template choice, the root `<form>` in each sheet template, and
+one `setPosition` override; everything else ran as generated.
 
 Each template the class names gets `data-action="<name>"` on the elements
 that matched each selector, `data-action="vttforgeTab"` and `data-group` on

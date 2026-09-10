@@ -19,8 +19,8 @@ for (const app of foundry.applications.instances.values()) {
 }
 ```
 
-Match with `instanceof`, not `constructor.name`, because a bundler minifies class
-names, and `MyViewer` becomes `za` in the built file.
+Match with `instanceof`. A bundler minifies class names, so
+`constructor.name` reads `za` where the source said `MyViewer`.
 
 ## Renamed
 
@@ -69,4 +69,5 @@ per-element handlers leak the old ones.
 vttforge audit
 ```
 
-Scans the manifest and source for the v14 mistakes that fail quietly.
+The audit scans the manifest and source for the v14 mistakes that fail
+quietly.

@@ -24,16 +24,16 @@ if (settings.get<boolean>('showTutorial')) { /* … */ }
 ```
 
 Reading a key that was never registered throws `VTTF-0003` instead of
-returning `undefined`. A typo in a setting name is found the first time it is
-read, not by a user who wonders why a switch does nothing.
+returning `undefined`, so a typo in a setting name surfaces the first time the
+key is read.
 
 Registration has to happen inside `init`. Reads work from `setup` on. See [the
 startup lifecycle](/guide/lifecycle) for what each stage can do.
 
 ## Migrations
 
-Every system grows the same code: a `schemaVersion` world setting, a compare on
-`ready`, a loop of `await`s. `createMigrationRunner` owns that.
+`createMigrationRunner` owns the code every system otherwise writes by hand: a
+`schemaVersion` world setting, a compare on `ready`, and a loop of `await`s.
 
 ```ts
 import { createMigrationRunner } from '@vttforge/core';
