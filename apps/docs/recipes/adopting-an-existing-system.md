@@ -218,7 +218,7 @@ Three files and one install:
   "type": "module",
   "scripts": { "build": "vttforge build", "dev": "vttforge dev", "audit": "vttforge audit" },
   "dependencies": { "@vttforge/core": "^0.15.0" },
-  "devDependencies": { "@vttforge/cli": "^0.14.0", "@vttforge/vite-plugin": "^0.5.0", "vite": "^8.0.0" }
+  "devDependencies": { "@vttforge/cli": "^0.15.0", "@vttforge/vite-plugin": "^0.5.0", "vite": "^8.0.0" }
 }
 ```
 
