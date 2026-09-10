@@ -1,5 +1,14 @@
 # create-vttforge
 
+## 0.3.22
+
+### Patch Changes
+
+- f8ecf14: Plainer wording in the READMEs, the scaffolded project READMEs and the default messages of the `VTTF-NNNN` errors. No code change.
+- Updated dependencies [66f86d3]
+- Updated dependencies [f8ecf14]
+  - @vttforge/cli@0.14.1
+
 ## 0.3.21
 
 ### Patch Changes

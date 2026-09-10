@@ -1,5 +1,11 @@
 # @vttforge/vite-plugin
 
+## 0.5.3
+
+### Patch Changes
+
+- f8ecf14: Plainer wording in the READMEs, the scaffolded project READMEs and the default messages of the `VTTF-NNNN` errors. No code change.
+
 ## 0.5.2
 
 ### Patch Changes

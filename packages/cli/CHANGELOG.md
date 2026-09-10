@@ -1,5 +1,12 @@
 # @vttforge/cli
 
+## 0.14.1
+
+### Patch Changes
+
+- 66f86d3: Fixes found by running `vttforge migrate` end to end on a v13 system: `--data-models` now spreads a `base` template when the file defines one; `--sheets` awaits the `super._prepareContext` it writes for a sync `getData`, drops `{ async: false }` from `enrichHTML` and awaits the call, and moves a `new Dialog` opened from a render listener to `DialogV2` like one opened from a click. Audit rule 007 accepts a `{ value, max }` field declared in a shared schema fragment. The note about a root `<form>` now says to make it a `<div>`, since a part has to render one element.
+- f8ecf14: Plainer wording in the READMEs, the scaffolded project READMEs and the default messages of the `VTTF-NNNN` errors. No code change.
+
 ## 0.14.0
 
 ### Minor Changes

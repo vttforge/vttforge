@@ -1,5 +1,11 @@
 # @vttforge/dev-module
 
+## 0.2.5
+
+### Patch Changes
+
+- f8ecf14: Plainer wording in the READMEs, the scaffolded project READMEs and the default messages of the `VTTF-NNNN` errors. No code change.
+
 ## 0.2.4
 
 ### Patch Changes

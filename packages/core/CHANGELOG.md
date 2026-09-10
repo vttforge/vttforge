@@ -1,5 +1,13 @@
 # @vttforge/core
 
+## 0.15.2
+
+### Patch Changes
+
+- f8ecf14: Plainer wording in the READMEs, the scaffolded project READMEs and the default messages of the `VTTF-NNNN` errors. No code change.
+- Updated dependencies [f8ecf14]
+  - @vttforge/types@0.2.1
+
 ## 0.15.1
 
 ### Patch Changes
