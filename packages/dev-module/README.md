@@ -13,7 +13,7 @@ the right flag and the files sit where its watcher looks. `vttforge dev`
 builds with Vite instead, so the files Foundry serves are build output that
 its watcher never sees.
 
-This module takes delivery into its own hands: `vttforge dev` pushes a
+So this module delivers the changes itself: `vttforge dev` pushes a
 payload per changed file, and this end applies it.
 
 ## What it does with each file
@@ -24,8 +24,8 @@ payload per changed file, and this end applies it.
 | `hbs`, `html` | Recompiles the template and re-renders open windows |
 | `json` | Merges a language file, if it is one you are viewing |
 
-Anything else is ignored: the watcher may cover more file types than can be
-applied without a reload.
+The module ignores anything else: the watcher may cover more file types
+than this module can apply without a reload.
 
 ## Vetoing a reload
 
@@ -48,5 +48,5 @@ Foundry needs to reach the CLI on your machine. To override:
 globalThis.VTTFORGE_DEV_SERVER_URL = 'ws://192.168.1.10:31313';
 ```
 
-A dropped connection is expected: the CLI stops between runs. Reconnection
+Expect the connection to drop: the CLI stops between runs. Reconnection
 backs off rather than hammering a closed port.

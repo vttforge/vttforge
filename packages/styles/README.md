@@ -23,7 +23,7 @@ Or wrap everything in a single `@layer vttforge` you order yourself:
 
 Read the next section before you pick the second one.
 
-Cherry-pick:
+Pick what you need:
 
 ```css
 @import '@vttforge/styles/tokens.css';
@@ -57,7 +57,7 @@ button { border-radius: 55px; }   /* would beat .vttf-btn */
 
 Nothing you wrote could lose, which sounds convenient until a broad selector meant for one corner restyles every component. Unlayered, the two compose on specificity: `.vttf-btn` holds, and `.my-system .vttf-btn` wins.
 
-Tokens and the reset lose that fight on purpose. Tokens are custom properties you must be able to override with one plain declaration, and a reset that outranks real rules is a bug waiting to happen.
+Tokens and the reset lose that fight on purpose. Tokens are custom properties you must be able to override with one plain declaration, and a reset that outranks real rules is a bug.
 
 None of this affects other modules, and it should not. Foundry orders `system` before `modules`, so a module's CSS overrides a system's by design. You can opt out by setting `"layer": null` on the manifest entry, which makes your stylesheet unlayered and puts it above everything. Do not, unless you have a reason worth the fight: it takes your system out of the order every module author expects.
 

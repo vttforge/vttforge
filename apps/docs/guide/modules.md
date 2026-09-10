@@ -56,8 +56,8 @@ bundler renames classes between builds; see
 
 ## Keep the type key in its own module
 
-The subtype key gets used by the sheet, the API, the enricher, anything that
-looks documents up. Put it somewhere neither of those has to import the entry
+The sheet, the API, the enricher, anything that looks documents up: they all
+use the subtype key. Put it somewhere none of them has to import the entry
 point for:
 
 ```ts

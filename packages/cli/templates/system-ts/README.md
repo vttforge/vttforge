@@ -30,7 +30,7 @@ Then create a world on **{{TITLE}}** and open a character.
 |---|---|
 | `system.json` | Manifest: types, `htmlFields`, hot-reload paths, migration flags |
 | `scripts/main.ts` | One `registerSystem` call: models, sheets, initiative, settings, migrations |
-| `scripts/data/*.ts` | Data models. The schema is a function handed to `BaseTypeDataModel`, which is what makes `this.level` a `number` |
+| `scripts/data/*.ts` | Data models. The schema is a function handed to `BaseTypeDataModel`, which makes `this.level` a `number` |
 | `scripts/sheets/*.ts` | Sheets on `BaseActorSheet` / `BaseItemSheet`: `static TABS`, `static DRAG_DROP`, typed `onDropItem` |
 | `scripts/migrations.ts` | `createMigrationRunner`: versioned, idempotent, GM-gated |
 | `templates/` | Handlebars, using Foundry's own elements (`<prose-mirror>`, `data-action`) |
@@ -39,15 +39,15 @@ Then create a world on **{{TITLE}}** and open a character.
 
 ## Two things worth knowing before you edit
 
-**Sheets are registered by id, not by class name.** `registerSystem({ sheets })`
+**A sheet's key comes from its id, not its class name.** `registerSystem({ sheets })`
 pins each sheet under `{{ID}}.<id>`. Foundry saves that key on every actor
-whose owner picked the sheet, and derives it from the class name unless told
-otherwise, and a bundler renames classes between builds. Keep the ids; renaming one
-loses the sheet choice on every document already using it.
+whose owner picked the sheet. Without an explicit id it derives the key from
+the class name, and a bundler renames classes between builds. Keep the ids;
+renaming one loses the sheet choice on every document already using it.
 
-**`this.document` is `unknown` on the sheet bases.** Which document a sheet is
-for is yours to know. Each sheet here narrows it once in a getter (`actor`,
-`item`) and everything below reads typed.
+**`this.document` is `unknown` on the sheet bases.** You know which document a
+sheet is for. Each sheet here narrows it once in a getter (`actor`, `item`),
+and everything below reads typed.
 
 ## Checks
 

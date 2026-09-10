@@ -31,7 +31,7 @@ Then enable **{{TITLE}}** in a world and create a Note from the Items sidebar.
 | `module.json` | Manifest. Declares the `note` sub-type under `documentTypes` and the hot-reload paths |
 | `scripts/main.ts` | One `registerModule` call: data model, sheet, enricher, settings, API |
 | `scripts/constants.ts` | `MODULE_ID` and `NOTE_TYPE`, the prefixed key Foundry files the sub-type under |
-| `scripts/data/note-data.ts` | The data model. The schema is a function handed to `BaseTypeDataModel`, which is what makes `this.body` a `string` |
+| `scripts/data/note-data.ts` | The data model. The schema is a function handed to `BaseTypeDataModel`, which makes `this.body` a `string` |
 | `scripts/sheets/note-sheet.ts` | The sheet, on `BaseItemSheet` |
 | `scripts/enricher.ts` | `@Note[id]` → a link that opens the note |
 | `templates/` | Handlebars, using Foundry's own elements (`<prose-mirror>`, `data-action`) |
@@ -44,14 +44,14 @@ Then enable **{{TITLE}}** in a world and create a Note from the Items sidebar.
 as `{{ID}}.note`, and so must the manifest. `registerModule` adds the prefix,
 and `NOTE_TYPE` in `constants.ts` is the one place it is spelled out.
 
-**Sheets are registered by id, not by class name.** `registerModule({ sheets })`
+**A sheet's key comes from its id, not its class name.** `registerModule({ sheets })`
 pins each sheet under `{{ID}}.<id>`. Foundry saves that key on every item
-whose owner picked the sheet, and derives it from the class name unless told
-otherwise, and a bundler renames classes between builds. Keep the ids.
+whose owner picked the sheet. Without an explicit id it derives the key from
+the class name, and a bundler renames classes between builds. Keep the ids.
 
-**`this.document` is `unknown` on the sheet bases.** Which document a sheet is
-for is yours to know. The sheet narrows it once in a getter (`item`) and
-everything below reads typed.
+**`this.document` is `unknown` on the sheet bases.** You know which document a
+sheet is for. The sheet narrows it once in a getter (`item`), and everything
+below reads typed.
 
 ## Public API
 

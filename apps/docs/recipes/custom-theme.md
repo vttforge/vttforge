@@ -1,8 +1,8 @@
 # A theme of your own
 
 `@vttforge/styles` ships one theme, Forge. Every colour, font and radius in it
-is a `--vttf-*` custom property, and the component CSS reads only those. So a
-theme is a class that sets the tokens; the components follow.
+is a `--vttf-*` custom property, and the component CSS reads only those. A
+theme is a class that sets the tokens. The components follow.
 
 ## Start from an example
 

@@ -6,8 +6,8 @@ Reference Foundry v14 module built on `@vttforge/core` and `@vttforge/vite-plugi
 
 | Feature | Where |
 |---|---|
-| `registerModule` — sub-type, sheet, enricher, settings, API in one call | `scripts/main.mjs` |
-| `moduleSubType` — the `<module id>.<type>` key Foundry files a module's sub-type under | `scripts/constants.mjs` |
+| `registerModule`: sub-type, sheet, enricher, settings, API in one call | `scripts/main.mjs` |
+| `moduleSubType`: the `<module id>.<type>` key Foundry files a module's sub-type under | `scripts/constants.mjs` |
 | `BaseTypeDataModel(defineSchema)` | `scripts/data/note-data.mjs` |
 | `BaseItemSheet()` with one part and one action | `scripts/sheets/note-sheet.mjs` |
 | An enricher declared as data, with `onRender` | `scripts/enricher.mjs` |

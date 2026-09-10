@@ -6,14 +6,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Before filing, please check open issues and the README — the SDK has a focused scope and some features are intentionally out. Feature requests aligned with stated goals get prioritised faster.
+        Before filing, check open issues and the README. The SDK has a narrow scope, and some features are out on purpose. Requests that match the stated goals move faster.
 
   - type: textarea
     id: problem
     attributes:
       label: What's the problem?
       description: |
-        Describe the friction or boilerplate pattern. Real code from your own system/module is the most useful.
+        Describe the friction or the boilerplate pattern. Real code from your own system or module helps most.
       placeholder: |
         "Every sheet in my system copy-pastes a 20-line handler for X..."
     validations:
@@ -62,4 +62,4 @@ body:
     id: additional-context
     attributes:
       label: Additional context
-      description: Links to your system, existing implementations, similar APIs in other libraries, etc.
+      description: Links to your system, existing implementations, or similar APIs in other libraries.

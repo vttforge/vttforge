@@ -1,13 +1,13 @@
 # Example themes
 
-Forge is `@vttforge/styles`'s official theme. The four files in this folder are documented examples that show how to compose a custom theme on top of `@vttforge/styles` by overriding `--vttf-*` tokens.
+Forge is `@vttforge/styles`'s official theme. The four files in this folder show how to build a custom theme on top of `@vttforge/styles`: override the `--vttf-*` tokens.
 
 | File | Reference |
 | --- | --- |
-| `codex.css` | D&D 5e modern — burgundy + cream serif. |
-| `parchment.css` | OGL / OSR print-style — walnut ink, square edges. |
-| `grimdark.css` | Warhammer / Mörk Borg / CoC — near-black, condensed sans, dried-blood accent. |
-| `neon.css` | Shadowrun / Cyberpunk — deep blue, magenta + cyan, mono display. |
+| `codex.css` | D&D 5e modern: burgundy + cream serif. |
+| `parchment.css` | OGL / OSR print style: walnut ink, square edges. |
+| `grimdark.css` | Warhammer / Mörk Borg / CoC: near-black, condensed sans, dried-blood accent. |
+| `neon.css` | Shadowrun / Cyberpunk: deep blue, magenta + cyan, mono display. |
 
 ## Usage
 
@@ -20,7 +20,7 @@ Forge is `@vttforge/styles`'s official theme. The four files in this folder are 
 </div>
 ```
 
-Each file is one CSS class. Drop it on the sheet root, the components re-theme. No other markup changes required.
+Each file is one CSS class. Drop it on the sheet root, the components re-theme. Nothing else in the markup changes.
 
 ## Authoring your own theme
 
@@ -33,4 +33,4 @@ Each file is one CSS class. Drop it on the sheet root, the components re-theme. 
    - Optional: semantic accents (`--vttf-steel`, `--vttf-mint`, `--vttf-gold`, `--vttf-rose`, `--vttf-violet`), fonts (`--vttf-font-display`, `--vttf-font-body`, `--vttf-font-mono`), radii (`--vttf-radius-sm`/`-md`/`-lg`/`-xl`).
 4. Drop the class on a sheet root and verify in your system.
 
-Do not touch component CSS. Re-theming via tokens is the whole point.
+Do not touch component CSS. A theme changes tokens, nothing else.

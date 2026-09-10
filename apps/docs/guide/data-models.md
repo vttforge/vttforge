@@ -27,7 +27,7 @@ export class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {
 type CharacterSystem = CharacterData['$inferData'];
 ```
 
-The schema is written once. There is no second type declaration to keep in
+You write the schema once. There is no second type declaration to keep in
 sync, and `this.level` inside `prepareDerivedData` is a `number` because the
 schema said so.
 
@@ -37,8 +37,7 @@ does not exist when your module is first evaluated.
 ### Declare your derived values
 
 `armorClass` is not in the schema, so it is not on the type. Declaring it is
-how you say "this exists after `prepareDerivedData` runs", and it reads as
-documentation of the derived surface rather than a workaround.
+how you say "this exists after `prepareDerivedData` runs".
 
 In JavaScript there is no `declare`, and a plain class field would emit and
 reset the property to `undefined` after every data preparation. Put derived
@@ -48,13 +47,13 @@ this for the ability modifiers.
 
 ## Say what you mean about null
 
-This is the part that surprises people, so it is worth being blunt about it.
+This part surprises people.
 
 **Every field class picks its own defaults, and they disagree.**
 
 | Field | With no options | Why |
 |---|---|---|
-| `NumberField` | `number \| null \| undefined` | optional and nullable out of the box |
+| `NumberField` | `number \| null \| undefined` | optional and nullable by default |
 | `StringField` | `string \| undefined` | optional |
 | `BooleanField` | `boolean` | required, starts at `false` |
 | `HTMLField` | `string` | required, blank-friendly |
@@ -68,7 +67,7 @@ So `new f.NumberField()` is not a `number`. Declare what you meant:
 new f.NumberField({ required: true, nullable: false, initial: 0 })
 ```
 
-The inference reads the **literal** types of what you pass. An options object
+The inference reads the literal types of what you pass. An options object
 held in a variable widens `nullable: false` to `boolean`, which says nothing,
 and the field's own default applies again. Pin it with `as const`, or build the
 field in a small factory so the literals stay inline.

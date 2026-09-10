@@ -11,7 +11,7 @@ place; nothing is copied onto the Actor. Delete the option. If any code
 iterated `actor.effects` expecting the copies, iterate
 `actor.allApplicableEffects()` instead.
 
-**`statusEffects` is added by id, on both `registerSystem` and
+**Add `statusEffects` by id, on both `registerSystem` and
 `registerModule`.** v14 keys `CONFIG.statusEffects` by id, and assigning a
 whole array empties the collection first, which throws away every condition
 another package added earlier in `init`. So the SDK never assigns. Every entry
@@ -79,7 +79,7 @@ goes away in v16. Declare types in `documentTypes` and register a
 `TypeDataModel` per type; the SDK's `registerSystem` already does the second
 half.
 
-**Application v1 sheets are on borrowed time.** `ActorSheet` and `ItemSheet`
+**Application v1 sheets are going away.** `ActorSheet` and `ItemSheet`
 still run on v14 and go away in v16. `vttforge migrate --sheets` writes the
 first draft of the move to `BaseActorSheet` / `BaseItemSheet` next to each
 class, with the `data-action` attributes its templates need; see the CLI
@@ -88,7 +88,7 @@ reference for what it decides and what it leaves as a `TODO`.
 **Header controls and context menus** use `label`, `visible` and `onClick` in
 place of `name`, `condition` and `callback`. The old keys warn until v16.
 
-**MeasuredTemplate is a Region.** Area effects are placed with
+**MeasuredTemplate is a Region.** Place area effects with
 `canvas.regions.placeRegion`; the template document and layer are shims until
 v16.
 

@@ -63,7 +63,7 @@ For sheet or runtime work you want a real Foundry v14 with the example system lo
 
 `Ctrl+C` stops the container. `docker compose -f docker-compose.dev.yml down -v` wipes worlds and settings.
 
-Foundry credentials are personal and licence-gated. They stay on your machine; never commit `.env`.
+Foundry credentials are personal and licence-gated. Never commit `.env`.
 
 ## The end-to-end suite
 
@@ -122,7 +122,7 @@ Do not open a public issue for a vulnerability. See [SECURITY.md](./SECURITY.md)
 
 ## Code of Conduct
 
-Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
+The [Code of Conduct](./CODE_OF_CONDUCT.md) governs participation.
 
 ## License
 

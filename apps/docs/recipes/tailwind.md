@@ -17,8 +17,8 @@ export default {
 };
 ```
 
-`@vttforge/styles` already ships a reset scoped to its own layer, so nothing
-is lost.
+`@vttforge/styles` already ships a reset scoped to its own layer, so you
+lose nothing.
 
 ## Scope the utilities
 
@@ -77,4 +77,4 @@ theme: {
 ```
 
 Now `my-bg-surface` follows the theme, and a custom theme built the way
-[the theme recipe](/recipes/custom-theme) describes restyles it for free.
+[the theme recipe](/recipes/custom-theme) describes restyles it too.

@@ -15,22 +15,23 @@ registerSystem({
 });
 ```
 
-Register only the ones you use. A callback you leave out stages no hook at all.
+Register only the ones you use. A callback you leave out registers no hook at
+all.
 
 ## What each stage is for
 
-**`init`** is where CONFIG gets written: data models, document classes, sheets,
+**`init`** is where you write CONFIG: data models, document classes, sheets,
 the initiative formula, settings. `registerSystem` does most of it for you from
-the options you pass. `onBeforeInit` runs first, before anything is touched, and
+the options you pass. `onBeforeInit` runs first, before anything changes, and
 is the usual home for `globalThis.<systemId>`. `onAfterInit` runs last, and is
-where settings get registered.
+where you register settings.
 
 There is no `game.user` yet, no `game.actors`, no canvas.
 
-**`i18nInit`** is the first moment `game.i18n` works. This matters more than it
-sounds. A label you localize during `init` comes back as the key you passed in,
-because the language files have not loaded, and that raw key is what players
-read on screen. So translate CONFIG labels here, once:
+**`i18nInit`** is the first moment `game.i18n` works. A label you localize
+during `init` comes back as the key you passed in, because the language files
+have not loaded, and that raw key is what players read on screen. So translate
+CONFIG labels here, once:
 
 ```ts
 onI18nInit: () => {
@@ -40,9 +41,8 @@ onI18nInit: () => {
 },
 ```
 
-Doing it once here beats calling `localize` on every render, and it is the
-difference between a config table that reads `MY.Abilities.str` and one that
-reads Strength.
+Doing it once here beats calling `localize` on every render, and it turns a
+config table that reads `MY.Abilities.str` into one that reads Strength.
 
 **`setup`** runs after every package has finished its own `init`. Two things
 become possible. A setting you registered during `init` can now be read. And a

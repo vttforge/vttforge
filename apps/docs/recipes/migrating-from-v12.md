@@ -1,8 +1,8 @@
 # Migrating from Foundry v12
 
 VTTForge targets v14+ and does not support v12. If you are porting a package
-across that line, this is what bites on the way to v13; then read
-[Migrating to v14](/recipes/migrating-to-v14) for the rest of the trip.
+across that line, this is what breaks on the way to v13. Read
+[Migrating to v14](/recipes/migrating-to-v14) for the rest.
 
 ## Removed, not deprecated
 
@@ -43,8 +43,8 @@ tries to open it. `BaseApplication` from `@vttforge/core` ships the second.
 
 The v12 pattern was to register a pattern, then separately bind click handlers
 every time a chat message rendered. v13's enricher config takes an `onRender`
-callback that fires when the enriched content enters the DOM, so the element
-and its behaviour are declared together and the jQuery pass disappears.
+callback that fires when the enriched content enters the DOM, so you declare
+the element and its behaviour together and the jQuery pass disappears.
 
 ```ts
 CONFIG.TextEditor.enrichers.push({
@@ -60,8 +60,8 @@ CONFIG.TextEditor.enrichers.push({
 ## jQuery is deprecated
 
 It still loads, but new code should use native DOM. One delegated listener on a
-container beats one per element. If the container is rebuilt on each
-render, per-element handlers leak the old ones.
+container beats one per element. If each render rebuilds the container,
+per-element handlers leak the old ones.
 
 ## Check your work
 
@@ -69,4 +69,4 @@ render, per-element handlers leak the old ones.
 vttforge audit
 ```
 
-Scans the manifest and source for the v14 footguns that fail quietly.
+Scans the manifest and source for the v14 mistakes that fail quietly.

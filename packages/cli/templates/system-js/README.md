@@ -30,7 +30,7 @@ Then create a world on **{{TITLE}}** and open a character.
 |---|---|
 | `system.json` | Manifest: types, `htmlFields`, hot-reload paths, migration flags |
 | `scripts/main.mjs` | One `registerSystem` call: models, sheets, initiative, settings, migrations |
-| `scripts/data/*.mjs` | Data models. The schema is a function handed to `BaseTypeDataModel`, which is what keeps the schema in one place |
+| `scripts/data/*.mjs` | Data models. The schema is a function handed to `BaseTypeDataModel`, which keeps the schema in one place |
 | `scripts/sheets/*.mjs` | Sheets on `BaseActorSheet` / `BaseItemSheet`: `static TABS`, `static DRAG_DROP`, `onDropItem` |
 | `scripts/migrations.mjs` | `createMigrationRunner`: versioned, idempotent, GM-gated |
 | `templates/` | Handlebars, using Foundry's own elements (`<prose-mirror>`, `data-action`) |
@@ -39,14 +39,14 @@ Then create a world on **{{TITLE}}** and open a character.
 
 ## Two things worth knowing before you edit
 
-**Sheets are registered by id, not by class name.** `registerSystem({ sheets })`
+**A sheet's key comes from its id, not its class name.** `registerSystem({ sheets })`
 pins each sheet under `{{ID}}.<id>`. Foundry saves that key on every actor
-whose owner picked the sheet, and derives it from the class name unless told
-otherwise, and a bundler renames classes between builds. Keep the ids; renaming one
-loses the sheet choice on every document already using it.
+whose owner picked the sheet. Without an explicit id it derives the key from
+the class name, and a bundler renames classes between builds. Keep the ids;
+renaming one loses the sheet choice on every document already using it.
 
-**Derived values live in the schema.** `mod` on each ability is computed in
-`prepareDerivedData`, but it is declared as a field. JavaScript has no
+**Derived values live in the schema.** `prepareDerivedData` computes `mod` on
+each ability, but the schema declares it as a field. JavaScript has no
 `declare`: a plain class field would emit and reset the property to
 `undefined` after every data preparation.
 

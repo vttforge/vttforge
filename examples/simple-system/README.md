@@ -1,8 +1,8 @@
 # @vttforge-examples/simple-system
 
-Reference Foundry v14 system built on `@vttforge/core` + `@vttforge/styles`. Doubles as the end-to-end smoke test for everything VTTForge v0.1 ships.
+Reference Foundry v14 system built on `@vttforge/core` + `@vttforge/styles`. It is also the end-to-end smoke test for everything VTTForge v0.1 ships.
 
-> **Status:** v0.1.0 — runs inside Foundry v14+ with a real character + gear sheet, declarative migrations, and the full `VTTF-NNNN` error catalogue. This is where you'd hook up against `docker-compose.dev.yml` at the repo root.
+> **Status:** v0.1.0. Runs inside Foundry v14+ with a real character and gear sheet, declarative migrations, and the full `VTTF-NNNN` error catalogue. Hook it up against `docker-compose.dev.yml` at the repo root.
 
 ## What this exercises
 
@@ -15,7 +15,7 @@ Reference Foundry v14 system built on `@vttforge/core` + `@vttforge/styles`. Dou
 | `createMigrationRunner({ ..., compatibleVersion })` | `scripts/migrations.mjs` |
 | `VttfError.docsUrl` resolution (PR 8) | catch block in `scripts/main.mjs` |
 
-The Handlebars templates intentionally use canonical v14 idioms:
+The Handlebars templates stick to the standard v14 idioms:
 `<img data-edit="img">` for the portrait (DocumentSheetV2's built-in
 `editImage` action), `<prose-mirror>` for rich text, `data-action="…"`
 for click handlers, and `data-tab`/`data-group` for tab navigation.
@@ -23,7 +23,7 @@ for click handlers, and `data-tab`/`data-group` for tab navigation.
 ## Run inside Foundry
 
 The monorepo ships a `docker-compose.dev.yml` that mounts the built `dist/`
-of this directory read-only into a `felddy/foundryvtt:13` container. From
+of this directory read-only into a `felddy/foundryvtt:14` container. From
 the repo root:
 
 ```bash
@@ -33,13 +33,13 @@ pnpm -F @vttforge-examples/simple-system build        # bundles into examples/si
 docker compose -f docker-compose.dev.yml up           # → http://localhost:30000
 ```
 
-Use `pnpm -F @vttforge-examples/simple-system dev` to rebuild on every source
+`pnpm -F @vttforge-examples/simple-system dev` rebuilds on every source
 change (a Foundry refresh picks up the new bundle).
 
 Open <http://localhost:30000>, create a world using the **VTTForge Example
-System**, then make a Character actor. The sheet should render with the
-abilities tab active, drop-targeting any gear item from the sidebar (other
-item types get rejected via `ui.notifications.warn`).
+System**, then make a Character actor. The sheet renders with the abilities
+tab active and takes a drop of any gear item from the sidebar. It turns down
+other item types with `ui.notifications.warn`.
 
 For the full contributor workflow see [`CONTRIBUTING.md`](../../CONTRIBUTING.md)
 at the repo root.

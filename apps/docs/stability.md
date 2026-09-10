@@ -7,7 +7,7 @@ What you can build on, and what may move.
 ## Before 1.0
 
 Every package is below `1.0.0`. Under semver that means a **minor may break
-you**, and in this project it regularly does, because the API is still meeting
+you**. In this project it regularly does, because the API is still meeting
 real systems and modules for the first time.
 
 Pin exactly, or accept that `pnpm update` can require code changes:
@@ -17,7 +17,7 @@ Pin exactly, or accept that `pnpm update` can require code changes:
 ```
 
 A caret on a `0.x` version pins the minor (`^0.8.0` means `>=0.8.0 <0.9.0`),
-so it is narrower than people expect. That is a feature here.
+so it is narrower than people expect. Here that narrowness helps.
 
 ## After 1.0
 
@@ -52,7 +52,7 @@ is a promise; "deprecated, and here is why nothing replaces it" is honest.
 
 ## What is in the public surface
 
-Every export was checked for **reachability**: can you arrive at it by using
+The check on every export is **reachability**: can you arrive at it by using
 the documented API, or only by importing it by name?
 
 A type reached through a signature is part of the contract even if you never
@@ -68,12 +68,12 @@ above.
 | `@vttforge/types` | 4 | 4 | 0 |
 | `@vttforge/cli` | 60 | 27 | 33 |
 
-`core`, `testing`, `vite-plugin` and `types` are clean: nothing is exported
+`core`, `testing`, `vite-plugin` and `types` are clean: they export nothing
 that the documented API does not already lead you to.
 
-`@vttforge/cli` is not, and the reason is that its product is a binary. Its
-index grew to re-export the pieces the commands are built from. Those are
-tagged in place, and your editor shows the tag:
+`@vttforge/cli` is not. Its product is a binary, and its index grew to
+re-export the pieces the commands are built from. Each of those carries a tag
+in place, and your editor shows it:
 
 - **Supported**: `runInit`, and the audit surface (`runAudit`,
   `runManifestRules`, `runSourceRules`, `formatReport`, and the `RuleFn` /
@@ -96,7 +96,7 @@ supported export.
 Only the packages that run in Node declare an engine floor. `@vttforge/core`,
 `@vttforge/styles`, `@vttforge/types` and `@vttforge/dev-module` run in the
 browser inside Foundry and never touch Node, so they declare none. Requiring a
-Node version to install a browser package only blocks people for no reason.
+Node version to install a browser package blocks people for nothing.
 
 | Package | Node |
 |---|---|
@@ -114,8 +114,8 @@ carrying both.
 
 ## How this is checked
 
-What every change passes before it ships, and what the SDK does and does not
-do on your machine, is on the [transparency page](/transparency).
+The [transparency page](/transparency) lists what every change passes before
+it ships, and what the SDK does and does not do on your machine.
 
 ## Peer dependencies
 

@@ -34,7 +34,7 @@ Settings.homebrew; // game.settings.get('my-system', 'homebrew')
 Settings.homebrew = true; // game.settings.set('my-system', 'homebrew', true)
 ```
 
-## The timing is the whole point
+## Timing
 
 `CONFIG` may only be touched inside the `init` hook. But a class is defined
 the moment its module is imported, long before `init` fires. The obvious
@@ -43,7 +43,7 @@ and silently does nothing in Foundry.
 
 These subscribe a listener when the class is defined and do the assignment
 when `init` fires. `Hooks` exists as soon as Foundry's scripts load, so
-subscribing at definition time is safe; the write waits for its moment.
+subscribing at definition time is safe; the write happens later.
 
 ## `@DocumentSheet` needs an `id`
 
@@ -76,6 +76,6 @@ kind. Oxc, which Vite 8 uses, does not lower them yet, and a bundle that still
 contains a raw `@` fails to load in every browser with no error at build time.
 
 `@vttforge/vite-plugin` adds Babel's decorator plugin ahead of Oxc for you,
-filtered to files that contain an `@`, so a project that never uses a decorator
-pays nothing. If you build with something other than the plugin, add
+filtered to files that contain an `@`, so files without decorators skip Babel.
+If you build with something other than the plugin, add
 `@babel/plugin-proposal-decorators` with `version: "2023-11"` yourself.

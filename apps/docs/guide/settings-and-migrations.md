@@ -76,8 +76,8 @@ version advances only past migrations that finished. A throw in the middle
 leaves the world at the last good version, and the next load retries from
 there.
 
-Write each migration so it can run twice. The `typeof legacy !== 'string'` check above is what makes that one
-safe.
+Write each migration so it can run twice. The `typeof legacy !== 'string'`
+check above makes that one safe.
 
 ### The manifest flags
 

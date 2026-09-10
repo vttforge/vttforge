@@ -24,7 +24,7 @@ or `yarn`.
 | `module-ts` / `module-js` | A `note` Item sub-type on `registerModule`, its sheet, an `@Note[id]` enricher, a setting, a public API |
 
 The TypeScript templates typecheck against the published `@vttforge/core`
-out of the box.
+with nothing to configure.
 
 ## `vttforge dev`
 
@@ -60,9 +60,9 @@ Biome over the project, then `vttforge audit`. Biome ships as a dependency
 of the CLI, so a scaffolded project lints and formats without installing or
 configuring anything: the templates' `lint` and `format` scripts call this.
 
-The config Biome runs with is `lint/vttforge-biome.json` in the CLI
-package (the recommended rules, the house formatting, and the Foundry
-globals such as `game`, `canvas`, `CONFIG`, `Hooks` declared). A
+Biome runs with `lint/vttforge-biome.json` from the CLI package: the
+recommended rules, the house formatting, and the Foundry globals
+(`game`, `canvas`, `CONFIG`, `Hooks`) declared. A
 `biome.json` or `biome.jsonc` at the project root replaces it outright, so a
 project that wants to change a rule copies the shipped file to `biome.json`
 and edits it.
@@ -78,7 +78,7 @@ vttforge audit [dir] [--json] [--strict]
 ```
 
 Checks the manifest and the source against the v14 breakages that fail
-quietly: nothing in the console, a feature that just does not work, or a
+quietly: nothing in the console, a feature that does not work, or a
 deprecation warning that turns into a removal two versions from now.
 
 | Code | Severity | What it catches |
@@ -90,7 +90,7 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-005` | MEDIUM | A `TypeDataModel` without `prepareBaseData`; Active Effects apply between it and `prepareDerivedData` |
 | `VTTF-AUDIT-006` | LOW | An `_addDataFieldMigrations` override; the signature is not what it looks like |
 | `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field, in a data model or in `template.json`; the token bar degrades with no error |
-| `VTTF-AUDIT-008` | HIGH | A sheet template that opens its own `<form>` when the sheet base already is one; the fields belong to the inner form and every edit is dropped on close |
+| `VTTF-AUDIT-008` | HIGH | A sheet template that opens its own `<form>` when the sheet base already is one; the fields belong to the inner form, so closing the sheet drops every edit |
 | `VTTF-AUDIT-009` | MEDIUM | A subtype declared in `documentTypes` with no `TYPES` label; Foundry prints the raw key as the type's name |
 | `VTTF-AUDIT-010` | HIGH | A `template.json` listing a type whose `documentTypes` entry declares `htmlFields`, `filePathFields` or `gmOnlyFields`; Foundry replaces the entry and drops them |
 | `VTTF-AUDIT-011` | HIGH | A bare `mergeObject`, `getProperty`, `deepClone` and friends, `Math.clamped`, or `game.template`; v14 removed the shims, so the call throws the first time it runs |
@@ -125,9 +125,9 @@ vttforge migrate [dir] [--write] [--json]
 ```
 
 Rewrites a v13 project for v14. Without `--write` it only reports what it
-would change, one line per edit, so a rewrite that landed inside a string or a
-comment is seen before it is written. Run it, read the report, run it again
-with `--write`, then run `vttforge audit`.
+would change, one line per edit, so you catch a rewrite that landed in a
+string or a comment before it reaches the file. Run it, read the report, run
+it again with `--write`, then run `vttforge audit`.
 
 | Rewrite | Before | After |
 |---|---|---|
@@ -151,11 +151,11 @@ was read), the parameter list of a renamed `callback` (`onClick` receives
 and its replacement hands an element, not a jQuery object), a root-level
 `changes` array on an effect (now `system.changes`), a `compatibility.maximum`
 below 14, and the flat `gridDistance` / `gridUnits` keys. Minified bundles
-(`*.min.js`) are vendored libraries and are skipped, by the audit too.
+(`*.min.js`) are vendored libraries; migrate skips them, and so does the audit.
 
-The rewrites are text-based, like the audit rules they mirror. Comments are
-left alone. A match inside a string literal is rewritten too; the preview is
-where that is caught.
+The rewrites are text-based, like the audit rules they mirror. They leave
+comments alone. They rewrite a match inside a string literal too, which is
+what the preview catches.
 
 ### `--data-models`
 
@@ -180,7 +180,7 @@ define.
 needs nothing installed; `--style sdk` writes them on `BaseTypeDataModel`
 from `@vttforge/core`, which types `this` inside `prepareDerivedData`. The
 report ends with the `documentTypes` block to paste into the manifest and
-the registration to add at `init`. An existing file is never overwritten.
+the registration to add at `init`. It never overwrites an existing file.
 Delete `template.json` once every type has a model: while it exists, Foundry
 resets each listed type's `documentTypes` entry on every start.
 
@@ -194,11 +194,11 @@ Application v1 classes still run on v14 and are removed in v16. `--sheets`
 writes, next to each such class, a file with the same name and `.v2` before
 the extension: an `ActorSheet` / `ItemSheet` lands on `BaseActorSheet` /
 `BaseItemSheet` from `@vttforge/core`; a `FormApplication` / `Application`
-lands on `HandlebarsApplicationMixin(ApplicationV2)` with no SDK import. The
-original is not touched; the report says where to point `registerSheet`, or
+lands on `HandlebarsApplicationMixin(ApplicationV2)` with no SDK import. It
+leaves the original alone; the report says where to point `registerSheet`, or
 whatever constructs the app, once you have read the result.
 
-What is carried over mechanically: `defaultOptions` (classes, size,
+What it carries over mechanically: `defaultOptions` (classes, size,
 `resizable`, `submitOnChange`) as `DEFAULT_OPTIONS`; `tabs` as `TABS` with
 the ids read from the template; `dragDrop` as `DRAG_DROP`; `template` as
 `PARTS`; `getData` as `_prepareContext` with `actor`/`item`, `system` and
@@ -224,7 +224,7 @@ and `closeOnSubmit` move into `DEFAULT_OPTIONS` (`tag: 'form'`, `window`,
 `formHandler(event, form, formData)` with `data` read from
 `formData.object`.
 
-What is left as a `// TODO(migrate)` line, and listed in the report with its
+What it leaves as a `// TODO(migrate)` line, and lists in the report with its
 line number: a `new Dialog` whose options are not a plain literal or that
 has no `buttons`, a second `tabs` entry (only the first nav is wired), a
 `_onDropItem` on an item sheet (the base never calls it there), a
@@ -241,7 +241,7 @@ a real v1 system the hand edits were the per-type template choice, the root
 `<form>` in each sheet template, and one `setPosition` override; everything
 else ran as generated.
 
-The templates the class names get `data-action="<name>"` on the elements
+Each template the class names gets `data-action="<name>"` on the elements
 that matched each selector, `data-action="vttforgeTab"` and `data-group` on
-the tab links, and `data-group` on the panes. A root `<form>` is reported and
-left in place: the old class still renders that template.
+the tab links, and `data-group` on the panes. It reports a root `<form>` and
+leaves it in place: the old class still renders that template.

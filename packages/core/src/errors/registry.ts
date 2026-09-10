@@ -26,49 +26,49 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     code: 'VTTF-0001',
     name: 'SystemAlreadyRegistered',
     summary:
-      'registerSystem() was called more than once for the same system id. This is almost always a hot-reload artefact or a duplicate import.',
+      'registerSystem() ran more than once for the same system id. Almost always a hot reload or a duplicate import.',
   }),
   'VTTF-0002': Object.freeze({
     code: 'VTTF-0002',
     name: 'MissingFoundryGlobals',
     summary:
-      'VTTForge code ran in an environment without Foundry globals (game, Hooks, CONFIG). Initialise inside the Foundry runtime, not in a Node test without mocks.',
+      'VTTForge code ran without Foundry globals (game, Hooks, CONFIG). Start it inside the Foundry runtime, not in a Node test without mocks.',
   }),
   'VTTF-0003': Object.freeze({
     code: 'VTTF-0003',
     name: 'UnknownSetting',
     summary:
-      'SystemConfig.get() / set() was called with a key that was never passed to SystemConfig.register(). Register the setting in your init hook before reading it.',
+      'SystemConfig.get() / set() received a key that never reached SystemConfig.register(). Register the setting in your init hook before reading it.',
   }),
   'VTTF-0004': Object.freeze({
     code: 'VTTF-0004',
     name: 'MigrationFailed',
     summary:
-      'A migration function passed to createMigrationRunner() threw. The original error is available on .cause. The schemaVersion setting is not advanced past the failed migration so retrying on the next world load picks up where the failure left off.',
+      'A migration function passed to createMigrationRunner() threw. The original error sits on .cause. The schemaVersion setting does not advance past the failed migration, so the next world load retries from there.',
   }),
   'VTTF-0005': Object.freeze({
     code: 'VTTF-0005',
     name: 'WorldTooOldForMigration',
     summary:
-      'createMigrationRunner() was called on a world whose stored schemaVersion is older than the configured compatibleVersion floor. Upgrade the world to a supported intermediate version before continuing. Running migrations across the gap would corrupt data.',
+      'createMigrationRunner() ran on a world whose stored schemaVersion is older than the compatibleVersion floor. Upgrade the world to a supported intermediate version first. Running migrations across the gap would corrupt data.',
   }),
   'VTTF-0006': Object.freeze({
     code: 'VTTF-0006',
     name: 'InvalidSheetId',
     summary:
-      'A sheet was registered with an id that is empty, contains a dot, or repeats another sheet in the same package. The id becomes half of the key Foundry persists on every document using the sheet, so it must be a single unambiguous segment.',
+      'A sheet id is empty, contains a dot, or repeats another sheet in the same package. The id becomes half of the key Foundry saves on every document that uses the sheet, so it must be one clear segment.',
   }),
   'VTTF-0007': Object.freeze({
     code: 'VTTF-0007',
     name: 'InvalidEnricher',
     summary:
-      'A text enricher was registered with an id that is empty, contains a dot, or repeats another enricher in the same package, or with a pattern missing the g flag. Foundry looks enrichers up by id and takes the first match, and matches with matchAll, which throws on a non-global regex.',
+      'A text enricher id is empty, contains a dot, or repeats another enricher in the same package, or its pattern is missing the g flag. Foundry looks enrichers up by id and takes the first match, and it matches with matchAll, which throws on a non-global regex.',
   }),
   'VTTF-0008': Object.freeze({
     code: 'VTTF-0008',
     name: 'InvalidStatusEffect',
     summary:
-      'A status effect was passed to registerSystem() or registerModule() without a string id. Foundry v14 keys CONFIG.statusEffects by id, so an entry without one has nowhere to go. Give every condition an id; a module prefixes it with its own id.',
+      'A status effect reached registerSystem() or registerModule() without a string id. Foundry v14 keys CONFIG.statusEffects by id, so it cannot file an entry that lacks one. Give every condition an id; a module prefixes it with its own id.',
   }),
 });
 

@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        This is for maintainers who want their project moved to Foundry v14 on the SDK, or want help doing it. The work lands as a pull request on your repository; nothing is published on your behalf. Read the [migration recipe](https://vttforge.dev/recipes/migrating-to-v14) first if you want to see what the move looks like.
+        This is for maintainers who want their project moved to Foundry v14 on the SDK, or want help doing it. The work lands as a pull request on your repository; nothing is published on your behalf. Read the [migration recipe](https://vttforge.dev/recipes/migrating-to-v14) first to see what the move looks like.
 
   - type: input
     id: repo

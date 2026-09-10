@@ -17,7 +17,7 @@ foundry.restore();
 ```
 
 `withMockFoundry` installs `foundry`, `game`, `CONFIG`, `Hooks`, `ui` and
-`CONST`, and hands back a handle that **records** what your code registered:
+`CONST`, and hands back a handle that records what your code registered:
 hooks, settings, notifications, sheets, enrichers. You assert on what happened,
 not merely on what did not throw.
 
@@ -68,7 +68,7 @@ actor.system.hp; // { value: 4, max: 10 }
 actor.updates;   // every delta, in order
 ```
 
-Updates **merge**, and dotted paths expand, both because that is what Foundry
+Updates merge, and dotted paths expand, both because that is what Foundry
 does. A mock that replaces instead of merging lets a test pass while the real
 thing drops every sibling key.
 
@@ -101,9 +101,9 @@ with two clients, documents round-tripping through the database. Those need
 the real thing.
 
 Reaching for a mock past that line produces tests that pass and tell you
-nothing. Several bugs in this SDK were found only by opening a real Foundry: a
-sheet registered but unreachable, a class extending the wrong base, an
-annotation layer whose CSS class name did not match what the library styles.
+nothing. Only a real Foundry found several bugs in this SDK: a sheet
+registered but unreachable, a class extending the wrong base, an annotation
+layer whose CSS class name did not match what the library styles.
 
 That is also why there is no helper that mounts a sheet against a mock actor
 and hands back its HTML, and there will not be one. Rendering a sheet is the
