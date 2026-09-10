@@ -103,7 +103,7 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-018` | LOW | A class extending an Application v1 base (`Application`, `FormApplication`, `Dialog`, `ActorSheet`, `ItemSheet`); removed in v16 |
 | `VTTF-AUDIT-019` | MEDIUM | A bare v13 global alias (`renderTemplate`, `ActorSheet`, `Actors`, `TextEditor`, `ChatLog`, ...); it warns on v14 and throws on v15, and the namespaced path is the same object |
 | `VTTF-AUDIT-020` | HIGH | A release workflow that zips the checkout of a project that builds to `dist/`, or builds and then zips the source tree; the published package has no entry file and no world starts on it |
-| `VTTF-AUDIT-021` | HIGH | A template that calls `{{#select}}` or `{{colorPicker}}`; v14 removed both, so the template throws "Missing helper" and whatever renders it never opens |
+| `VTTF-AUDIT-021` | HIGH | A template that calls <code v-pre>{{#select}}</code> or <code v-pre>{{colorPicker}}</code>; v14 removed both, so the template throws "Missing helper" and whatever renders it never opens |
 
 Rule 020 only fires for a project on the vite plugin (or a `build` script that
 runs vite), and only for a workflow that publishes a zip or a manifest. Rules
