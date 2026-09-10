@@ -29,11 +29,11 @@ Labels, descriptions and categories may be localization keys or plain text. They
 
 `@Keyword[reach]{long reach}` shows the text in braces instead of the label. `@vttforge/styles` underlines the span; the tooltip is Foundry's own.
 
-An id the package does not know is left as written. Two packages can each register keywords, and `@Keyword[...]` resolves against whichever one knows the id. The enricher is registered as `<package id>.keyword`, next to your own `enrichers`.
+An id the package does not know is left as written. Two packages can each register keywords, and `@Keyword[...]` resolves against whichever one knows the id. The enricher is registered under your package id as `keyword`, next to your own `enrichers`.
 
 ## The journal
 
-On `ready`, the GM's client creates a journal entry named "<package title> keywords" with one page: a list per category, uncategorised terms first, each list sorted by label. On the next `ready` the page is rewritten only when the list changed. Players' clients do nothing.
+On `ready`, the GM's client creates a journal entry named after the package title followed by "keywords", with one page: a list per category, uncategorised terms first, each list sorted by label. On the next `ready` the page is rewritten only when the list changed. Players' clients do nothing.
 
 The journal is found by a flag under your package's scope, not by name, so the GM can rename or move it. Deleting it brings it back on the next `ready`.
 
