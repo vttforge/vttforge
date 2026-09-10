@@ -61,6 +61,20 @@
   },
   "overrides": [
     {
+      "includes": ["**/__tests__/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noTemplateCurlyInString": "off"
+          },
+          "complexity": {
+            "noStaticOnlyClass": "off",
+            "noThisInStatic": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["scripts/**", "apps/*/scripts/**"],
       "linter": {
         "rules": {

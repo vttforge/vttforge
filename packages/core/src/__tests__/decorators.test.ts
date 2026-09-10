@@ -124,7 +124,7 @@ describe('@OnHook', () => {
     mock = withMockFoundry();
     const seen: unknown[] = [];
 
-    // biome-ignore lint/complexity/noStaticOnlyClass: @OnHook only accepts static methods, and that is what this case exercises
+    // @OnHook only accepts static methods, and that is what this case exercises.
     class MyModule {
       @OnHook('renderChatMessageHTML')
       static onRender(message: unknown) {

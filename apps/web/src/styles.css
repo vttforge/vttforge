@@ -575,6 +575,11 @@
     color: var(--vttf-text-muted);
     font-size: 14px;
   }
+  /* Lets the block shrink inside a grid item; the scroll then happens inside it. */
+  .vttf-codeblock {
+    min-width: 0;
+    max-width: 100%;
+  }
   .try-card .vttf-codeblock {
     margin-top: auto;
   }
@@ -770,11 +775,6 @@
   .feat-grid > *,
   .hero-meta > * {
     min-width: 0;
-  }
-
-  .vttf-codeblock {
-    min-width: 0;
-    max-width: 100%;
   }
 
   /* The packages table has more columns than a phone has room for. */
