@@ -59,6 +59,29 @@ try {
       },
     ],
 
+    // Rules terms. `@Keyword[stowed]` in any rich text shows the label with
+    // the description as tooltip, and the GM's client writes all of them to a
+    // journal entry on ready.
+    keywords: [
+      {
+        id: 'stowed',
+        label: 'VTTFORGE_EXAMPLE.Keyword.stowed.label',
+        description: 'VTTFORGE_EXAMPLE.Keyword.stowed.description',
+        category: 'VTTFORGE_EXAMPLE.Keyword.category.gear',
+      },
+      {
+        id: 'equipped',
+        label: 'VTTFORGE_EXAMPLE.Keyword.equipped.label',
+        description: 'VTTFORGE_EXAMPLE.Keyword.equipped.description',
+        category: 'VTTFORGE_EXAMPLE.Keyword.category.gear',
+      },
+      {
+        id: 'initiative',
+        label: 'VTTFORGE_EXAMPLE.Keyword.initiative.label',
+        description: 'VTTFORGE_EXAMPLE.Keyword.initiative.description',
+      },
+    ],
+
     onAfterInit: () => {
       // Surface a single user-facing setting so the SystemConfig wrapper is
       // exercised end-to-end alongside the migration setting.

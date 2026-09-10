@@ -787,3 +787,20 @@
   color: var(--vttf-roll-accent);
   border-color: color-mix(in oklch, var(--vttf-roll-accent) 50%, transparent);
 }
+
+/* ════════ KEYWORD ════════ */
+
+/*
+ * The span the keyword enricher from @vttforge/core produces for
+ * `@Keyword[id]`. The description sits in `data-tooltip`; the underline says
+ * there is one.
+ */
+
+.vttf-keyword {
+  color: var(--vttf-ember);
+  font-weight: var(--vttf-text-weight-semibold);
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: help;
+}

@@ -148,6 +148,15 @@ export type {
   SettingScope,
   StatusEffectConfig,
 } from './foundry-globals.js';
+export {
+  KEYWORD_ATTRIBUTE,
+  KEYWORD_CLASS,
+  KEYWORD_ENRICHER_ID,
+  type Keyword,
+  keywordEnricher,
+  keywordJournalContent,
+  syncKeywordJournal,
+} from './keywords.js';
 export { createMigrationRunner } from './migrations/runner.js';
 export type {
   Migration,

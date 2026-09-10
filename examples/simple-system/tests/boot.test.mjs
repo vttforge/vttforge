@@ -42,6 +42,7 @@ function installFoundryGlobals() {
     Item: { dataModels: {}, documentClass: class {} },
     Combat: { initiative: undefined },
     statusEffects: {},
+    TextEditor: { enrichers: [] },
   };
 
   globalThis.game = {
@@ -196,6 +197,14 @@ describe('vttforge-example — boot', () => {
     env.hooks.get('init')();
     await env.hooks.get('ready')();
     expect(env.settings.get('vttforge-example.schemaVersion')?.value).toBe('0.1.0');
+  });
+
+  it('registers the keyword enricher under the system id', async () => {
+    await import('../scripts/main.mjs?bootKeywords');
+    env.hooks.get('init')();
+    expect(CONFIG.TextEditor.enrichers.map((entry) => entry.id)).toEqual([
+      'vttforge-example.keyword',
+    ]);
   });
 
   it('sets the initiative formula', async () => {

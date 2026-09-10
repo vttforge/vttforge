@@ -129,6 +129,7 @@ export default defineConfig({
             { text: 'Rolls', link: '/guide/rolls' },
             { text: 'Modules', link: '/guide/modules' },
             { text: 'Settings and migrations', link: '/guide/settings-and-migrations' },
+            { text: 'Keywords', link: '/guide/keywords' },
             { text: 'Decorators', link: '/guide/decorators' },
             { text: 'The dev loop', link: '/guide/dev-loop' },
             { text: 'Testing', link: '/guide/testing' },
