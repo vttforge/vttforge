@@ -1,0 +1,73 @@
+name: Port request
+description: You maintain a system or module that is not on v14 yet, and want it on the SDK
+title: "[port] "
+labels: ["port", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is for maintainers who want their project moved to Foundry v14 on the SDK, or want help doing it. The work lands as a pull request on your repository; nothing is published on your behalf. Read the [migration recipe](https://vttforge.dev/recipes/migrating-to-v14) first if you want to see what the move looks like.
+
+  - type: input
+    id: repo
+    attributes:
+      label: Repository
+      description: The public repository of the system or module.
+      placeholder: "https://github.com/you/your-system"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is it?
+      options:
+        - System
+        - Module
+    validations:
+      required: true
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: Your relation to the project
+      description: A port needs someone who can merge and release. If that is not you, name who is.
+      options:
+        - I maintain it and can merge and release
+        - I contribute, the maintainer is on board
+        - I use it and would like it ported (the maintainer is not involved yet)
+    validations:
+      required: true
+
+  - type: input
+    id: foundry-version
+    attributes:
+      label: Last Foundry version it runs on
+      placeholder: "v13, v12, ..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: How far do you want to go?
+      description: The minimal fix keeps your code as it is and makes it load on v14. The port moves the sheets and data models onto the SDK, which is what makes the next core version cheap.
+      options:
+        - Minimal v14 fix only
+        - Full port onto the SDK
+        - Not sure, tell me what each one costs for this project
+    validations:
+      required: true
+
+  - type: textarea
+    id: audit
+    attributes:
+      label: Output of `npx @vttforge/cli audit`
+      description: Run it at the project root and paste the report. It runs without installing anything and tells us where the v14 breakages are.
+      render: text
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Parts you know are fragile, a release process to respect, data that must survive, worlds you can test on.
