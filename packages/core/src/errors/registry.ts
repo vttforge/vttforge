@@ -88,6 +88,42 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'stepDie() was given a die that is not on the ladder or a fractional number of steps, or dicePool() was given a count, faces, keep or drop that is not a whole number in range (keep and drop go up to the number of dice), or both keep and drop.',
   }),
+  'VTTF-0012': Object.freeze({
+    code: 'VTTF-0012',
+    name: 'InvalidSocket',
+    summary:
+      'registerSocket() was called without a package id or kind, with no messages and no requests, with a name that cannot be used, twice for the same channel, or for a package whose manifest does not set "socket": true. Foundry accepts an emit on an undeclared channel and delivers it to nobody.',
+  }),
+  'VTTF-0013': Object.freeze({
+    code: 'VTTF-0013',
+    name: 'NoGamemaster',
+    summary:
+      'askGm() was called for a request that was never registered, or while no Gamemaster was connected. A player cannot write to world documents, so the work has nowhere to run.',
+  }),
+  'VTTF-0014': Object.freeze({
+    code: 'VTTF-0014',
+    name: 'MissingModuleApi',
+    summary:
+      'requireModuleApi() asked for the api of a module that is not installed, is installed but switched off, or is on and publishes nothing. Also thrown when registerModule() is given an api but Foundry has no module under that id, which means the id does not match module.json.',
+  }),
+  'VTTF-0015': Object.freeze({
+    code: 'VTTF-0015',
+    name: 'InvalidSubTypeConversion',
+    summary:
+      'subTypeDocuments() or convertSubTypes() was called without a module id or a bare type key, asked to convert a type into itself, or run where foundry.data.operators.ForcedReplacement does not exist. Foundry refuses a document type change without that operator, and drops the rest of the update with it.',
+  }),
+  'VTTF-0016': Object.freeze({
+    code: 'VTTF-0016',
+    name: 'InvalidInjection',
+    summary:
+      'inject() was called without a package id, without a render hook to bind, without a render function, with a name that cannot be used, or with a position that would put the node outside the application element. The name is half the marker that lets a re-render replace the previous injection instead of adding a second one beside it.',
+  }),
+  'VTTF-0017': Object.freeze({
+    code: 'VTTF-0017',
+    name: 'InvalidMigrationRunner',
+    summary:
+      'createMigrationRunner() was called with neither packageId nor systemId. The id is the game.settings namespace the world stores its schemaVersion under, so without it every world would keep its version under the string "undefined". This is a mistake in the call, not a migration that failed.',
+  }),
 });
 
 /**

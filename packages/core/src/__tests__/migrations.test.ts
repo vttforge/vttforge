@@ -434,9 +434,23 @@ describe('createMigrationRunner — the package id', () => {
     );
   });
 
-  it('refuses when neither is given', () => {
+  it('refuses when neither is given, under its own code', () => {
+    // The compiler refuses this call: the options type is a union and a call
+    // with no id matches no branch. The runtime check is for JavaScript
+    // callers, who get no such warning.
+    // @ts-expect-error the id is required, under one name or the other
+    const build = () => createMigrationRunner({ migrations: [] });
+
     // The id is the settings namespace. Without it the runner would write the
     // world's schemaVersion under "undefined" and read it back forever.
-    expect(() => createMigrationRunner({ migrations: [] })).toThrow(/VTTF-0004[\s\S]*packageId/);
+    expect(build).toThrow(/VTTF-0017[\s\S]*packageId/);
+    // A mistake in the call, not a migration that failed. A catch that reads
+    // the code has to be able to tell the two apart.
+    try {
+      build();
+    } catch (err) {
+      expect((err as VttfError).code).toBe('VTTF-0017');
+      expect((err as VttfError).code).not.toBe('VTTF-0004');
+    }
   });
 });

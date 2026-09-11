@@ -48,8 +48,9 @@ The whole guide is at **[vttforge.dev/docs](https://vttforge.dev/docs/)**.
 - [Sheets](https://vttforge.dev/docs/guide/sheets). The bases, the drop hooks, and why every sheet needs an id.
 - [Rolls](https://vttforge.dev/docs/guide/rolls). `postRoll`, and how a card gets tagged as a critical or a fumble.
 - [Dialogs](https://vttforge.dev/docs/guide/dialogs). `promptFields`: a dialog from a list of fields, typed answers back.
-- [Modules](https://vttforge.dev/docs/guide/modules). Namespaced sub-types, enrichers, and what a module may not touch.
+- [Modules](https://vttforge.dev/docs/guide/modules). Namespaced sub-types, the module api, a way out before the module is removed.
 - [Settings and migrations](https://vttforge.dev/docs/guide/settings-and-migrations). `PackageConfig` and the migration runner.
+- [Sockets](https://vttforge.dev/docs/guide/sockets). `registerSocket`: one-way messages, and questions only the Gamemaster's client can answer.
 - [Keywords](https://vttforge.dev/docs/guide/keywords). Rules terms defined once: `@Keyword[id]` in any text, and a journal the GM's client keeps current.
 - [The dev loop](https://vttforge.dev/docs/guide/dev-loop). What reloads in place and what does not.
 - [Testing](https://vttforge.dev/docs/guide/testing). `withMockFoundry` in Vitest, Quench for what a mock cannot answer.

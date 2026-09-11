@@ -164,7 +164,7 @@ export function createMigrationRunner(options: MigrationRunnerOptions): Migratio
   const packageId = options.packageId ?? options.systemId;
   if (typeof packageId !== 'string' || packageId === '') {
     throw new VttfError(
-      'VTTF-0004',
+      'VTTF-0017',
       'createMigrationRunner() needs a packageId. It is the game.settings namespace the schemaVersion is stored under.',
     );
   }

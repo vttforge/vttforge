@@ -25,20 +25,30 @@ export interface MigrationLogger {
   error(message: string): void;
 }
 
-export interface MigrationRunnerOptions {
-  /**
-   * Package id, used as the `game.settings` namespace. Required. It is
-   * optional in the type only because `systemId` is still accepted in its
-   * place; pass one of the two, and `createMigrationRunner` throws
-   * VTTF-0004 when neither arrives.
-   */
-  readonly packageId?: string;
-  /**
-   * @deprecated Pass `packageId`. Modules run migrations too, and the old
-   * name says otherwise. Still read when `packageId` is absent, for the rest
-   * of the 0.x line.
-   */
-  readonly systemId?: string;
+/**
+ * The package id, under either name. Both are here so the old one keeps
+ * working, and the union is what makes the compiler still demand one: a call
+ * carrying neither matches no branch and does not build.
+ */
+type MigrationRunnerId =
+  | {
+      /** Package id, used as the `game.settings` namespace. */
+      readonly packageId: string;
+      /** @deprecated Pass `packageId`. Ignored when `packageId` is present. */
+      readonly systemId?: string;
+    }
+  | {
+      readonly packageId?: undefined;
+      /**
+       * @deprecated Pass `packageId`. Modules run migrations too, and the old
+       * name says otherwise. Read for the rest of the 0.x line.
+       */
+      readonly systemId: string;
+    };
+
+export type MigrationRunnerOptions = MigrationRunnerId & MigrationRunnerSettings;
+
+interface MigrationRunnerSettings {
   /** Migrations in ascending version order. Empty array is allowed (`run()` is a no-op then). */
   readonly migrations: ReadonlyArray<Migration>;
   /** Settings key under the package id. Defaults to `'schemaVersion'`. */

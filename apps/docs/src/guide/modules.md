@@ -114,3 +114,179 @@ which rejects a non-global regex, and that throw is outside the handler Foundry
 wraps enrichers in. VTTForge checks the flag when you register.
 
 `registerSystem` takes the same option.
+
+## Talking to the other clients
+
+A module that shows the table something, or that lets a player change what
+only a Gamemaster may change, needs the socket. That is
+[its own page](./sockets), because the parts that go wrong there are not the
+parts the API docs describe.
+
+## The module api
+
+`game.modules.get(id).api` is where a module publishes what other modules and
+macros may call. Hand it to `registerModule` and it is written during `init`,
+before any CONFIG mutation:
+
+```js
+registerModule({
+  id: 'my-module',
+  api: {
+    createNote: (name) => Item.implementation.create({ name, type: NOTE_TYPE }),
+  },
+});
+```
+
+It is written at the top of `init`, before your own `onBeforeInit` and before
+any CONFIG mutation. The hook is the part people get wrong: publish it later
+and anything that looked during its own `init` found nothing, with no way to
+tell why.
+
+### Reading someone else's
+
+```js
+import { moduleApi, requireModuleApi, isModuleActive } from '@vttforge/core';
+
+const optional = moduleApi('other-module');       // undefined when unavailable
+const required = requireModuleApi('other-module'); // throws, and says which
+```
+
+`game.modules.get(id)?.api` collapses four situations into `undefined`: no
+such module, installed but switched off, on but publishing nothing, or on and
+publishing an older shape than you need. A module that guesses wrong tells its
+user to install something they already have. `requireModuleApi` throws
+[VTTF-0014](../errors/VTTF-0014) naming which of the three it was.
+
+Read from `onSetup` or later, never from `init`. Nothing orders one package's
+`init` against another's, so a read during `init` finds an api that is not
+published yet and cannot tell that apart from a module that publishes none.
+`onSetup` is the first point where every package has finished its `init`.
+
+The type argument is your claim about the shape. Nothing checks it: the other
+module's types are not yours to import. Write down what you use and treat the
+result the way you would any other value crossing a boundary.
+
+## Before the module goes away
+
+A module's sub-types travel with the module. Switch it off and every document
+using one is marked invalid: visible in the world, not editable, holding data
+nothing can read. Uninstall it and they are stranded for good.
+
+So ship a way out. Two calls:
+
+```js
+import { subTypeDocuments, convertSubTypes } from '@vttforge/core';
+
+// What a user would lose by removing this module.
+const count = subTypeDocuments({ id: 'my-module', document: 'Item', type: 'note' }).length;
+
+// Turn each one into a plain Item and lose nothing.
+const { converted, failed } = await convertSubTypes({
+  id: 'my-module',
+  document: 'Item',
+  type: 'note',
+});
+```
+
+Put it behind a settings button or a macro, and run it as a Gamemaster: these
+are world documents.
+
+`to` defaults to `base`, which every document class has and no package owns,
+so it survives anything else being uninstalled too. `system` decides what the
+converted document keeps, and defaults to what it already had. A core type
+stores that as a plain object, so the data is still there even where nothing
+reads it. `changes` sets anything else in the same update, such as a name.
+
+The conversion is one update per document, in place. The id survives, and so
+do the flags, the folder, the ownership and the embedded documents. Nothing is
+deleted and recreated.
+
+### Why not do it by hand
+
+`document.update({ type: 'base' })` is refused. Foundry answers that a type
+may only change when `system` is replaced with a `ForcedReplacement` operator,
+and it drops the whole update, so a call that also renamed the document loses
+the rename as well.
+
+Creating a replacement with `keepId` while the original is still there
+overwrites it. No error, no second document, and no way back if the new data
+was wrong.
+
+## Adding UI to someone else's application
+
+Most of what a module does is put something of its own inside an application
+it does not own. There is no API for that: you bind the render hook, find a
+node, and insert.
+
+```js
+import { inject } from '@vttforge/core';
+
+const off = inject({
+  id: 'my-module',
+  name: 'generator',
+  hook: 'renderActorDirectory',
+  into: '.directory-header',
+  position: 'after',
+  when: () => game.user.isGM,
+  render: () => {
+    const button = document.createElement('button');
+    button.textContent = 'Generate';
+    button.addEventListener('click', () => generate());
+    return button;
+  },
+});
+```
+
+Foundry re-renders an application whenever its document changes, so that code
+runs again and again. The insert repeats, and every module solves it by hand.
+`inject` marks what it inserted with `data-vttforge-injection="<id>.<name>"`
+and removes the previous one first, so ten renders leave one node. Two
+packages using the same `name` do not collide, because the marker carries the
+package id.
+
+`render` returning `null` inserts nothing and still clears what the last
+render left, which is how a feature turns itself off.
+
+`before`, `after` and `replace` need `into`. Without it the anchor is the
+application's own element, so the node would land outside the window, where
+the next render cannot find it again and inserts a second one. `replace` there
+would take the whole application away. VTTForge refuses the combination with
+VTTF-0016 rather than letting it run.
+
+The returned function unbinds the hook. Call it when the feature is switched
+off; leaving it bound means the injection comes back on the next render.
+
+| Option | What it does |
+| --- | --- |
+| `hook` | The render hook. Render hooks fire once per class in the chain, so a base class name catches every sheet and an exact class name catches one |
+| `into` | Selector for the node to insert around, searched inside the rendered element. Left out, the rendered element itself |
+| `position` | `append` (default), `prepend`, `before`, `after` or `replace`. The last three need `into` |
+| `when` | Skip the injection. The previous one is still cleared |
+
+Most render hooks hand over an `HTMLElement`. The deprecated
+`renderChatMessage` hands over jQuery, and `inject` takes the node out of
+either, so the same code works on both.
+
+### What this is not
+
+It does not patch anything. Adding to an application that offers no seam at
+all means wrapping a method somebody else wrote, which is a different problem
+with a different answer:
+
+```js
+// Requires libWrapper, declared under relationships.recommends.
+Hooks.once('setup', () => {
+  if (!game.modules.get('lib-wrapper')?.active) return;
+  libWrapper.register('my-module', 'ChatLog.prototype._getEntryContextOptions', function (wrapped, ...args) {
+    const options = wrapped(...args);
+    options.push({ name: 'MY_MODULE.copy', icon: '<i class="fa-solid fa-copy"></i>', callback: copy });
+    return options;
+  }, 'WRAPPER');
+});
+```
+
+Use `WRAPPER` and call `wrapped`, so other modules patching the same method
+still run. A wrapper that throws breaks the application for the whole world,
+not just your feature, so guard for the library being absent and keep the body
+short. VTTForge does not wrap this: a shim that hides whether libWrapper is
+installed would decide for you what happens when it is not.

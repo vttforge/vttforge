@@ -108,6 +108,43 @@ const GLOBALS = ['foundry', 'game', 'CONFIG', 'Hooks', 'ui', 'CONST'] as const;
  * Provided because SDK code calls them on the global, not because a test
  * needs them: leaving them out means every consumer stubs them again.
  */
+/** One module handle, as Foundry builds it from a manifest. */
+interface MockModuleHandle {
+  id: string;
+  active: boolean;
+  socket: boolean;
+  api?: unknown;
+}
+
+/**
+ * `game.modules`, made up as it is asked for.
+ *
+ * Foundry builds one handle per installed module. A unit test has no module
+ * list, so any id the code under test names is treated as installed and
+ * switched on. The handle is remembered, so writing an api on it and reading
+ * it back works the way it does in a world.
+ */
+function mockModules(): {
+  get(id: string): MockModuleHandle;
+  has(id: string): boolean;
+  readonly size: number;
+} {
+  const handles = new Map<string, MockModuleHandle>();
+  return {
+    get(id: string) {
+      const existing = handles.get(id);
+      if (existing) return existing;
+      const handle: MockModuleHandle = { id, active: true, socket: true };
+      handles.set(id, handle);
+      return handle;
+    },
+    has: (id: string) => handles.has(id),
+    get size() {
+      return handles.size;
+    },
+  };
+}
+
 function flattenObject(obj: Record<string, unknown>, prefix = ''): Record<string, unknown> {
   const flat: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
@@ -262,7 +299,11 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
     user,
     userId: user.id,
     ready: true,
-    modules: new Map(),
+    // A handle per id, made on first ask. A unit test is not a world with a
+    // module list: whatever the code under test names is the module it is,
+    // installed and switched on. Without this, anything that reads or writes
+    // `game.modules.get(id)` sees nothing and reports a missing module.
+    modules: mockModules(),
     actors: [],
     items: [],
     i18n: {

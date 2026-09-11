@@ -65,7 +65,10 @@ export const migrations = createMigrationRunner({
 ```
 
 The option used to be called `systemId`. It is still read when `packageId` is
-absent, and it goes away at 1.0.
+absent, and it goes away at 1.0. Pass neither and the call throws
+[VTTF-0017](../errors/VTTF-0017): the id is the settings namespace, and
+without it the world would keep its `schemaVersion` under the string
+`undefined`. TypeScript refuses the call before that, at build time.
 
 Wire it into `registerSystem`:
 
