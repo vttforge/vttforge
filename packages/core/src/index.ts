@@ -160,6 +160,7 @@ export type {
   HookCallback,
   HooksApi,
   ItemConfig,
+  PackageHandle,
   SettingConfig,
   SettingScope,
   StatusEffectConfig,
