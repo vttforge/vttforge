@@ -18,6 +18,7 @@ pnpm add @vttforge/core
 | `resourceField()` | The `{ value, max }` field a token bar reads, typed as two numbers; `registerSystem` checks the manifest's bars against it |
 | `postRoll()` | Posts a roll as a chat card, tagged as a critical or a fumble by the thresholds you give |
 | `dicePool()` / `stepDie()` / `countSuccesses()` | The pool formula from a description, a die stepped along a ladder, successes counted on any roll |
+| `promptFields()` | A dialog from a list of fields, built with Foundry's input helpers, resolving to a typed object or `null` |
 | `keywords` on either registration | Rules terms as `@Keyword[id]` with a tooltip, and a journal entry the GM's client creates and keeps current |
 | `BaseDocumentSheet('Actor' \| 'Item')` / `BaseApplication()` | The same plumbing without Handlebars, for a sheet that builds its own element |
 | `SystemConfig` | `game.settings.register/get/set` with the package id filled in and unregistered reads caught |

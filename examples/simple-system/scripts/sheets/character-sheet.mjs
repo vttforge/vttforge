@@ -16,7 +16,7 @@
  *   `<img data-edit="img">` and Foundry's built-in action handles it.
  */
 
-import { BaseActorSheet, postRoll } from '@vttforge/core';
+import { BaseActorSheet, postRoll, promptFields } from '@vttforge/core';
 
 const SYSTEM_ID = 'vttforge-example';
 
@@ -217,8 +217,47 @@ export class CharacterSheet extends BaseActorSheet() {
     const cls = CONFIG.Item.documentClass;
     // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 binds `this` to the sheet instance at call time
     const parent = this.actor;
+    // One dialog from a list of fields; null when the player closes it.
+    const answer = await promptFields(
+      [
+        {
+          name: 'name',
+          type: 'text',
+          label: 'VTTFORGE_EXAMPLE.Sheet.NewGearDialog.name',
+          value: game.i18n.localize('VTTFORGE_EXAMPLE.Sheet.NewGearName'),
+          required: true,
+        },
+        {
+          name: 'quantity',
+          type: 'number',
+          label: 'VTTFORGE_EXAMPLE.Gear.Quantity',
+          value: 1,
+          min: 1,
+        },
+        {
+          name: 'kind',
+          type: 'select',
+          label: 'VTTFORGE_EXAMPLE.Sheet.NewGearDialog.kind',
+          value: 'stowed',
+          options: {
+            equipped: 'VTTFORGE_EXAMPLE.Gear.Kind.equipped',
+            valued: 'VTTFORGE_EXAMPLE.Gear.Kind.valued',
+            stowed: 'VTTFORGE_EXAMPLE.Gear.Kind.stowed',
+          },
+        },
+      ],
+      {
+        title: 'VTTFORGE_EXAMPLE.Sheet.NewGearDialog.title',
+        ok: 'VTTFORGE_EXAMPLE.Sheet.NewGearDialog.ok',
+      },
+    );
+    if (!answer) return;
     await cls.create(
-      { name: game.i18n.localize('VTTFORGE_EXAMPLE.Sheet.NewGearName'), type: 'gear' },
+      {
+        name: answer.name,
+        type: 'gear',
+        system: { quantity: answer.quantity, kind: answer.kind },
+      },
       { parent, renderSheet: true },
     );
   }
