@@ -57,6 +57,16 @@ export interface SocketApi {
   off?(channel: string, listener: (message: unknown, senderId?: unknown) => void): void;
 }
 
+/** A package's own handle, as Foundry builds it from the manifest. */
+export interface PackageHandle {
+  readonly id?: string;
+  /** Installed and switched on in this world. Always true for the system. */
+  readonly active?: boolean;
+  /** The manifest's `"socket"` flag. Without it the channel is never opened. */
+  readonly socket?: boolean;
+  api?: unknown;
+}
+
 export interface GameApi {
   readonly settings: GameSettingsApi;
   readonly user?: { readonly isGM: boolean };
@@ -68,7 +78,7 @@ export interface GameApi {
   };
   readonly socket?: SocketApi;
   readonly system?: { readonly id: string; readonly socket?: boolean };
-  readonly modules?: { get(id: string): { socket?: boolean; api?: unknown } | undefined };
+  readonly modules?: { get(id: string): PackageHandle | undefined };
 }
 
 export type ConfigCollection<T = unknown> = Record<string, T>;

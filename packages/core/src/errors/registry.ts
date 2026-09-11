@@ -100,6 +100,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'askGm() was called for a request that was never registered, or while no Gamemaster was connected. A player cannot write to world documents, so the work has nowhere to run.',
   }),
+  'VTTF-0014': Object.freeze({
+    code: 'VTTF-0014',
+    name: 'MissingModuleApi',
+    summary:
+      'requireModuleApi() asked for the api of a module that is not installed, is installed but switched off, or is on and publishes nothing. Also thrown when registerModule() is given an api but Foundry has no module under that id, which means the id does not match module.json.',
+  }),
 });
 
 /**

@@ -160,6 +160,7 @@ export type {
   HookCallback,
   HooksApi,
   ItemConfig,
+  PackageHandle,
   QueryHandlers,
   SettingConfig,
   SettingScope,
@@ -183,6 +184,13 @@ export type {
   MigrationRunner,
   MigrationRunnerOptions,
 } from './migrations/types.js';
+export {
+  isModuleActive,
+  type MissingApiReason,
+  moduleApi,
+  type PackageApi,
+  requireModuleApi,
+} from './module-api.js';
 export {
   type CheckboxPromptField,
   type NumberPromptField,
