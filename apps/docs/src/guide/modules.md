@@ -115,6 +115,57 @@ wraps enrichers in. VTTForge checks the flag when you register.
 
 `registerSystem` takes the same option.
 
+## Talking to the other clients
+
+A module that shows the table something, or that lets a player change what
+only a Gamemaster may change, needs the socket. That is
+[its own page](./sockets), because the parts that go wrong there are not the
+parts the API docs describe.
+
+## The module api
+
+`game.modules.get(id).api` is where a module publishes what other modules and
+macros may call. Hand it to `registerModule` and it is written during `init`,
+before any CONFIG mutation:
+
+```js
+registerModule({
+  id: 'my-module',
+  api: {
+    createNote: (name) => Item.implementation.create({ name, type: NOTE_TYPE }),
+  },
+});
+```
+
+It is written at the top of `init`, before your own `onBeforeInit` and before
+any CONFIG mutation. The hook is the part people get wrong: publish it later
+and anything that looked during its own `init` found nothing, with no way to
+tell why.
+
+### Reading someone else's
+
+```js
+import { moduleApi, requireModuleApi, isModuleActive } from '@vttforge/core';
+
+const optional = moduleApi('other-module');       // undefined when unavailable
+const required = requireModuleApi('other-module'); // throws, and says which
+```
+
+`game.modules.get(id)?.api` collapses four situations into `undefined`: no
+such module, installed but switched off, on but publishing nothing, or on and
+publishing an older shape than you need. A module that guesses wrong tells its
+user to install something they already have. `requireModuleApi` throws
+[VTTF-0014](../errors/VTTF-0014) naming which of the three it was.
+
+Read from `onSetup` or later, never from `init`. Nothing orders one package's
+`init` against another's, so a read during `init` finds an api that is not
+published yet and cannot tell that apart from a module that publishes none.
+`onSetup` is the first point where every package has finished its `init`.
+
+The type argument is your claim about the shape. Nothing checks it: the other
+module's types are not yours to import. Write down what you use and treat the
+result the way you would any other value crossing a boundary.
+
 ## Before the module goes away
 
 A module's sub-types travel with the module. Switch it off and every document

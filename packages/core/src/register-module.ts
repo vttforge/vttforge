@@ -15,7 +15,7 @@
  */
 
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
-import type { FoundryConfig, HooksApi, StatusEffectConfig } from './foundry-globals.js';
+import type { FoundryConfig, GameApi, HooksApi, StatusEffectConfig } from './foundry-globals.js';
 import { assertKeywords, type Keyword, keywordEnricher, syncKeywordJournal } from './keywords.js';
 import { type EnricherRegistration, registerEnrichers } from './register-enrichers.js';
 import { registerSheets, type SheetRegistration } from './register-sheets.js';
@@ -75,6 +75,16 @@ export interface ModuleRegistration {
    * "keywords". `false` registers the enricher and writes no journal.
    */
   readonly keywordsJournal?: string | false;
+
+  /**
+   * What this module publishes at `game.modules.get(id).api`.
+   *
+   * Written at the top of `init`, before `onBeforeInit` and before any CONFIG
+   * mutation. Nothing orders one package's `init` against another's, so a
+   * module that publishes late is a module some readers find empty, with no
+   * way to tell that apart from one that publishes nothing at all.
+   */
+  readonly api?: Readonly<Record<string, unknown>>;
 
   /** Runs before any CONFIG mutation: the usual home for the module API. */
   readonly onBeforeInit?: () => void;
@@ -214,7 +224,32 @@ export function registerModule(config: ModuleRegistration): ModuleRegistration {
   return config;
 }
 
+/**
+ * Publish the api on the module's own handle.
+ *
+ * Foundry builds the handle when it reads the manifest, so it is there by
+ * `init`. When it is not, the module is not installed under the id it thinks
+ * it has, which is worth saying out loud rather than dropping the api.
+ */
+function publishApi(moduleId: string, api: Readonly<Record<string, unknown>>): void {
+  const modules = (globalThis as { game?: GameApi }).game?.modules;
+  // No module list at all is a test bench, not a mismatched id.
+  if (!modules) return;
+  const handle = modules.get(moduleId);
+  if (!handle) {
+    throw vttfError(
+      'VTTF-0014',
+      `Cannot publish an api for "${moduleId}": Foundry has no module under that id. ` +
+        'The id passed to registerModule() has to match the one in module.json.',
+    );
+  }
+  handle.api = api;
+}
+
 function applyInit(config: ModuleRegistration): void {
+  // First, before even `onBeforeInit`, so the module's own callbacks can read
+  // it back off the handle rather than keeping a second reference.
+  if (config.api !== undefined) publishApi(config.id, config.api);
   config.onBeforeInit?.();
   const CONFIG = readConfig();
 

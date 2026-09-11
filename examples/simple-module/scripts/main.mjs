@@ -8,6 +8,7 @@
 import {
   convertSubTypes,
   registerModule,
+  registerSocket,
   SystemConfig,
   subTypeDocuments,
   VttfError,
@@ -18,6 +19,13 @@ import { noteEnricher } from './enricher.mjs';
 import { NoteSheet } from './sheets/note-sheet.mjs';
 
 const settings = new SystemConfig(MODULE_ID);
+
+/**
+ * Set by `registerSocket` at `setup`, used by the API below.
+ *
+ * @type {import('@vttforge/core').PackageSocket}
+ */
+let socket;
 
 /** What `game.modules.get("vttforge-example-module").api` offers other modules and macros. */
 const api = {
@@ -32,6 +40,30 @@ const api = {
       { name, type: NOTE_TYPE, system: { body } },
       { renderSheet: true },
     );
+  },
+
+  /**
+   * Show a note to the table. One-way: nothing comes back.
+   *
+   * @param {string} text
+   * @param {string[]} [userIds] who sees it. Left out, everyone.
+   */
+  announce(text, userIds) {
+    return socket.emit('announce', { text }, userIds ? { to: userIds } : undefined);
+  },
+
+  /**
+   * Ask the Gamemaster's client to file a note in the world.
+   *
+   * A player cannot create a world Item, so this is the only way for one to
+   * end up with a note. The answer is the new item's id.
+   *
+   * @param {string} name
+   * @param {string} [body]
+   * @returns {Promise<string>}
+   */
+  requestNote(name, body = '') {
+    return socket.askGm('createNote', { name, body });
   },
 
   /** How many notes a user would strand by removing this module. */
@@ -83,12 +115,10 @@ try {
 
     enrichers: [noteEnricher],
 
-    // Runs first inside `init` — the usual home for the module API, so it is
-    // there before anything that might hook `init` after us asks for it.
-    onBeforeInit: () => {
-      const handle = game.modules.get(MODULE_ID);
-      if (handle) handle.api = api;
-    },
+    // Published on `game.modules.get(id).api` during `init`, before any
+    // CONFIG mutation. Doing it later means anything that looked during its
+    // own `init` found nothing and had no way to know why.
+    api,
 
     onAfterInit: () => {
       settings.register('showWelcome', {
@@ -98,6 +128,40 @@ try {
         config: true,
         type: Boolean,
         default: true,
+      });
+    },
+
+    // `setup` rather than `init`: the handlers are registered once, and by
+    // then every package has finished its own `init`.
+    onSetup: () => {
+      socket = registerSocket({
+        id: MODULE_ID,
+        kind: 'module',
+
+        messages: {
+          // Default `from: 'gm'`. A player sending this is ignored, and the
+          // check reads the sender id the server supplied, not the payload.
+          announce: {
+            run: ({ text }, context) => {
+              ui.notifications?.info(`${context.user?.name ?? 'Someone'}: ${text}`);
+              // A marker the end-to-end run reads to prove the message
+              // arrived on this client.
+              Object.assign(globalThis, { vttforgeExampleAnnounced: text });
+            },
+          },
+        },
+
+        requests: {
+          // Runs on the Gamemaster's client, whoever asked.
+          createNote: async ({ name, body }, context) => {
+            const item = await CONFIG.Item.documentClass.create({
+              name,
+              type: NOTE_TYPE,
+              system: { body: `${body} (asked for by ${context.user?.name ?? 'nobody'})` },
+            });
+            return item.id;
+          },
+        },
       });
     },
 

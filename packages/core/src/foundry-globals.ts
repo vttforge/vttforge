@@ -41,9 +41,44 @@ export interface GameSettingsApi {
   set<T>(namespace: string, key: string, value: T): Promise<T>;
 }
 
+/** One connected or known user, as far as the socket helpers care. */
+export interface UserLike {
+  readonly id?: string;
+  readonly name?: string;
+  readonly isGM?: boolean;
+  readonly active?: boolean;
+  query?: (name: string, data: unknown, options?: { timeout?: number }) => Promise<unknown>;
+}
+
+/** `game.socket`. The second argument of a listener is the server's own sender id. */
+export interface SocketApi {
+  emit(channel: string, message: unknown, options?: { recipients?: readonly string[] }): void;
+  on(channel: string, listener: (message: unknown, senderId?: unknown) => void): void;
+  off?(channel: string, listener: (message: unknown, senderId?: unknown) => void): void;
+}
+
+/** A package's own handle, as Foundry builds it from the manifest. */
+export interface PackageHandle {
+  readonly id?: string;
+  /** Installed and switched on in this world. Always true for the system. */
+  readonly active?: boolean;
+  /** The manifest's `"socket"` flag. Without it the channel is never opened. */
+  readonly socket?: boolean;
+  api?: unknown;
+}
+
 export interface GameApi {
   readonly settings: GameSettingsApi;
   readonly user?: { readonly isGM: boolean };
+  readonly userId?: string | null;
+  readonly users?: {
+    get(id: string): UserLike | undefined;
+    filter(fn: (user: UserLike) => boolean): UserLike[];
+    find(fn: (user: UserLike) => boolean): UserLike | undefined;
+  };
+  readonly socket?: SocketApi;
+  readonly system?: { readonly id: string; readonly socket?: boolean };
+  readonly modules?: { get(id: string): PackageHandle | undefined };
 }
 
 export type ConfigCollection<T = unknown> = Record<string, T>;
@@ -72,10 +107,20 @@ export interface StatusEffectConfig {
   readonly [key: string]: unknown;
 }
 
+/**
+ * `CONFIG.queries`. A handler registered here can be called on this client by
+ * another user through `User#query`, and its return value travels back.
+ */
+export type QueryHandlers = Record<
+  string,
+  (data: unknown, context: { timeout?: number; user?: UserLike }) => unknown
+>;
+
 export interface FoundryConfig {
   Actor: ActorConfig;
   Item: ItemConfig;
   Combat: CombatConfig;
   statusEffects?: Record<string, unknown>;
+  queries?: QueryHandlers;
   [key: string]: unknown;
 }
