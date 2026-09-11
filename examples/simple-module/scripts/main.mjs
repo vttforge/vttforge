@@ -55,12 +55,10 @@ try {
 
     enrichers: [noteEnricher],
 
-    // Runs first inside `init` — the usual home for the module API, so it is
-    // there before anything that might hook `init` after us asks for it.
-    onBeforeInit: () => {
-      const handle = game.modules.get(MODULE_ID);
-      if (handle) handle.api = api;
-    },
+    // Published on `game.modules.get(id).api` during `init`, before any
+    // CONFIG mutation. Doing it later means anything that looked during its
+    // own `init` found nothing and had no way to know why.
+    api,
 
     onAfterInit: () => {
       settings.register('showWelcome', {

@@ -41,9 +41,18 @@ export interface GameSettingsApi {
   set<T>(namespace: string, key: string, value: T): Promise<T>;
 }
 
+/** A package's own handle, as Foundry builds it from the manifest. */
+export interface PackageHandle {
+  readonly id?: string;
+  /** Installed and switched on in this world. Always true for the system. */
+  readonly active?: boolean;
+  api?: unknown;
+}
+
 export interface GameApi {
   readonly settings: GameSettingsApi;
   readonly user?: { readonly isGM: boolean };
+  readonly modules?: { get(id: string): PackageHandle | undefined };
 }
 
 export type ConfigCollection<T = unknown> = Record<string, T>;
