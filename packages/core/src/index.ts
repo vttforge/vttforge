@@ -108,6 +108,13 @@ export {
 } from './data/fields.js';
 export type { InferField, InferSchema, Prettify } from './data/infer-schema.js';
 export {
+  type ResourceChildField,
+  type ResourceFieldInstance,
+  type ResourceFieldOptions,
+  resourceField,
+  schemaHasResource,
+} from './data/resource-field.js';
+export {
   ActorDataModel,
   DocumentSheet,
   type DocumentSheetOptions,
