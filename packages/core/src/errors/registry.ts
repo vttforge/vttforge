@@ -88,6 +88,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'stepDie() was given a die that is not on the ladder or a fractional number of steps, or dicePool() was given a count, faces, keep or drop that is not a whole number in range (keep and drop go up to the number of dice), or both keep and drop.',
   }),
+  'VTTF-0015': Object.freeze({
+    code: 'VTTF-0015',
+    name: 'InvalidSubTypeConversion',
+    summary:
+      'subTypeDocuments() or convertSubTypes() was called without a module id or a bare type key, asked to convert a type into itself, or run where foundry.data.operators.ForcedReplacement does not exist. Foundry refuses a document type change without that operator, and drops the rest of the update with it.',
+  }),
 });
 
 /**

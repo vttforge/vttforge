@@ -114,3 +114,49 @@ which rejects a non-global regex, and that throw is outside the handler Foundry
 wraps enrichers in. VTTForge checks the flag when you register.
 
 `registerSystem` takes the same option.
+
+## Before the module goes away
+
+A module's sub-types travel with the module. Switch it off and every document
+using one is marked invalid: visible in the world, not editable, holding data
+nothing can read. Uninstall it and they are stranded for good.
+
+So ship a way out. Two calls:
+
+```js
+import { subTypeDocuments, convertSubTypes } from '@vttforge/core';
+
+// What a user would lose by removing this module.
+const count = subTypeDocuments({ id: 'my-module', document: 'Item', type: 'note' }).length;
+
+// Turn each one into a plain Item and lose nothing.
+const { converted, failed } = await convertSubTypes({
+  id: 'my-module',
+  document: 'Item',
+  type: 'note',
+});
+```
+
+Put it behind a settings button or a macro, and run it as a Gamemaster: these
+are world documents.
+
+`to` defaults to `base`, which every document class has and no package owns,
+so it survives anything else being uninstalled too. `system` decides what the
+converted document keeps, and defaults to what it already had. A core type
+stores that as a plain object, so the data is still there even where nothing
+reads it. `changes` sets anything else in the same update, such as a name.
+
+The conversion is one update per document, in place. The id survives, and so
+do the flags, the folder, the ownership and the embedded documents. Nothing is
+deleted and recreated.
+
+### Why not do it by hand
+
+`document.update({ type: 'base' })` is refused. Foundry answers that a type
+may only change when `system` is replaced with a `ForcedReplacement` operator,
+and it drops the whole update, so a call that also renamed the document loses
+the rename as well.
+
+Creating a replacement with `keepId` while the original is still there
+overwrites it. No error, no second document, and no way back if the new data
+was wrong.

@@ -216,4 +216,13 @@ export {
   type SheetModesConfig,
   TOGGLE_MODE_ACTION,
 } from './sheet-modes.js';
+export {
+  type ConvertedSubTypes,
+  type ConvertSubTypesOptions,
+  convertSubTypes,
+  type SubTypeDocument,
+  type SubTypedDocument,
+  type SubTypeQuery,
+  subTypeDocuments,
+} from './sub-types.js';
 export { SystemConfig } from './system-config.js';
