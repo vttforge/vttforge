@@ -1,5 +1,13 @@
 # @vttforge/core
 
+## 0.17.0
+
+### Minor Changes
+
+- 59cef49: Table dice helpers: `dicePool(spec)` writes a pool formula from a description (`keep`, `drop`, `successAt`, `failAt`, `explode`, `rerollAt`, `min`, `max`) with the modifiers Foundry's `Roll` parses; `stepDie(faces, steps, ladder?)` moves a die along a ladder and stays on its ends; `countSuccesses(roll, target, { failAt })` counts on any evaluated roll from the active results. Bad input is refused with VTTF-0011.
+- e5567cb: `promptFields(fields, options)` shows a dialog built from a list of fields (`text`, `textarea`, `number`, `checkbox`, `select`) through Foundry's own input helpers and `DialogV2.input`, and resolves to an object typed from the fields, or `null` when dismissed. `promptFieldGroup(field)` returns one form group for a dialog you configure yourself.
+- 6ad9da6: `resourceField(options)` builds the `{ value, max }` SchemaField a token bar reads, with both children required, non-nullable numbers, typed as `{ value: number; max: number }`. `registerSystem` now checks the manifest's `primaryTokenAttribute` and `secondaryTokenAttribute` against the Actor data models it registers and throws VTTF-0010 at `init` when no model declares a resource at that path; Foundry would draw no bar and say nothing. `schemaHasResource(schema, path)` is the check on its own.
+
 ## 0.16.0
 
 ### Minor Changes
