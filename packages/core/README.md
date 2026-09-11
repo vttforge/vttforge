@@ -1,6 +1,6 @@
 # @vttforge/core
 
-The runtime half of [VTTForge](https://vttforge.dev): what a Foundry VTT v14+ system or module imports.
+The runtime half of [VTTForge](https://vttforge.dev): what a Foundry VTT v14+ system or module imports. A module reaches for everything below, plus the four rows marked for modules.
 
 ```bash
 pnpm add @vttforge/core
@@ -24,6 +24,10 @@ pnpm add @vttforge/core
 | `PackageConfig` | `game.settings.register/get/set` with the package id filled in and unregistered reads caught |
 | `createMigrationRunner` | The `schemaVersion` setting, the `isNewerVersion` compare and the sequential `await` every system grows |
 | `moduleSubType` | The `<module id>.<type>` prefix Foundry files a module's sub-types under |
+| `registerSocket` | The `game.socket` channel, the manifest flag it needs, the sender id the server vouched for, and requests only a Gamemaster's client can answer |
+| `moduleApi` / `requireModuleApi` | Reading another package's api, and saying which of not installed, switched off or publishing nothing it was |
+| `subTypeDocuments` / `convertSubTypes` | Counting what a module's sub-types hold, and converting them back so uninstalling it strands nothing |
+| `inject` | Your own UI inside an application you do not own, replaced on each re-render rather than stacked |
 | `VttfError` | Runtime errors with a stable `VTTF-NNNN` code and a docs URL |
 
 ## Registering a sheet

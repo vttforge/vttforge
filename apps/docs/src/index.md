@@ -2,8 +2,8 @@
 layout: home
 hero:
   name: VTTForge
-  text: Build Foundry systems without the boilerplate
-  tagline: An SDK and CLI for Foundry VTT v14+. Typed data models, sheets built on them, and a dev loop that reloads in place.
+  text: Build Foundry systems and modules without the boilerplate
+  tagline: An SDK and CLI for Foundry VTT v14+. Typed data models, sheets built on them, sockets and injection for modules, and a dev loop that reloads in place.
   actions:
     - theme: brand
       text: Get started
@@ -17,7 +17,9 @@ features:
   - title: A dev loop that does not reload the page
     details: Save a template and only the windows using it redraw; save a stylesheet and the CSS swaps with no re-render.
   - title: Tests without a browser
-    details: Mock the Foundry globals and drive a whole module lifecycle in Vitest. Quench covers the cases a mock cannot answer, inside a real world.
+    details: Mock the Foundry globals and drive a whole package lifecycle in Vitest. Quench covers the cases a mock cannot answer, inside a real world.
+  - title: Modules get the same treatment
+    details: Sockets with the sender the server vouched for, an api other packages can read, UI injected into applications you do not own without stacking on re-render, and a way out of your sub-types before someone uninstalls you.
 ---
 
 ## Why this exists
@@ -32,7 +34,8 @@ correct.
 
 VTTForge holds that plumbing in one place. When Foundry moves it, the change
 lands here, and a system or module built on it updates a dependency rather
-than rewriting a sheet. If this project ever goes quiet, the build output is
+than rewriting a sheet. A module gets the same data models, the same sheet
+bases and the same build, plus the parts only a module needs. If this project ever goes quiet, the build output is
 plain ES modules that Foundry loads natively, so you can remove the dependency
 and keep the code.
 

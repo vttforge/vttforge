@@ -286,7 +286,6 @@ Hooks.once('setup', () => {
 ```
 
 Use `WRAPPER` and call `wrapped`, so other modules patching the same method
-still run. A wrapper that throws breaks the application for the whole world,
-not just your feature, so guard for the library being absent and keep the body
-short. VTTForge does not wrap this: a shim that hides whether libWrapper is
+still run. A wrapper that throws breaks the application for the whole world. Guard for
+the library being absent and keep the body short. VTTForge does not wrap this: a shim that hides whether libWrapper is
 installed would decide for you what happens when it is not.

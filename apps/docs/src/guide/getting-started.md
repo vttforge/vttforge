@@ -8,6 +8,11 @@ cd my-system
 pnpm build
 ```
 
+Pass `--type module` for a module. Everything below is the same either way:
+the same data models, the same sheet bases, the same build, the same dev loop.
+What differs is what you reach for afterwards, and the
+[modules guide](/guide/modules) covers that.
+
 `create` installs for you, so there is no separate install step. If you would
 rather not go through it, `npx @vttforge/cli init` takes the same arguments.
 
@@ -36,8 +41,9 @@ dev` prints the compose mount line to use instead.
 ## What you get
 
 A system with one Actor type, one Item type, sheets for both, a migration
-runner, and a settings registration. All of it is real code you are meant to
-edit.
+runner, and a settings registration. A module scaffolds its own sub-type under
+the `<module id>.<type>` prefix Foundry files it under, with the sheet to
+match. All of it is real code you are meant to edit.
 
 Run `vttforge audit` at any point. It checks the manifest and source against
 the v14 catalog of things that break quietly.

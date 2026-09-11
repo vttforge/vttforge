@@ -2,7 +2,7 @@
  * CharacterData — typed schema for the `character` Actor type.
  *
  * Schema mirrors the canonical Figma reference (character-sheet.jsx): quick
- * stats are HP / AC / SPD / INIT, abilities are the six D&D-style scores,
+ * stats are HP / AC / SPD / INIT, abilities are six classic ability scores,
  * derived state (modifiers, max HP, AC, initiative) is computed in-memory.
  *
  * Never write to the database in prepareDerivedData — only assign onto `this`.

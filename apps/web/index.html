@@ -252,7 +252,7 @@
           <div class="bk-head">
             <span class="bk-eyebrow">Packages</span>
             <h2 class="bk-title">Eight packages,<br />one monorepo.</h2>
-            <p class="bk-sub">Install what you need. <span class="mono">@vttforge/core</span> is enough for a system; the rest layer on top. All on npm, with provenance.</p>
+            <p class="bk-sub">Install what you need. <span class="mono">@vttforge/core</span> is enough for a system or a module; the rest layer on top. All on npm, with provenance.</p>
           </div>
 
           <div class="pkg-table-wrap">
@@ -263,7 +263,7 @@
             <tbody>
               <tr>
                 <td class="pkg-name">@vttforge/core</td>
-                <td class="pkg-desc">Runtime: registerSystem / registerModule, sheet and enricher registration, BaseTypeDataModel with inference, BaseActorSheet / BaseItemSheet / BaseDocumentSheet / BaseApplication, SystemConfig, createMigrationRunner, VttfError</td>
+                <td class="pkg-desc">Runtime: registerSystem / registerModule, sheet and enricher registration, BaseTypeDataModel with inference, BaseActorSheet / BaseItemSheet / BaseDocumentSheet / BaseApplication, PackageConfig, createMigrationRunner, VttfError. For modules: registerSocket, moduleApi, convertSubTypes, inject</td>
                 <td class="pkg-status s-ship"><span class="blip"></span>on npm</td>
               </tr>
               <tr>
@@ -312,7 +312,7 @@
           <div class="bk-head">
             <span class="bk-eyebrow">Try it today</span>
             <h2 class="bk-title">Working example<br />in one command.</h2>
-            <p class="bk-sub">The repo ships a real Foundry v14 system you can boot in Docker, tabbed character sheet, drag-drop inventory, demo migration. Requires Docker + a foundryvtt.com license.</p>
+            <p class="bk-sub">The repo ships a real Foundry v14 system and a module you can boot in Docker: tabbed character sheet, drag-drop inventory, demo migration, and a module that talks over a socket and adds a button to the sidebar. Requires Docker + a foundryvtt.com license.</p>
           </div>
 
           <div class="try-grid">
@@ -382,7 +382,7 @@
               <div class="rm-step done"><div class="dot"></div><div class="ver">v0.1</div><div class="nm">Core runtime · sheet bases · styles</div></div>
               <div class="rm-step done"><div class="dot"></div><div class="ver">v0.2</div><div class="nm">Vite plugin · dev loop · manifest sync</div></div>
               <div class="rm-step done"><div class="dot"></div><div class="ver">v0.3</div><div class="nm">CLI · four templates · audit · docs site</div></div>
-              <div class="rm-step now"><div class="dot"></div><div class="ver">now</div><div class="nm">Typed Foundry surface · decorators · v14 audit and migrate · adopters and the gaps they find</div></div>
+              <div class="rm-step now"><div class="dot"></div><div class="ver">now</div><div class="nm">Typed Foundry surface · decorators · sockets, module api, sub-type conversion and injection · adopters and the gaps they find</div></div>
               <div class="rm-step"><div class="dot"></div><div class="ver">v1.0</div><div class="nm">Stable API · full inference</div></div>
             </div>
           </div>
