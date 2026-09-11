@@ -48,7 +48,7 @@ export type MissingApiReason = 'not-ready' | 'not-installed' | 'disabled' | 'no-
  */
 export function moduleApi<T = PackageApi>(moduleId: string): T | undefined {
   const handle = game()?.modules?.get(moduleId);
-  if (!handle || handle.active !== true) return undefined;
+  if (handle?.active !== true) return undefined;
   return (handle.api as T | undefined) ?? undefined;
 }
 
