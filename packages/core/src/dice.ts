@@ -31,15 +31,15 @@ export function stepDie(
   steps: number,
   ladder: readonly number[] = DEFAULT_DIE_LADDER,
 ): number {
+  if (!Number.isInteger(steps)) {
+    throw new VttfError('VTTF-0011', `stepDie(): steps must be a whole number, got ${steps}.`);
+  }
   const index = ladder.indexOf(faces);
   if (index < 0) {
     throw new VttfError(
       'VTTF-0011',
       `stepDie(): d${faces} is not on the ladder [${ladder.map((f) => `d${f}`).join(', ')}].`,
     );
-  }
-  if (!Number.isInteger(steps)) {
-    throw new VttfError('VTTF-0011', `stepDie(): steps must be a whole number, got ${steps}.`);
   }
   const next = Math.min(ladder.length - 1, Math.max(0, index + steps));
   return ladder[next] as number;
@@ -50,9 +50,9 @@ export interface DicePoolSpec {
   readonly number: number;
   /** Faces per die. */
   readonly faces: number;
-  /** Keep only the highest or lowest `n`, as `kh` / `kl`. */
+  /** Keep only the highest or lowest `n` (at most `number`), as `kh` / `kl`. */
   readonly keep?: { readonly highest: number } | { readonly lowest: number };
-  /** Drop the highest or lowest `n`, as `dh` / `dl`. */
+  /** Drop the highest or lowest `n` (at most `number`), as `dh` / `dl`. */
   readonly drop?: { readonly highest: number } | { readonly lowest: number };
   /** Count a die as a success at this result or above, as `cs>=n`. The total becomes the count. */
   readonly successAt?: number;
@@ -67,11 +67,12 @@ export interface DicePoolSpec {
   readonly max?: number;
 }
 
-function assertWhole(name: string, value: number, atLeast: number): void {
-  if (!Number.isInteger(value) || value < atLeast) {
+function assertWhole(name: string, value: number, atLeast: number, atMost?: number): void {
+  if (!Number.isInteger(value) || value < atLeast || (atMost !== undefined && value > atMost)) {
+    const range = atMost === undefined ? `of at least ${atLeast}` : `from ${atLeast} to ${atMost}`;
     throw new VttfError(
       'VTTF-0011',
-      `dicePool(): ${name} must be a whole number of at least ${atLeast}, got ${value}.`,
+      `dicePool(): ${name} must be a whole number ${range}, got ${value}.`,
     );
   }
 }
@@ -95,19 +96,19 @@ export function dicePool(spec: DicePoolSpec): string {
   if (spec.max !== undefined) formula += `max${spec.max}`;
   if (spec.keep) {
     if ('highest' in spec.keep) {
-      assertWhole('keep.highest', spec.keep.highest, 1);
+      assertWhole('keep.highest', spec.keep.highest, 1, spec.number);
       formula += `kh${spec.keep.highest}`;
     } else {
-      assertWhole('keep.lowest', spec.keep.lowest, 1);
+      assertWhole('keep.lowest', spec.keep.lowest, 1, spec.number);
       formula += `kl${spec.keep.lowest}`;
     }
   }
   if (spec.drop) {
     if ('highest' in spec.drop) {
-      assertWhole('drop.highest', spec.drop.highest, 1);
+      assertWhole('drop.highest', spec.drop.highest, 1, spec.number);
       formula += `dh${spec.drop.highest}`;
     } else {
-      assertWhole('drop.lowest', spec.drop.lowest, 1);
+      assertWhole('drop.lowest', spec.drop.lowest, 1, spec.number);
       formula += `dl${spec.drop.lowest}`;
     }
   }
@@ -150,10 +151,11 @@ export function countSuccesses(
       if (result.active !== false) results.push(result.result);
     }
   }
-  const successes = results.filter((value) => value >= target).length;
-  const failures =
-    options.failAt === undefined
-      ? 0
-      : results.filter((value) => value <= (options.failAt as number)).length;
+  let successes = 0;
+  let failures = 0;
+  for (const value of results) {
+    if (value >= target) successes += 1;
+    if (options.failAt !== undefined && value <= options.failAt) failures += 1;
+  }
   return { successes, failures, net: successes - failures, results };
 }

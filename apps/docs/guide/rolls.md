@@ -102,5 +102,5 @@ countSuccesses(roll, 5);
 // { successes: 2, failures: 0, net: 2, results: [6, 1, 5, 3, 2] }
 ```
 
-A bad count, faces, keep or drop, a die off the ladder, or `keep` together with `drop` is refused with [VTTF-0011](../errors/VTTF-0011).
+A bad count or faces, a `keep` or `drop` above the number of dice, a die off the ladder, or `keep` together with `drop` is refused with [VTTF-0011](../errors/VTTF-0011).
 

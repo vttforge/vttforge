@@ -86,7 +86,7 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     code: 'VTTF-0011',
     name: 'InvalidDice',
     summary:
-      'stepDie() was given a die that is not on the ladder or a fractional number of steps, or dicePool() was given a count, faces, keep or drop that is not a whole number in range, or both keep and drop.',
+      'stepDie() was given a die that is not on the ladder or a fractional number of steps, or dicePool() was given a count, faces, keep or drop that is not a whole number in range (keep and drop go up to the number of dice), or both keep and drop.',
   }),
 });
 

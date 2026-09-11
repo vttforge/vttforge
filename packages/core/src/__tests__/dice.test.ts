@@ -17,6 +17,7 @@ describe('stepDie', () => {
     expect(() => stepDie(7, 1)).toThrow(VttfError);
     expect(() => stepDie(7, 1)).toThrow(/VTTF-0011/);
     expect(() => stepDie(6, 0.5)).toThrow(/whole number/);
+    expect(() => stepDie(7, 0.5)).toThrow(/whole number/);
   });
 });
 
@@ -47,7 +48,9 @@ describe('dicePool', () => {
   it('refuses bad counts and keep with drop', () => {
     expect(() => dicePool({ number: 0, faces: 6 })).toThrow(/VTTF-0011/);
     expect(() => dicePool({ number: 1, faces: 1 })).toThrow(/faces/);
-    expect(() => dicePool({ number: 2, faces: 6, keep: { highest: 0 } })).toThrow(/keep.highest/);
+    expect(() => dicePool({ number: 2, faces: 6, keep: { highest: 0 } })).toThrow(/keep\\.highest/);
+    expect(() => dicePool({ number: 2, faces: 6, keep: { highest: 3 } })).toThrow(/from 1 to 2/);
+    expect(() => dicePool({ number: 3, faces: 6, drop: { lowest: 4 } })).toThrow(/drop\\.lowest/);
     expect(() =>
       dicePool({ number: 2, faces: 6, keep: { highest: 1 }, drop: { lowest: 1 } }),
     ).toThrow(/not both/);
