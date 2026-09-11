@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "skipLibCheck": false,
+    "noImplicitOverride": false
+  },
+  "files": ["foundry-api.d.ts"]
+}

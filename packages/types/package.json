@@ -22,6 +22,9 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
+    "./foundry-api": {
+      "types": "./foundry-api.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.mjs",
@@ -29,13 +32,14 @@
   "types": "./dist/index.d.mts",
   "files": [
     "dist",
+    "foundry-api.d.ts",
     "README.md",
     "CHANGELOG.md"
   ],
   "sideEffects": false,
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.foundry-api.json",
     "test": "vitest run --passWithNoTests",
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only"

@@ -16,7 +16,8 @@
       "!**/.vitepress",
       "!plans",
       "!packages/styles/tokens.json",
-      "!packages/cli/templates"
+      "!packages/cli/templates",
+      "!packages/types/foundry-api.d.ts"
     ]
   },
   "formatter": {

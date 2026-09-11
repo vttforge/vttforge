@@ -58,3 +58,7 @@ Thumbs.db
 
 # Generated API reference (apps/docs/scripts/typedoc.mjs)
 apps/docs/src/reference/*/
+
+# The generator's downloads and intermediate files.
+scripts/foundry-api/work/
+__pycache__/
