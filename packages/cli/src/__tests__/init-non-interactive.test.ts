@@ -91,3 +91,36 @@ describe('runInit without a terminal', () => {
     expect(readJson(cwd, 'forced', 'module.json').id).toBe('forced');
   });
 });
+
+describe('a type or lang the scaffolder does not recognise', () => {
+  // `create-vttforge` calls runInit directly, so the check has to live here
+  // and not only in the argument parser.
+  it.each([
+    ['type', 'modul', /--type expects `system` or `module`, got `modul`/],
+    ['lang', 'typescript', /--lang expects `ts` or `js`, got `typescript`/],
+  ])('refuses %s=%s and says what it takes', async (key, value, expected) => {
+    await expect(
+      runInit({
+        cwd,
+        name: 'app',
+        [key]: value,
+        noInstall: true,
+        noGit: true,
+      } as Parameters<typeof runInit>[0]),
+    ).rejects.toThrow(expected);
+  });
+
+  it('scaffolds nothing when it refuses', async () => {
+    await expect(
+      runInit({ cwd, name: 'app', type: 'modul' as 'module', noInstall: true, noGit: true }),
+    ).rejects.toBeInstanceOf(ScaffoldError);
+    // The failure people hit: a typo in --type produced a system, quietly.
+    expect(() => readJson(cwd, 'app', 'system.json')).toThrow();
+    expect(() => readJson(cwd, 'app', 'module.json')).toThrow();
+  });
+
+  it('still defaults when the option is simply absent', async () => {
+    await runInit({ cwd, name: 'app', noInstall: true, noGit: true });
+    expect(readJson(cwd, 'app', 'system.json').type).toBe('system');
+  });
+});

@@ -198,8 +198,19 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   }
 
   // --- type ------------------------------------------------------------------
+  // A value we do not recognise is a typo, and the two failures it used to
+  // cause were both quiet: without a terminal it fell through to the default
+  // and scaffolded a system, and with one it threw the answer away and asked
+  // the question again. Either way the flag the user passed did nothing and
+  // said nothing.
+  // Widened on purpose. The union is the contract for a programmatic caller;
+  // argv is a string and may hold anything.
+  const requestedType: string | undefined = options.type;
+  if (requestedType !== undefined && requestedType !== 'system' && requestedType !== 'module') {
+    bail(`--type expects \`system\` or \`module\`, got \`${requestedType}\`.`);
+  }
   let type = options.type;
-  if (type !== 'system' && type !== 'module' && !interactive) {
+  if (type === undefined && !interactive) {
     type = 'system';
   }
   if (type !== 'system' && type !== 'module') {
@@ -219,8 +230,12 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   }
 
   // --- lang ------------------------------------------------------------------
+  const requestedLang: string | undefined = options.lang;
+  if (requestedLang !== undefined && requestedLang !== 'ts' && requestedLang !== 'js') {
+    bail(`--lang expects \`ts\` or \`js\`, got \`${requestedLang}\`.`);
+  }
   let lang = options.lang;
-  if (lang !== 'ts' && lang !== 'js' && !interactive) {
+  if (lang === undefined && !interactive) {
     lang = 'ts';
   }
   if (lang !== 'ts' && lang !== 'js') {
