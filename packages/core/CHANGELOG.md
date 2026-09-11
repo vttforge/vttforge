@@ -1,5 +1,100 @@
 # @vttforge/core
 
+## 0.18.0
+
+### Minor Changes
+
+- 14b29cc: `inject()`: put a package's own UI inside an application it does not own.
+  
+  Most of what a module does, and there is no API for it. Foundry re-renders an
+  application whenever its document changes, so the insert repeats, and every
+  module writes the same guard by hand.
+  
+  `inject` marks what it inserted with `data-vttforge-injection="<id>.<name>"`
+  and removes the previous one before inserting again, so ten renders leave one
+  node. Two packages using the same name do not collide. It normalises the
+  element, because most render hooks pass an `HTMLElement` and the deprecated
+  `renderChatMessage` passes jQuery. It returns a function that unbinds, which
+  nothing else does.
+  
+  New error code VTTF-0016.
+- 86b64fa: An `api` option on `registerModule()`, and helpers for reading another
+  package's.
+  
+  `api` is written to `game.modules.get(id).api` at the top of `init`, before
+  your own `onBeforeInit` and before any CONFIG mutation. That hook is the part
+  people get wrong: publish it later and anything that looked during its own
+  `init` found nothing.
+  
+  `moduleApi(id)` hands back another module's api or `undefined`.
+  `requireModuleApi(id)` throws VTTF-0014 and says which of four things is
+  wrong: Foundry has no module list yet, the module is not installed, it is
+  installed and switched off, or it is on and has not published. The bare read
+  collapses all four into `undefined`, which is how a module ends up telling its
+  user to install something they already have. `isModuleActive(id)` answers the
+  narrower question.
+  
+  Read another package's api from `onSetup` or later. Nothing orders one
+  package's `init` against another's.
+  
+  New error code VTTF-0014.
+- ac59e0a: `SystemConfig` is now `PackageConfig`, and `createMigrationRunner` takes
+  `packageId`.
+  
+  One thing changes behaviour. `createMigrationRunner` now throws VTTF-0017 when
+  the call carries neither id. Before, it registered the world's `schemaVersion`
+  under the string `undefined` and read it back from there for the life of the
+  world. TypeScript callers see it at build time: the options type is a union,
+  and a call with no id matches no branch. A JavaScript caller gets the throw on
+  world load, and its stored version is under `undefined`.
+  
+  VTTF-0017 is its own code rather than the migration-failure one. A mistake in
+  the call is not a migration that failed, and a catch that reads the code has
+  to be able to tell them apart.
+  
+  The rest is names. A module stores settings the same way a system does, and
+  runs migrations over its own stored data the same way. The old names said
+  otherwise, and a module author reading the reference had to work out that the
+  class was meant for them too.
+  
+  `SystemConfig` is the same class under the old name, so `instanceof` holds
+  both ways and existing code keeps working. The instance property `systemId`
+  still answers, and `createMigrationRunner` still reads a `systemId` option
+  when `packageId` is absent. All three are deprecated and go away at 1.0.
+- a5623a0: `registerSocket()`: the two ways a package talks to the other clients.
+  
+  `emit` sends a one-way message. `askGm` asks the Gamemaster's client to do
+  something a player has no permission to do, and waits for the answer.
+  
+  It covers the four things that are silent when you get them wrong. The
+  channel is `module.<id>` or `system.<id>`, not the package id. `"socket": true`
+  is a manifest field, and without it Foundry accepts the emit and delivers
+  nothing. The sender id comes from the server, not the payload, so a permission
+  check that reads the payload is not a check. And Foundry never delivers a
+  message back to whoever sent it, so `emit` runs the handler locally too and
+  drops the sender's own id from `recipients`.
+  
+  Handlers fail closed: `from` defaults to `'gm'`, and a message from anyone else
+  is dropped. New error codes VTTF-0012 and VTTF-0013.
+- 7e77931: `subTypeDocuments()` and `convertSubTypes()`: a way out for a module's
+  documents before the module goes away.
+  
+  A module's sub-types travel with the module. Switch it off and every document
+  using one is invalid; uninstall it and they are stranded. Foundry says to ship
+  a conversion path, and every module that ships one writes it from scratch.
+  
+  `subTypeDocuments()` answers what a user would lose. `convertSubTypes()` turns
+  each one into another type, one update each, in place: the id survives, and so
+  do the flags, the folder, the ownership and the embedded documents.
+  
+  The shape of that update is the part worth having written down.
+  `update({ type })` on its own is refused, and Foundry drops the whole update
+  with it, so a call that also renamed the document loses the rename. Creating a
+  replacement with `keepId` while the original still exists overwrites it, with
+  no error and no second document.
+  
+  New error code VTTF-0015.
+
 ## 0.17.0
 
 ### Minor Changes
