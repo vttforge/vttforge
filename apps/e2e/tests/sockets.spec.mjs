@@ -104,7 +104,14 @@ test('the manifest declares the channel, and both clients agree on it', async ()
     expect(seen.active).toBe(true);
     // Without this field Foundry accepts the emit and delivers nothing.
     expect(seen.socket).toBe(true);
-    expect(seen.api).toEqual(['announce', 'createNote', 'noteType', 'requestNote']);
+    expect(seen.api).toEqual([
+      'announce',
+      'convertNotes',
+      'countNotes',
+      'createNote',
+      'noteType',
+      'requestNote',
+    ]);
     // Requests live in one namespace shared by everything installed, so the
     // name carries the module id.
     expect(seen.query).toBe('function');
