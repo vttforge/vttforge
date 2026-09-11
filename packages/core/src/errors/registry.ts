@@ -88,6 +88,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'stepDie() was given a die that is not on the ladder or a fractional number of steps, or dicePool() was given a count, faces, keep or drop that is not a whole number in range (keep and drop go up to the number of dice), or both keep and drop.',
   }),
+  'VTTF-0016': Object.freeze({
+    code: 'VTTF-0016',
+    name: 'InvalidInjection',
+    summary:
+      'inject() was called without a package id, without a render hook to bind, without a render function, with a name that cannot be used, or with a position that would put the node outside the application element. The name is half the marker that lets a re-render replace the previous injection instead of adding a second one beside it.',
+  }),
 });
 
 /**

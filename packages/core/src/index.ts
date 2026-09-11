@@ -165,6 +165,12 @@ export type {
   StatusEffectConfig,
 } from './foundry-globals.js';
 export {
+  INJECTION_ATTRIBUTE,
+  type InjectOptions,
+  type InjectPosition,
+  inject,
+} from './inject.js';
+export {
   KEYWORD_ATTRIBUTE,
   KEYWORD_CLASS,
   KEYWORD_ENRICHER_ID,

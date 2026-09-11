@@ -5,7 +5,7 @@
  * modules copy from each other: the sub-type, its sheet, the enricher, the
  * settings, and the public API.
  */
-import { registerModule, SystemConfig, VttfError } from '@vttforge/core';
+import { inject, registerModule, SystemConfig, VttfError } from '@vttforge/core';
 import { MODULE_ID, NOTE_TYPE } from './constants.mjs';
 import { NoteData } from './data/note-data.mjs';
 import { noteEnricher } from './enricher.mjs';
@@ -70,6 +70,27 @@ try {
         config: true,
         type: Boolean,
         default: true,
+      });
+    },
+
+    // A button in the Items sidebar, put back after every re-render without
+    // ever ending up with two of them.
+    onSetup: () => {
+      inject({
+        id: MODULE_ID,
+        name: 'newNote',
+        hook: 'renderItemDirectory',
+        into: '.directory-header',
+        position: 'append',
+        when: () => game.user?.isGM === true,
+        render: () => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'vttforge-example-new-note';
+          button.textContent = game.i18n.localize('VTTFORGE_EXAMPLE_MODULE.NewNote');
+          button.addEventListener('click', () => api.createNote('New note'));
+          return button;
+        },
       });
     },
 
