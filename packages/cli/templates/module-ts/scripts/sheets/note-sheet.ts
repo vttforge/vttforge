@@ -3,7 +3,12 @@
  *
  * One part, no tabs, one action. The smallest sheet a module can ship.
  */
-import { BaseItemSheet, type ItemLike } from '@vttforge/core';
+import {
+  type ApplicationRenderContext,
+  type ApplicationRenderOptions,
+  BaseItemSheet,
+  type ItemLike,
+} from '@vttforge/core';
 import { MODULE_ID } from '../constants.js';
 import type { NoteData } from '../data/note-data.js';
 
@@ -46,7 +51,9 @@ export class NoteSheet extends BaseItemSheet<NoteItem>() {
     return this.document;
   }
 
-  override async _prepareContext(options: unknown): Promise<Record<string, unknown>> {
+  override async _prepareContext(
+    options: ApplicationRenderOptions,
+  ): Promise<ApplicationRenderContext> {
     const context = await super._prepareContext(options);
     const { item } = this;
     context.item = item;

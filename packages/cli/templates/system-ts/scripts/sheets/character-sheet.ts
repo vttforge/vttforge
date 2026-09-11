@@ -6,7 +6,13 @@
  * - `onDropItem(item, event)` — the item arrives resolved, not as a UUID.
  *   Return `false` to refuse, `undefined` to hand the drop back to Foundry.
  */
-import { BaseActorSheet, type ActorLike, type ItemLike } from '@vttforge/core';
+import {
+  type ActorLike,
+  type ApplicationRenderContext,
+  type ApplicationRenderOptions,
+  BaseActorSheet,
+  type ItemLike,
+} from '@vttforge/core';
 import type { CharacterData } from '../data/character-data.js';
 import type { GearData } from '../data/gear-data.js';
 
@@ -102,7 +108,9 @@ export class CharacterSheet extends BaseActorSheet<CharacterActor>() {
     return this.document;
   }
 
-  override async _prepareContext(options: unknown): Promise<Record<string, unknown>> {
+  override async _prepareContext(
+    options: ApplicationRenderOptions,
+  ): Promise<ApplicationRenderContext> {
     const context = await super._prepareContext(options);
     const { actor } = this;
     const { system } = actor;

@@ -49,6 +49,9 @@
 export type {
   ActiveEffectLike,
   ActorLike,
+  ApplicationHeaderControlsEntry,
+  ApplicationRenderContext,
+  ApplicationRenderOptions,
   ApplicationV2Members,
   DocumentFlags,
   DocumentMembers,

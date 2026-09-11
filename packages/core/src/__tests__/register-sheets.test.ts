@@ -12,6 +12,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { VttfError } from '../errors/registry.js';
+import type { AnyClass } from '../foundry-globals.js';
 import { registerSheets } from '../register-sheets.js';
 
 interface Registered {
@@ -72,7 +73,7 @@ describe('registerSheets', () => {
   });
 
   it('keeps that key across a rebuild that renames the class', () => {
-    const keyAfter = (Sheet: unknown) => {
+    const keyAfter = (Sheet: AnyClass) => {
       calls = [];
       registerSheets(
         'pdf-character-sheet',

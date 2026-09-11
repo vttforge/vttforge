@@ -33,6 +33,9 @@ import { VttfError } from './errors/registry.js';
 import type {
   ActiveEffectLike,
   ActorLike,
+  ApplicationHeaderControlsEntry,
+  ApplicationRenderContext,
+  ApplicationRenderOptions,
   DocumentSheetV2Members,
   FolderLike,
   ItemLike,
@@ -57,6 +60,16 @@ type AnyConstructor = new (...args: any[]) => any;
  * callbacks fall back to sensible defaults that honour `this.isEditable` and
  * the default `_onDragStart` / `_onDrop`.
  */
+/**
+ * What a drag carries. Foundry serialises `{ type, uuid }` onto the event;
+ * a drag begun on a sheet may add its own keys.
+ */
+export interface DropData {
+  readonly type?: string;
+  readonly uuid?: string;
+  readonly [key: string]: unknown;
+}
+
 export interface DragDropConfig {
   readonly dragSelector?: string;
   readonly dropSelector?: string;
@@ -103,9 +116,9 @@ export interface SheetBaseStatics {
  */
 export interface SheetBaseMembers {
   /** Fills in `context.tabs` for every group in `static TABS`. */
-  _prepareContext(options: unknown): Promise<Record<string, unknown>>;
+  _prepareContext(options: ApplicationRenderOptions): Promise<ApplicationRenderContext>;
   /** Binds the `static DRAG_DROP` entries. */
-  _onRender(context: unknown, options: unknown): Promise<void>;
+  _onRender(context: ApplicationRenderContext, options: ApplicationRenderOptions): Promise<void>;
   _onDragStart(event: DragEvent): void;
   /** `'play'` or `'edit'`; always `'edit'` on a sheet without `static MODES`. */
   readonly mode: SheetMode;
@@ -114,7 +127,7 @@ export interface SheetBaseMembers {
   /** Flip the mode, or set the one given, and re-render. */
   toggleMode(mode?: SheetMode): Promise<void>;
   /** The header controls, with the mode toggle labelled for where it leads. */
-  _getHeaderControls(): unknown[];
+  _getHeaderControls(): ApplicationHeaderControlsEntry[];
 
   /**
    * The typed drop hooks. Override the one you want; returning `undefined`
@@ -142,10 +155,10 @@ export interface SheetBaseMembers {
    * left them off, and nothing said so while an index signature was making
    * every member name legal. Override `onDropItem` rather than this.
    */
-  _onDropItem(event: DragEvent, data: unknown): Promise<unknown>;
-  _onDropActor(event: DragEvent, data: unknown): Promise<unknown>;
-  _onDropFolder(event: DragEvent, data: unknown): Promise<unknown>;
-  _onDropActiveEffect(event: DragEvent, data: unknown): Promise<unknown>;
+  _onDropItem(event: DragEvent, data: DropData): Promise<unknown>;
+  _onDropActor(event: DragEvent, data: DropData): Promise<unknown>;
+  _onDropFolder(event: DragEvent, data: DropData): Promise<unknown>;
+  _onDropActiveEffect(event: DragEvent, data: DropData): Promise<unknown>;
 }
 
 export interface SheetBaseCtor<TDocument = ActorLike> extends SheetBaseStatics {

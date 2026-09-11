@@ -9,6 +9,28 @@ import { version } from '../package.json' with { type: 'json' };
 export const VTTFORGE_TYPES_VERSION: string = version;
 
 export type {
+  ApplicationClickAction,
+  ApplicationConfiguration,
+  ApplicationFormConfiguration,
+  ApplicationHeaderControlsEntry,
+  ApplicationPosition,
+  ApplicationRenderContext,
+  ApplicationRenderOptions,
+  ApplicationTab,
+  ApplicationTabsConfiguration,
+  ApplicationWindowConfiguration,
+  HandlebarsTemplatePart,
+} from './application.js';
+export type {
+  DiceTermResult,
+  DieTermLike,
+  RollConstructor,
+  RollEvaluateOptions,
+  RollLike,
+  RollTermLike,
+  ToMessageOptions,
+} from './dice.js';
+export type {
   ActiveEffectLike,
   ActorLike,
   DocumentFlags,
@@ -68,3 +90,19 @@ export type {
   SortOptions,
   SortUpdate,
 } from './utils.js';
+export type {
+  CanvasApi,
+  ChatMessageConstructor,
+  ChatMessageLike,
+  ChatSpeakerData,
+  CombatantLike,
+  CombatHistoryData,
+  CombatLike,
+  FolderLikeDocument,
+  JournalEntryLike,
+  LevelLike,
+  MacroLike,
+  SceneLike,
+  TokenDocumentLike,
+  TokenObjectLike,
+} from './world-documents.js';

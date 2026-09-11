@@ -7,6 +7,14 @@
 
 import type { ActorLike, DocumentMembers, ItemLike } from './documents.js';
 import type { AnyClass } from './utils.js';
+import type {
+  ChatMessageLike,
+  CombatLike,
+  FolderLikeDocument,
+  JournalEntryLike,
+  MacroLike,
+  SceneLike,
+} from './world-documents.js';
 
 /**
  * Foundry's `Collection`, which every world collection and every embedded
@@ -251,16 +259,17 @@ export interface Game {
   readonly users: WorldCollection<UserLike>;
   readonly actors: WorldCollection<ActorLike>;
   readonly items: WorldCollection<ItemLike>;
-  readonly journal: WorldCollection<DocumentMembers>;
-  readonly macros: WorldCollection<DocumentMembers>;
-  readonly messages: WorldCollection<DocumentMembers>;
-  readonly scenes: WorldCollection<DocumentMembers>;
+  readonly journal: WorldCollection<JournalEntryLike>;
+  readonly macros: WorldCollection<MacroLike>;
+  readonly messages: WorldCollection<ChatMessageLike>;
+  readonly scenes: WorldCollection<SceneLike>;
   readonly tables: WorldCollection<DocumentMembers>;
   readonly playlists: WorldCollection<DocumentMembers>;
-  readonly folders: WorldCollection<DocumentMembers>;
+  readonly folders: WorldCollection<FolderLikeDocument>;
   readonly cards: WorldCollection<DocumentMembers>;
-  readonly combats: WorldCollection<DocumentMembers>;
-  readonly combat: DocumentMembers | null;
+  readonly combats: WorldCollection<CombatLike>;
+  /** The active encounter, or null when none is running. */
+  readonly combat: CombatLike | null;
   readonly packs: FoundryCollection<CompendiumCollection>;
 
   readonly settings: GameSettingsApi;
