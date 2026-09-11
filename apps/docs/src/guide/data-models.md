@@ -51,7 +51,7 @@ token bar reads. `resourceField()` builds that `SchemaField` with both
 children required, non-nullable numbers, so `system.health.value` is a
 `number` everywhere:
 
-```ts
+```ts twoslash
 import { fields, resourceField } from '@vttforge/core';
 
 const defineCharacterSchema = () => {

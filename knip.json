@@ -31,7 +31,8 @@
       "ignoreDependencies": [
         "typedoc-plugin-markdown",
         "typedoc-vitepress-theme",
-        "@vttforge/styles"
+        "@vttforge/styles",
+        "@vttforge/core"
       ]
     },
     "apps/e2e": {

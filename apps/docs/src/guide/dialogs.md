@@ -2,7 +2,7 @@
 
 `promptFields()` shows a dialog built from a list of fields and resolves to their values, or `null` when the player closes it.
 
-```ts
+```ts twoslash
 import { promptFields } from '@vttforge/core';
 
 const answer = await promptFields(
@@ -14,8 +14,11 @@ const answer = await promptFields(
   ],
   { title: 'MY_SYSTEM.NewGear', ok: 'MY_SYSTEM.Create' },
 );
-if (!answer) return;
-// answer: { name: string; quantity: number; kind: string; magic: boolean }
+
+if (answer) {
+  answer.quantity;
+  //     ^?
+}
 ```
 
 The result is typed from the fields: a `number` field comes back as a `number`, a `checkbox` as a `boolean`, the rest as `string`. Foundry's form reader does the casting from the input type. The first field has the focus when the dialog opens.

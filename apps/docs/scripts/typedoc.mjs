@@ -1,7 +1,7 @@
 /**
  * Generate the API reference from the package sources.
  *
- * One TypeDoc run per published package, written to `reference/<name>/`
+ * One TypeDoc run per published package, written to `src/reference/<name>/`
  * as Markdown for VitePress. The sidebar JSON each run emits is read by
  * `.vitepress/config.mts`, so a new export appears in the navigation by
  * existing. The output is generated at build time and not committed.
@@ -13,8 +13,11 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const docsRoot = resolve(here, '..');
-const repoRoot = resolve(docsRoot, '..', '..');
+const appRoot = resolve(here, '..');
+// The page sources live under `src/`; `archive/` holds the frozen versions.
+// TypeDoc writes into the current version, so its root is `src/`.
+const docsRoot = resolve(appRoot, 'src');
+const repoRoot = resolve(appRoot, '..', '..');
 const require = createRequire(import.meta.url);
 const typedoc = join(dirname(require.resolve('typedoc/package.json')), 'bin', 'typedoc');
 
@@ -63,5 +66,5 @@ for (const pkg of PACKAGES) {
     ],
     { stdio: 'inherit' },
   );
-  console.log(`[typedoc] @vttforge/${pkg.name} → reference/${pkg.name}/`);
+  console.log(`[typedoc] @vttforge/${pkg.name} → src/reference/${pkg.name}/`);
 }
