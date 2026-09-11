@@ -216,4 +216,16 @@ export {
   type SheetModesConfig,
   TOGGLE_MODE_ACTION,
 } from './sheet-modes.js';
+export {
+  type AskGmOptions,
+  type EmitOptions,
+  type PackageKind,
+  type PackageSocket,
+  registerSocket,
+  type SocketContext,
+  type SocketMessageHandler,
+  type SocketRegistration,
+  type SocketRequestHandler,
+  type SocketSender,
+} from './sockets.js';
 export { SystemConfig } from './system-config.js';

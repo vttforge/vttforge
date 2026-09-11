@@ -166,6 +166,7 @@ export default defineVersionedConfig({
             { text: 'Rolls', link: '/guide/rolls' },
             { text: 'Dialogs', link: '/guide/dialogs' },
             { text: 'Modules', link: '/guide/modules' },
+            { text: 'Sockets', link: '/guide/sockets' },
             { text: 'Settings and migrations', link: '/guide/settings-and-migrations' },
             { text: 'Keywords', link: '/guide/keywords' },
             { text: 'Decorators', link: '/guide/decorators' },

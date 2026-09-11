@@ -50,6 +50,7 @@ Foundry keys a sheet by its class name and saves that key on every document. A b
 - [Data models](https://vttforge.dev/docs/guide/data-models)
 - [Sheets](https://vttforge.dev/docs/guide/sheets)
 - [Modules](https://vttforge.dev/docs/guide/modules)
+- [Sockets](https://vttforge.dev/docs/guide/sockets). `registerSocket`: one-way messages, and questions only the Gamemaster's client can answer.
 - [Error codes](https://vttforge.dev/docs/errors/)
 
 Foundry v14+ only. The package runs in the browser inside Foundry; it reads the Foundry globals lazily, so it also imports cleanly in Node for tests.
