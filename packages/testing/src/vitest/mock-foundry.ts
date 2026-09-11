@@ -12,6 +12,8 @@
  * browser and a real Foundry; that is what the Quench half is for.
  */
 
+import type { DocumentConfig, FoundryConfig } from '@vttforge/types';
+
 /** A Foundry document, as much of one as a unit test needs. */
 export interface MockDocument {
   id: string;
@@ -126,4 +128,64 @@ export function createMockActor(options: MockDocumentOptions = {}): MockDocument
 /** An Item for a test. */
 export function createMockItem(options: MockDocumentOptions = {}): MockDocument {
   return createMockDocument('Item', { type: 'base', ...options });
+}
+
+/**
+ * A complete `CONFIG` for a test.
+ *
+ * `FoundryConfig` names every document entry Foundry ships, because a live
+ * Foundry has them all. A test that only cares about one entry still has to
+ * hand over a whole object, so this builds the empty one and merges what the
+ * test gives it.
+ *
+ * ```ts
+ * globalThis.CONFIG = createMockConfig({
+ *   Combat: { ...createMockConfig().Combat, initiative: { formula: '1d20' } },
+ * });
+ * ```
+ */
+export function createMockConfig(overrides: Partial<FoundryConfig> = {}): FoundryConfig {
+  const doc = (): DocumentConfig => ({
+    documentClass: class MockDocument {},
+    dataModels: {},
+    sheetClasses: {},
+  });
+  const base: FoundryConfig = {
+    Actor: doc(),
+    Item: doc(),
+    ActiveEffect: {
+      ...doc(),
+      changeTypes: {},
+      phases: ['initial', 'final'],
+      expiryEvents: {},
+      expiryAction: 'update',
+    },
+    Combat: { ...doc(), initiative: { formula: null } },
+    Combatant: doc(),
+    ChatMessage: { ...doc(), modes: {} },
+    JournalEntry: doc(),
+    JournalEntryPage: doc(),
+    Scene: doc(),
+    Token: doc(),
+    Macro: doc(),
+    Folder: doc(),
+    RollTable: doc(),
+    Playlist: doc(),
+    Cards: doc(),
+    User: doc(),
+    Dice: {
+      rolls: [],
+      terms: {},
+      functions: {},
+      randomUniform: Math.random,
+      parser: class MockParser {},
+    },
+    TextEditor: { enrichers: [] },
+    statusEffects: {},
+    specialStatusEffects: {},
+    queries: {},
+    Canvas: { layers: {} },
+    debug: { hooks: false },
+  };
+  return { ...base, ...overrides };
 }

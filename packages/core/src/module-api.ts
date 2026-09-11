@@ -27,10 +27,10 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { GameApi } from './foundry-globals.js';
+import type { Game } from './foundry-globals.js';
 
-function game(): GameApi | undefined {
-  return (globalThis as { game?: GameApi }).game;
+function game(): Game | undefined {
+  return (globalThis as { game?: Game }).game;
 }
 
 /** What a package publishes. Anything JSON-ish or callable; we never inspect it. */

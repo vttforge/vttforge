@@ -35,7 +35,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { FoundryConfig, GameApi, SocketApi, UserLike } from './foundry-globals.js';
+import type { FoundryConfig, Game, SocketApi, UserLike } from './foundry-globals.js';
 
 /** Which manifest the package is declared in. Decides the channel prefix. */
 export type PackageKind = 'module' | 'system';
@@ -136,12 +136,12 @@ function config(): FoundryConfig {
   return (globalThis as { CONFIG?: FoundryConfig }).CONFIG as FoundryConfig;
 }
 
-function game(): GameApi | undefined {
-  return (globalThis as { game?: GameApi }).game;
+function game(): Game | undefined {
+  return (globalThis as { game?: Game }).game;
 }
 
 function socketApi(): SocketApi | undefined {
-  return game()?.socket;
+  return game()?.socket ?? undefined;
 }
 
 function fail(code: 'VTTF-0012' | 'VTTF-0013', message: string): never {

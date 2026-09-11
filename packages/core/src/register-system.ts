@@ -21,6 +21,7 @@
 import { schemaHasResource } from './data/resource-field.js';
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
 import type {
+  AnyClass,
   CombatConfig,
   FoundryConfig,
   HooksApi,
@@ -36,19 +37,19 @@ export interface SystemRegistration {
   readonly id: string;
 
   /** Map of `documentTypes.Actor` key → TypeDataModel class. */
-  readonly actorDataModels?: Readonly<Record<string, unknown>>;
+  readonly actorDataModels?: Readonly<Record<string, AnyClass>>;
 
   /** Map of `documentTypes.Item` key → TypeDataModel class. */
-  readonly itemDataModels?: Readonly<Record<string, unknown>>;
+  readonly itemDataModels?: Readonly<Record<string, AnyClass>>;
 
   /** Replacement for `CONFIG.Actor.documentClass`. */
-  readonly actorDocumentClass?: unknown;
+  readonly actorDocumentClass?: AnyClass;
 
   /** Replacement for `CONFIG.Item.documentClass`. */
-  readonly itemDocumentClass?: unknown;
+  readonly itemDocumentClass?: AnyClass;
 
   /** Global initiative formula: assigned to `CONFIG.Combat.initiative`. */
-  readonly combat?: CombatConfig;
+  readonly combat?: { readonly initiative: CombatConfig['initiative'] };
 
   /**
    * Conditions this system adds to `CONFIG.statusEffects`, each keyed by its

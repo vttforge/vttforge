@@ -16,6 +16,9 @@ function makeSettings(initial: Record<string, string> = {}): GameSettingsApi & {
     register(namespace: string, key: string, config: unknown): void {
       registerSpy(namespace, key, config);
     },
+    registerMenu(): void {
+      // the migration runner never opens a settings menu
+    },
     get<T = unknown>(namespace: string, key: string): T {
       return store[`${namespace}.${key}`] as unknown as T;
     },

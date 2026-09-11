@@ -22,10 +22,10 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { GameApi, SettingConfig } from './foundry-globals.js';
+import type { Game, SettingConfig } from './foundry-globals.js';
 
-function readGame(): GameApi {
-  const candidate = (globalThis as Record<string, unknown>).game as GameApi | undefined;
+function readGame(): Game {
+  const candidate = (globalThis as Record<string, unknown>).game as Game | undefined;
   if (candidate === undefined || candidate.settings === undefined) {
     throw new VttfError(
       'VTTF-0002',

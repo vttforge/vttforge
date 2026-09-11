@@ -15,7 +15,7 @@
  */
 
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
-import type { FoundryConfig, GameApi, HooksApi, StatusEffectConfig } from './foundry-globals.js';
+import type { FoundryConfig, Game, HooksApi, StatusEffectConfig } from './foundry-globals.js';
 import { assertKeywords, type Keyword, keywordEnricher, syncKeywordJournal } from './keywords.js';
 import { type EnricherRegistration, registerEnrichers } from './register-enrichers.js';
 import { registerSheets, type SheetRegistration } from './register-sheets.js';
@@ -232,7 +232,7 @@ export function registerModule(config: ModuleRegistration): ModuleRegistration {
  * it has, which is worth saying out loud rather than dropping the api.
  */
 function publishApi(moduleId: string, api: Readonly<Record<string, unknown>>): void {
-  const modules = (globalThis as { game?: GameApi }).game?.modules;
+  const modules = (globalThis as { game?: Game }).game?.modules;
   // No module list at all is a test bench, not a mismatched id.
   if (!modules) return;
   const handle = modules.get(moduleId);
