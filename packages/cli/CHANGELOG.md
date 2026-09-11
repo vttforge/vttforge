@@ -1,5 +1,46 @@
 # @vttforge/cli
 
+## 0.16.0
+
+### Minor Changes
+
+- 3c56de9: `vttforge audit` gains VTTF-AUDIT-022: source that talks on the package socket
+  channel while the manifest has no `"socket": true`.
+  
+  Foundry opens the `module.<id>` / `system.<id>` channel only for a package that
+  declares the flag. Without it `emit` returns without throwing, the message
+  never leaves the client, and nothing is logged. The listener on the other
+  machine is bound and correct and never fires, so the search goes to the
+  handler, the payload and the user permissions, and the manifest is the last
+  place anyone looks.
+  
+  The rule wants the package channel. Core events ride the same socket under
+  their own names and need no flag, so `game.socket.on('userActivity', ...)` on
+  its own is not a finding. A file that names `module.<id>` or `system.<id>`, or
+  that calls `registerSocket`, is. Calls quoted in comments are skipped.
+  
+  The project templates pin `@vttforge/cli` by minor, so they move to the
+  release that carries the rule.
+
+### Patch Changes
+
+- 14b29cc: Point the project templates at the `@vttforge/core` minor that carries
+  `inject()`. On a 0.x line a caret pins the minor, so the old pin would have
+  scaffolded a project that cannot see it.
+- 86b64fa: Point the project templates at the `@vttforge/core` minor that carries the
+  `api` option and the module-api helpers. On a 0.x line a caret pins the minor,
+  so the old pin would have scaffolded a project that cannot see them.
+- ac59e0a: Point the project templates at the `@vttforge/core` minor that renames
+  `SystemConfig` to `PackageConfig`, and switch the scaffolded code to the new
+  name. On a 0.x line a caret pins the minor, so the old pin would have
+  scaffolded a project that cannot resolve it.
+- a5623a0: Point the project templates at the `@vttforge/core` minor that carries
+  `registerSocket()`. On a 0.x line a caret pins the minor, so the old pin would
+  have scaffolded a project that cannot see the new API.
+- 7e77931: Point the project templates at the `@vttforge/core` minor that carries
+  `convertSubTypes()`. On a 0.x line a caret pins the minor, so the old pin would
+  have scaffolded a project that cannot see it.
+
 ## 0.15.3
 
 ### Patch Changes
