@@ -78,6 +78,21 @@ export type {
   WorldHandle,
 } from './globals.js';
 export type {
+  ContextMenuEntry,
+  ContextMenuHooks,
+  DatabaseOperationOptions,
+  DocumentHookName,
+  DocumentLifecycleHooks,
+  DocumentTypeMap,
+  HookCallback,
+  HookMap,
+  HookName,
+  HooksApi,
+  HotReloadData,
+  SceneControl,
+  StaticHooks,
+} from './hooks.js';
+export type {
   AnyClass,
   DiffObjectOptions,
   FoundryUtils,

@@ -26,10 +26,14 @@ export type {
   CombatHistoryData,
   CombatLike,
   CompendiumCollection,
+  ContextMenuEntry,
+  DatabaseOperationOptions,
   DiceConfig,
   DiceTermResult,
   DieTermLike,
   DocumentConfig,
+  DocumentHookName,
+  DocumentTypeMap,
   FolderLikeDocument,
   FoundryCollection,
   FoundryConfig,
@@ -40,6 +44,11 @@ export type {
   GameSettingsApi,
   GameTimeApi,
   HandlebarsTemplatePart,
+  HookCallback,
+  HookMap,
+  HookName,
+  HooksApi,
+  HotReloadData,
   JournalEntryLike,
   KeybindingsApi,
   KeyboardApi,
@@ -57,6 +66,7 @@ export type {
   RollEvaluateOptions,
   RollLike,
   RollTermLike,
+  SceneControl,
   SceneLike,
   SettingConfig,
   SettingMenuConfig,
@@ -73,15 +83,3 @@ export type {
   WorldCollection,
   WorldHandle,
 } from '@vttforge/types';
-
-export type HookCallback<Args extends readonly unknown[] = readonly unknown[]> = (
-  ...args: Args
-) => unknown | Promise<unknown>;
-
-export interface HooksApi {
-  once<Args extends readonly unknown[]>(event: string, fn: HookCallback<Args>): number;
-  on<Args extends readonly unknown[]>(event: string, fn: HookCallback<Args>): number;
-  off(event: string, idOrFn: number | HookCallback): boolean;
-  call(event: string, ...args: readonly unknown[]): boolean;
-  callAll(event: string, ...args: readonly unknown[]): boolean;
-}
