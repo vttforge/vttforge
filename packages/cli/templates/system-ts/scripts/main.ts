@@ -6,7 +6,7 @@
  * and the `ready`-time migration gate.
  */
 import './foundry-globals.js';
-import { registerSystem, SystemConfig, VttfError } from '@vttforge/core';
+import { registerSystem, PackageConfig, VttfError } from '@vttforge/core';
 import { CharacterData } from './data/character-data.js';
 import { GearData } from './data/gear-data.js';
 import { migrations } from './migrations.js';
@@ -15,7 +15,7 @@ import { GearSheet } from './sheets/gear-sheet.js';
 
 const SYSTEM_ID = '{{ID}}';
 
-const settings = new SystemConfig(SYSTEM_ID);
+const settings = new PackageConfig(SYSTEM_ID);
 
 try {
   registerSystem({

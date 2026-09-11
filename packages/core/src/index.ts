@@ -5,7 +5,7 @@
  *
  *   - registerSystem(): one-call init, replaces Hooks.once("init")
  *   - registerModule(): the same for modules, with namespaced sub-types
- *   - SystemConfig: typed wrapper around game.settings
+ *   - PackageConfig: typed wrapper around game.settings
  *   - BaseTypeDataModel(): TypeDataModel with safe migrateData default
  *   - BaseActorSheet(): ActorSheetV2 + HandlebarsApplicationMixin
  *   - BaseItemSheet(): ItemSheetV2 + HandlebarsApplicationMixin
@@ -180,6 +180,7 @@ export type {
   MigrationRunner,
   MigrationRunnerOptions,
 } from './migrations/types.js';
+export { PackageConfig, SystemConfig } from './package-config.js';
 export {
   type CheckboxPromptField,
   type NumberPromptField,
@@ -216,4 +217,3 @@ export {
   type SheetModesConfig,
   TOGGLE_MODE_ACTION,
 } from './sheet-modes.js';
-export { SystemConfig } from './system-config.js';

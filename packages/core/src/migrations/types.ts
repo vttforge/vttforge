@@ -26,16 +26,27 @@ export interface MigrationLogger {
 }
 
 export interface MigrationRunnerOptions {
-  /** System id, used as the `game.settings` namespace. */
-  readonly systemId: string;
+  /**
+   * Package id, used as the `game.settings` namespace. Required. It is
+   * optional in the type only because `systemId` is still accepted in its
+   * place; pass one of the two, and `createMigrationRunner` throws
+   * VTTF-0004 when neither arrives.
+   */
+  readonly packageId?: string;
+  /**
+   * @deprecated Pass `packageId`. Modules run migrations too, and the old
+   * name says otherwise. Still read when `packageId` is absent, for the rest
+   * of the 0.x line.
+   */
+  readonly systemId?: string;
   /** Migrations in ascending version order. Empty array is allowed (`run()` is a no-op then). */
   readonly migrations: ReadonlyArray<Migration>;
-  /** Settings key under `systemId`. Defaults to `'schemaVersion'`. */
+  /** Settings key under the package id. Defaults to `'schemaVersion'`. */
   readonly settingKey?: string;
   /**
    * Compatibility floor: worlds with a stored schemaVersion strictly older than this
    * throw `VttfError VTTF-0005` instead of running migrations. Mirrors the
-   * `flags.<systemId>.compatibleMigrationVersion` declaration in `system.json`.
+   * `flags.<id>.compatibleMigrationVersion` declaration in the manifest.
    */
   readonly compatibleVersion?: string;
   /**

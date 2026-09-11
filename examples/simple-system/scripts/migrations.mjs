@@ -29,7 +29,7 @@ async function migrateToV0_1_0() {
 }
 
 export const migrations = createMigrationRunner({
-  systemId: SYSTEM_ID,
+  packageId: SYSTEM_ID,
   compatibleVersion: '0.0.0',
   migrations: [
     {

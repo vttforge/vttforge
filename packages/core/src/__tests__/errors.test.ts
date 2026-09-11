@@ -42,9 +42,9 @@ describe('VttfError', () => {
   });
 
   it('uses a custom message when provided', () => {
-    const err = new VttfError('VTTF-0001', 'system "ordemparanormal" registered twice');
+    const err = new VttfError('VTTF-0001', 'system "my-system" registered twice');
     expect(err.message).toContain('[VTTF-0001]');
-    expect(err.message).toContain('ordemparanormal');
+    expect(err.message).toContain('my-system');
   });
 
   it('preserves native cause (ES2022)', () => {

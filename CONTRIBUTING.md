@@ -99,7 +99,7 @@ It asks which packages changed and at what level. The bot reminds you on the PR 
 
 [Conventional Commits](https://www.conventionalcommits.org):
 
-- `feat(core): add SystemConfig.getFlag`
+- `feat(core): add PackageConfig.getFlag`
 - `fix(vite-plugin): manifest sync drops styles on rebuild`
 - `docs: explain the sheet id`
 - `chore(deps): bump tsdown`

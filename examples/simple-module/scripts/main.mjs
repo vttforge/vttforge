@@ -5,13 +5,13 @@
  * modules copy from each other: the sub-type, its sheet, the enricher, the
  * settings, and the public API.
  */
-import { registerModule, SystemConfig, VttfError } from '@vttforge/core';
+import { PackageConfig, registerModule, VttfError } from '@vttforge/core';
 import { MODULE_ID, NOTE_TYPE } from './constants.mjs';
 import { NoteData } from './data/note-data.mjs';
 import { noteEnricher } from './enricher.mjs';
 import { NoteSheet } from './sheets/note-sheet.mjs';
 
-const settings = new SystemConfig(MODULE_ID);
+const settings = new PackageConfig(MODULE_ID);
 
 /** What `game.modules.get("vttforge-example-module").api` offers other modules and macros. */
 const api = {

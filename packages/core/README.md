@@ -21,7 +21,7 @@ pnpm add @vttforge/core
 | `promptFields()` | A dialog from a list of fields, built with Foundry's input helpers, resolving to a typed object or `null` |
 | `keywords` on either registration | Rules terms as `@Keyword[id]` with a tooltip, and a journal entry the GM's client creates and keeps current |
 | `BaseDocumentSheet('Actor' \| 'Item')` / `BaseApplication()` | The same plumbing without Handlebars, for a sheet that builds its own element |
-| `SystemConfig` | `game.settings.register/get/set` with the package id filled in and unregistered reads caught |
+| `PackageConfig` | `game.settings.register/get/set` with the package id filled in and unregistered reads caught |
 | `createMigrationRunner` | The `schemaVersion` setting, the `isNewerVersion` compare and the sequential `await` every system grows |
 | `moduleSubType` | The `<module id>.<type>` prefix Foundry files a module's sub-types under |
 | `VttfError` | Runtime errors with a stable `VTTF-NNNN` code and a docs URL |

@@ -49,7 +49,7 @@ The whole guide is at **[vttforge.dev/docs](https://vttforge.dev/docs/)**.
 - [Rolls](https://vttforge.dev/docs/guide/rolls). `postRoll`, and how a card gets tagged as a critical or a fumble.
 - [Dialogs](https://vttforge.dev/docs/guide/dialogs). `promptFields`: a dialog from a list of fields, typed answers back.
 - [Modules](https://vttforge.dev/docs/guide/modules). Namespaced sub-types, enrichers, and what a module may not touch.
-- [Settings and migrations](https://vttforge.dev/docs/guide/settings-and-migrations). `SystemConfig` and the migration runner.
+- [Settings and migrations](https://vttforge.dev/docs/guide/settings-and-migrations). `PackageConfig` and the migration runner.
 - [Keywords](https://vttforge.dev/docs/guide/keywords). Rules terms defined once: `@Keyword[id]` in any text, and a journal the GM's client keeps current.
 - [The dev loop](https://vttforge.dev/docs/guide/dev-loop). What reloads in place and what does not.
 - [Testing](https://vttforge.dev/docs/guide/testing). `withMockFoundry` in Vitest, Quench for what a mock cannot answer.
@@ -119,7 +119,7 @@ Most of these exist because something failed quietly in a real world.
 
 | Package | What it does |
 |---|---|
-| [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | `registerSystem` / `registerModule`, sheet and enricher registration, `BaseTypeDataModel` + `InferSchema<T>`, `BaseActorSheet` / `BaseItemSheet` / `BaseDocumentSheet` / `BaseApplication`, `SystemConfig`, `createMigrationRunner`, and the `VTTF-NNNN` error catalogue |
+| [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | `registerSystem` / `registerModule`, sheet and enricher registration, `BaseTypeDataModel` + `InferSchema<T>`, `BaseActorSheet` / `BaseItemSheet` / `BaseDocumentSheet` / `BaseApplication`, `PackageConfig`, `createMigrationRunner`, and the `VTTF-NNNN` error catalogue |
 | [`@vttforge/cli`](https://www.npmjs.com/package/@vttforge/cli) | `vttforge init` / `dev` / `build` / `audit`: scaffolding, the symlink-and-watch dev loop, the release zip, and a manifest linter |
 | [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | The build contract: browser-ESM output with no hashing, CSS bundled, manifest copied under Foundry's filename with `version` and entry paths rewritten |
 | [`@vttforge/styles`](https://www.npmjs.com/package/@vttforge/styles) | The Forge design system: W3C DTCG tokens compiled to CSS, `.vttf-*` primitives, sheet primitives, opt-in themes over cascade layers |

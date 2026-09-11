@@ -38,7 +38,7 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     code: 'VTTF-0003',
     name: 'UnknownSetting',
     summary:
-      'SystemConfig.get() / set() received a key that never reached SystemConfig.register(). Register the setting in your init hook before reading it.',
+      'PackageConfig.get() / set() received a key that never reached PackageConfig.register(). Register the setting in your init hook before reading it.',
   }),
   'VTTF-0004': Object.freeze({
     code: 'VTTF-0004',
