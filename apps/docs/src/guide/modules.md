@@ -115,6 +115,13 @@ wraps enrichers in. VTTForge checks the flag when you register.
 
 `registerSystem` takes the same option.
 
+## Talking to the other clients
+
+A module that shows the table something, or that lets a player change what
+only a Gamemaster may change, needs the socket. That is
+[its own page](./sockets), because the parts that go wrong there are not the
+parts the API docs describe.
+
 ## The module api
 
 `game.modules.get(id).api` is where a module publishes what other modules and
