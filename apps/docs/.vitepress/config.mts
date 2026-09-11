@@ -127,6 +127,7 @@ export default defineConfig({
             { text: 'Data models', link: '/guide/data-models' },
             { text: 'Sheets', link: '/guide/sheets' },
             { text: 'Rolls', link: '/guide/rolls' },
+            { text: 'Dialogs', link: '/guide/dialogs' },
             { text: 'Modules', link: '/guide/modules' },
             { text: 'Settings and migrations', link: '/guide/settings-and-migrations' },
             { text: 'Keywords', link: '/guide/keywords' },

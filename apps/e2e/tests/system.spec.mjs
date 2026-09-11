@@ -458,6 +458,41 @@ test('postRoll tags a critical and a fumble, and honours the message mode', asyn
   expect(posted.crit.tagColor).not.toBe(posted.fumble.tagColor);
 });
 
+test('the new gear button opens a dialog built from fields, and the answer becomes an item', async ({
+  page,
+}) => {
+  await joinWorld(page);
+
+  await page.evaluate(async () => {
+    const actor = await Actor.create({ name: 'End-to-end Shopper', type: 'character' });
+    await actor.sheet.render(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    actor.sheet.element.querySelector('[data-action="createGear"]').click();
+  });
+
+  // A real DialogV2, with Foundry's own form groups inside.
+  const dialog = page.locator('dialog.application, .application.dialog').last();
+  await dialog.locator('input[name="name"]').waitFor();
+  const groups = await dialog.locator('.form-group').count();
+  const title = await dialog.locator('.window-title').textContent();
+  await dialog.locator('input[name="name"]').fill('Grappling hook');
+  await dialog.locator('input[name="quantity"]').fill('3');
+  await dialog.locator('select[name="kind"]').selectOption('equipped');
+  await dialog.locator('button[data-action="ok"]').click();
+
+  const item = await page.evaluate(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    const actor = game.actors.getName('End-to-end Shopper');
+    const gear = actor.items.getName('Grappling hook');
+    return gear && { type: gear.type, quantity: gear.system.quantity, kind: gear.system.kind };
+  });
+
+  expect(groups).toBe(3);
+  expect(title).toBe('New gear');
+  // The number came back as a number and the select as its value.
+  expect(item).toEqual({ type: 'gear', quantity: 3, kind: 'equipped' });
+});
+
 test('the module contributes a namespaced sub-type once enabled', async ({ page }) => {
   await joinWorld(page);
 
