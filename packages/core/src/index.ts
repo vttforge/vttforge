@@ -165,6 +165,20 @@ export type {
   MigrationRunnerOptions,
 } from './migrations/types.js';
 export {
+  type CheckboxPromptField,
+  type NumberPromptField,
+  type PromptField,
+  type PromptFieldsOptions,
+  type PromptFieldValue,
+  type PromptResult,
+  promptFieldGroup,
+  promptFields,
+  type SelectPromptField,
+  type SelectPromptOption,
+  type TextareaPromptField,
+  type TextPromptField,
+} from './prompt-fields.js';
+export {
   type EnricherRegistration,
   registerEnrichers,
 } from './register-enrichers.js';
