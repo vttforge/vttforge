@@ -112,6 +112,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'subTypeDocuments() or convertSubTypes() was called without a module id or a bare type key, asked to convert a type into itself, or run where foundry.data.operators.ForcedReplacement does not exist. Foundry refuses a document type change without that operator, and drops the rest of the update with it.',
   }),
+  'VTTF-0016': Object.freeze({
+    code: 'VTTF-0016',
+    name: 'InvalidInjection',
+    summary:
+      'inject() was called without a package id, without a render hook to bind, without a render function, with a name that cannot be used, or with a position that would put the node outside the application element. The name is half the marker that lets a re-render replace the previous injection instead of adding a second one beside it.',
+  }),
 });
 
 /**

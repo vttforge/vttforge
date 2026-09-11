@@ -7,6 +7,7 @@
  */
 import {
   convertSubTypes,
+  inject,
   registerModule,
   registerSocket,
   SystemConfig,
@@ -161,6 +162,25 @@ try {
             });
             return item.id;
           },
+        },
+      });
+
+      // A button in the Items sidebar, put back after every re-render without
+      // ever ending up with two of them.
+      inject({
+        id: MODULE_ID,
+        name: 'newNote',
+        hook: 'renderItemDirectory',
+        into: '.directory-header',
+        position: 'append',
+        when: () => game.user?.isGM === true,
+        render: () => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'vttforge-example-new-note';
+          button.textContent = game.i18n.localize('VTTFORGE_EXAMPLE_MODULE.NewNote');
+          button.addEventListener('click', () => api.createNote('New note'));
+          return button;
         },
       });
     },

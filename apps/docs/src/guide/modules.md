@@ -211,3 +211,82 @@ the rename as well.
 Creating a replacement with `keepId` while the original is still there
 overwrites it. No error, no second document, and no way back if the new data
 was wrong.
+
+## Adding UI to someone else's application
+
+Most of what a module does is put something of its own inside an application
+it does not own. There is no API for that: you bind the render hook, find a
+node, and insert.
+
+```js
+import { inject } from '@vttforge/core';
+
+const off = inject({
+  id: 'my-module',
+  name: 'generator',
+  hook: 'renderActorDirectory',
+  into: '.directory-header',
+  position: 'after',
+  when: () => game.user.isGM,
+  render: () => {
+    const button = document.createElement('button');
+    button.textContent = 'Generate';
+    button.addEventListener('click', () => generate());
+    return button;
+  },
+});
+```
+
+Foundry re-renders an application whenever its document changes, so that code
+runs again and again. The insert repeats, and every module solves it by hand.
+`inject` marks what it inserted with `data-vttforge-injection="<id>.<name>"`
+and removes the previous one first, so ten renders leave one node. Two
+packages using the same `name` do not collide, because the marker carries the
+package id.
+
+`render` returning `null` inserts nothing and still clears what the last
+render left, which is how a feature turns itself off.
+
+`before`, `after` and `replace` need `into`. Without it the anchor is the
+application's own element, so the node would land outside the window, where
+the next render cannot find it again and inserts a second one. `replace` there
+would take the whole application away. VTTForge refuses the combination with
+VTTF-0016 rather than letting it run.
+
+The returned function unbinds the hook. Call it when the feature is switched
+off; leaving it bound means the injection comes back on the next render.
+
+| Option | What it does |
+| --- | --- |
+| `hook` | The render hook. Render hooks fire once per class in the chain, so a base class name catches every sheet and an exact class name catches one |
+| `into` | Selector for the node to insert around, searched inside the rendered element. Left out, the rendered element itself |
+| `position` | `append` (default), `prepend`, `before`, `after` or `replace`. The last three need `into` |
+| `when` | Skip the injection. The previous one is still cleared |
+
+Most render hooks hand over an `HTMLElement`. The deprecated
+`renderChatMessage` hands over jQuery, and `inject` takes the node out of
+either, so the same code works on both.
+
+### What this is not
+
+It does not patch anything. Adding to an application that offers no seam at
+all means wrapping a method somebody else wrote, which is a different problem
+with a different answer:
+
+```js
+// Requires libWrapper, declared under relationships.recommends.
+Hooks.once('setup', () => {
+  if (!game.modules.get('lib-wrapper')?.active) return;
+  libWrapper.register('my-module', 'ChatLog.prototype._getEntryContextOptions', function (wrapped, ...args) {
+    const options = wrapped(...args);
+    options.push({ name: 'MY_MODULE.copy', icon: '<i class="fa-solid fa-copy"></i>', callback: copy });
+    return options;
+  }, 'WRAPPER');
+});
+```
+
+Use `WRAPPER` and call `wrapped`, so other modules patching the same method
+still run. A wrapper that throws breaks the application for the whole world,
+not just your feature, so guard for the library being absent and keep the body
+short. VTTForge does not wrap this: a shim that hides whether libWrapper is
+installed would decide for you what happens when it is not.
