@@ -4,7 +4,7 @@ Forge is `@vttforge/styles`'s official theme. The four files in this folder show
 
 | File | Reference |
 | --- | --- |
-| `codex.css` | D&D 5e modern: burgundy + cream serif. |
+| `codex.css` | Burgundy and cream, serif. |
 | `parchment.css` | OGL / OSR print style: walnut ink, square edges. |
 | `grimdark.css` | Warhammer / Mörk Borg / CoC: near-black, condensed sans, dried-blood accent. |
 | `neon.css` | Shadowrun / Cyberpunk: deep blue, magenta + cyan, mono display. |

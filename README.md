@@ -27,7 +27,10 @@ cd my-system
 pnpm build
 ```
 
-That scaffolds a Foundry-loadable system, installs it, and builds a `dist/` plus a release zip with the manifest at the root, which is what foundryvtt.com expects. Every prompt is also a flag, so the same line runs in CI with `--yes`.
+Pass `--type module` for a module. The two get the same treatment: the same
+sheet bases, the same data models, the same build, the same dev loop.
+
+That scaffolds a Foundry-loadable package, installs it, and builds a `dist/` plus a release zip with the manifest at the root, which is what foundryvtt.com expects. Every prompt is also a flag, so the same line runs in CI with `--yes`.
 
 `npx @vttforge/cli init` does the same thing if you would rather not go through `create`.
 
@@ -114,13 +117,35 @@ type CharacterSystem = InferSchema<ReturnType<typeof defineCharacterSchema>>;
 
 Where Foundry already does something well, such as `editImage` on `DocumentSheetV2` or the `_getTabs()` state machine, VTTForge leaves it alone.
 
+### And what a module writes by hand
+
+A module reaches for all of the above and four more things a system never needs:
+
+```ts
+import { inject, moduleApi, registerSocket } from '@vttforge/core';
+
+// The channel, the manifest flag it needs, and the sender the server vouched
+// for rather than the one the payload claims.
+const socket = registerSocket({ id: 'my-module', kind: 'module', requests: { createNote } });
+await socket.askGm('createNote', { name });   // a player cannot write world documents
+
+// Replaced on each re-render instead of stacking one button per render.
+inject({ id: 'my-module', name: 'generate', hook: 'renderActorDirectory', render: () => button() });
+
+// Another package's api, and which of not installed, switched off or
+// publishing nothing it was.
+const other = moduleApi<TheirApi>('their-module');
+```
+
+The fourth is `convertSubTypes`: a module's sub-types travel with the module, so switching it off marks every document using one invalid. One call turns them back into plain documents before that happens.
+
 ## What is actually in the box
 
 Most of these exist because something failed quietly in a real world.
 
 | Package | What it does |
 |---|---|
-| [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | `registerSystem` / `registerModule`, sheet and enricher registration, `BaseTypeDataModel` + `InferSchema<T>`, `BaseActorSheet` / `BaseItemSheet` / `BaseDocumentSheet` / `BaseApplication`, `PackageConfig`, `createMigrationRunner`, and the `VTTF-NNNN` error catalogue |
+| [`@vttforge/core`](https://www.npmjs.com/package/@vttforge/core) | `registerSystem` / `registerModule`, sheet and enricher registration, `BaseTypeDataModel` + `InferSchema<T>`, `BaseActorSheet` / `BaseItemSheet` / `BaseDocumentSheet` / `BaseApplication`, `PackageConfig`, `createMigrationRunner`, and the `VTTF-NNNN` error catalogue. For modules: `registerSocket`, `moduleApi` / `requireModuleApi`, `convertSubTypes`, `inject` |
 | [`@vttforge/cli`](https://www.npmjs.com/package/@vttforge/cli) | `vttforge init` / `dev` / `build` / `audit`: scaffolding, the symlink-and-watch dev loop, the release zip, and a manifest linter |
 | [`@vttforge/vite-plugin`](https://www.npmjs.com/package/@vttforge/vite-plugin) | The build contract: browser-ESM output with no hashing, CSS bundled, manifest copied under Foundry's filename with `version` and entry paths rewritten |
 | [`@vttforge/styles`](https://www.npmjs.com/package/@vttforge/styles) | The Forge design system: W3C DTCG tokens compiled to CSS, `.vttf-*` primitives, sheet primitives, opt-in themes over cascade layers |
@@ -148,6 +173,8 @@ pnpm build
 cp .env.example .env                             # FOUNDRY_LICENSE_KEY / USERNAME / PASSWORD
 docker compose -f docker-compose.dev.yml up      # → http://localhost:30000
 ```
+
+The repo also ships an example module, enabled the same way. It publishes an api, registers a socket, injects a button into the Items sidebar and converts its own sub-types back.
 
 Create a world on **VTTForge Example System** and add a Character. The sheet renders the reference layout: quick stats, four tabs, an ability grid with roll buttons, an items list with kind pills. The demo migration runs at world load.
 
@@ -178,7 +205,8 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 - ✅ Design system. Tokens, primitives, themes, brand
 - ✅ Published. Every package on npm under OIDC trusted publishing, with provenance
 - ✅ Documentation. [vttforge.dev/docs](https://vttforge.dev/docs/) carries the guide, the API reference, the recipes and the error catalogue
-- 🛠️ Now. Widening the Foundry surface in `@vttforge/types` as adopters hit gaps
+- ✅ Modules. Sockets and GM-authoritative requests, the module api, sub-type conversion so a module can be uninstalled without stranding data, UI injection into applications you do not own
+- 🛠️ Now. Widening the Foundry surface in `@vttforge/types` as adopters hit gaps, and closing the remaining places where a module has to write by hand what a system does not
 - 🚀 v1.0. A stable API, decorators once the toolchain allows them, and enough adopters to know which of the remaining gaps are real
 
 ## Where it is now

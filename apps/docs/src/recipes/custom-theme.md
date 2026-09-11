@@ -6,8 +6,8 @@ theme is a class that sets the tokens.
 
 ## Start from an example
 
-The repo carries four in `examples/themes/`: Codex (5e modern, burgundy and
-cream), Parchment (OSR print), Grimdark (near-black, dried-blood accent) and
+The repo carries four in `examples/themes/`: Codex (burgundy and cream, serif),
+Parchment (print, aged paper), Grimdark (near-black, dried-blood accent) and
 Neon (cyberpunk). Each is one class:
 
 ```css
