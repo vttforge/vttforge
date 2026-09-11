@@ -18,7 +18,7 @@
  *   shipped with @vttforge/core
  */
 
-import { registerSystem, SystemConfig, VttfError } from '@vttforge/core';
+import { PackageConfig, registerSystem, VttfError } from '@vttforge/core';
 import { CharacterData } from './data/character-data.mjs';
 import { GearData } from './data/gear-data.mjs';
 import { migrations } from './migrations.mjs';
@@ -27,7 +27,7 @@ import { GearSheet } from './sheets/gear-sheet.mjs';
 
 const SYSTEM_ID = 'vttforge-example';
 
-const settings = new SystemConfig(SYSTEM_ID);
+const settings = new PackageConfig(SYSTEM_ID);
 
 try {
   registerSystem({
@@ -83,7 +83,7 @@ try {
     ],
 
     onAfterInit: () => {
-      // Surface a single user-facing setting so the SystemConfig wrapper is
+      // Surface a single user-facing setting so the PackageConfig wrapper is
       // exercised end-to-end alongside the migration setting.
       settings.register('showTutorial', {
         name: 'VTTFORGE_EXAMPLE.Settings.showTutorial.name',

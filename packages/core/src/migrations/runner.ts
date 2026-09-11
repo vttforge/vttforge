@@ -9,7 +9,7 @@
  *
  * Versions are semver strings, compared with `foundry.utils.isNewerVersion`.
  * The data lives in a per-system world setting and lines up cleanly with
- * `system.json`'s `flags.<systemId>.needsMigrationVersion` /
+ * the manifest's `flags.<id>.needsMigrationVersion` /
  * `compatibleMigrationVersion`.
  *
  * Failures advance `schemaVersion` only past migrations that *completed*. A
@@ -134,13 +134,13 @@ function assertAscending(
 }
 
 /**
- * Build a migration runner for a system. See module header for the failure
+ * Build a migration runner for a package. See module header for the failure
  * semantics; see `Migration` JSDoc for the per-entry shape.
  *
  * @example
  * ```ts
  * const migrations = createMigrationRunner({
- *   systemId: 'my-system',
+ *   packageId: 'my-system',
  *   migrations: [
  *     { version: '1.0.0', description: 'Rename bio → biography', fn: migrateV1 },
  *     { version: '2.0.0', description: 'Add hp.temp', fn: migrateV2 },
@@ -159,6 +159,15 @@ function assertAscending(
  * ```
  */
 export function createMigrationRunner(options: MigrationRunnerOptions): MigrationRunner {
+  // `systemId` is the old name for the same thing. A caller that passes
+  // neither gets the same complaint the old signature gave for an empty id.
+  const packageId = options.packageId ?? options.systemId;
+  if (typeof packageId !== 'string' || packageId === '') {
+    throw new VttfError(
+      'VTTF-0017',
+      'createMigrationRunner() needs a packageId. It is the game.settings namespace the schemaVersion is stored under.',
+    );
+  }
   const settingKey = options.settingKey ?? DEFAULT_SETTING_KEY;
   const target = lastVersion(options.migrations);
   const settingsOverride = options.settings;
@@ -170,7 +179,7 @@ export function createMigrationRunner(options: MigrationRunnerOptions): Migratio
 
     register(): void {
       const settings = settingsOverride ?? resolveSettings();
-      settings.register<string>(options.systemId, settingKey, {
+      settings.register<string>(packageId, settingKey, {
         name: 'Schema Version',
         hint: 'Internal schema version for VTTForge data migration tracking. Do not edit by hand.',
         scope: 'world',
@@ -189,14 +198,14 @@ export function createMigrationRunner(options: MigrationRunnerOptions): Migratio
 
       assertAscending(options.migrations, isNewer);
 
-      const stored = settings.get<string>(options.systemId, settingKey);
+      const stored = settings.get<string>(packageId, settingKey);
       const current = stored ?? INITIAL_VERSION;
 
       if (options.compatibleVersion !== undefined) {
         if (isNewer(options.compatibleVersion, current)) {
           throw new VttfError(
             'VTTF-0005',
-            `World schemaVersion ${current} is older than ${options.systemId}'s compatibleVersion ${options.compatibleVersion}. Upgrade through an intermediate release first.`,
+            `World schemaVersion ${current} is older than ${packageId}'s compatibleVersion ${options.compatibleVersion}. Upgrade through an intermediate release first.`,
           );
         }
       }
@@ -207,32 +216,32 @@ export function createMigrationRunner(options: MigrationRunnerOptions): Migratio
       const ran: string[] = [];
       let lastApplied = current;
       logger.warn(
-        `${options.systemId} | Running ${pending.length} pending migration(s) from ${current} to ${target}.`,
+        `${packageId} | Running ${pending.length} pending migration(s) from ${current} to ${target}.`,
       );
 
       for (const migration of pending) {
         const label = migration.description
           ? `${migration.version}: ${migration.description}`
           : migration.version;
-        logger.info(`${options.systemId} | Migrating to ${label}`);
+        logger.info(`${packageId} | Migrating to ${label}`);
         try {
           await migration.fn();
         } catch (cause) {
           if (isNewer(lastApplied, current)) {
-            await settings.set(options.systemId, settingKey, lastApplied);
+            await settings.set(packageId, settingKey, lastApplied);
           }
           throw new VttfError(
             'VTTF-0004',
-            `Migration to ${label} failed for system "${options.systemId}". schemaVersion left at ${lastApplied}.`,
+            `Migration to ${label} failed for "${packageId}". schemaVersion left at ${lastApplied}.`,
             { cause },
           );
         }
-        await settings.set(options.systemId, settingKey, migration.version);
+        await settings.set(packageId, settingKey, migration.version);
         lastApplied = migration.version;
         ran.push(migration.version);
       }
 
-      logger.info(`${options.systemId} | Migration complete. schemaVersion = ${target}.`);
+      logger.info(`${packageId} | Migration complete. schemaVersion = ${target}.`);
       return ran;
     },
   };

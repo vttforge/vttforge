@@ -65,7 +65,7 @@ afterEach(() => {
 describe('createMigrationRunner — basics', () => {
   it('targetVersion is the last migration version', () => {
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [
         { version: '1.0.0', fn: vi.fn() },
         { version: '2.0.0', fn: vi.fn() },
@@ -79,7 +79,7 @@ describe('createMigrationRunner — basics', () => {
 
   it('targetVersion is "0.0.0" when no migrations are declared', () => {
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [],
       settings: makeSettings(),
       logger: makeLogger(),
@@ -90,7 +90,7 @@ describe('createMigrationRunner — basics', () => {
 
   it('run() is a no-op when no migrations are declared', async () => {
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [],
       settings: makeSettings(),
       logger: makeLogger(),
@@ -101,10 +101,10 @@ describe('createMigrationRunner — basics', () => {
 });
 
 describe('createMigrationRunner — register()', () => {
-  it('registers the schemaVersion setting on the configured systemId', () => {
+  it('registers the schemaVersion setting on the configured packageId', () => {
     const settings = makeSettings();
     const runner = createMigrationRunner({
-      systemId: 'my-system',
+      packageId: 'my-system',
       migrations: [{ version: '1.0.0', fn: vi.fn() }],
       settings,
       logger: makeLogger(),
@@ -125,7 +125,7 @@ describe('createMigrationRunner — register()', () => {
   it('honours custom settingKey', () => {
     const settings = makeSettings();
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       settingKey: 'dataVersion',
       migrations: [{ version: '1.0.0', fn: vi.fn() }],
       settings,
@@ -143,7 +143,7 @@ describe('createMigrationRunner — run()', () => {
     const fn1 = vi.fn();
     const fn2 = vi.fn();
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [
         { version: '1.0.0', fn: fn1 },
         { version: '2.0.0', fn: fn2 },
@@ -161,7 +161,7 @@ describe('createMigrationRunner — run()', () => {
     const settings = makeSettings({ 'sys.schemaVersion': '3.0.0' });
     const fn = vi.fn();
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [{ version: '2.0.0', fn }],
       settings,
       logger: makeLogger(),
@@ -175,7 +175,7 @@ describe('createMigrationRunner — run()', () => {
     const order: string[] = [];
     const settings = makeSettings();
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [
         {
           version: '1.0.0',
@@ -212,7 +212,7 @@ describe('createMigrationRunner — run()', () => {
     const fn3 = vi.fn();
     const settings = makeSettings({ 'sys.schemaVersion': '1.5.0' });
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [
         { version: '1.0.0', fn: fn1 },
         { version: '1.5.0', fn: fn2 },
@@ -233,7 +233,7 @@ describe('createMigrationRunner — run()', () => {
     const settings = makeSettings();
     const observed: string[] = [];
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [
         {
           version: '1.0.0',
@@ -261,7 +261,7 @@ describe('createMigrationRunner — VTTF-0004 failure handling', () => {
   it('wraps a thrown migration in VttfError VTTF-0004 with the original error as cause', async () => {
     const original = new Error('boom');
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [
         {
           version: '1.0.0',
@@ -285,7 +285,7 @@ describe('createMigrationRunner — VTTF-0004 failure handling', () => {
   it('leaves schemaVersion at the last successful migration when a later one throws', async () => {
     const settings = makeSettings();
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [
         { version: '1.0.0', fn: vi.fn() },
         { version: '2.0.0', fn: vi.fn() },
@@ -307,7 +307,7 @@ describe('createMigrationRunner — VTTF-0004 failure handling', () => {
   it('does not modify schemaVersion when the very first migration throws', async () => {
     const settings = makeSettings();
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [
         {
           version: '1.0.0',
@@ -326,7 +326,7 @@ describe('createMigrationRunner — VTTF-0004 failure handling', () => {
 
   it('throws VTTF-0004 when migrations are out of order', async () => {
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [
         { version: '2.0.0', fn: vi.fn() },
         { version: '1.0.0', fn: vi.fn() },
@@ -345,7 +345,7 @@ describe('createMigrationRunner — VTTF-0005 compatibleVersion floor', () => {
   it('throws VTTF-0005 when stored version is strictly older than compatibleVersion', async () => {
     const settings = makeSettings({ 'sys.schemaVersion': '0.5.0' });
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [{ version: '2.0.0', fn: vi.fn() }],
       compatibleVersion: '1.0.0',
       settings,
@@ -360,7 +360,7 @@ describe('createMigrationRunner — VTTF-0005 compatibleVersion floor', () => {
     const fn = vi.fn();
     const settings = makeSettings({ 'sys.schemaVersion': '1.0.0' });
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [{ version: '2.0.0', fn }],
       compatibleVersion: '1.0.0',
       settings,
@@ -375,7 +375,7 @@ describe('createMigrationRunner — VTTF-0005 compatibleVersion floor', () => {
 describe('createMigrationRunner — default resolution fallbacks', () => {
   it('throws VTTF-0002 when run() is called without game.settings (and no override)', async () => {
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [{ version: '1.0.0', fn: vi.fn() }],
     });
     const err = await runner.run().catch((e) => e);
@@ -390,12 +390,67 @@ describe('createMigrationRunner — default resolution fallbacks', () => {
     );
     (globalThis as Record<string, unknown>).foundry = { utils: { isNewerVersion: isNewer } };
     const runner = createMigrationRunner({
-      systemId: 'sys',
+      packageId: 'sys',
       migrations: [{ version: '2.0.0', fn: vi.fn() }] as ReadonlyArray<Migration>,
       settings: makeSettings(),
       logger: makeLogger(),
     });
     await runner.run();
     expect(isNewer).toHaveBeenCalled();
+  });
+});
+
+describe('createMigrationRunner — the package id', () => {
+  it('still takes the old `systemId` name', () => {
+    const settings = makeSettings();
+    const runner = createMigrationRunner({
+      systemId: 'old-name',
+      migrations: [],
+      settings,
+    });
+    runner.register();
+
+    expect(settings.registerSpy).toHaveBeenCalledWith(
+      'old-name',
+      'schemaVersion',
+      expect.anything(),
+    );
+  });
+
+  it('prefers `packageId` when both are given', () => {
+    const settings = makeSettings();
+    const runner = createMigrationRunner({
+      packageId: 'new-name',
+      systemId: 'old-name',
+      migrations: [],
+      settings,
+    });
+    runner.register();
+
+    expect(settings.registerSpy).toHaveBeenCalledWith(
+      'new-name',
+      'schemaVersion',
+      expect.anything(),
+    );
+  });
+
+  it('refuses when neither is given, under its own code', () => {
+    // The compiler refuses this call: the options type is a union and a call
+    // with no id matches no branch. The runtime check is for JavaScript
+    // callers, who get no such warning.
+    // @ts-expect-error the id is required, under one name or the other
+    const build = () => createMigrationRunner({ migrations: [] });
+
+    // The id is the settings namespace. Without it the runner would write the
+    // world's schemaVersion under "undefined" and read it back forever.
+    expect(build).toThrow(/VTTF-0017[\s\S]*packageId/);
+    // A mistake in the call, not a migration that failed. A catch that reads
+    // the code has to be able to tell the two apart.
+    try {
+      build();
+    } catch (err) {
+      expect((err as VttfError).code).toBe('VTTF-0017');
+      expect((err as VttfError).code).not.toBe('VTTF-0004');
+    }
   });
 });

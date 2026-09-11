@@ -5,7 +5,7 @@
  * systems copy from each other: data models, initiative, sheets, settings,
  * and the `ready`-time migration gate.
  */
-import { registerSystem, SystemConfig, VttfError } from '@vttforge/core';
+import { registerSystem, PackageConfig, VttfError } from '@vttforge/core';
 import { CharacterData } from './data/character-data.mjs';
 import { GearData } from './data/gear-data.mjs';
 import { migrations } from './migrations.mjs';
@@ -14,7 +14,7 @@ import { GearSheet } from './sheets/gear-sheet.mjs';
 
 const SYSTEM_ID = '{{ID}}';
 
-const settings = new SystemConfig(SYSTEM_ID);
+const settings = new PackageConfig(SYSTEM_ID);
 
 try {
   registerSystem({

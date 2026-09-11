@@ -6,13 +6,13 @@
  * settings, and the public API.
  */
 import './foundry-globals.js';
-import { registerModule, SystemConfig, VttfError } from '@vttforge/core';
+import { registerModule, PackageConfig, VttfError } from '@vttforge/core';
 import { MODULE_ID, NOTE_TYPE } from './constants.js';
 import { NoteData } from './data/note-data.js';
 import { noteEnricher } from './enricher.js';
 import { NoteSheet } from './sheets/note-sheet.js';
 
-const settings = new SystemConfig(MODULE_ID);
+const settings = new PackageConfig(MODULE_ID);
 
 /** What `game.modules.get("{{ID}}").api` offers other modules and macros. */
 interface ModuleApi {

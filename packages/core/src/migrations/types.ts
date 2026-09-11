@@ -25,17 +25,38 @@ export interface MigrationLogger {
   error(message: string): void;
 }
 
-export interface MigrationRunnerOptions {
-  /** System id, used as the `game.settings` namespace. */
-  readonly systemId: string;
+/**
+ * The package id, under either name. Both are here so the old one keeps
+ * working, and the union is what makes the compiler still demand one: a call
+ * carrying neither matches no branch and does not build.
+ */
+type MigrationRunnerId =
+  | {
+      /** Package id, used as the `game.settings` namespace. */
+      readonly packageId: string;
+      /** @deprecated Pass `packageId`. Ignored when `packageId` is present. */
+      readonly systemId?: string;
+    }
+  | {
+      readonly packageId?: undefined;
+      /**
+       * @deprecated Pass `packageId`. Modules run migrations too, and the old
+       * name says otherwise. Read for the rest of the 0.x line.
+       */
+      readonly systemId: string;
+    };
+
+export type MigrationRunnerOptions = MigrationRunnerId & MigrationRunnerSettings;
+
+interface MigrationRunnerSettings {
   /** Migrations in ascending version order. Empty array is allowed (`run()` is a no-op then). */
   readonly migrations: ReadonlyArray<Migration>;
-  /** Settings key under `systemId`. Defaults to `'schemaVersion'`. */
+  /** Settings key under the package id. Defaults to `'schemaVersion'`. */
   readonly settingKey?: string;
   /**
    * Compatibility floor: worlds with a stored schemaVersion strictly older than this
    * throw `VttfError VTTF-0005` instead of running migrations. Mirrors the
-   * `flags.<systemId>.compatibleMigrationVersion` declaration in `system.json`.
+   * `flags.<id>.compatibleMigrationVersion` declaration in the manifest.
    */
   readonly compatibleVersion?: string;
   /**

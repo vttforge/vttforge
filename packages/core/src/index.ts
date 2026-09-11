@@ -5,7 +5,7 @@
  *
  *   - registerSystem(): one-call init, replaces Hooks.once("init")
  *   - registerModule(): the same for modules, with namespaced sub-types
- *   - SystemConfig: typed wrapper around game.settings
+ *   - PackageConfig: typed wrapper around game.settings
  *   - BaseTypeDataModel(): TypeDataModel with safe migrateData default
  *   - BaseActorSheet(): ActorSheetV2 + HandlebarsApplicationMixin
  *   - BaseItemSheet(): ItemSheetV2 + HandlebarsApplicationMixin
@@ -123,6 +123,7 @@ export {
   SystemSetting,
   type SystemSettingOptions,
 } from './decorators.js';
+export { SystemConfig } from './deprecated.js';
 export {
   type CountableRoll,
   countSuccesses,
@@ -197,6 +198,7 @@ export {
   type PackageApi,
   requireModuleApi,
 } from './module-api.js';
+export { PackageConfig } from './package-config.js';
 export {
   type CheckboxPromptField,
   type NumberPromptField,
@@ -256,4 +258,3 @@ export {
   type SubTypeQuery,
   subTypeDocuments,
 } from './sub-types.js';
-export { SystemConfig } from './system-config.js';

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SystemConfig } from '../deprecated.js';
 import { VttfError } from '../errors/registry.js';
-import { SystemConfig } from '../system-config.js';
+import { PackageConfig } from '../package-config.js';
 
 interface FakeGame {
   settings: {
@@ -29,9 +30,9 @@ afterEach(() => {
   delete (globalThis as Record<string, unknown>).game;
 });
 
-describe('SystemConfig', () => {
+describe('PackageConfig', () => {
   it('forwards register() to game.settings.register with the system id', () => {
-    const cfg = new SystemConfig(SYSTEM_ID);
+    const cfg = new PackageConfig(SYSTEM_ID);
     cfg.register('homebrewRules', {
       scope: 'world',
       config: true,
@@ -49,7 +50,7 @@ describe('SystemConfig', () => {
   });
 
   it('get() forwards after register()', () => {
-    const cfg = new SystemConfig(SYSTEM_ID);
+    const cfg = new PackageConfig(SYSTEM_ID);
     cfg.register('homebrewRules', { scope: 'world', type: Boolean, default: false });
     fakeGame.settings.get.mockReturnValue(true);
 
@@ -60,7 +61,7 @@ describe('SystemConfig', () => {
   });
 
   it('set() forwards and returns the value', async () => {
-    const cfg = new SystemConfig(SYSTEM_ID);
+    const cfg = new PackageConfig(SYSTEM_ID);
     cfg.register('homebrewRules', { scope: 'world', type: Boolean, default: false });
 
     const result = await cfg.set('homebrewRules', true);
@@ -70,7 +71,7 @@ describe('SystemConfig', () => {
   });
 
   it('throws VTTF-0003 when reading an unregistered key', () => {
-    const cfg = new SystemConfig(SYSTEM_ID);
+    const cfg = new PackageConfig(SYSTEM_ID);
 
     expect(() => cfg.get('missingKey')).toThrow(VttfError);
     try {
@@ -81,7 +82,7 @@ describe('SystemConfig', () => {
   });
 
   it('throws VTTF-0003 when writing an unregistered key', async () => {
-    const cfg = new SystemConfig(SYSTEM_ID);
+    const cfg = new PackageConfig(SYSTEM_ID);
 
     await expect(cfg.set('missingKey', true)).rejects.toBeInstanceOf(VttfError);
     await expect(cfg.set('missingKey', true)).rejects.toMatchObject({ code: 'VTTF-0003' });
@@ -89,10 +90,26 @@ describe('SystemConfig', () => {
 
   it('throws VTTF-0002 when game.settings is unavailable', () => {
     delete (globalThis as Record<string, unknown>).game;
-    const cfg = new SystemConfig(SYSTEM_ID);
+    const cfg = new PackageConfig(SYSTEM_ID);
 
     expect(() =>
       cfg.register('homebrewRules', { scope: 'world', type: Boolean, default: false }),
     ).toThrow(VttfError);
+  });
+});
+
+describe('the old name', () => {
+  it('is the same class, so instanceof holds both ways', () => {
+    const config = new SystemConfig('my-module');
+
+    expect(config).toBeInstanceOf(PackageConfig);
+    expect(new PackageConfig('my-module')).toBeInstanceOf(SystemConfig);
+  });
+
+  it('still answers to `systemId`', () => {
+    const config = new PackageConfig('my-module');
+
+    expect(config.packageId).toBe('my-module');
+    expect(config.systemId).toBe('my-module');
   });
 });

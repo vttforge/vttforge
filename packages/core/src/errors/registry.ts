@@ -38,7 +38,7 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     code: 'VTTF-0003',
     name: 'UnknownSetting',
     summary:
-      'SystemConfig.get() / set() received a key that never reached SystemConfig.register(). Register the setting in your init hook before reading it.',
+      'PackageConfig.get() / set() received a key that never reached PackageConfig.register(). Register the setting in your init hook before reading it.',
   }),
   'VTTF-0004': Object.freeze({
     code: 'VTTF-0004',
@@ -117,6 +117,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     name: 'InvalidInjection',
     summary:
       'inject() was called without a package id, without a render hook to bind, without a render function, with a name that cannot be used, or with a position that would put the node outside the application element. The name is half the marker that lets a re-render replace the previous injection instead of adding a second one beside it.',
+  }),
+  'VTTF-0017': Object.freeze({
+    code: 'VTTF-0017',
+    name: 'InvalidMigrationRunner',
+    summary:
+      'createMigrationRunner() was called with neither packageId nor systemId. The id is the game.settings namespace the world stores its schemaVersion under, so without it every world would keep its version under the string "undefined". This is a mistake in the call, not a migration that failed.',
   }),
 });
 

@@ -8,9 +8,9 @@
 import {
   convertSubTypes,
   inject,
+  PackageConfig,
   registerModule,
   registerSocket,
-  SystemConfig,
   subTypeDocuments,
   VttfError,
 } from '@vttforge/core';
@@ -19,7 +19,7 @@ import { NoteData } from './data/note-data.mjs';
 import { noteEnricher } from './enricher.mjs';
 import { NoteSheet } from './sheets/note-sheet.mjs';
 
-const settings = new SystemConfig(MODULE_ID);
+const settings = new PackageConfig(MODULE_ID);
 
 /**
  * Set by `registerSocket` at `setup`, used by the API below.
