@@ -59,3 +59,48 @@ The card classes are stable:
 ```
 
 The wrapper also carries `data-vttforge-roll="plain" | "crit" | "fumble"` for a hook that reads the DOM, such as `renderChatMessageHTML`.
+
+## Dice pools and steps
+
+Three helpers for table dice, on top of the modifiers Foundry's `Roll` already parses.
+
+`dicePool(spec)` writes the formula:
+
+```ts
+import { dicePool } from '@vttforge/core';
+
+dicePool({ number: 5, faces: 6, successAt: 5 });          // '5d6cs>=5'
+dicePool({ number: 2, faces: 20, keep: { highest: 1 } });  // '2d20kh1'
+dicePool({ number: 4, faces: 6, drop: { lowest: 1 } });    // '4d6dl1'
+dicePool({ number: 3, faces: 6, explode: true, rerollAt: 1 }); // '3d6r<=1x'
+```
+
+| Key | Modifier | Meaning |
+| --- | --- | --- |
+| `keep: { highest: n }` / `{ lowest: n }` | `kh` / `kl` | keep only those dice |
+| `drop: { highest: n }` / `{ lowest: n }` | `dh` / `dl` | drop those dice |
+| `successAt` | `cs>=n` | the total becomes the number of dice at `n` or above |
+| `failAt` | `df<=n` | each die at `n` or below takes 1 off the total |
+| `explode` | `x` or `x>=n` | roll again on the highest face, or at `n` or above |
+| `rerollAt` | `r<=n` | reroll once at `n` or below |
+| `min`, `max` | `min`, `max` | floor and ceiling per die |
+
+`stepDie(faces, steps, ladder?)` moves a die along a ladder and stays on its ends. The default ladder is d4, d6, d8, d10, d12:
+
+```ts
+stepDie(6, 1);   // 8
+stepDie(12, 2);  // 12
+stepDie(8, -1, [4, 6, 8, 10, 12, 20]); // 6
+```
+
+`countSuccesses(roll, target, { failAt })` counts on any evaluated roll, from the active results of every die, whatever the formula was:
+
+```ts
+const roll = new foundry.dice.Roll(dicePool({ number: 5, faces: 6 }));
+await roll.evaluate();
+countSuccesses(roll, 5);
+// { successes: 2, failures: 0, net: 2, results: [6, 1, 5, 3, 2] }
+```
+
+A bad count or faces, a `keep` or `drop` above the number of dice, a die off the ladder, or `keep` together with `drop` is refused with [VTTF-0011](../errors/VTTF-0011).
+
