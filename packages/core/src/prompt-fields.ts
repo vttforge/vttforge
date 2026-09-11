@@ -106,7 +106,11 @@ export interface PromptFieldsOptions {
   readonly ok?: string;
   /** OK button icon class. */
   readonly icon?: string;
-  /** HTML shown above the fields. Cleaned by Foundry. */
+  /**
+   * HTML shown above the fields. Run through `foundry.utils.cleanHTML` first,
+   * the same cleaning Foundry gives dialog content; without it (in a test
+   * without the helper) the text is shown as text.
+   */
   readonly content?: string;
   /** Block the rest of the interface until answered. */
   readonly modal?: boolean;
@@ -147,6 +151,14 @@ function foundryApis(): { fields: FieldsApi; DialogV2: DialogApi } {
     );
   }
   return { fields, DialogV2 };
+}
+
+/** Foundry's HTML cleaning, when the runtime offers it. */
+function cleanHtml(html: string): string | undefined {
+  const foundry = (globalThis as Record<string, unknown>).foundry as
+    | { utils?: { cleanHTML?: (html: string) => string } }
+    | undefined;
+  return foundry?.utils?.cleanHTML?.(html);
 }
 
 function selectOptions(field: SelectPromptField): SelectOption[] {
@@ -241,11 +253,15 @@ export async function promptFields<const Fields extends readonly PromptField[]>(
   const content = document.createElement('div');
   if (options.content) {
     const intro = document.createElement('div');
-    intro.innerHTML = options.content;
+    const cleaned = cleanHtml(options.content);
+    if (cleaned === undefined) intro.textContent = options.content;
+    else intro.innerHTML = cleaned;
     content.append(intro);
   }
-  for (const field of fields) content.append(promptFieldGroup(field));
-  content.querySelector<HTMLElement>('input, select, textarea')?.setAttribute('autofocus', '');
+  const groups = fields.map((field) => promptFieldGroup(field));
+  content.append(...groups);
+  // The first field, not whatever the intro may hold.
+  groups[0]?.querySelector<HTMLElement>('input, select, textarea')?.setAttribute('autofocus', '');
 
   const ok: Record<string, unknown> = {};
   if (options.ok !== undefined) ok.label = options.ok;
@@ -256,6 +272,6 @@ export async function promptFields<const Fields extends readonly PromptField[]>(
   if (options.rejectClose !== undefined) config.rejectClose = options.rejectClose;
 
   const result = await DialogV2.input(config);
-  if (result === null || result === undefined || typeof result !== 'object') return null;
+  if (result === null || typeof result !== 'object' || Array.isArray(result)) return null;
   return result as PromptResult<Fields>;
 }

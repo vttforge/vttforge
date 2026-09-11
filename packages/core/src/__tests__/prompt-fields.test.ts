@@ -45,6 +45,7 @@ beforeEach(() => {
       },
       api: { DialogV2: { input } },
     },
+    utils: { cleanHTML: (html: string) => html.replace(/<script[^>]*>.*?<\/script>/g, '') },
   };
   (globalThis as Record<string, unknown>).game = {
     i18n: { localize: (key: string) => (key.startsWith('X.') ? key.slice(2).toUpperCase() : key) },
@@ -136,7 +137,7 @@ describe('promptFields', () => {
     const content = config.content as HTMLElement;
     expect(content.querySelector('p')?.textContent).toBe('Intro');
     expect(content.querySelectorAll('.form-group')).toHaveLength(3);
-    expect(content.querySelector('input')?.hasAttribute('autofocus')).toBe(true);
+    expect(content.querySelector('input[name="name"]')?.hasAttribute('autofocus')).toBe(true);
     // Types follow the fields.
     const typed: PromptResult<
       [
@@ -145,6 +146,26 @@ describe('promptFields', () => {
       ]
     > = { name: 'x', quantity: 1 };
     expect(typed.quantity + 1).toBe(2);
+  });
+
+  it('cleans the intro through Foundry, puts the focus on the first field, and refuses an array answer', async () => {
+    input.mockResolvedValueOnce([]);
+    const answer = await promptFields([{ name: 'a', type: 'text', label: 'A' }], {
+      content: '<p>Hi</p><script>alert(1)</script><input name="decoy">',
+    });
+    expect(answer).toBeNull();
+    const content = (input.mock.calls[0] as [{ content: HTMLElement }])[0].content;
+    expect(content.querySelector('script')).toBeNull();
+    expect(content.querySelector('input[name="decoy"]')?.hasAttribute('autofocus')).toBe(false);
+    expect(content.querySelector('input[name="a"]')?.hasAttribute('autofocus')).toBe(true);
+
+    // Without the helper the intro is shown as text, never parsed.
+    (globalThis as { foundry: { utils?: unknown } }).foundry.utils = undefined;
+    input.mockResolvedValueOnce({ a: 'x' });
+    await promptFields([{ name: 'a', type: 'text', label: 'A' }], { content: '<b>bold</b>' });
+    const plain = (input.mock.calls[1] as [{ content: HTMLElement }])[0].content;
+    expect(plain.querySelector('b')).toBeNull();
+    expect(plain.textContent).toContain('<b>bold</b>');
   });
 
   it('resolves null when the dialog is dismissed', async () => {

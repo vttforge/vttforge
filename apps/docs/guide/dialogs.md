@@ -41,7 +41,7 @@ Every field takes `name`, `label` and an optional `hint`. Two fields with the sa
 | `title` | Window title |
 | `ok` | Label of the confirm button. Default: Foundry's |
 | `icon` | Icon class of the confirm button |
-| `content` | HTML shown above the fields; Foundry cleans it |
+| `content` | HTML shown above the fields, cleaned with `foundry.utils.cleanHTML` first |
 | `modal` | Block the rest of the interface until answered |
 | `rejectClose` | Reject instead of resolving `null` when the dialog is dismissed |
 
