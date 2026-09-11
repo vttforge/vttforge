@@ -45,8 +45,9 @@ explicit id it derives the key from the class name, and a bundler renames
 classes between builds. Renaming an id loses the sheet choice on every
 document already using it.
 
-`this.document` is `unknown` on the sheet bases. Each sheet here narrows it
-once in a getter (`actor`, `item`), and everything below reads typed.
+`this.document` is typed. Each sheet here hands its own schema to the base
+(`BaseActorSheet<CharacterActor>()`), so `document.system` is `CharacterData`
+and nothing casts.
 
 ## Checks
 

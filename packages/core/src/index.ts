@@ -147,8 +147,17 @@ export {
   type VttfErrorEntry,
 } from './errors/registry.js';
 export type {
+  ActiveEffectLike,
+  ActorLike,
   ApplicationV2Members,
+  DocumentFlags,
+  DocumentMembers,
   DocumentSheetV2Members,
+  EmbeddedCollection,
+  EmbeddedDocumentOwner,
+  FolderLike,
+  ItemLike,
+  TypeDataModelMembers,
   VttforgeClass,
 } from './foundry-base.js';
 export type {

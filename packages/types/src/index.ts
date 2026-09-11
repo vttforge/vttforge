@@ -8,4 +8,15 @@ import { version } from '../package.json' with { type: 'json' };
 
 export const VTTFORGE_TYPES_VERSION: string = version;
 
+export type {
+  ActiveEffectLike,
+  ActorLike,
+  DocumentFlags,
+  DocumentMembers,
+  EmbeddedCollection,
+  EmbeddedDocumentOwner,
+  FolderLike,
+  ItemLike,
+  TypeDataModelMembers,
+} from './documents.js';
 export type { ApplicationV2Members, DocumentSheetV2Members, VttforgeClass } from './foundry.js';

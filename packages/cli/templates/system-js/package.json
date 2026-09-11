@@ -13,7 +13,7 @@
     "format": "vttforge lint --fix"
   },
   "dependencies": {
-    "@vttforge/core": "^0.18.0",
+    "@vttforge/core": "^0.19.0",
     "@vttforge/styles": "^0.5.0"
   },
   "devDependencies": {

@@ -7,6 +7,8 @@
  * cast, and a cast is a sentence you write on purpose.
  */
 
+import type { DocumentMembers } from './documents.js';
+
 /**
  * The ApplicationV2 surface these bases rely on.
  *
@@ -45,15 +47,14 @@ export interface ApplicationV2Members {
 
 /**
  * What a document sheet adds on top of an application.
+ *
+ * `TDocument` is the document this sheet is for. It defaults to the shared
+ * document surface, so a sheet that says nothing still reads `name`, `system`
+ * and `update()`. Pass your own type to narrow it further.
  */
-export interface DocumentSheetV2Members extends ApplicationV2Members {
-  /**
-   * The document this sheet is for.
-   *
-   * Typed loosely on purpose: which document, and what its `system` holds,
-   * is the consumer's to know. Narrow it with a getter on your subclass.
-   */
-  readonly document: unknown;
+export interface DocumentSheetV2Members<TDocument = DocumentMembers> extends ApplicationV2Members {
+  /** The document this sheet is for. */
+  readonly document: TDocument;
 
   /** Whether the current user may edit this document. */
   readonly isEditable: boolean;

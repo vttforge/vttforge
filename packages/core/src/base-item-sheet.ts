@@ -17,6 +17,7 @@
 import type { DragDropConfig, SheetBaseCtor } from './base-actor-sheet.js';
 import { VTTFORGE_SHEET_CLASS } from './base-actor-sheet.js';
 import { VttfError } from './errors/registry.js';
+import type { ItemLike } from './foundry-base.js';
 import {
   applyMode,
   currentMode,
@@ -108,7 +109,9 @@ function resolveDragDrop(): DragDropCtor | undefined {
  * }
  * ```
  */
-export function BaseItemSheet(): SheetBaseCtor {
+export function BaseItemSheet<
+  TDocument extends ItemLike<unknown> = ItemLike,
+>(): SheetBaseCtor<TDocument> {
   const { Base, mixin } = resolveBases();
   const Mixed = mixin(Base);
 
@@ -255,5 +258,5 @@ export function BaseItemSheet(): SheetBaseCtor {
     }
   }
 
-  return VttforgeBaseItemSheet as unknown as SheetBaseCtor;
+  return VttforgeBaseItemSheet as unknown as SheetBaseCtor<TDocument>;
 }

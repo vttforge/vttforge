@@ -3,26 +3,19 @@
  *
  * One part, no tabs, one action. The smallest sheet a module can ship.
  */
-import { BaseItemSheet } from '@vttforge/core';
+import { BaseItemSheet, type ItemLike } from '@vttforge/core';
 import { MODULE_ID } from '../constants.js';
 import type { NoteData } from '../data/note-data.js';
 
 /**
- * What this sheet reads off its item.
+ * The item this sheet is for.
  *
- * Foundry's own `Item` type is not wired in — see `foundry-globals.ts` — so
- * the sheet says what it needs. Grow this as the sheet grows.
+ * `ItemLike` is the document surface `@vttforge/core` ships; the type
+ * argument is your own schema, so `item.system.body` is typed.
  */
-interface NoteItem {
-  readonly id: string;
-  readonly name: string;
-  readonly img: string;
-  readonly isOwner: boolean;
-  readonly system: NoteData;
-  update(changes: Record<string, unknown>): Promise<unknown>;
-}
+type NoteItem = ItemLike<NoteData>;
 
-export class NoteSheet extends BaseItemSheet() {
+export class NoteSheet extends BaseItemSheet<NoteItem>() {
   static override DEFAULT_OPTIONS = foundry.utils.mergeObject(
     super.DEFAULT_OPTIONS,
     {
@@ -47,11 +40,10 @@ export class NoteSheet extends BaseItemSheet() {
   /**
    * The item this sheet is for.
    *
-   * `this.document` is `unknown` on the base — which document a sheet is for
-   * is the module's to know. One cast, here, and everything below is typed.
+   * Typed by the argument to `BaseItemSheet`.
    */
   get item(): NoteItem {
-    return this.document as NoteItem;
+    return this.document;
   }
 
   override async _prepareContext(options: unknown): Promise<Record<string, unknown>> {

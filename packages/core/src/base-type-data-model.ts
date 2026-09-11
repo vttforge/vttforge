@@ -23,7 +23,7 @@
 import type { FieldInstance } from './data/fields.js';
 import type { InferSchema } from './data/infer-schema.js';
 import { VttfError } from './errors/registry.js';
-import type { VttforgeClass } from './foundry-base.js';
+import type { DocumentMembers, TypeDataModelMembers, VttforgeClass } from './foundry-base.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: we mix into Foundry's TypeDataModel whose shape lives in fvtt-types (deferred to @vttforge/types v1.0)
 type AnyConstructor = new (...args: any[]) => any;
@@ -50,7 +50,7 @@ function resolveTypeDataModelClass(): AnyConstructor {
  * lazy-resolves the global at the moment of subclassing.
  */
 /** The two hooks this base fills in, so a subclass can omit either. */
-export interface TypeDataModelHooks {
+export interface TypeDataModelHooks extends TypeDataModelMembers {
   prepareBaseData(): void;
   prepareDerivedData(): void;
 }
@@ -69,8 +69,12 @@ export interface TypeDataModelHooks {
  * declare armorClass: number;
  * ```
  */
-export type TypedTypeDataModel<S extends Record<string, FieldInstance>> = InferSchema<S> &
-  TypeDataModelHooks & {
+export type TypedTypeDataModel<
+  S extends Record<string, FieldInstance>,
+  Parent = DocumentMembers,
+> = InferSchema<S> &
+  TypeDataModelHooks &
+  TypeDataModelMembers<Parent> & {
     /**
      * Phantom property carrying the schema's inferred shape. Never assigned,
      * never present at runtime; it exists so the type has a name:
@@ -112,6 +116,19 @@ export function BaseTypeDataModel(): VttforgeClass<TypeDataModelHooks>;
  *   declare armorClass: number;
  *   prepareDerivedData() {
  *     this.armorClass = 10 + this.level; // this.level is number
+ *   }
+ * }
+ * ```
+ *
+ * `this.parent` is the document this data belongs to. It comes back as the
+ * shared document surface, since nothing said which kind of document holds
+ * this schema. Name the kind to reach `items` and the rest:
+ *
+ * ```ts
+ * class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {
+ *   declare parent: ActorLike;
+ *   prepareDerivedData() {
+ *     this.carried = this.parent.items.reduce((n) => n + 1, 0);
  *   }
  * }
  * ```
