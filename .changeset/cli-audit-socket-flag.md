@@ -16,3 +16,6 @@ The rule wants the package channel. Core events ride the same socket under
 their own names and need no flag, so `game.socket.on('userActivity', ...)` on
 its own is not a finding. A file that names `module.<id>` or `system.<id>`, or
 that calls `registerSocket`, is. Calls quoted in comments are skipped.
+
+The project templates pin `@vttforge/cli` by minor, so they move to the
+release that carries the rule.
