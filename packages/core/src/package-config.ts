@@ -85,15 +85,3 @@ export class PackageConfig {
     return this.#registered.has(key);
   }
 }
-
-/**
- * @deprecated Use {@link PackageConfig}. The same class under its old name,
- * so `instanceof` holds and nothing has to change at once. It goes away at
- * 1.0.
- */
-export const SystemConfig = PackageConfig;
-
-/**
- * @deprecated Use {@link PackageConfig}.
- */
-export type SystemConfig = PackageConfig;

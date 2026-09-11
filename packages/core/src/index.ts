@@ -123,6 +123,7 @@ export {
   SystemSetting,
   type SystemSettingOptions,
 } from './decorators.js';
+export { SystemConfig } from './deprecated.js';
 export {
   type CountableRoll,
   countSuccesses,
@@ -180,7 +181,7 @@ export type {
   MigrationRunner,
   MigrationRunnerOptions,
 } from './migrations/types.js';
-export { PackageConfig, SystemConfig } from './package-config.js';
+export { PackageConfig } from './package-config.js';
 export {
   type CheckboxPromptField,
   type NumberPromptField,

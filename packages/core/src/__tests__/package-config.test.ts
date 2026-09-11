@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SystemConfig } from '../deprecated.js';
 import { VttfError } from '../errors/registry.js';
-import { PackageConfig, SystemConfig } from '../package-config.js';
+import { PackageConfig } from '../package-config.js';
 
 interface FakeGame {
   settings: {
