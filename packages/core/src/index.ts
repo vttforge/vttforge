@@ -160,9 +160,12 @@ export type {
   HookCallback,
   HooksApi,
   ItemConfig,
+  QueryHandlers,
   SettingConfig,
   SettingScope,
+  SocketApi,
   StatusEffectConfig,
+  UserLike,
 } from './foundry-globals.js';
 export {
   KEYWORD_ATTRIBUTE,
@@ -224,8 +227,10 @@ export {
   registerSocket,
   type SocketContext,
   type SocketMessageHandler,
+  type SocketMessageRun,
   type SocketRegistration,
   type SocketRequestHandler,
+  type SocketRequestRun,
   type SocketSender,
 } from './sockets.js';
 export { SystemConfig } from './system-config.js';
