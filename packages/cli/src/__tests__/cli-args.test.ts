@@ -160,3 +160,52 @@ describe('migrate args', () => {
     expect(args.write).toBe(true);
   });
 });
+
+describe('a value the flag does not accept', () => {
+  it.each([
+    ['--type', 'modul', 'system, module'],
+    ['--lang', 'typescript', 'ts, js'],
+  ])('refuses %s %s and lists what it takes', (flag, value, expected) => {
+    // Before, the parser handed the typo through and the scaffolder fell back
+    // to its default: `--type modul` built a system, exit code 0.
+    expect(() => parse(init, ['my-sys', flag, value])).toThrow(
+      new RegExp(
+        `${flag.slice(2)}[\\s\\S]*${value}[\\s\\S]*${expected.split(', ').join('[\\s\\S]*')}`,
+      ),
+    );
+  });
+
+  it.each([
+    ['--type', 'module'],
+    ['--type', 'system'],
+    ['--lang', 'ts'],
+    ['--lang', 'js'],
+  ])('takes %s %s', (flag, value) => {
+    expect(() => parse(init, ['my-sys', flag, value])).not.toThrow();
+  });
+
+  it('leaves the flag out entirely alone, so the prompt still runs', () => {
+    const args = parse(init, ['my-sys']);
+    expect(args.type).toBeUndefined();
+    expect(args.lang).toBeUndefined();
+  });
+});
+
+describe('migrate values', () => {
+  it.each([
+    ['--style', 'sdkk', 'plain[\\s\\S]*sdk'],
+    ['--lang', 'typescript', 'js[\\s\\S]*ts'],
+  ])('refuses %s %s', (flag, value, expected) => {
+    // Both used to fall back to their default and write the wrong output.
+    expect(() => parse(migrate, ['--data-models', flag, value])).toThrow(new RegExp(expected));
+  });
+
+  it.each([
+    ['--style', 'sdk'],
+    ['--style', 'plain'],
+    ['--lang', 'ts'],
+    ['--lang', 'js'],
+  ])('takes %s %s', (flag, value) => {
+    expect(() => parse(migrate, ['--data-models', flag, value])).not.toThrow();
+  });
+});

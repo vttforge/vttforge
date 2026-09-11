@@ -15,8 +15,10 @@ import { runInit, ScaffoldError } from './commands/init.js';
 import { runLintCommand } from './commands/lint.js';
 import { runMigrateCommand } from './commands/migrate.js';
 import { VTTFORGE_CLI_VERSION } from './index.js';
+import { strictArgs } from './strict-args.js';
 
 export const init = defineCommand({
+  plugins: [strictArgs],
   meta: {
     name: 'init',
     description: 'Scaffold a new Foundry VTT system or module from a VTTForge template',
@@ -27,12 +29,18 @@ export const init = defineCommand({
       description: 'Directory name for the new system/module (also the default manifest id)',
       required: false,
     },
+    // `enum` rather than `string`: citty then refuses a value that is not on
+    // the list and says which ones are, and `--help` prints them. As a plain
+    // string a typo fell through to the default and scaffolded the wrong
+    // thing without a word.
     type: {
-      type: 'string',
+      type: 'enum',
+      options: ['system', 'module'],
       description: 'Package type: system | module',
     },
     lang: {
-      type: 'string',
+      type: 'enum',
+      options: ['ts', 'js'],
       description: 'Language: ts | js',
     },
     id: {
@@ -105,6 +113,7 @@ export const init = defineCommand({
 });
 
 export const dev = defineCommand({
+  plugins: [strictArgs],
   meta: {
     name: 'dev',
     description: 'Symlink dist/ into Foundry Data and run vite build --watch',
@@ -145,6 +154,7 @@ export const dev = defineCommand({
 });
 
 export const build = defineCommand({
+  plugins: [strictArgs],
   meta: {
     name: 'build',
     description: 'Run vite build (production) and emit <id>-<version>.zip for foundryvtt.com',
@@ -160,6 +170,7 @@ export const build = defineCommand({
 });
 
 export const lint = defineCommand({
+  plugins: [strictArgs],
   meta: {
     name: 'lint',
     description: 'Run Biome (shipped with the CLI) over the project, then the v14 audit',
@@ -205,6 +216,7 @@ export const lint = defineCommand({
 });
 
 export const audit = defineCommand({
+  plugins: [strictArgs],
   meta: {
     name: 'audit',
     description:
@@ -247,6 +259,7 @@ export const audit = defineCommand({
 });
 
 export const migrate = defineCommand({
+  plugins: [strictArgs],
   meta: {
     name: 'migrate',
     description:
@@ -279,13 +292,17 @@ export const migrate = defineCommand({
       description:
         'Also generate a data model per template.json type (template.json is deprecated since v14)',
     },
+    // `enum`, for the same reason as `init`: as plain strings a typo landed
+    // on the default and wrote the wrong thing without a word.
     style: {
-      type: 'string',
+      type: 'enum',
+      options: ['plain', 'sdk'],
       default: 'plain',
       description: 'For --data-models: "plain" Foundry classes, or "sdk" classes on @vttforge/core',
     },
     lang: {
-      type: 'string',
+      type: 'enum',
+      options: ['js', 'ts'],
       default: 'js',
       description: 'For --data-models and --sheets: "js" writes .mjs, "ts" writes .ts',
     },

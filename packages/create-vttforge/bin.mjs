@@ -49,8 +49,12 @@ for (let i = 0; i < args.length; i += 1) {
     continue;
   }
   if (arg.startsWith('-')) {
-    // Unknown flag — skip silently rather than crash the create-* flow.
-    continue;
+    // Skipping this used to be deliberate, to keep the create-* flow from
+    // crashing. It cost more than it saved: the flag did nothing, nothing
+    // was printed, and the scaffold came out as whatever the defaults are.
+    console.error(`Unknown flag: ${arg}.`);
+    console.error('This command takes: --type (-t), --lang (-l), --no-install, --no-git.');
+    process.exit(1);
   }
   if (name === undefined) {
     name = arg;
