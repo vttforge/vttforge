@@ -8,13 +8,30 @@
     "minimum": "14",
     "verified": "14"
   },
-  "authors": [{ "name": "VTTForge Contributors" }],
+  "authors": [
+    {
+      "name": "VTTForge Contributors"
+    }
+  ],
   "esmodules": ["main.mjs"],
-  "styles": [{ "src": "styles/main.css" }],
-  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "styles": [
+    {
+      "src": "styles/main.css"
+    }
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "socket": true,
   "documentTypes": {
     "Item": {
-      "note": { "htmlFields": ["body"] }
+      "note": {
+        "htmlFields": ["body"]
+      }
     }
   },
   "flags": {
