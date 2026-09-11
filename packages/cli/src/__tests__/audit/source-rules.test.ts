@@ -467,6 +467,53 @@ registerSystem({ id: 'my-system', actorDataModels: { character: CharacterData } 
       expect(await runSourceRules(cwd)).toEqual([]);
     });
 
+    it('accepts resourceField() from @vttforge/core at the manifest path, nested or not', async () => {
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({
+          id: 'my-system',
+          version: '1.0.0',
+          primaryTokenAttribute: 'health',
+          secondaryTokenAttribute: 'attributes.power',
+        }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `import { resourceField } from '@vttforge/core';
+const defineCharacterSchema = () => {
+  const f = fields();
+  return {
+    health: resourceField({ initial: 10 }),
+    attributes: new f.SchemaField({
+      power: resourceField({ initial: 5 }),
+    }),
+  };
+};
+export class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {}
+registerSystem({ id: 'my-system', actorDataModels: { character: CharacterData } });`,
+        'utf8',
+      );
+      expect(await runSourceRules(cwd)).toEqual([]);
+    });
+
+    it('still flags a manifest path that resourceField() does not sit at', async () => {
+      await writeFile(
+        join(cwd, 'system.json'),
+        JSON.stringify({ id: 'my-system', version: '1.0.0', primaryTokenAttribute: 'hp' }),
+        'utf8',
+      );
+      await writeFile(
+        join(cwd, 'data.ts'),
+        `const defineCharacterSchema = () => ({ health: resourceField({ initial: 10 }) });
+export class CharacterData extends BaseTypeDataModel(defineCharacterSchema) {}
+registerSystem({ id: 'my-system', actorDataModels: { character: CharacterData } });`,
+        'utf8',
+      );
+      const seven = (await runSourceRules(cwd)).filter((r) => r.ruleId === 'VTTF-AUDIT-007');
+      expect(seven).toHaveLength(1);
+    });
+
     it('reads a factory with a return type and a brace inside a string', async () => {
       await writeFile(
         join(cwd, 'system.json'),

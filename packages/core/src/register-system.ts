@@ -18,6 +18,7 @@
  * themselves.
  */
 
+import { schemaHasResource } from './data/resource-field.js';
 import { VttfError, type VttfErrorCode } from './errors/registry.js';
 import type {
   CombatConfig,
@@ -227,6 +228,7 @@ function applyInit(config: SystemRegistration): void {
 
   if (config.actorDataModels !== undefined) {
     Object.assign(CONFIG.Actor.dataModels, config.actorDataModels);
+    assertTokenAttributes(config.id, config.actorDataModels);
   }
   if (config.itemDataModels !== undefined) {
     Object.assign(CONFIG.Item.dataModels, config.itemDataModels);
@@ -258,4 +260,41 @@ function applyInit(config: SystemRegistration): void {
   }
 
   config.onAfterInit?.();
+}
+
+interface SystemPackage {
+  readonly primaryTokenAttribute?: string | null;
+  readonly secondaryTokenAttribute?: string | null;
+}
+
+/**
+ * The manifest's token bars must land on a `{ value, max }` field of some
+ * Actor data model, or Foundry draws no bar and says nothing. Checked here,
+ * once, where both sides are known: the manifest through `game.system`, the
+ * schemas through the classes just registered.
+ */
+function assertTokenAttributes(
+  systemId: string,
+  dataModels: Readonly<Record<string, unknown>>,
+): void {
+  const game = (globalThis as Record<string, unknown>).game as
+    | { system?: SystemPackage }
+    | undefined;
+  const system = game?.system;
+  if (!system) return;
+  const models = Object.values(dataModels);
+  if (models.length === 0) return;
+  for (const key of ['primaryTokenAttribute', 'secondaryTokenAttribute'] as const) {
+    const path = system[key];
+    if (typeof path !== 'string' || path.length === 0) continue;
+    const found = models.some((model) =>
+      schemaHasResource((model as { schema?: unknown }).schema, path),
+    );
+    if (!found) {
+      throw vttfError(
+        'VTTF-0010',
+        `"${systemId}" sets ${key} to "${path}", but no Actor data model declares a { value, max } field at that path. Use resourceField() there, or point the manifest at a field that has value and max.`,
+      );
+    }
+  }
 }
