@@ -115,6 +115,103 @@ wraps enrichers in. VTTForge checks the flag when you register.
 
 `registerSystem` takes the same option.
 
+## Talking to the other clients
+
+A module that shows the table something, or that lets a player change what
+only a Gamemaster may change, needs the socket. That is
+[its own page](./sockets), because the parts that go wrong there are not the
+parts the API docs describe.
+
+## The module api
+
+`game.modules.get(id).api` is where a module publishes what other modules and
+macros may call. Hand it to `registerModule` and it is written during `init`,
+before any CONFIG mutation:
+
+```js
+registerModule({
+  id: 'my-module',
+  api: {
+    createNote: (name) => Item.implementation.create({ name, type: NOTE_TYPE }),
+  },
+});
+```
+
+It is written at the top of `init`, before your own `onBeforeInit` and before
+any CONFIG mutation. The hook is the part people get wrong: publish it later
+and anything that looked during its own `init` found nothing, with no way to
+tell why.
+
+### Reading someone else's
+
+```js
+import { moduleApi, requireModuleApi, isModuleActive } from '@vttforge/core';
+
+const optional = moduleApi('other-module');       // undefined when unavailable
+const required = requireModuleApi('other-module'); // throws, and says which
+```
+
+`game.modules.get(id)?.api` collapses four situations into `undefined`: no
+such module, installed but switched off, on but publishing nothing, or on and
+publishing an older shape than you need. A module that guesses wrong tells its
+user to install something they already have. `requireModuleApi` throws
+[VTTF-0014](../errors/VTTF-0014) naming which of the three it was.
+
+Read from `onSetup` or later, never from `init`. Nothing orders one package's
+`init` against another's, so a read during `init` finds an api that is not
+published yet and cannot tell that apart from a module that publishes none.
+`onSetup` is the first point where every package has finished its `init`.
+
+The type argument is your claim about the shape. Nothing checks it: the other
+module's types are not yours to import. Write down what you use and treat the
+result the way you would any other value crossing a boundary.
+
+## Before the module goes away
+
+A module's sub-types travel with the module. Switch it off and every document
+using one is marked invalid: visible in the world, not editable, holding data
+nothing can read. Uninstall it and they are stranded for good.
+
+So ship a way out. Two calls:
+
+```js
+import { subTypeDocuments, convertSubTypes } from '@vttforge/core';
+
+// What a user would lose by removing this module.
+const count = subTypeDocuments({ id: 'my-module', document: 'Item', type: 'note' }).length;
+
+// Turn each one into a plain Item and lose nothing.
+const { converted, failed } = await convertSubTypes({
+  id: 'my-module',
+  document: 'Item',
+  type: 'note',
+});
+```
+
+Put it behind a settings button or a macro, and run it as a Gamemaster: these
+are world documents.
+
+`to` defaults to `base`, which every document class has and no package owns,
+so it survives anything else being uninstalled too. `system` decides what the
+converted document keeps, and defaults to what it already had. A core type
+stores that as a plain object, so the data is still there even where nothing
+reads it. `changes` sets anything else in the same update, such as a name.
+
+The conversion is one update per document, in place. The id survives, and so
+do the flags, the folder, the ownership and the embedded documents. Nothing is
+deleted and recreated.
+
+### Why not do it by hand
+
+`document.update({ type: 'base' })` is refused. Foundry answers that a type
+may only change when `system` is replaced with a `ForcedReplacement` operator,
+and it drops the whole update, so a call that also renamed the document loses
+the rename as well.
+
+Creating a replacement with `keepId` while the original is still there
+overwrites it. No error, no second document, and no way back if the new data
+was wrong.
+
 ## Adding UI to someone else's application
 
 Most of what a module does is put something of its own inside an application
