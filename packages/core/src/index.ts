@@ -160,10 +160,20 @@ export type {
   HookCallback,
   HooksApi,
   ItemConfig,
+  PackageHandle,
+  QueryHandlers,
   SettingConfig,
   SettingScope,
+  SocketApi,
   StatusEffectConfig,
+  UserLike,
 } from './foundry-globals.js';
+export {
+  INJECTION_ATTRIBUTE,
+  type InjectOptions,
+  type InjectPosition,
+  inject,
+} from './inject.js';
 export {
   KEYWORD_ATTRIBUTE,
   KEYWORD_CLASS,
@@ -180,6 +190,13 @@ export type {
   MigrationRunner,
   MigrationRunnerOptions,
 } from './migrations/types.js';
+export {
+  isModuleActive,
+  type MissingApiReason,
+  moduleApi,
+  type PackageApi,
+  requireModuleApi,
+} from './module-api.js';
 export {
   type CheckboxPromptField,
   type NumberPromptField,
@@ -216,4 +233,27 @@ export {
   type SheetModesConfig,
   TOGGLE_MODE_ACTION,
 } from './sheet-modes.js';
+export {
+  type AskGmOptions,
+  type EmitOptions,
+  type PackageKind,
+  type PackageSocket,
+  registerSocket,
+  type SocketContext,
+  type SocketMessageHandler,
+  type SocketMessageRun,
+  type SocketRegistration,
+  type SocketRequestHandler,
+  type SocketRequestRun,
+  type SocketSender,
+} from './sockets.js';
+export {
+  type ConvertedSubTypes,
+  type ConvertSubTypesOptions,
+  convertSubTypes,
+  type SubTypeDocument,
+  type SubTypedDocument,
+  type SubTypeQuery,
+  subTypeDocuments,
+} from './sub-types.js';
 export { SystemConfig } from './system-config.js';
