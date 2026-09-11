@@ -5,7 +5,14 @@
  * modules copy from each other: the sub-type, its sheet, the enricher, the
  * settings, and the public API.
  */
-import { registerModule, registerSocket, SystemConfig, VttfError } from '@vttforge/core';
+import {
+  convertSubTypes,
+  registerModule,
+  registerSocket,
+  SystemConfig,
+  subTypeDocuments,
+  VttfError,
+} from '@vttforge/core';
 import { MODULE_ID, NOTE_TYPE } from './constants.mjs';
 import { NoteData } from './data/note-data.mjs';
 import { noteEnricher } from './enricher.mjs';
@@ -57,6 +64,28 @@ const api = {
    */
   requestNote(name, body = '') {
     return socket.askGm('createNote', { name, body });
+  },
+
+  /** How many notes a user would strand by removing this module. */
+  countNotes() {
+    return subTypeDocuments({ id: MODULE_ID, document: 'Item', type: 'note' }).length;
+  },
+
+  /**
+   * Turn every note into a plain Item, so nothing is lost when this module
+   * goes away. Run it before switching the module off.
+   *
+   * @returns {Promise<import('@vttforge/core').ConvertedSubTypes>}
+   */
+  convertNotes() {
+    return convertSubTypes({
+      id: MODULE_ID,
+      document: 'Item',
+      type: 'note',
+      // `base` belongs to no package, so it survives anything else being
+      // uninstalled too.
+      to: 'base',
+    });
   },
 };
 

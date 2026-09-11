@@ -106,6 +106,12 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'requireModuleApi() asked for the api of a module that is not installed, is installed but switched off, or is on and publishes nothing. Also thrown when registerModule() is given an api but Foundry has no module under that id, which means the id does not match module.json.',
   }),
+  'VTTF-0015': Object.freeze({
+    code: 'VTTF-0015',
+    name: 'InvalidSubTypeConversion',
+    summary:
+      'subTypeDocuments() or convertSubTypes() was called without a module id or a bare type key, asked to convert a type into itself, or run where foundry.data.operators.ForcedReplacement does not exist. Foundry refuses a document type change without that operator, and drops the rest of the update with it.',
+  }),
 });
 
 /**

@@ -241,4 +241,13 @@ export {
   type SocketRequestRun,
   type SocketSender,
 } from './sockets.js';
+export {
+  type ConvertedSubTypes,
+  type ConvertSubTypesOptions,
+  convertSubTypes,
+  type SubTypeDocument,
+  type SubTypedDocument,
+  type SubTypeQuery,
+  subTypeDocuments,
+} from './sub-types.js';
 export { SystemConfig } from './system-config.js';
