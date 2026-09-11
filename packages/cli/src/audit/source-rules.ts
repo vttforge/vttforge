@@ -10,6 +10,8 @@
  *   VTTF-AUDIT-006 (LOW)   : `_addDataFieldMigrations` override (wrong signature)
  *   VTTF-AUDIT-007 (MEDIUM): manifest primary/secondaryTokenAttribute not matched
  *                             by a `value`/`max` SchemaField in source
+ *   VTTF-AUDIT-022 (HIGH)  : source talks over the socket, manifest does not
+ *                             declare `"socket": true`
  *
  * Regex-based on purpose: avoids pulling in a TypeScript AST dependency
  * for what amount to four pattern checks. The trade-off is occasional
@@ -19,8 +21,25 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { readdir, readFile, stat } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { maskComments } from './mask.js';
 import type { RuleResult } from './types.js';
+
+/**
+ * `registerSocket` binds `game.socket.on` on the package channel and emits on
+ * it, so it carries the manifest requirement on its own.
+ */
+const REGISTER_SOCKET = /\bregisterSocket\s*\(/;
+
+/** A raw `game.socket.emit(` or `game.socket.on(`. */
+const RAW_SOCKET_CALL = /\bgame\s*\.\s*socket\s*\.\s*(?:emit|on)\s*\(/;
+
+/**
+ * The package channel, in a string or a template literal. Core events travel
+ * the same socket under their own names, and those need no manifest flag, so
+ * a raw call only counts when the file also names a package channel.
+ */
+const PACKAGE_CHANNEL = /['"`](?:module|system)\.[^'"`\s]*/;
 
 /** Directories we never descend into; they are not user source. */
 const EXCLUDED_DIRS = new Set([
@@ -1063,6 +1082,55 @@ function lastSegment(path: string): string {
 }
 
 /** Entry point: gather everything once, then dispatch to the per-file rules. */
+/**
+ * VTTF-AUDIT-022 (HIGH): the source uses the package socket, the manifest
+ * does not declare it.
+ *
+ * Foundry only opens the `module.<id>` / `system.<id>` channel for a package
+ * whose manifest carries `"socket": true`. Without the flag, `emit` returns
+ * without throwing and the message never leaves the client. Nothing is
+ * logged. The listener on the other machine is bound and correct, and it
+ * never fires, so the search goes to the handler and the payload shape and
+ * the user permissions, and the manifest is the last place anyone looks.
+ */
+function rule022(
+  manifestPath: string | null,
+  manifestRaw: string | null,
+  manifestParsed: Record<string, unknown> | null,
+  contents: Map<string, string>,
+): RuleResult[] {
+  if (!manifestPath || !manifestRaw || !manifestParsed) return [];
+  if (manifestParsed.socket === true) return [];
+  const manifestName = basename(manifestPath);
+
+  const out: RuleResult[] = [];
+  for (const [file, content] of contents) {
+    // A call quoted in a JSDoc block is documentation, not a socket.
+    const code = maskComments(content);
+    const registered = REGISTER_SOCKET.exec(code);
+    // A raw call only counts when the file also names a package channel.
+    // Core events ride the same socket under their own names and need no
+    // manifest flag.
+    const raw = PACKAGE_CHANNEL.test(code) ? RAW_SOCKET_CALL.exec(code) : null;
+    const match = registered ?? raw;
+    if (match?.index === undefined) continue;
+    // `game . socket . emit (` as written, without the open paren.
+    const call = match[0].replace(/\s*\($/, '').replaceAll(/\s+/g, '');
+    out.push({
+      ruleId: 'VTTF-AUDIT-022',
+      title: 'Socket use with no "socket": true in the manifest',
+      severity: 'HIGH',
+      filePath: file,
+      // maskComments keeps every index, so the offset is the real one.
+      line: content.slice(0, match.index).split('\n').length,
+      message: `This file calls \`${call}\`, and ${manifestName} has no \`"socket": true\`. Foundry never opens the package channel, so every emit is dropped without an error and no listener on any other client fires.`,
+      remediation:
+        'Add `"socket": true` to the manifest, then restart the world. Foundry reads the flag when the package loads, so a running world keeps the old answer.',
+    });
+  }
+  return out;
+}
+
 export async function runSourceRules(cwd: string): Promise<RuleResult[]> {
   if (!existsSync(cwd)) return [];
   const info = await stat(cwd);
@@ -1097,6 +1165,7 @@ export async function runSourceRules(cwd: string): Promise<RuleResult[]> {
   results.push(
     ...(await rule007(manifestPath, manifestRaw, manifestParsed, sourceFiles, classToSubtypes)),
   );
+  results.push(...rule022(manifestPath, manifestRaw, manifestParsed, contents));
   return results;
 }
 
