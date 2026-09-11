@@ -34,12 +34,12 @@ function hooks(): HooksApi {
   return api;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: a decorator receives whatever class it is applied to
 /**
  * What a class decorator is handed. Wider than `AnyClass` on purpose: a
  * decorated class may be abstract, while a `documentClass` you construct
  * cannot be.
  */
+// biome-ignore lint/suspicious/noExplicitAny: a decorator receives whatever class it is applied to
 type DecoratorTarget = abstract new (...args: any[]) => any;
 
 /** Run something in `init`, which is the only place CONFIG may be touched. */
