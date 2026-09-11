@@ -8,7 +8,7 @@
  * Never write to the database in prepareDerivedData — only assign onto `this`.
  */
 
-import { BaseTypeDataModel, fields } from '@vttforge/core';
+import { BaseTypeDataModel, fields, resourceField } from '@vttforge/core';
 
 /**
  * The schema, as a function passed to the factory rather than a `static
@@ -76,38 +76,10 @@ const defineCharacterSchema = () => {
       wis: score(),
       cha: score(),
     }),
-    health: new f.SchemaField({
-      value: new f.NumberField({
-        required: true,
-        nullable: false,
-        integer: true,
-        min: 0,
-        initial: 10,
-      }),
-      max: new f.NumberField({
-        required: true,
-        nullable: false,
-        integer: true,
-        min: 0,
-        initial: 10,
-      }),
-    }),
-    power: new f.SchemaField({
-      value: new f.NumberField({
-        required: true,
-        nullable: false,
-        integer: true,
-        min: 0,
-        initial: 5,
-      }),
-      max: new f.NumberField({
-        required: true,
-        nullable: false,
-        integer: true,
-        min: 0,
-        initial: 5,
-      }),
-    }),
+    // The token bars in system.json point at these two: a resource is the
+    // `{ value, max }` pair a bar reads.
+    health: resourceField({ initial: 10 }),
+    power: resourceField({ initial: 5 }),
     biography: new f.HTMLField(),
   };
 };

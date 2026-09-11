@@ -89,7 +89,7 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-004` | MEDIUM | An `HTMLField` or `FilePathField` not listed in `documentTypes`, nor at the document level of a `template.json` that still lists the type; the server only sanitises declared paths |
 | `VTTF-AUDIT-005` | MEDIUM | A `TypeDataModel` without `prepareBaseData`; Active Effects apply between it and `prepareDerivedData` |
 | `VTTF-AUDIT-006` | LOW | An `_addDataFieldMigrations` override; the signature is not what it looks like |
-| `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field, in a data model or in `template.json`; the token bar degrades with no error |
+| `VTTF-AUDIT-007` | MEDIUM | `primaryTokenAttribute` / `secondaryTokenAttribute` not pointing at a `{ value, max }` field, in a data model (a `SchemaField` with both keys, or `resourceField()`) or in `template.json`; the token bar degrades with no error |
 | `VTTF-AUDIT-008` | HIGH | A sheet template that opens its own `<form>` when the sheet base already is one; the fields belong to the inner form, so closing the sheet drops every edit |
 | `VTTF-AUDIT-009` | MEDIUM | A subtype declared in `documentTypes` with no `TYPES` label; Foundry prints the raw key as the type's name |
 | `VTTF-AUDIT-010` | HIGH | A `template.json` listing a type whose `documentTypes` entry declares `htmlFields`, `filePathFields` or `gmOnlyFields`; Foundry replaces the entry and drops them |

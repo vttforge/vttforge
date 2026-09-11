@@ -44,6 +44,43 @@ values in the schema instead, as a `NumberField` with `initial: 0`, and
 assign them in `prepareDerivedData`. The scaffold's JavaScript template does
 this for the ability modifiers.
 
+## Resources and token bars
+
+A resource is `{ value, max }`: hit points, power, ammunition, the shape a
+token bar reads. `resourceField()` builds that `SchemaField` with both
+children required, non-nullable numbers, so `system.health.value` is a
+`number` everywhere:
+
+```ts
+import { fields, resourceField } from '@vttforge/core';
+
+const defineCharacterSchema = () => {
+  const f = fields();
+  return {
+    health: resourceField({ initial: 10 }),
+    power: resourceField({ initial: 5, max: 5, label: 'MY_SYSTEM.Power' }),
+    level: new f.NumberField({ required: true, nullable: false, initial: 1 }),
+  };
+};
+```
+
+| Option | Default | What it sets |
+| --- | --- | --- |
+| `initial` | `0` | starting `value` |
+| `max` | `initial` | starting `max` |
+| `min` | `0` | lowest allowed for both |
+| `integer` | `true` | whole numbers only |
+| `label`, `hint` | none | the SchemaField's own |
+
+Point `primaryTokenAttribute` and `secondaryTokenAttribute` in the manifest at
+the field key, `health` and `power` here, or a dotted path such as
+`attributes.hp`. Foundry draws no bar for a path without both keys and says
+nothing about it, so `registerSystem` checks the two manifest paths against
+the Actor data models it registers and throws
+[VTTF-0010](../errors/VTTF-0010) at `init` when no model has a resource
+there. `vttforge audit` runs the same check on the source (rule 007) and reads
+`resourceField()` as a resource.
+
 ## Nullability defaults
 
 Every field class picks its own defaults, and they disagree.

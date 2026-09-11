@@ -110,6 +110,11 @@ test('a character sheet renders its parts and its derived data', async ({ page }
         healthMax: actor.system.health.max,
         strMod: actor.system.abilities.str.mod,
       },
+      // The manifest's token bars, read the way a token reads them.
+      bars: {
+        bar1: actor.prototypeToken.getBarAttribute('bar1'),
+        bar2: actor.prototypeToken.getBarAttribute('bar2'),
+      },
     };
   });
 
@@ -124,6 +129,9 @@ test('a character sheet renders its parts and its derived data', async ({ page }
   // 10 + level 1 + the con modifier.
   expect(sheet.derived.healthMax).toBe(11);
   expect(sheet.derived.strMod).toBe(0);
+  // `resourceField()` gave both bars the { value, max } pair they read.
+  expect(sheet.bars.bar1).toMatchObject({ type: 'bar', attribute: 'health', value: 10, max: 11 });
+  expect(sheet.bars.bar2).toMatchObject({ type: 'bar', attribute: 'power', value: 5, max: 5 });
 });
 
 test('a sheet with MODES opens in play, locks its fields, and edit opens them again', async ({

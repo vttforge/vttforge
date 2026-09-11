@@ -270,6 +270,33 @@ describe('registerSystem', () => {
     ).toThrow(/VTTF-0009/);
   });
 
+  it("checks the manifest's token attributes against the Actor data models on init", () => {
+    const { hooks } = setupFoundryGlobals();
+    const resource = { fields: { value: {}, max: {} } };
+    const HeroData = class {
+      static schema = { fields: { health: resource, level: {} } };
+    };
+    const VehicleData = class {
+      static schema = { fields: { hull: resource } };
+    };
+    (globalThis as Record<string, unknown>).game = {
+      system: { primaryTokenAttribute: 'health', secondaryTokenAttribute: 'hull' },
+    };
+    registerSystem({ id: 'my-system', actorDataModels: { hero: HeroData, vehicle: VehicleData } });
+    const initCallback = hooks.once.mock.calls[0]?.[1] as () => void;
+    // Each bar lands on some Actor model: hero has health, vehicle has hull.
+    expect(() => initCallback()).not.toThrow();
+
+    (globalThis as Record<string, unknown>).game = {
+      system: { primaryTokenAttribute: 'level', secondaryTokenAttribute: null },
+    };
+    registerSystem({ id: 'other-system', actorDataModels: { hero: HeroData } });
+    const otherInit = hooks.once.mock.calls[1]?.[1] as () => void;
+    expect(() => otherInit()).toThrow(/VTTF-0010/);
+    expect(() => otherInit()).toThrow(/primaryTokenAttribute to "level"/);
+    (globalThis as Record<string, unknown>).game = undefined;
+  });
+
   it('does not register i18nInit or setup hooks when their callbacks are omitted', () => {
     const { hooks } = setupFoundryGlobals();
     registerSystem({ id: 'my-system' });

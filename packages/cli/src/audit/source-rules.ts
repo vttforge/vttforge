@@ -753,6 +753,7 @@ async function sourceHasValueMaxSchemaAtPath(
         const owner = classes.find((c) => decl.index > c.openIdx && decl.index < c.endIdx);
         if (owner && !actorClasses.has(owner.className)) continue;
       }
+      if (decl.resource) return true;
       const topKeys = extractTopLevelKeys(decl.body);
       if (topKeys.has('value') && topKeys.has('max')) return true;
     }
@@ -771,10 +772,24 @@ interface SchemaFieldDecl {
   body: string;
   /** Offset of the declaration, used to find its enclosing class. */
   index: number;
+  /** A `resourceField()` call: a SchemaField with `value` and `max` by construction. */
+  resource?: boolean;
 }
 
 function findAllSchemaFields(content: string): SchemaFieldDecl[] {
   const out: SchemaFieldDecl[] = [];
+  // `health: resourceField({ initial: 10 })` from @vttforge/core is a
+  // `{ value, max }` SchemaField; there is no literal body to read keys from.
+  const resourceRe = /(\w+)\s*:\s*(?:[\w.]+\.)?resourceField\s*\(/g;
+  for (const m of content.matchAll(resourceRe)) {
+    if (m.index === undefined) continue;
+    out.push({
+      path: buildSchemaPath(content, m.index, m[1] ?? ''),
+      body: '',
+      index: m.index,
+      resource: true,
+    });
+  }
   const startRe = /(\w+)\s*:\s*new\s+(?:[\w.]+\.)?SchemaField\s*\(\s*\{/g;
   for (const m of content.matchAll(startRe)) {
     if (m.index === undefined) continue;
