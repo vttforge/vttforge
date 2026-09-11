@@ -104,6 +104,12 @@ deprecation warning that turns into a removal two versions from now.
 | `VTTF-AUDIT-019` | MEDIUM | A bare v13 global alias (`renderTemplate`, `ActorSheet`, `Actors`, `TextEditor`, `ChatLog`, ...); it warns on v14 and throws on v15, and the namespaced path is the same object |
 | `VTTF-AUDIT-020` | HIGH | A release workflow that zips the checkout of a project that builds to `dist/`, or builds and then zips the source tree; the published package has no entry file and no world starts on it |
 | `VTTF-AUDIT-021` | HIGH | A template that calls <code v-pre>{{#select}}</code> or <code v-pre>{{colorPicker}}</code>; v14 removed both, so the template throws "Missing helper" and whatever renders it never opens |
+| `VTTF-AUDIT-022` | HIGH | Source that talks on the package socket channel while the manifest has no `"socket": true`; Foundry never opens the channel, the emit returns without an error, and no listener anywhere fires |
+
+Rule 022 wants the package channel, not the socket. Core events ride the same
+socket under their own names and work without the flag, so a bare
+`game.socket.on('userActivity', ...)` is not a finding. A file naming
+`module.<id>` or `system.<id>`, or calling `registerSocket`, is.
 
 Rule 020 only fires for a project on the vite plugin (or a `build` script that
 runs vite), and only for a workflow that publishes a zip or a manifest. Rules

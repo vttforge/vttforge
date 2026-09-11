@@ -4,7 +4,7 @@
  *
  * Rule organisation:
  *   - manifest-rules.ts → VTTF-AUDIT-001, 002, 003 (manifest-only)
- *   - source-rules.ts   → VTTF-AUDIT-004, 005, 006, 007 (source walker
+ *   - source-rules.ts   → VTTF-AUDIT-004, 005, 006, 007, 022 (source walker
  *                         + cross-check with manifest where needed)
  *   - template-rules.ts → VTTF-AUDIT-008 (the Handlebars, cross-checked
  *                         against which base each sheet is built on)
