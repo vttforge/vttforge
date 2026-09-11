@@ -13,6 +13,9 @@
     "@vttforge/styles": "workspace:*"
   },
   "devDependencies": {
+    "@shikijs/vitepress-twoslash": "^2.5.0",
+    "@viteplus/versions": "^2.0.9",
+    "@vttforge/core": "workspace:*",
     "typedoc": "^0.28.20",
     "typedoc-plugin-markdown": "^4.13.0",
     "typedoc-vitepress-theme": "^1.1.3",

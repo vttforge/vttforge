@@ -57,4 +57,4 @@ Thumbs.db
 /Data
 
 # Generated API reference (apps/docs/scripts/typedoc.mjs)
-apps/docs/reference/*/
+apps/docs/src/reference/*/

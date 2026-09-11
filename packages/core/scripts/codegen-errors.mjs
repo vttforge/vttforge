@@ -9,7 +9,7 @@
  *      package (the `files: ["dist"]` whitelist in package.json carries it
  *      into the tarball).
  *
- *   2. `docs/errors/VTTF-NNNN.md` and `apps/docs/errors/VTTF-NNNN.md` — one
+ *   2. `docs/errors/VTTF-NNNN.md` and `apps/docs/src/errors/VTTF-NNNN.md` — one
  *      Markdown stub per code, for GitHub and for the docs site.
  *      These are committed so the `docsUrl` resolves to a real page once
  *      the docs site goes live in v0.3.
@@ -31,7 +31,7 @@ const MANIFEST_PATH = resolve(DIST, 'errors-manifest.json');
 // keeps them from drifting, which a manual copy would not.
 const DOCS_DIRS = [
   resolve(REPO_ROOT, 'docs', 'errors'),
-  resolve(REPO_ROOT, 'apps', 'docs', 'errors'),
+  resolve(REPO_ROOT, 'apps', 'docs', 'src', 'errors'),
 ];
 const MANIFEST_VERSION = 1;
 const SOURCE_RELATIVE = 'packages/core/src/errors/registry.ts';
@@ -139,7 +139,7 @@ async function main() {
   const manifest = await writeManifest(entries, pkgVersion);
   await writeStubs(entries);
   console.warn(
-    `[codegen-errors] wrote ${entries.length} entries → dist/errors-manifest.json + docs/errors/ + apps/docs/errors/`,
+    `[codegen-errors] wrote ${entries.length} entries → dist/errors-manifest.json + docs/errors/ + apps/docs/src/errors/`,
   );
   return manifest;
 }

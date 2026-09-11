@@ -1,5 +1,6 @@
+import { transformerTwoslash } from '@shikijs/vitepress-twoslash';
+import { defineVersionedConfig } from '@viteplus/versions';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { defineConfig } from 'vitepress';
 
 /**
  * The error pages are generated. `packages/core/scripts/codegen-errors.mjs`
@@ -8,7 +9,7 @@ import { defineConfig } from 'vitepress';
  * the docs by existing, not by someone remembering to add it here.
  */
 function errorPages() {
-  return readdirSync(new URL('../errors', import.meta.url))
+  return readdirSync(new URL('../src/errors', import.meta.url))
     .filter((f) => f.endsWith('.md') && f !== 'index.md')
     .sort()
     .map((f) => ({ text: f.replace('.md', ''), link: `/errors/${f.replace('.md', '')}` }));
@@ -23,7 +24,7 @@ const REFERENCE_PACKAGES = ['core', 'types', 'cli', 'vite-plugin', 'testing'];
 function referenceSidebar() {
   const items = [{ text: 'Overview', link: '/reference/' }];
   for (const name of REFERENCE_PACKAGES) {
-    const file = new URL(`../reference/${name}/typedoc-sidebar.json`, import.meta.url);
+    const file = new URL(`../src/reference/${name}/typedoc-sidebar.json`, import.meta.url);
     if (!existsSync(file)) continue;
     items.push({
       text: `@vttforge/${name}`,
@@ -36,7 +37,7 @@ function referenceSidebar() {
   return [{ text: 'API reference', items }];
 }
 
-export default defineConfig({
+export default defineVersionedConfig({
   title: 'VTTForge',
   // The landing page owns the root of vttforge.dev; the docs live under it,
   // in one Pages artifact.
@@ -77,6 +78,41 @@ export default defineConfig({
   ],
   cleanUrls: true,
   lastUpdated: true,
+  // The app's own readme sits next to `src/`, not in it, and is not a page.
+  srcExclude: ['README.md'],
+
+  /**
+   * Twoslash runs the TypeScript compiler over a code block and renders the
+   * types it found. It is slow, so a block opts in by tagging itself
+   * `ts twoslash`. Everything else is highlighted the way it always was.
+   *
+   * A twoslash block is typechecked at build time against the packages in
+   * `devDependencies`. A snippet that stops compiling after an API change
+   * fails the build, which is the point, and the reason to keep the number
+   * of them small.
+   */
+  markdown: {
+    codeTransformers: [transformerTwoslash({ explicitTrigger: true })],
+  },
+
+  /**
+   * Versioned docs.
+   *
+   * `src/` is the version being written and is served at the root. Each
+   * folder under `archive/` is a frozen copy of an older one, served at its
+   * own path, with its own sidebar. The switcher in the navigation moves
+   * between them.
+   *
+   * `archive/` is empty today. Cutting a version means copying `src/` into
+   * `archive/v<minor>/` and moving `current` on, and the first copy is worth
+   * making when the API in `src/` stops describing the published packages.
+   * Freezing a copy of what is already at the root only doubles the site and
+   * the search index.
+   */
+  versionsConfig: {
+    current: 'v0.17',
+    versionSwitcher: { text: 'Version', includeCurrentVersion: true },
+  },
 
   /**
    * One canonical URL per page, derived from the file it was built from.
@@ -115,6 +151,7 @@ export default defineConfig({
       // `/docs/` base and point back into the docs.
       { text: 'Design System', link: 'https://vttforge.dev/design-system' },
       { text: 'vttforge.dev', link: 'https://vttforge.dev/' },
+      { component: 'VersionSwitcher' },
     ],
 
     sidebar: {
