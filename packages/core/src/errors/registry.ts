@@ -76,6 +76,18 @@ const REGISTRY: Readonly<Record<VttfErrorCode, VttfErrorEntry>> = Object.freeze(
     summary:
       'A keyword reached registerSystem() or registerModule() with an id that cannot go inside @Keyword[...] (letters, digits and hyphens only), with an id another keyword of the same package already uses, or without a string label and description.',
   }),
+  'VTTF-0010': Object.freeze({
+    code: 'VTTF-0010',
+    name: 'InvalidResource',
+    summary:
+      'resourceField() was given a min above its initial or max, or the manifest names a primaryTokenAttribute or secondaryTokenAttribute that no registered Actor data model declares as a { value, max } field. Foundry draws no bar for such a path and says nothing.',
+  }),
+  'VTTF-0011': Object.freeze({
+    code: 'VTTF-0011',
+    name: 'InvalidDice',
+    summary:
+      'stepDie() was given a die that is not on the ladder or a fractional number of steps, or dicePool() was given a count, faces, keep or drop that is not a whole number in range, or both keep and drop.',
+  }),
 });
 
 /**

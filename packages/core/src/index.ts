@@ -117,6 +117,15 @@ export {
   type SystemSettingOptions,
 } from './decorators.js';
 export {
+  type CountableRoll,
+  countSuccesses,
+  DEFAULT_DIE_LADDER,
+  type DicePoolSpec,
+  dicePool,
+  type SuccessCount,
+  stepDie,
+} from './dice.js';
+export {
   ERROR_MANIFEST_VERSION,
   type ErrorManifest,
   getErrorManifest,

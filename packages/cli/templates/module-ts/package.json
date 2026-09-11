@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@vttforge/core": "^0.16.0"
+    "@vttforge/core": "^0.17.0"
   },
   "devDependencies": {
     "@vttforge/cli": "^0.15.0",

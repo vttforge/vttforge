@@ -450,6 +450,61 @@ test('postRoll tags a critical and a fumble, and honours the message mode', asyn
   expect(posted.crit.tagColor).not.toBe(posted.fumble.tagColor);
 });
 
+test('dicePool formulas evaluate in Foundry the way the description says', async ({ page }) => {
+  await joinWorld(page);
+
+  const core = readFileSync(new URL('../../../packages/core/dist/index.mjs', import.meta.url));
+  await page.addScriptTag({
+    type: 'module',
+    content: `import * as core from "data:text/javascript;base64,${core.toString('base64')}"; globalThis.__vttforgeCore = core;`,
+  });
+  await page.waitForFunction(() => typeof globalThis.__vttforgeCore?.dicePool === 'function');
+
+  const seen = await page.evaluate(async () => {
+    const { dicePool, countSuccesses, stepDie } = globalThis.__vttforgeCore;
+    const evaluate = async (formula) => {
+      const roll = new foundry.dice.Roll(formula);
+      await roll.evaluate();
+      return roll;
+    };
+    const active = (roll) =>
+      roll.dice.flatMap((die) => die.results.filter((r) => r.active).map((r) => r.result));
+
+    const pool = await evaluate(dicePool({ number: 8, faces: 6, successAt: 5 }));
+    const both = await evaluate(dicePool({ number: 8, faces: 6, successAt: 5, failAt: 1 }));
+    const high = await evaluate(dicePool({ number: 2, faces: 20, keep: { highest: 1 } }));
+    const dropped = await evaluate(dicePool({ number: 4, faces: 6, drop: { lowest: 1 } }));
+    const stepped = await evaluate(`1d${stepDie(6, 1)}`);
+    const all = (roll) => roll.dice[0].results.map((r) => r.result);
+    return {
+      // Foundry's own cs>=5 total against our count of the same dice.
+      pool: {
+        total: pool.total,
+        counted: countSuccesses(pool, 5).successes,
+        dice: all(pool).length,
+      },
+      both: { total: both.total, net: countSuccesses(both, 5, { failAt: 1 }).net },
+      high: { total: high.total, max: Math.max(...all(high)), kept: active(high).length },
+      dropped: {
+        total: dropped.total,
+        sum: all(dropped)
+          .sort((a, b) => a - b)
+          .slice(1)
+          .reduce((a, b) => a + b, 0),
+      },
+      stepped: { faces: stepped.dice[0].faces, formula: stepped.formula },
+    };
+  });
+
+  expect(seen.pool.dice).toBe(8);
+  expect(seen.pool.total).toBe(seen.pool.counted);
+  expect(seen.both.total).toBe(seen.both.net);
+  expect(seen.high.total).toBe(seen.high.max);
+  expect(seen.high.kept).toBe(1);
+  expect(seen.dropped.total).toBe(seen.dropped.sum);
+  expect(seen.stepped).toEqual({ faces: 8, formula: '1d8' });
+});
+
 test('the module contributes a namespaced sub-type once enabled', async ({ page }) => {
   await joinWorld(page);
 
