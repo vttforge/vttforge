@@ -18,7 +18,7 @@ const SYSTEM_ID = '{{ID}}';
  * `ActorLike` is the document surface `@vttforge/core` ships; the type
  * argument is your own schema, so `actor.system.abilities` is typed.
  */
-type CharacterActor = ActorLike<CharacterData>;
+type CharacterActor = ActorLike<CharacterData, GearItem>;
 type GearItem = ItemLike<GearData>;
 
 interface AbilityViewModel {

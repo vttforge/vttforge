@@ -257,7 +257,7 @@ export const VTTFORGE_SHEET_CLASS = 'vttforge';
  * ```
  */
 export function BaseActorSheet<
-  TDocument extends ActorLike<unknown> = ActorLike,
+  TDocument extends ActorLike<unknown, ItemLike<unknown>> = ActorLike,
 >(): SheetBaseCtor<TDocument> {
   const { Base, mixin } = resolveBases();
   const Mixed = mixin(Base);

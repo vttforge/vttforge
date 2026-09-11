@@ -17,10 +17,13 @@ Three places that returned `unknown` now return a document:
   `onDropActiveEffect` hand over the document that was dropped.
 - `this.parent` inside a `BaseTypeDataModel`. It did not compile before.
 
-Both sheet factories take the document type, so the schema follows through:
+Both sheet factories take the document type, so the schema follows through.
+`ActorLike` takes the item type too, which keeps `actor.items` typed:
 
 ```ts
-class CharacterSheet extends BaseActorSheet<ActorLike<CharacterSystem>>() {
+type CharacterActor = ActorLike<CharacterSystem, ItemLike<GearSystem>>;
+
+class CharacterSheet extends BaseActorSheet<CharacterActor>() {
   async _prepareContext(options: unknown) {
     const level = this.document.system.level; // number
     return { ...(await super._prepareContext(options)), level };

@@ -21,7 +21,8 @@ declare const sheet: InstanceType<ReturnType<typeof BaseActorSheet>>;
 declare const itemSheet: InstanceType<ReturnType<typeof BaseItemSheet>>;
 
 type Sys = { readonly level: number };
-declare const typed: InstanceType<ReturnType<typeof BaseActorSheet<ActorLike<Sys>>>>;
+type Gear = ItemLike<{ readonly quantity: number }>;
+declare const typed: InstanceType<ReturnType<typeof BaseActorSheet<ActorLike<Sys, Gear>>>>;
 
 type Schema = Record<string, FieldInstance>;
 declare const data: TypedTypeDataModel<Schema, ActorLike>;
@@ -30,19 +31,27 @@ describe('the sheet document', () => {
   it('is a document, not an unknown', () => {
     expectTypeOf(sheet.document.name).toEqualTypeOf<string>();
     expectTypeOf(sheet.document.id).toEqualTypeOf<string | null>();
-    expectTypeOf(sheet.document.items.get('x')).toEqualTypeOf<ItemLike | undefined>();
-    expectTypeOf(itemSheet.document.actor).toEqualTypeOf<ActorLike | null>();
+    // Asserted on a leaf: `expectTypeOf` walks structurally, and these types
+    // recurse (an item names its actor, which names its items).
+    expectTypeOf(sheet.document.items.filter(() => true)[0]?.name).toEqualTypeOf<
+      string | undefined
+    >();
+    expectTypeOf(itemSheet.document.actor?.name).toEqualTypeOf<string | undefined>();
   });
 
   it('narrows to the system schema when the sheet says which', () => {
     expectTypeOf(typed.document.system.level).toEqualTypeOf<number>();
+    // The collection keeps the item's schema; reading it was `unknown` before.
+    expectTypeOf(typed.document.items.filter(() => true)[0]?.system.quantity).toEqualTypeOf<
+      number | undefined
+    >();
   });
 });
 
 describe('the drop hooks', () => {
   it('hand over the document that was dropped', () => {
-    expectTypeOf(sheet.onDropItem).parameter(0).toEqualTypeOf<ItemLike>();
-    expectTypeOf(sheet.onDropActor).parameter(0).toEqualTypeOf<ActorLike>();
+    expectTypeOf(sheet.onDropItem).parameter(0).toExtend<ItemLike>();
+    expectTypeOf(sheet.onDropActor).parameter(0).toExtend<ActorLike>();
     expectTypeOf(sheet.onDropFolder).parameter(0).toEqualTypeOf<FolderLike>();
     expectTypeOf(sheet.onDropActiveEffect).parameter(0).toEqualTypeOf<ActiveEffectLike>();
   });
@@ -51,6 +60,6 @@ describe('the drop hooks', () => {
 describe('the type data model', () => {
   it('reaches its owning document', () => {
     expectTypeOf(data.parent.name).toEqualTypeOf<string>();
-    expectTypeOf(data.parent.items.get('x')).toEqualTypeOf<ItemLike | undefined>();
+    expectTypeOf(data.parent.items.filter(() => true)[0]?.name).toEqualTypeOf<string | undefined>();
   });
 });

@@ -106,11 +106,18 @@ export interface ItemLike<System = Record<string, unknown>>
   getRollData(): Record<string, unknown>;
 }
 
-/** An Actor, as a sheet holds one and a drop hands one over. */
-export interface ActorLike<System = Record<string, unknown>>
-  extends DocumentMembers<System>,
+/**
+ * An Actor, as a sheet holds one and a drop hands one over.
+ *
+ * `Item` is what `actor.items` holds. It defaults to the shared item surface;
+ * name your own item type to read its schema off a collection entry.
+ */
+export interface ActorLike<
+  System = Record<string, unknown>,
+  Item extends ItemLike<unknown> = ItemLike,
+> extends DocumentMembers<System>,
     EmbeddedDocumentOwner {
-  readonly items: EmbeddedCollection<ItemLike>;
+  readonly items: EmbeddedCollection<Item>;
   readonly effects: EmbeddedCollection<ActiveEffectLike>;
   /** Roll data for `@`-references in a formula. */
   getRollData(): Record<string, unknown>;
