@@ -26,6 +26,13 @@
       "dependsOn": ["build"],
       "cache": false,
       "persistent": true
+    },
+    "@vttforge/cli#test": {
+      "dependsOn": [
+        "^build",
+        "@vttforge-examples/simple-module#build",
+        "@vttforge-examples/simple-system#build"
+      ]
     }
   }
 }
