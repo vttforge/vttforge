@@ -22,5 +22,6 @@
   },
   "engines": {
     "node": ">=26"
-  }
+  },
+  "packageManager": "pnpm@11.25.0"
 }
