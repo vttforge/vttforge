@@ -123,7 +123,6 @@ export type DocumentLifecycleHooks = {
   ];
 };
 
-/** The sidebar context menu hooks, one per document. */
 /**
  * A document that has an object placed on the canvas.
  *
@@ -251,6 +250,7 @@ export type CanvasLayerHooks = {
   [K in RenderedEffectSourceName as `initialize${K}Shaders`]: [unknown];
 };
 
+/** The sidebar context menu hooks, one per document. */
 export type ContextMenuHooks = {
   [K in DocumentHookName as `get${K}ContextOptions`]: [ApplicationV2Members, ContextMenuEntry[]];
 } & {
