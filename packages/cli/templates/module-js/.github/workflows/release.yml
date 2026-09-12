@@ -30,9 +30,9 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+      # No `version` here: package.json's `packageManager` is the one source,
+      # and the action fails when both are set.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       - uses: actions/setup-node@v4
         with:
