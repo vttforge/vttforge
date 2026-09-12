@@ -41,6 +41,10 @@ export {
   type BaseDocumentSheetMembers,
   type DocumentSheetKind,
 } from './base-document-sheet.js';
+export {
+  BaseHandlebarsApplication,
+  type BaseHandlebarsApplicationMembers,
+} from './base-handlebars-application.js';
 export { BaseItemSheet } from './base-item-sheet.js';
 export {
   BaseTypeDataModel,
