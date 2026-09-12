@@ -13,6 +13,9 @@ function makeSettings(initial: Record<string, string> = {}): GameSettingsApi & {
   return {
     store,
     registerSpy,
+    // The runner never enumerates. The registry is here because the interface
+    // requires it, not because this fake fills it.
+    settings: new Map(),
     register(namespace: string, key: string, config: unknown): void {
       registerSpy(namespace, key, config);
     },

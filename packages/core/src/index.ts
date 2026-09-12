@@ -221,6 +221,7 @@ export type {
   PackageHandle,
   Point,
   QueryHandlers,
+  RegisteredSetting,
   RollConstructor,
   RollEvaluateOptions,
   RollLike,
