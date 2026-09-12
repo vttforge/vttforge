@@ -15,7 +15,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { GameApi, SettingConfig } from './foundry-globals.js';
+import type { Game, SettingConfig } from './foundry-globals.js';
 import { registerSheets, type SheetDocumentKind } from './register-sheets.js';
 
 interface HooksApi {
@@ -207,8 +207,8 @@ export function OnHook(event: string) {
  * `game.settings`, read when it is used rather than when the class is
  * defined: the class is defined at import time, and `game` is not there yet.
  */
-function gameSettings(): GameApi['settings'] {
-  const game = (globalThis as Record<string, unknown>).game as GameApi | undefined;
+function gameSettings(): Game['settings'] {
+  const game = (globalThis as Record<string, unknown>).game as Game | undefined;
   if (game?.settings === undefined) {
     throw new VttfError(
       'VTTF-0002',

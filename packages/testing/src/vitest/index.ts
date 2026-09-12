@@ -12,6 +12,7 @@
  */
 export {
   createMockActor,
+  createMockConfig,
   createMockItem,
   type MockDocument,
   type MockDocumentOptions,

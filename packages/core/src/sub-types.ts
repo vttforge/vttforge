@@ -24,7 +24,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { GameApi } from './foundry-globals.js';
+import type { Game } from './foundry-globals.js';
 import { moduleSubType } from './register-module.js';
 
 /** The documents a module may contribute types to and VTTForge registers. */
@@ -43,8 +43,8 @@ interface Collection<T> {
   filter(fn: (entry: T) => boolean): T[];
 }
 
-function game(): GameApi | undefined {
-  return (globalThis as { game?: GameApi }).game;
+function game(): Game | undefined {
+  return (globalThis as { game?: Game }).game;
 }
 
 function collectionFor(document: SubTypeDocument): Collection<SubTypedDocument> | undefined {

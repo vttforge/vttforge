@@ -6,6 +6,7 @@
  * error — the type just never shows up. These cases pin the prefixing, and
  * pin what a module is deliberately not allowed to do.
  */
+import { createMockConfig } from '@vttforge/testing/vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FoundryConfig } from '../foundry-globals.js';
 import {
@@ -16,6 +17,8 @@ import {
 
 const MODULE_ID = 'pdf-character-sheet';
 
+class SystemActor {}
+class SystemItem {}
 class PdfItemData {}
 class PdfActorData {}
 
@@ -35,12 +38,13 @@ beforeEach(() => {
   initHooks = [];
   readyHooks = [];
   staged = [];
-  CONFIG = {
-    Actor: { dataModels: {}, documentClass: 'SystemActor' },
-    Item: { dataModels: {}, documentClass: 'SystemItem' },
-    Combat: { initiative: { formula: '1d20' } },
+  // The system's own registrations, so a case can prove the module left them.
+  CONFIG = createMockConfig({
     statusEffects: { 'system.prone': { id: 'system.prone' } },
-  };
+  });
+  CONFIG.Actor.documentClass = SystemActor;
+  CONFIG.Item.documentClass = SystemItem;
+  CONFIG.Combat.initiative = { formula: '1d20' };
   (globalThis as Record<string, unknown>).CONFIG = CONFIG;
   (globalThis as Record<string, unknown>).Hooks = {
     once: (event: string, fn: () => void) => {
@@ -87,8 +91,8 @@ describe('registerModule', () => {
   it('leaves the system document classes alone', () => {
     registerModule({ id: MODULE_ID, itemDataModels: { pdf: PdfItemData } });
     fireInit();
-    expect(CONFIG.Actor.documentClass).toBe('SystemActor');
-    expect(CONFIG.Item.documentClass).toBe('SystemItem');
+    expect(CONFIG.Actor.documentClass).toBe(SystemActor);
+    expect(CONFIG.Item.documentClass).toBe(SystemItem);
   });
 
   it('leaves the initiative formula alone', () => {
@@ -163,7 +167,7 @@ describe('registerModule', () => {
     });
     fireInit();
     expect(calls).toEqual([
-      { scope: 'pdf-character-sheet', name: 'fillable', documentClass: 'SystemActor' },
+      { scope: 'pdf-character-sheet', name: 'fillable', documentClass: SystemActor },
     ]);
     delete (globalThis as Record<string, unknown>).foundry;
   });
