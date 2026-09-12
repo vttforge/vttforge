@@ -63,6 +63,32 @@ jobs:
 `;
 
 describe('VTTF-AUDIT-020', () => {
+  it('still flags a workflow that zips the checkout after a plain vite build', async () => {
+    await writeFile(
+      join(cwd, 'vite.config.mjs'),
+      "import { vttforge } from '@vttforge/vite-plugin';\n",
+    );
+    await mkdir(join(cwd, '.github/workflows'), { recursive: true });
+    await writeFile(
+      join(cwd, '.github/workflows/release.yml'),
+      [
+        'on:',
+        '  push:',
+        '    tags: [v*]',
+        'jobs:',
+        '  release:',
+        '    steps:',
+        '      - run: pnpm exec vite build',
+        '      - run: zip -r pkg.zip system.json scripts lang',
+        '      - uses: softprops/action-gh-release@v2',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    const findings = await runReleaseRules(cwd);
+    expect(findings.map((f) => f.ruleId)).toContain('VTTF-AUDIT-020');
+  });
+
   let cwd: string;
 
   beforeEach(async () => {
