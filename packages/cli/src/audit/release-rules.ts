@@ -37,7 +37,7 @@ const BUILD_STEP = /\b(?:vttforge\s+build|vite\s+build|(?:pnpm|npm|yarn|bun)\s+(
  * not shipping the checkout.
  */
 const VTTFORGE_BUILD = /\bvttforge\s+build\b/;
-const SCRIPT_BUILD = /\b(?:pnpm|npm|yarn|bun)\s+(?:run\s+)?build\b/;
+const SCRIPT_BUILD = /\b(?:pnpm|npm|yarn|bun)\s+(?:run\s+)?build(?=\s|$)/;
 /** A line that makes or names the artifact. */
 const ZIP_COMMAND = /\bzip\s+(?:-\S+\s+)*\S+\.zip\b|\bzip\s+-r\b/;
 const ARTIFACT_LIST = /^\s*(?:artifacts|files|asset_path|path)\s*:/;
