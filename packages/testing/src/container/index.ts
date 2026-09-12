@@ -112,7 +112,13 @@ export interface FoundryContainer {
    * into a running Foundry stays invisible until `restart()`.
    */
   install(source: FoundryPackageSource): FoundryManifest;
-  /** Stop and start, clearing the lock that a stop does not always clear. */
+  /**
+   * Stop and start, clearing the lock that a stop does not always clear.
+   *
+   * Resolves once the world is joinable, not merely once the server answers.
+   * Those are two different moments, and a package installed between them is
+   * not loaded yet.
+   */
   restart(): Promise<void>;
   /** The container's last log lines. */
   logs(tail?: number): string;
@@ -364,6 +370,10 @@ export async function startFoundryContainer(
     inVolume('rm -rf /data/Config/options.json.lock');
     docker(['start', name]);
     await waitFor('Foundry to answer again', answers);
+    // Answering is not the same as being joinable. Foundry answers as soon as
+    // the server is up and launches the world after, so a caller that returns
+    // here on the first answer can drive a world that is not there yet.
+    await waitFor('the world to launch', async () => (await stage()).endsWith('/join'));
   };
 
   await waitFor(`Foundry to answer at ${baseUrl}`, answers);
@@ -393,9 +403,8 @@ export async function startFoundryContainer(
   });
   editJson('/data/Config/options.json', (value) => ({ ...value, world: worldId }));
 
-  // 3. Restart into it, then wait for the world itself, not just the server.
+  // 3. Restart into it. `restart` waits for the world, not just the server.
   await restart();
-  await waitFor('the world to launch', async () => (await stage()).endsWith('/join'));
 
   return {
     baseUrl,
