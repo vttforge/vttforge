@@ -91,7 +91,7 @@ function resolveDragDrop(): DragDropCtor | undefined {
  * @example
  * ```ts
  * class WeaponSheet extends BaseItemSheet() {
- *   static DEFAULT_OPTIONS = foundry.utils.mergeObject(
+ *   static override DEFAULT_OPTIONS = foundry.utils.mergeObject(
  *     super.DEFAULT_OPTIONS,
  *     { classes: ['my-system'], position: { width: 540 } },
  *     { inplace: false }, // never edit the parent's static options in place
