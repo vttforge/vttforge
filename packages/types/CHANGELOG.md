@@ -1,5 +1,150 @@
 # @vttforge/types
 
+## 0.3.0
+
+### Minor Changes
+
+- 7ce6a38: Type dice, chat, combat, scenes, tokens, the canvas and the ApplicationV2
+  render surface.
+  
+  **What breaks.** `_prepareContext`, `_onRender` and `_getHeaderControls` on the
+  sheet bases carry real types now. An override that declared `options: unknown`
+  stops compiling at the `super` call, because `unknown` cannot be passed to a
+  typed parameter. Name the type instead:
+  
+  ```diff
+  -  override async _prepareContext(options: unknown): Promise<Record<string, unknown>> {
+  +  override async _prepareContext(
+  +    options: ApplicationRenderOptions,
+  +  ): Promise<ApplicationRenderContext> {
+  ```
+  
+  Both types come from `@vttforge/core`. `postRoll` returns a `ChatMessageLike`
+  rather than `unknown`.
+  
+  New in `@vttforge/types`:
+  
+  - `RollLike`, `RollConstructor`, `DieTermLike`, `DiceTermResult`. `total` is
+    `number | undefined`, because a roll has none before `evaluate()` resolves.
+    `toMessage` takes `messageMode`; `rollMode` is there and tagged deprecated,
+    which is what Foundry did in v14.
+  - `ChatMessageLike`, `ChatSpeakerData`, `ChatMessageConstructor`.
+  - `CombatLike`, `CombatantLike`, `CombatHistoryData`.
+    `getCombatantsByActor` and `getCombatantsByToken` return arrays, as they do
+    since v14.
+  - `SceneLike`, `LevelLike`, `TokenDocumentLike`, `TokenObjectLike`, `CanvasApi`.
+    A scene's background lives on a Level in v14, and the types say so. A token
+    carries `level` and `depth`.
+  - `JournalEntryLike`, `MacroLike`, `FolderLikeDocument`.
+  - The render surface: `ApplicationConfiguration`, `ApplicationRenderOptions`,
+    `ApplicationRenderContext`, `ApplicationPosition`, `ApplicationTab`,
+    `ApplicationTabsConfiguration`, `HandlebarsTemplatePart`,
+    `ApplicationHeaderControlsEntry`, `ApplicationClickAction`.
+  
+  `game.messages`, `game.scenes`, `game.combats`, `game.combat`, `game.journal`,
+  `game.macros` and `game.folders` now hand back the document they hold.
+  
+  `unknown` left on the public surface of `@vttforge/core`: 7, down from 37. Each
+  one is a generic of ours, not a Foundry type: a field's `initial` and
+  `validate`, the `FieldInstance` brand, the `OnHook` target, and the socket
+  payload the consumer defines.
+- 7ce6a38: Type the hooks by name.
+  
+  ```ts
+  Hooks.on("createActor", (actor, options, userId) => {
+    actor.name;        // string
+    options.render;    // boolean | undefined
+    userId;            // string
+  });
+  ```
+  
+  No annotation on any parameter. The name supplies them.
+  
+  **What breaks.** `HooksApi` used to take a type argument for the listener's
+  arguments (`Hooks.on<[Actor]>(...)`). It no longer does: the name decides. Drop
+  the type argument and the callback infers.
+  
+  `HookMap` holds every hook name Foundry ships. Three families are generated
+  rather than listed, because Foundry builds their names:
+  
+  - `create<Document>`, `update<Document>`, `delete<Document>` and the `pre`
+    forms, for all 30 document types. A `pre` hook may return `false` to cancel.
+  - `get<Document>ContextOptions` and `get<Document>PlaceableContextOptions`.
+  - `render<Class>`, `preRender<Class>` and `close<Class>`, which fall to the
+    application shape, since a package names those after its own classes.
+  
+  A name nobody declared stays open, so `Hooks.callAll("my-module.thing", ...)`
+  still compiles.
+  
+  `DocumentTypeMap` is the lookup from a document name to its type, exported so a
+  package can reuse it.
+- 770b51e: Type the Foundry globals: `game`, `ui`, `CONFIG`, `CONST` and `foundry.utils`.
+  
+  **What breaks.** `GameApi` is now `Game`, and `ActorConfig`, `ItemConfig` and
+  `ConfigCollection` are now the one `DocumentConfig`. The old names still work
+  and carry an `@deprecated` tag naming the replacement. `CONFIG.Combat` is a
+  full `CombatConfig`, so code that assigned a bare `{ initiative }` object to it
+  no longer compiles; assign to `CONFIG.Combat.initiative` instead.
+  
+  `@vttforge/types` now describes:
+  
+  - `Game`, with the settings API, `i18n`, `time`, the world collections, the
+    compendium packs and the module handles.
+  - `UiApi`, including `ui.notifications` and the sidebar.
+  - `FoundryConfig`, with every document entry plus the ones a package writes in
+    `init`: `statusEffects`, `TextEditor.enrichers`, `Dice`, `queries`.
+  - `FoundryConstants`, with the real keys on the enumerations a package reads.
+    `ACTIVE_EFFECT_CHANGE_PHASES`, `ACTIVE_EFFECT_EXPIRY_EVENTS` and
+    `ACTIVE_EFFECT_DURATION_UNITS` are arrays, not records.
+  - `FoundryUtils`: every member of `foundry.utils`, the geometry helpers
+    included. The bare globals these replaced are gone in v14.
+  
+  Three options on `registerSystem` stopped being `unknown`:
+  `actorDocumentClass`, `itemDocumentClass` and the two data model maps now take
+  a class.
+  
+  `@vttforge/testing` gains `createMockConfig()`. A live Foundry has every
+  `CONFIG` entry, so the type asks for all of them; a test that cares about one
+  gets the rest from the factory.
+  
+  ```ts
+  import { createMockConfig } from "@vttforge/testing/vitest";
+  
+  const CONFIG = createMockConfig({ statusEffects: { prone: { id: "prone" } } });
+  CONFIG.Combat.initiative = { formula: "1d20" };
+  ```
+- 712edb3: Type the documents the bases hand you.
+  
+  `@vttforge/types` now describes the document surface: `DocumentMembers`,
+  `ActorLike`, `ItemLike`, `ActiveEffectLike`, `FolderLike`, `EmbeddedCollection`
+  and `TypeDataModelMembers`. Core re-exports all of them.
+  
+  Three places that returned `unknown` now return a document:
+  
+  - `this.document` on an actor or item sheet. Reading `name`, `system` or
+    calling `update()` no longer needs a cast.
+  - The drop hooks. `onDropItem`, `onDropActor`, `onDropFolder` and
+    `onDropActiveEffect` hand over the document that was dropped.
+  - `this.parent` inside a `BaseTypeDataModel`. It did not compile before.
+  
+  Both sheet factories take the document type, so the schema follows through.
+  `ActorLike` takes the item type too, which keeps `actor.items` typed:
+  
+  ```ts
+  type CharacterActor = ActorLike<CharacterSystem, ItemLike<GearSystem>>;
+  
+  class CharacterSheet extends BaseActorSheet<CharacterActor>() {
+    async _prepareContext(options: unknown) {
+      const level = this.document.system.level; // number
+      return { ...(await super._prepareContext(options)), level };
+    }
+  }
+  ```
+  
+  The member list came from the systems and modules already ported to the SDK:
+  each one is a member their sheets and drop handlers read. Reaching past it is
+  still a cast.
+
 ## 0.2.1
 
 ### Patch Changes

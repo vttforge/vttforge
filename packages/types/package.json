@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/types",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "The TypeScript surface shared across VTTForge packages: the Foundry members the sheet and application bases stand on.",
   "type": "module",
   "license": "MIT",
