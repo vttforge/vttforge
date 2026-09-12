@@ -12,4 +12,8 @@ In their place, the real names are typed. `draw`, `refresh`, `destroy`, `control
 
 Three audio hooks join them: `globalPlaylistVolumeChanged`, `globalAmbientVolumeChanged` and `globalInterfaceVolumeChanged`, one per channel, each carrying the new volume clamped to 0 through 1. `globalVolumeChanged` stays, and its type now says Foundry declares it and nothing fires it.
 
-New exported types: `PlaceableObjectLike`, `PlaceableDocumentName`, `PlaceableObjectMap`, `PlaceableHooks`, `CanvasLayerName`, `InteractionLayerName`, `CanvasLayerLike` and `CanvasLayerHooks`.
+Sixteen hooks Foundry fires and the map did not carry are in: the lighting, vision and environment hooks (`lightingRefresh`, `sightRefresh`, `visibilityRefresh`, `initializeLightSources`, `initializePriorityLightSources`, `initializeVisionMode`, `initializeVisionSources`, `initializeWeatherEffects`, `configureCanvasEnvironment`, `initializeCanvasEnvironment`, `initializeDynamicTokenRingConfig`), `rtcSettingsChanged`, and the three jQuery-era ones that v15 removes: `renderChatMessage`, `chatBubble` and `activateEditorLegacy`. `renderChatMessage` was inferring the ApplicationV2 render shape through the open `render` overload, which is not what it carries.
+
+Canvas groups and effect sources get the same treatment as layers: `draw` and `tearDown` over the eight groups, and `initialize<Source>Shaders` over the four sources that build shaders.
+
+New exported types: `PlaceableObjectLike`, `PlaceableDocumentName`, `PlaceableObjectMap`, `PlaceableHooks`, `CanvasLayerName`, `CanvasGroupName`, `InteractionLayerName`, `RenderedEffectSourceName`, `CanvasLayerLike` and `CanvasLayerHooks`.

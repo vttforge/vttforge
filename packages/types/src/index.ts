@@ -78,6 +78,7 @@ export type {
   WorldHandle,
 } from './globals.js';
 export type {
+  CanvasGroupName,
   CanvasLayerHooks,
   CanvasLayerLike,
   CanvasLayerName,
@@ -96,6 +97,7 @@ export type {
   PlaceableDocumentName,
   PlaceableHooks,
   PlaceableObjectMap,
+  RenderedEffectSourceName,
   SceneControl,
   StaticHooks,
 } from './hooks.js';

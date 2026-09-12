@@ -102,6 +102,17 @@ describe('the placeable and layer families', () => {
     });
   });
 
+  it('names the group and the effect source too', () => {
+    Hooks.on('drawPrimaryCanvasGroup', (group, options) => {
+      expectTypeOf(options).toEqualTypeOf<Record<string, unknown>>();
+      expectTypeOf(group).toEqualTypeOf<unknown>();
+    });
+    expectTypeOf<'tearDownEffectsCanvasGroup'>().toExtend<HookName>();
+    expectTypeOf<'initializePointLightSourceShaders'>().toExtend<HookName>();
+    expectTypeOf<'lightingRefresh'>().toExtend<HookName>();
+    expectTypeOf<'rtcSettingsChanged'>().toExtend<HookName>();
+  });
+
   it('has no key for a name Foundry never calls', () => {
     expectTypeOf<'drawObject'>().not.toExtend<HookName>();
     expectTypeOf<'controlObject'>().not.toExtend<HookName>();

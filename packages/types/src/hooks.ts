@@ -21,7 +21,7 @@ import type {
 } from './application.js';
 import type { ActiveEffectLike, ActorLike, DocumentMembers, ItemLike } from './documents.js';
 import type { ApplicationV2Members } from './foundry.js';
-import type { CompendiumCollection, UserLike } from './globals.js';
+import type { CompendiumCollection, FoundryCollection, UserLike } from './globals.js';
 import type {
   CanvasApi,
   ChatMessageLike,
@@ -212,6 +212,28 @@ export type PlaceableHooks = {
   ];
 };
 
+/**
+ * A group the canvas draws. Layers live inside these.
+ *
+ * The name is the group's class, the same way a layer's is.
+ */
+export type CanvasGroupName =
+  | 'CanvasVisibility'
+  | 'EffectsCanvasGroup'
+  | 'EnvironmentCanvasGroup'
+  | 'HiddenCanvasGroup'
+  | 'InterfaceCanvasGroup'
+  | 'OverlayCanvasGroup'
+  | 'PrimaryCanvasGroup'
+  | 'RenderedCanvasGroup';
+
+/** An effect source that builds shaders: lights, darkness and vision. */
+export type RenderedEffectSourceName =
+  | 'GlobalLightSource'
+  | 'PointDarknessSource'
+  | 'PointLightSource'
+  | 'PointVisionSource';
+
 /** The hooks a canvas layer fires, one name per layer. */
 export type CanvasLayerHooks = {
   [K in CanvasLayerName as `draw${K}`]: [CanvasLayerLike, Record<string, unknown>];
@@ -221,6 +243,12 @@ export type CanvasLayerHooks = {
   [K in InteractionLayerName as `activate${K}`]: [CanvasLayerLike];
 } & {
   [K in InteractionLayerName as `deactivate${K}`]: [CanvasLayerLike];
+} & {
+  [K in CanvasGroupName as `draw${K}`]: [unknown, Record<string, unknown>];
+} & {
+  [K in CanvasGroupName as `tearDown${K}`]: [unknown, Record<string, unknown>];
+} & {
+  [K in RenderedEffectSourceName as `initialize${K}Shaders`]: [unknown];
 };
 
 export type ContextMenuHooks = {
@@ -276,6 +304,8 @@ export interface StaticHooks {
   hotReload: [HotReloadData];
   userConnected: [UserLike, boolean];
   clientSettingChanged: [string, unknown, Record<string, unknown>];
+  /** The audio and video settings, and what changed in them. */
+  rtcSettingsChanged: [unknown, Record<string, unknown>];
   /**
    * Declared by Foundry, and nothing fires it. The three below are what a
    * volume change actually calls.
@@ -289,6 +319,11 @@ export interface StaticHooks {
   globalInterfaceVolumeChanged: [number];
 
   // Canvas
+  //
+  // The lighting, vision and environment hooks hand over a canvas group or the
+  // visibility layer. Neither is typed here: wrapping the canvas is not what
+  // this package does, and a name with the right arity is worth more than a
+  // shape invented for it. Typing one later fills every slot at once.
   canvasConfig: [Record<string, unknown>];
   canvasInit: [CanvasApi];
   canvasReady: [CanvasApi];
@@ -299,10 +334,36 @@ export interface StaticHooks {
   highlightObjects: [boolean];
   initializeEdges: [SceneLike];
   activateCanvasLayer: [unknown];
+  /** The environment config, before the canvas reads it. */
+  configureCanvasEnvironment: [Record<string, unknown>];
+  initializeCanvasEnvironment: [];
+  /** The effects group, after its light sources are built. */
+  initializeLightSources: [unknown];
+  initializePriorityLightSources: [unknown];
+  lightingRefresh: [unknown];
+  /** The visibility layer. */
+  initializeVisionMode: [unknown];
+  sightRefresh: [unknown];
+  visibilityRefresh: [unknown];
+  /** Every vision source on the canvas, keyed by id. */
+  initializeVisionSources: [FoundryCollection<unknown>];
+  /** The weather layer and the config it was given. */
+  initializeWeatherEffects: [unknown, Record<string, unknown>];
+  /** `CONFIG.Token.ring`, before the ring is built. */
+  initializeDynamicTokenRingConfig: [unknown];
 
   // Placeables
   targetToken: [UserLike, TokenObjectLike, boolean];
   applyTokenStatusEffect: [TokenObjectLike, string, boolean];
+  /**
+   * Replaced by `renderChatMessageHTML`, and removed in v15. The second
+   * argument is the jQuery object the old hook passed.
+   */
+  renderChatMessage: [ChatMessageLike, unknown, Record<string, unknown>];
+  /** Replaced by `chatBubbleHTML`, and removed in v15. */
+  chatBubble: [TokenObjectLike, unknown, string, Record<string, unknown>];
+  /** The editor a legacy rich text field opened. Removed in v15. */
+  activateEditorLegacy: [unknown, Record<string, unknown>, string];
   chatBubbleHTML: [TokenObjectLike, HTMLElement, string, Record<string, unknown>];
   modifyTokenAttribute: [
     { attribute: string; value: number; isDelta: boolean; isBar: boolean },
