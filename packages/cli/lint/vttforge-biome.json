@@ -68,6 +68,9 @@
     "enabled": true,
     "rules": {
       "preset": "recommended",
+      "complexity": {
+        "noThisInStatic": "off"
+      },
       "style": {
         "useImportType": "error",
         "useNodejsImportProtocol": "error"

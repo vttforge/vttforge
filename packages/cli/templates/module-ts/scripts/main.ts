@@ -5,7 +5,6 @@
  * modules copy from each other: the sub-type, its sheet, the enricher, the
  * settings, and the public API.
  */
-import './foundry-globals.js';
 import { registerModule, PackageConfig, VttfError } from '@vttforge/core';
 import { MODULE_ID, NOTE_TYPE } from './constants.js';
 import { NoteData } from './data/note-data.js';

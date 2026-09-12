@@ -270,4 +270,35 @@ describe('VTTF-AUDIT-019: bare v13 global aliases', () => {
     );
     expect(findings.filter((f) => f.ruleId === 'VTTF-AUDIT-019')).toHaveLength(1);
   });
+
+  it('passes a TypeScript member signature, which declares the name', async () => {
+    expect(
+      await auditSource(
+        [
+          'interface FoundryHandlebars {',
+          '  renderTemplate(path: string, context: unknown): Promise<string>;',
+          '}',
+          'declare const h: FoundryHandlebars;',
+          '',
+        ].join('\n'),
+      ),
+    ).toEqual([]);
+    expect(
+      await auditSource(
+        [
+          'type Utils = {',
+          '  readonly saveDataToFile(data: string, type: string, name: string): void;',
+          '};',
+          '',
+        ].join('\n'),
+      ),
+    ).toEqual([]);
+  });
+
+  it('still flags a call in a ternary, where the name does not open the line', async () => {
+    const findings = await auditSource(
+      ['const html = ready', '  ? renderTemplate(p, d)', '  : fallback;', ''].join('\n'),
+    );
+    expect(findings.filter((f) => f.ruleId === 'VTTF-AUDIT-019')).toHaveLength(1);
+  });
 });

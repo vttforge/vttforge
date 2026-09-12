@@ -121,10 +121,24 @@ export const LEGACY_GLOBALS: Readonly<Record<string, string>> = Object.freeze({
  *
  * A module that defines its own `Token` class or imports `Tabs` from a
  * library is using that, not Foundry's global.
+ *
+ * The last alternative covers a TypeScript member signature:
+ *
+ * ```ts
+ * interface FoundryHandlebars {
+ *   renderTemplate(path: string, context: unknown): Promise<string>;
+ * }
+ * ```
+ *
+ * That is a declaration of the namespaced member, the opposite of a bare
+ * global, and reading it as a use was a false finding. It is anchored to the
+ * start of a line so a ternary's `cond ? renderTemplate(x) : y` still counts
+ * as a use: there the name follows a `?` rather than opening the line.
  */
 export function definesName(source: string, name: string): boolean {
   return new RegExp(
-    `(?:\\b(?:class|function|const|let|var)\\s+${name}\\b|import[^;]*\\b${name}\\b|\\b${name}\\s*\\([^)]*\\)\\s*\\{)`,
+    `(?:\\b(?:class|function|const|let|var)\\s+${name}\\b|import[^;]*\\b${name}\\b|\\b${name}\\s*\\([^)]*\\)\\s*\\{|^[ \\t]*(?:readonly[ \\t]+)?${name}\\s*\\([^)]*\\)\\s*:)`,
+    'm',
   ).test(source);
 }
 
