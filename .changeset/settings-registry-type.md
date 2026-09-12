@@ -11,7 +11,5 @@ what a world holds.
 settings object by hand, which in practice means a test fake, no longer
 compiles without it. Add `settings: new Map()` to the fake.
 
-The new `RegisteredSetting` type describes one entry: the config as registered,
-plus the `id`, `namespace`, `key`, `scope` and `default` that registration
-fills in. `scope` and `default` are not optional there, because registration
-falls back to `client` and to `null` when the caller leaves them out.
+The new `RegisteredSetting` type is `SettingConfig` plus the `id`, `namespace`
+and `key` that registration fills in.

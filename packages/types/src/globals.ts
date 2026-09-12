@@ -105,19 +105,17 @@ export interface SettingMenuConfig {
  * One entry of the settings registry: what `register` was given, plus the
  * three fields it fills in.
  *
- * `scope` is always present here even though `SettingConfig` makes it
- * optional, because registration falls back to `client` when the caller omits
- * it or passes a name that is not a scope. `default` is `null` rather than
- * missing for the same reason: a setting value may be `null` and may not be
- * `undefined`.
+ * Registration normalises as it stores. It falls back to the `client` scope
+ * when the caller names one that does not exist, and to a `null` default when
+ * there is none, because a setting value may be `null` and may not be
+ * `undefined`. So an entry read back here always carries a real scope and a
+ * real default, whatever the call passed.
  */
 export interface RegisteredSetting<T = unknown> extends SettingConfig<T> {
   /** `namespace.key`, the id the registry is keyed by. */
   readonly id: string;
   readonly namespace: string;
   readonly key: string;
-  readonly scope: SettingScope;
-  readonly default: T;
 }
 
 export interface GameSettingsApi {
