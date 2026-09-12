@@ -233,6 +233,58 @@ describe('@vttforge/vite-plugin', () => {
       expect(manifest.styles).toEqual([{ src: 'styles/main.css' }]);
     });
 
+    it('writes the release URLs, and expands {version} in the download', async () => {
+      const plugin = mainPlugin(
+        vttforge(
+          defaultOptions({
+            manifestUrl: 'https://example.invalid/releases/latest/download/system.json',
+            downloadUrl: 'https://example.invalid/releases/download/v{version}/pkg-{version}.zip',
+          }),
+        ),
+      );
+      await invokeConfigHook(plugin, workdir);
+      await invokeHook(plugin, 'writeBundle');
+      const manifest = JSON.parse(
+        readFileSync(resolve(workdir, 'dist/system.json'), 'utf8'),
+      ) as Record<string, unknown>;
+      expect(manifest.manifest).toBe(
+        'https://example.invalid/releases/latest/download/system.json',
+      );
+      // The version comes from package.json, the same source the sync uses.
+      expect(manifest.download).toBe(
+        'https://example.invalid/releases/download/v9.9.9/pkg-9.9.9.zip',
+      );
+    });
+
+    it('reads the release URLs from the environment, for a workflow', async () => {
+      process.env.VTTFORGE_MANIFEST_URL = 'https://example.invalid/m.json';
+      process.env.VTTFORGE_DOWNLOAD_URL = 'https://example.invalid/v{version}.zip';
+      try {
+        const plugin = mainPlugin(vttforge(defaultOptions()));
+        await invokeConfigHook(plugin, workdir);
+        await invokeHook(plugin, 'writeBundle');
+        const manifest = JSON.parse(
+          readFileSync(resolve(workdir, 'dist/system.json'), 'utf8'),
+        ) as Record<string, unknown>;
+        expect(manifest.manifest).toBe('https://example.invalid/m.json');
+        expect(manifest.download).toBe('https://example.invalid/v9.9.9.zip');
+      } finally {
+        delete process.env.VTTFORGE_MANIFEST_URL;
+        delete process.env.VTTFORGE_DOWNLOAD_URL;
+      }
+    });
+
+    it('leaves the manifest alone when neither URL is given', async () => {
+      const plugin = mainPlugin(vttforge(defaultOptions()));
+      await invokeConfigHook(plugin, workdir);
+      await invokeHook(plugin, 'writeBundle');
+      const manifest = JSON.parse(
+        readFileSync(resolve(workdir, 'dist/system.json'), 'utf8'),
+      ) as Record<string, unknown>;
+      expect(manifest.manifest).toBeUndefined();
+      expect(manifest.download).toBeUndefined();
+    });
+
     it('throws when manifest id does not match plugin option', async () => {
       const plugin = mainPlugin(vttforge(defaultOptions({ id: 'wrong-id' })));
       await invokeConfigHook(plugin, workdir);

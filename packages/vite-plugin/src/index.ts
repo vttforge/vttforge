@@ -57,6 +57,24 @@ export interface VttforgeOptions {
    * always copied separately so the version sync hook can rewrite it.
    */
   staticAssets?: string[];
+  /**
+   * The `manifest` URL written into the built manifest: where Foundry looks
+   * to learn whether a newer release exists.
+   *
+   * Falls back to `VTTFORGE_MANIFEST_URL`, so a release workflow sets it
+   * without editing the Vite config. Left unset, whatever the source manifest
+   * holds is kept.
+   */
+  manifestUrl?: string;
+  /**
+   * The `download` URL written into the built manifest: the archive of this
+   * version. `{version}` is replaced with the version being built, which is
+   * the one thing that changes per release.
+   *
+   * Falls back to `VTTFORGE_DOWNLOAD_URL`. Left unset, whatever the source
+   * manifest holds is kept.
+   */
+  downloadUrl?: string;
 }
 
 interface ResolvedOptions {
@@ -65,6 +83,8 @@ interface ResolvedOptions {
   entry: string;
   manifest: string;
   staticAssets: string[];
+  manifestUrl: string | undefined;
+  downloadUrl: string | undefined;
   root: string;
   outDir: string;
 }
@@ -90,6 +110,8 @@ function resolveOptions(options: VttforgeOptions, root: string): ResolvedOptions
     entry,
     manifest,
     staticAssets,
+    manifestUrl: options.manifestUrl ?? process.env.VTTFORGE_MANIFEST_URL,
+    downloadUrl: options.downloadUrl ?? process.env.VTTFORGE_DOWNLOAD_URL,
     root,
     outDir: resolve(root, 'dist'),
   };
@@ -221,6 +243,17 @@ function syncManifest(opts: ResolvedOptions, builtCssSources: Set<string>): Mani
   const pkg = readJsonSafe(resolve(opts.root, 'package.json'));
   if (pkg && typeof pkg.version === 'string') {
     manifest.version = pkg.version;
+  }
+  // The two release URLs, written here rather than patched into dist/ after
+  // the fact. `vttforge build` zips as soon as the build finishes, so a
+  // workflow that edits the manifest afterwards ships a zip holding the
+  // unedited one.
+  if (opts.manifestUrl !== undefined) {
+    manifest.manifest = opts.manifestUrl;
+  }
+  if (opts.downloadUrl !== undefined) {
+    const version = typeof manifest.version === 'string' ? manifest.version : '';
+    manifest.download = opts.downloadUrl.replaceAll('{version}', version);
   }
   manifest.esmodules = [JS_ENTRY_FILENAME];
   const originalStyles = extractStyleEntries(manifest.styles);
