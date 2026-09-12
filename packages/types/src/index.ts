@@ -78,6 +78,9 @@ export type {
   WorldHandle,
 } from './globals.js';
 export type {
+  CanvasLayerHooks,
+  CanvasLayerLike,
+  CanvasLayerName,
   ContextMenuEntry,
   ContextMenuHooks,
   DatabaseOperationOptions,
@@ -89,6 +92,10 @@ export type {
   HookName,
   HooksApi,
   HotReloadData,
+  InteractionLayerName,
+  PlaceableDocumentName,
+  PlaceableHooks,
+  PlaceableObjectMap,
   SceneControl,
   StaticHooks,
 } from './hooks.js';
@@ -117,6 +124,7 @@ export type {
   JournalEntryLike,
   LevelLike,
   MacroLike,
+  PlaceableObjectLike,
   SceneLike,
   TokenDocumentLike,
   TokenObjectLike,

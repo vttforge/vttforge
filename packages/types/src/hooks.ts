@@ -30,6 +30,7 @@ import type {
   FolderLikeDocument,
   JournalEntryLike,
   MacroLike,
+  PlaceableObjectLike,
   SceneLike,
   TokenDocumentLike,
   TokenObjectLike,
@@ -123,6 +124,105 @@ export type DocumentLifecycleHooks = {
 };
 
 /** The sidebar context menu hooks, one per document. */
+/**
+ * A document that has an object placed on the canvas.
+ *
+ * `MeasuredTemplate` is deprecated since v14 and still fires its hooks, so it
+ * is here. Reach for a Region instead when you write new code.
+ */
+export type PlaceableDocumentName =
+  | 'AmbientLight'
+  | 'AmbientSound'
+  | 'Drawing'
+  | 'MeasuredTemplate'
+  | 'Note'
+  | 'Region'
+  | 'Tile'
+  | 'Token'
+  | 'Wall';
+
+/** The object each placed document draws. */
+export interface PlaceableObjectMap {
+  AmbientLight: PlaceableObjectLike;
+  AmbientSound: PlaceableObjectLike;
+  Drawing: PlaceableObjectLike;
+  MeasuredTemplate: PlaceableObjectLike;
+  Note: PlaceableObjectLike;
+  Region: PlaceableObjectLike;
+  Tile: PlaceableObjectLike;
+  Token: TokenObjectLike;
+  Wall: PlaceableObjectLike;
+}
+
+/**
+ * A layer Foundry draws on the canvas.
+ *
+ * The name is the layer's base class, so a system that subclasses `TokenLayer`
+ * still fires `drawTokenLayer`.
+ */
+export type CanvasLayerName =
+  | 'ControlsLayer'
+  | 'DrawingsLayer'
+  | 'GridLayer'
+  | 'LightingLayer'
+  | 'NotesLayer'
+  | 'RegionLayer'
+  | 'SoundsLayer'
+  | 'TemplateLayer'
+  | 'TilesLayer'
+  | 'TokenLayer'
+  | 'WallsLayer'
+  | 'WeatherEffects';
+
+/** A layer that takes tools and selection. These are the ones you activate. */
+export type InteractionLayerName = Exclude<
+  CanvasLayerName,
+  'ControlsLayer' | 'GridLayer' | 'WeatherEffects'
+>;
+
+/** What a canvas layer hands its hooks. */
+export interface CanvasLayerLike {
+  readonly name: string;
+  readonly hookName: string;
+  readonly active: boolean;
+}
+
+/**
+ * The hooks a placed object fires, one name per document.
+ *
+ * Foundry builds the name from the document, so a token fires `drawToken` and
+ * a tile fires `drawTile`. There is no `drawObject`: that name appears in
+ * Foundry's hook documentation to describe the family, and nothing calls it.
+ */
+export type PlaceableHooks = {
+  [K in PlaceableDocumentName as `draw${K}`]: [PlaceableObjectMap[K]];
+} & {
+  [K in PlaceableDocumentName as `refresh${K}`]: [PlaceableObjectMap[K], Record<string, boolean>];
+} & {
+  [K in PlaceableDocumentName as `destroy${K}`]: [PlaceableObjectMap[K]];
+} & {
+  [K in PlaceableDocumentName as `control${K}`]: [PlaceableObjectMap[K], boolean];
+} & {
+  [K in PlaceableDocumentName as `hover${K}`]: [PlaceableObjectMap[K], boolean];
+} & {
+  [K in PlaceableDocumentName as `paste${K}`]: [
+    PlaceableObjectMap[K][],
+    Record<string, unknown>[],
+    { cut: boolean },
+  ];
+};
+
+/** The hooks a canvas layer fires, one name per layer. */
+export type CanvasLayerHooks = {
+  [K in CanvasLayerName as `draw${K}`]: [CanvasLayerLike, Record<string, unknown>];
+} & {
+  [K in CanvasLayerName as `tearDown${K}`]: [CanvasLayerLike, Record<string, unknown>];
+} & {
+  [K in InteractionLayerName as `activate${K}`]: [CanvasLayerLike];
+} & {
+  [K in InteractionLayerName as `deactivate${K}`]: [CanvasLayerLike];
+};
+
 export type ContextMenuHooks = {
   [K in DocumentHookName as `get${K}ContextOptions`]: [ApplicationV2Members, ContextMenuEntry[]];
 } & {
@@ -198,19 +298,9 @@ export interface StaticHooks {
   dropCanvasData: [CanvasApi, Record<string, unknown>, DragEvent];
   highlightObjects: [boolean];
   initializeEdges: [SceneLike];
-  drawLayer: [unknown, Record<string, unknown>];
-  tearDownLayer: [unknown, Record<string, unknown>];
-  activateLayer: [unknown];
   activateCanvasLayer: [unknown];
-  deactivateLayer: [unknown];
-  pastePlaceableObject: [unknown[], Record<string, unknown>[], { cut: boolean }];
 
   // Placeables
-  drawObject: [unknown];
-  refreshObject: [unknown];
-  destroyObject: [unknown];
-  controlObject: [unknown, boolean];
-  hoverObject: [unknown, boolean];
   targetToken: [UserLike, TokenObjectLike, boolean];
   applyTokenStatusEffect: [TokenObjectLike, string, boolean];
   chatBubbleHTML: [TokenObjectLike, HTMLElement, string, Record<string, unknown>];
@@ -229,7 +319,11 @@ export interface StaticHooks {
   activateNote: [unknown, Record<string, unknown>];
 
   // Applications
-  preRenderApplication: [ApplicationV2Members, ApplicationRenderContext, ApplicationRenderOptions];
+  preRenderApplicationV2: [
+    ApplicationV2Members,
+    ApplicationRenderContext,
+    ApplicationRenderOptions,
+  ];
   renderApplicationV2: [
     ApplicationV2Members,
     HTMLElement,
@@ -238,8 +332,6 @@ export interface StaticHooks {
   ];
   closeApplicationV2: [ApplicationV2Members];
   getHeaderControlsApplicationV2: [ApplicationV2Members, ApplicationHeaderControlsEntry[]];
-  getDocumentContextOptions: [ApplicationV2Members, ContextMenuEntry[]];
-  getPlaceableContextOptions: [ApplicationV2Members, ContextMenuEntry[]];
   getSceneControlButtons: [Record<string, SceneControl>];
   hotbarDrop: [unknown, Record<string, unknown>, number];
   collapseSidebar: [unknown, boolean];
@@ -305,7 +397,12 @@ export interface StaticHooks {
 }
 
 /** Every hook name Foundry ships, with the arguments it passes. */
-export interface HookMap extends StaticHooks, DocumentLifecycleHooks, ContextMenuHooks {}
+export interface HookMap
+  extends StaticHooks,
+    DocumentLifecycleHooks,
+    ContextMenuHooks,
+    PlaceableHooks,
+    CanvasLayerHooks {}
 
 export type HookName = keyof HookMap;
 

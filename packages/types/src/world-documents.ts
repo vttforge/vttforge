@@ -181,22 +181,34 @@ export interface TokenDocumentLike<System = Record<string, unknown>>
 }
 
 /** The drawn token on the canvas, not the document. */
-export interface TokenObjectLike {
+/**
+ * What every object placed on the canvas carries.
+ *
+ * A token adds to it: see `TokenObjectLike`. The others have no members of
+ * their own here yet, because no consumer has asked for one.
+ */
+export interface PlaceableObjectLike {
+  readonly id: string;
+  readonly document: DocumentMembers;
+  /** The point the object is centred on, in scene coordinates. */
+  readonly center: { x: number; y: number };
+  readonly bounds: { x: number; y: number; width: number; height: number };
+  readonly controlled: boolean;
+  readonly hover: boolean;
+  readonly isVisible: boolean;
+  control(options?: Record<string, unknown>): boolean;
+  release(options?: Record<string, unknown>): boolean;
+}
+
+export interface TokenObjectLike extends PlaceableObjectLike {
   readonly document: TokenDocumentLike;
   readonly actor: ActorLike | null;
   readonly name: string;
-  readonly center: { x: number; y: number };
-  readonly bounds: { x: number; y: number; width: number; height: number };
   readonly w: number;
   readonly h: number;
-  readonly isVisible: boolean;
   readonly isTargeted: boolean;
   readonly inCombat: boolean;
   readonly combatant: CombatantLike | null;
-  readonly controlled: boolean;
-  readonly hover: boolean;
-  control(options?: Record<string, unknown>): boolean;
-  release(options?: Record<string, unknown>): boolean;
   setTarget(targeted?: boolean, options?: Record<string, unknown>): void;
 }
 
