@@ -30,7 +30,13 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { DocumentSheetV2Members } from './foundry-base.js';
+import type {
+  ActiveEffectLike,
+  ActorLike,
+  DocumentSheetV2Members,
+  FolderLike,
+  ItemLike,
+} from './foundry-base.js';
 import {
   applyMode,
   currentMode,
@@ -113,11 +119,20 @@ export interface SheetBaseMembers {
   /**
    * The typed drop hooks. Override the one you want; returning `undefined`
    * hands the drop back to Foundry's own handling.
+   *
+   * TypeScript does not carry a base method's parameter types into an
+   * override, so write them out to get the document typed:
+   *
+   * ```ts
+   * async onDropItem(item: ItemLike, event: DragEvent) {
+   *   await this.document.createEmbeddedDocuments('Item', [item.toObject()]);
+   * }
+   * ```
    */
-  onDropItem(item: unknown, event: DragEvent): Promise<unknown>;
-  onDropActor(actor: unknown, event: DragEvent): Promise<unknown>;
-  onDropFolder(folder: unknown, event: DragEvent): Promise<unknown>;
-  onDropActiveEffect(effect: unknown, event: DragEvent): Promise<unknown>;
+  onDropItem(item: ItemLike, event: DragEvent): Promise<unknown>;
+  onDropActor(actor: ActorLike, event: DragEvent): Promise<unknown>;
+  onDropFolder(folder: FolderLike, event: DragEvent): Promise<unknown>;
+  onDropActiveEffect(effect: ActiveEffectLike, event: DragEvent): Promise<unknown>;
 
   /**
    * Foundry's own drop entry points, implemented here to resolve the payload
@@ -133,9 +148,9 @@ export interface SheetBaseMembers {
   _onDropActiveEffect(event: DragEvent, data: unknown): Promise<unknown>;
 }
 
-export interface SheetBaseCtor extends SheetBaseStatics {
+export interface SheetBaseCtor<TDocument = ActorLike> extends SheetBaseStatics {
   // biome-ignore lint/suspicious/noExplicitAny: mirrors ApplicationV2's constructor arity, which subclasses pass straight through
-  new (...args: any[]): SheetBaseMembers & DocumentSheetV2Members;
+  new (...args: any[]): SheetBaseMembers & DocumentSheetV2Members<TDocument>;
 }
 
 interface DragDropInstance {
@@ -241,7 +256,9 @@ export const VTTFORGE_SHEET_CLASS = 'vttforge';
  * }
  * ```
  */
-export function BaseActorSheet(): SheetBaseCtor {
+export function BaseActorSheet<
+  TDocument extends ActorLike<unknown, ItemLike<unknown>> = ActorLike,
+>(): SheetBaseCtor<TDocument> {
   const { Base, mixin } = resolveBases();
   const Mixed = mixin(Base);
 
@@ -493,5 +510,5 @@ export function BaseActorSheet(): SheetBaseCtor {
     }
   }
 
-  return VttforgeBaseActorSheet as unknown as SheetBaseCtor;
+  return VttforgeBaseActorSheet as unknown as SheetBaseCtor<TDocument>;
 }

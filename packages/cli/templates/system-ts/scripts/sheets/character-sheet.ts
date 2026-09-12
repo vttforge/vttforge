@@ -6,39 +6,20 @@
  * - `onDropItem(item, event)` — the item arrives resolved, not as a UUID.
  *   Return `false` to refuse, `undefined` to hand the drop back to Foundry.
  */
-import { BaseActorSheet } from '@vttforge/core';
+import { BaseActorSheet, type ActorLike, type ItemLike } from '@vttforge/core';
 import type { CharacterData } from '../data/character-data.js';
 import type { GearData } from '../data/gear-data.js';
 
 const SYSTEM_ID = '{{ID}}';
 
 /**
- * What this sheet reads off its actor.
+ * The actor this sheet is for, and the items on it.
  *
- * Foundry's own `Actor` type is not wired in — see `foundry-globals.ts` — so
- * the sheet says what it needs. Grow this as the sheet grows; it is the one
- * place to change when a real type package lands.
+ * `ActorLike` is the document surface `@vttforge/core` ships; the type
+ * argument is your own schema, so `actor.system.abilities` is typed.
  */
-interface CharacterActor {
-  readonly name: string;
-  readonly img: string;
-  readonly isOwner: boolean;
-  readonly system: CharacterData;
-  readonly items: {
-    filter(fn: (item: GearItem) => boolean): GearItem[];
-    get(id: string): GearItem | undefined;
-  };
-  getRollData(): Record<string, unknown>;
-}
-
-interface GearItem {
-  readonly id: string;
-  readonly name: string;
-  readonly img: string;
-  readonly type: string;
-  readonly system: GearData;
-  delete(): Promise<unknown>;
-}
+type CharacterActor = ActorLike<CharacterData, GearItem>;
+type GearItem = ItemLike<GearData>;
 
 interface AbilityViewModel {
   key: string;
@@ -56,7 +37,7 @@ const ABILITY_LABELS: Record<string, string> = {
   cha: '{{LOCALE_PREFIX}}.Ability.cha',
 };
 
-export class CharacterSheet extends BaseActorSheet() {
+export class CharacterSheet extends BaseActorSheet<CharacterActor>() {
   static override DEFAULT_OPTIONS = foundry.utils.mergeObject(
     super.DEFAULT_OPTIONS,
     {
@@ -116,14 +97,9 @@ export class CharacterSheet extends BaseActorSheet() {
     { dragSelector: '.sh-item[draggable=true]', dropSelector: '.sh-body' },
   ];
 
-  /**
-   * The actor this sheet is for.
-   *
-   * `this.document` is `unknown` on the base — which document a sheet is for
-   * is the system's to know. One cast, here, and everything below is typed.
-   */
+  /** The actor this sheet is for. Typed by the argument to `BaseActorSheet`. */
   get actor(): CharacterActor {
-    return this.document as CharacterActor;
+    return this.document;
   }
 
   override async _prepareContext(options: unknown): Promise<Record<string, unknown>> {

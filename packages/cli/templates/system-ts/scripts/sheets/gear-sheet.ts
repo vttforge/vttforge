@@ -3,20 +3,15 @@
  *
  * Single part, one tab group, no drag-drop: the smallest useful sheet.
  */
-import { BaseItemSheet } from '@vttforge/core';
+import { BaseItemSheet, type ItemLike } from '@vttforge/core';
 import type { GearData } from '../data/gear-data.js';
 
 const SYSTEM_ID = '{{ID}}';
 
-/** What this sheet reads off its item. See `CharacterSheet` for the pattern. */
-interface GearItem {
-  readonly name: string;
-  readonly img: string;
-  readonly isOwner: boolean;
-  readonly system: GearData;
-}
+/** The item this sheet is for. See `CharacterSheet` for the pattern. */
+type GearItem = ItemLike<GearData>;
 
-export class GearSheet extends BaseItemSheet() {
+export class GearSheet extends BaseItemSheet<GearItem>() {
   static override DEFAULT_OPTIONS = foundry.utils.mergeObject(
     super.DEFAULT_OPTIONS,
     {
@@ -56,7 +51,7 @@ export class GearSheet extends BaseItemSheet() {
   };
 
   get item(): GearItem {
-    return this.document as GearItem;
+    return this.document;
   }
 
   override async _prepareContext(options: unknown): Promise<Record<string, unknown>> {

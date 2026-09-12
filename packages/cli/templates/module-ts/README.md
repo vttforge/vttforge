@@ -49,8 +49,9 @@ saves that key on every item whose owner picked the sheet. Without an
 explicit id it derives the key from the class name, and a bundler renames
 classes between builds. Keep the ids.
 
-`this.document` is `unknown` on the sheet bases. The sheet narrows it once
-in a getter (`item`), and everything below reads typed.
+`this.document` is typed. The sheet hands its own schema to the base
+(`BaseItemSheet<NoteItem>()`), so `document.system` is `NoteData` and nothing
+casts.
 
 ## Public API
 

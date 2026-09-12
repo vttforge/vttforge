@@ -58,33 +58,37 @@ export class PdfActorSheet extends BaseDocumentSheet('Actor') {
 It takes `'Actor'` or `'Item'`, and gives you the same `_renderHTML` /
 `_replaceHTML` contract as `BaseApplication`.
 
-### `this.document` is `unknown`
+### Naming the document
 
-The base does not know which document a sheet is for; that is yours to say.
-Narrow it once, in a getter, and read the typed value everywhere else:
+`this.document` comes back as `ActorLike` or `ItemLike`: `name`, `img`,
+`system`, `items`, `update()`, the flag helpers. That is enough for most
+sheets. To type `system` as your own schema, hand the type to the factory:
 
 ```ts
-interface CharacterActor {
-  readonly name: string;
-  readonly system: CharacterData;
-  readonly items: { get(id: string): GearItem | undefined };
-}
+import { BaseActorSheet, type ActorLike, type ItemLike } from "@vttforge/core";
 
-export class CharacterSheet extends BaseActorSheet() {
-  get actor(): CharacterActor {
-    return this.document as CharacterActor;
-  }
+type CharacterActor = ActorLike<CharacterData>;
 
+export class CharacterSheet extends BaseActorSheet<CharacterActor>() {
   override async _prepareContext(options: unknown) {
     const context = await super._prepareContext(options);
-    context.system = this.actor.system; // typed from the schema
+    context.system = this.document.system; // CharacterData
     return context;
   }
 }
 ```
 
-The interface names what the sheet reads, and it is the one place to change
-when a real Foundry type package lands.
+The drop hooks hand over the document too. TypeScript does not carry a base
+method's parameter types into an override, so write them out:
+
+```ts
+override async onDropItem(item: ItemLike<GearData>, event: DragEvent) {
+  await this.document.createEmbeddedDocuments("Item", [item.toObject()]);
+}
+```
+
+Reaching a member outside `ActorLike` or `ItemLike` still needs a cast. The
+list holds what the systems and modules already on the SDK read.
 
 ### `override` is not optional
 
