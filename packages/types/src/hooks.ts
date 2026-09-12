@@ -176,7 +176,17 @@ export interface StaticHooks {
   hotReload: [HotReloadData];
   userConnected: [UserLike, boolean];
   clientSettingChanged: [string, unknown, Record<string, unknown>];
+  /**
+   * Declared by Foundry, and nothing fires it. The three below are what a
+   * volume change actually calls.
+   */
   globalVolumeChanged: [number];
+  /** The music channel. The argument is clamped to 0 through 1. */
+  globalPlaylistVolumeChanged: [number];
+  /** The ambient channel. The argument is clamped to 0 through 1. */
+  globalAmbientVolumeChanged: [number];
+  /** The interface channel. The argument is clamped to 0 through 1. */
+  globalInterfaceVolumeChanged: [number];
 
   // Canvas
   canvasConfig: [Record<string, unknown>];

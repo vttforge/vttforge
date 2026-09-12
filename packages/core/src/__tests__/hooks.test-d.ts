@@ -45,6 +45,21 @@ describe('named hooks', () => {
     });
   });
 
+  it('types each audio channel as a volume', () => {
+    Hooks.on('globalPlaylistVolumeChanged', (volume) => {
+      expectTypeOf(volume).toEqualTypeOf<number>();
+    });
+    Hooks.on('globalAmbientVolumeChanged', (volume) => {
+      expectTypeOf(volume).toEqualTypeOf<number>();
+    });
+    Hooks.on('globalInterfaceVolumeChanged', (volume) => {
+      expectTypeOf(volume).toEqualTypeOf<number>();
+    });
+    expectTypeOf(Hooks.callAll<'globalAmbientVolumeChanged'>)
+      .parameter(1)
+      .toEqualTypeOf<number>();
+  });
+
   it('takes no arguments for the lifecycle pair', () => {
     expectTypeOf(Hooks.once<'init'>)
       .parameter(1)
