@@ -1,5 +1,12 @@
 # @vttforge/core
 
+## 0.19.2
+
+### Patch Changes
+
+- Updated dependencies [594195c]
+  - @vttforge/types@0.4.0
+
 ## 0.19.1
 
 ### Patch Changes
