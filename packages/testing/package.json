@@ -1,6 +1,6 @@
 {
   "name": "@vttforge/testing",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Foundry mocks for Vitest and Quench helpers, for testing VTTForge systems and modules.",
   "type": "module",
   "license": "MIT",

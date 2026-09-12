@@ -1,5 +1,12 @@
 # create-vttforge
 
+## 0.3.30
+
+### Patch Changes
+
+- Updated dependencies [712edb3]
+  - @vttforge/cli@0.17.2
+
 ## 0.3.29
 
 ### Patch Changes
