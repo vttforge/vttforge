@@ -1,5 +1,12 @@
 # create-vttforge
 
+## 0.3.32
+
+### Patch Changes
+
+- Updated dependencies [6957129]
+  - @vttforge/cli@0.18.1
+
 ## 0.3.31
 
 ### Patch Changes
