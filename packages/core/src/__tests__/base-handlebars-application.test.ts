@@ -75,4 +75,18 @@ describe('BaseHandlebarsApplication', () => {
     class ReportWindow extends BaseHandlebarsApplication() {}
     expect(() => new ReportWindow()).toThrow(/ReportWindow/);
   });
+
+  it('takes an overridden _prepareContext', async () => {
+    class Window extends BaseHandlebarsApplication() {
+      static PARTS = PARTS;
+      // `override` is required, not merely allowed: the factory reports what
+      // it adds, so TypeScript sees the member being replaced. A scaffolded
+      // project sets `noImplicitOverride`, so the example in the JSDoc has to
+      // compile there too.
+      override async _prepareContext(): Promise<Record<string, unknown>> {
+        return { rows: [1, 2] };
+      }
+    }
+    await expect(new Window()._prepareContext()).resolves.toEqual({ rows: [1, 2] });
+  });
 });

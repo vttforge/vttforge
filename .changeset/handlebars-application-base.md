@@ -13,11 +13,16 @@ mixin or hand-roll `_renderHTML` around `renderTemplate`.
 ```ts
 class ReportWindow extends BaseHandlebarsApplication() {
   static PARTS = { body: { template: 'modules/my-module/templates/report.hbs' } };
-  async _prepareContext() {
+  override async _prepareContext() {
     return { rows: collectRows() };
   }
 }
 ```
+
+`override` is required, not merely allowed. The factory reports what it adds,
+so TypeScript sees the member being replaced, and a scaffolded project sets
+`noImplicitOverride`. The `BaseActorSheet` and `BaseItemSheet` examples were
+missing the same word on `DEFAULT_OPTIONS`, and now carry it.
 
 A subclass that declares no `static PARTS` throws `VTTF-0002` when it is
 constructed. Without the check the window opens, renders nothing and says

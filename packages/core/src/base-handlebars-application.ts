@@ -79,11 +79,15 @@ export interface BaseHandlebarsApplicationMembers {
  *     body: { template: 'modules/my-module/templates/report.hbs' },
  *   };
  *
- *   async _prepareContext() {
+ *   override async _prepareContext() {
  *     return { rows: collectRows() };
  *   }
  * }
  * ```
+ *
+ * `override` on `_prepareContext` is required, not merely allowed: the factory
+ * reports what it adds, so TypeScript sees the member being replaced, and a
+ * scaffolded project sets `noImplicitOverride`.
  *
  * Omitting `PARTS` throws when the class is constructed, rather than opening
  * an empty window.

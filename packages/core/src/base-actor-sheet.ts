@@ -246,7 +246,7 @@ export const VTTFORGE_SHEET_CLASS = 'vttforge';
  * @example
  * ```ts
  * class CharacterSheet extends BaseActorSheet() {
- *   static DEFAULT_OPTIONS = foundry.utils.mergeObject(
+ *   static override DEFAULT_OPTIONS = foundry.utils.mergeObject(
  *     super.DEFAULT_OPTIONS,
  *     { classes: ['my-system'], position: { width: 720 } },
  *     { inplace: false }, // never edit the parent's static options in place
