@@ -10,12 +10,7 @@
 
 import { VttfError } from '../errors/registry.js';
 import type { SchemaFieldOptions } from './field-options.js';
-import {
-  type FieldInstance,
-  fields,
-  type NumberFieldInstance,
-  type SchemaFieldInstance,
-} from './fields.js';
+import { fields, type NumberFieldInstance, type SchemaFieldInstance } from './fields.js';
 
 export interface ResourceFieldOptions {
   /** Starting `value`. Default `0`. */
