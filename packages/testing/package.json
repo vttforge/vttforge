@@ -30,6 +30,10 @@
       "types": "./dist/quench/index.d.mts",
       "import": "./dist/quench/index.mjs"
     },
+    "./container": {
+      "types": "./dist/container/index.d.mts",
+      "import": "./dist/container/index.mjs"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.mjs",
@@ -50,6 +54,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
+    "@types/node": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",

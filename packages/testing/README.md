@@ -2,7 +2,7 @@
 
 Helpers for testing Foundry VTT packages.
 
-Two entry points, one for each place a test can run.
+Three entry points, one for each place a test can run.
 
 ## `@vttforge/testing/vitest`
 
@@ -74,10 +74,62 @@ Quench has already loaded registers a batch that never appears. Outside
 Foundry it is a no-op, so a file holding both kinds of test can still be
 imported by the vitest run.
 
+## `@vttforge/testing/container`
+
+Boots a real Foundry in Docker, installs your build into it, and leaves it on
+the join screen. For the questions a mock cannot answer and Quench cannot
+reach: whether the manifest you ship is the one Foundry reads, what a migration
+does to stored documents, whether the package loads at all.
+
+```ts
+import { startFoundryContainer } from '@vttforge/testing/container';
+
+const foundry = await startFoundryContainer({
+  acceptLicense: true,
+  name: 'my-module-e2e',
+  packages: [
+    { kind: 'system', id: 'some-system', from: 'test/fixtures/system' },
+    { kind: 'module', id: 'my-module', from: 'dist' },
+  ],
+});
+
+try {
+  // drive foundry.baseUrl with Playwright, or fetch it directly
+} finally {
+  foundry.stop();
+}
+```
+
+Needs `docker` on the PATH, and `FOUNDRY_LICENSE_KEY`, `FOUNDRY_USERNAME` and
+`FOUNDRY_PASSWORD` in the environment. They are handed to Docker by name, so no
+credential is written into an argument list. The first run downloads Foundry
+and takes a couple of minutes; later runs reuse the data volume.
+
+### You accept the licence
+
+Booting Foundry records an answer to its licence agreement. This code will not
+answer it for you: `startFoundryContainer` throws unless you pass
+`acceptLicense: true` or set `FOUNDRY_ACCEPT_LICENSE=1`. Read the agreement
+first.
+
+### Two things the API makes you notice
+
+Foundry scans its packages directory once, at startup. `install()` copies a
+package in; it becomes visible after `restart()`. That is why `packages` is an
+option on `startFoundryContainer`, which installs before the world launches.
+
+The container name, the volume and the world id all default, and two runs
+sharing a name collide. Name them when a project runs more than one, or runs
+alongside another project's.
+
+`stopFoundryContainer(name)` and `foundryContainerLogs(name)` do the same as
+the handle's `stop()` and `logs()`, for a teardown script in its own process
+and for a boot that failed before there was a handle.
+
 ## What to test where
 
-Anything before `_renderHTML` is testable in Vitest, and real rendering belongs
-to Quench. There is no helper that mounts a sheet against a mock actor and
+Anything before `_renderHTML` is testable in Vitest. Real rendering belongs to
+Quench. What only a whole Foundry can answer belongs to the container. There is no helper that mounts a sheet against a mock actor and
 returns its HTML, and none is planned: a copy of the Application framework
 inside a mock renders something like Foundry, so a test that passes against the
 copy says nothing about the real one.

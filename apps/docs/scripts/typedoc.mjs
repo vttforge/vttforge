@@ -21,12 +21,17 @@ const repoRoot = resolve(appRoot, '..', '..');
 const require = createRequire(import.meta.url);
 const typedoc = join(dirname(require.resolve('typedoc/package.json')), 'bin', 'typedoc');
 
+// `entries` rather than one entry, because a package whose subpaths cannot
+// share a root export still has to appear here whole.
 const PACKAGES = [
-  { name: 'core', entry: 'src/index.ts' },
-  { name: 'types', entry: 'src/index.ts' },
-  { name: 'cli', entry: 'src/index.ts' },
-  { name: 'vite-plugin', entry: 'src/index.ts' },
-  { name: 'testing', entry: 'src/index.ts' },
+  { name: 'core', entries: ['src/index.ts'] },
+  { name: 'types', entries: ['src/index.ts'] },
+  { name: 'cli', entries: ['src/index.ts'] },
+  { name: 'vite-plugin', entries: ['src/index.ts'] },
+  // The root re-exports the vitest and quench entries. It does not re-export
+  // the container one, which reads `node:child_process` and would then break a
+  // browser-side import, so that entry is named here as well.
+  { name: 'testing', entries: ['src/index.ts', 'src/container/index.ts'] },
 ];
 
 for (const pkg of PACKAGES) {
@@ -62,7 +67,7 @@ for (const pkg of PACKAGES) {
       'false',
       '--logLevel',
       'Warn',
-      join(packageDir, pkg.entry),
+      ...pkg.entries.map((entry) => join(packageDir, entry)),
     ],
     { stdio: 'inherit' },
   );
