@@ -137,7 +137,7 @@ export const LEGACY_GLOBALS: Readonly<Record<string, string>> = Object.freeze({
  */
 export function definesName(source: string, name: string): boolean {
   return new RegExp(
-    `(?:\\b(?:class|function|const|let|var)\\s+${name}\\b|import[^;]*\\b${name}\\b|\\b${name}\\s*\\([^)]*\\)\\s*\\{|^[ \\t]*(?:readonly[ \\t]+)?${name}\\s*\\([^)]*\\)\\s*:)`,
+    `(?:\\b(?:class|function|const|let|var)\\s+${name}\\b|import[^;]*\\b${name}\\b|\\b${name}\\s*\\([^)]*\\)\\s*\\{|^[ \\t]*(?:readonly[ \\t]+)?${name}\\s*\\((?:[^)(]|\\([^)]*\\))*\\)\\s*:)`,
     'm',
   ).test(source);
 }

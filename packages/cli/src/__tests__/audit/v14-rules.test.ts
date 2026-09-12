@@ -293,6 +293,17 @@ describe('VTTF-AUDIT-019: bare v13 global aliases', () => {
         ].join('\n'),
       ),
     ).toEqual([]);
+    // Method whose parameter carries a function type with its own parens.
+    expect(
+      await auditSource(
+        [
+          'interface Helpers {',
+          '  renderTemplate(callback: () => void): Promise<string>;',
+          '}',
+          '',
+        ].join('\n'),
+      ),
+    ).toEqual([]);
   });
 
   it('still flags a call in a ternary, where the name does not open the line', async () => {
