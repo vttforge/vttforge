@@ -92,6 +92,51 @@ registerBatch('my-module.sheets', ({ describe, it, assert }) => {
 before registering. Outside Foundry it does nothing, so a file holding both
 kinds of test still imports under Vitest.
 
+## Against a real Foundry
+
+Quench runs inside a world someone already opened. The other case is a world
+that does not exist yet: a CI job, or a check that the package you built loads
+at all. `@vttforge/testing/container` boots one.
+
+```ts
+import { startFoundryContainer } from '@vttforge/testing/container';
+
+const foundry = await startFoundryContainer({
+  acceptLicense: true,
+  name: 'my-module-e2e',
+  packages: [
+    { kind: 'system', id: 'some-system', from: 'test/fixtures/system' },
+    { kind: 'module', id: 'my-module', from: 'dist' },
+  ],
+});
+
+try {
+  const page = await browser.newPage();
+  await page.goto(foundry.baseUrl);
+  // ... join the world and drive it
+} finally {
+  foundry.stop();
+}
+```
+
+It needs `docker` on the PATH and three variables in the environment:
+`FOUNDRY_LICENSE_KEY`, `FOUNDRY_USERNAME` and `FOUNDRY_PASSWORD`. Docker reads
+each by name, so no credential goes into an argument list. The first run
+downloads Foundry; later runs reuse the data volume and start in seconds.
+
+Booting Foundry records an answer to its licence agreement, and this code will
+not answer it for you. Read the agreement, then pass `acceptLicense: true` or
+set `FOUNDRY_ACCEPT_LICENSE=1`.
+
+Two things the API is shaped around. Foundry scans its packages directory once,
+at startup, so pass `packages` and let it install before the world launches; a
+package added later needs `restart()`. And the container name, the volume and
+the world id all default, so two runs sharing a name fight over one container.
+Name them per project.
+
+This SDK's own end-to-end run uses this entry point and nothing private, so the
+API a consumer gets is the API the repo tests with.
+
 ## Where to draw the line
 
 Anything before `_renderHTML` is testable with a mock. Real rendering, sockets
@@ -106,5 +151,5 @@ framework: the Handlebars mixin, `PARTS`, template loading, Foundry's own
 helpers, tabs, form handling. A copy of that inside a mock would render
 something like what Foundry renders, and a test that passes against the copy
 and fails in the real thing is worse than no test. Test the context with
-`_prepareContext` under Vitest, and test the render under Quench or the
-end-to-end run.
+`_prepareContext` under Vitest, and test the render under Quench or in a
+container.

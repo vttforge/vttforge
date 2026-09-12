@@ -165,6 +165,9 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.62.1
+      '@vttforge/testing':
+        specifier: workspace:*
+        version: link:../../packages/testing
 
   apps/web:
     dependencies:
@@ -363,6 +366,9 @@ importers:
       '@arethetypeswrong/cli':
         specifier: 'catalog:'
         version: 0.18.5
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.4.0
       publint:
         specifier: 'catalog:'
         version: 0.3.24
