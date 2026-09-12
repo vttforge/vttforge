@@ -10,7 +10,12 @@
 
 import { VttfError } from '../errors/registry.js';
 import type { SchemaFieldOptions } from './field-options.js';
-import { fields, type NumberFieldInstance, type SchemaFieldInstance } from './fields.js';
+import {
+  type FieldInstance,
+  fields,
+  type NumberFieldInstance,
+  type SchemaFieldInstance,
+} from './fields.js';
 
 export interface ResourceFieldOptions {
   /** Starting `value`. Default `0`. */
@@ -90,7 +95,10 @@ export function resourceField(options: ResourceFieldOptions = {}): ResourceField
  * `fields` hold both `value` and `max`. Reads Foundry's own field objects,
  * so it works on any schema, not only one built with `resourceField()`.
  */
-export function schemaHasResource(schema: unknown, path: string): boolean {
+export function schemaHasResource(
+  schema: Record<string, FieldInstance> | unknown,
+  path: string,
+): boolean {
   let node: unknown = schema;
   for (const segment of path.split('.')) {
     const fieldsOf = (node as { fields?: Record<string, unknown> } | undefined)?.fields;

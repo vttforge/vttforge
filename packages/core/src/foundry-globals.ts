@@ -9,11 +9,32 @@
 export type {
   ActiveEffectConfig,
   AnyClass,
+  ApplicationClickAction,
+  ApplicationConfiguration,
+  ApplicationFormConfiguration,
+  ApplicationPosition,
+  ApplicationTab,
+  ApplicationTabsConfiguration,
+  ApplicationWindowConfiguration,
+  CanvasApi,
   ChatMessageConfig,
+  ChatMessageConstructor,
+  ChatMessageLike,
+  ChatSpeakerData,
+  CombatantLike,
   CombatConfig,
+  CombatHistoryData,
+  CombatLike,
   CompendiumCollection,
+  ContextMenuEntry,
+  DatabaseOperationOptions,
   DiceConfig,
+  DiceTermResult,
+  DieTermLike,
   DocumentConfig,
+  DocumentHookName,
+  DocumentTypeMap,
+  FolderLikeDocument,
   FoundryCollection,
   FoundryConfig,
   FoundryConstants,
@@ -22,9 +43,18 @@ export type {
   Game,
   GameSettingsApi,
   GameTimeApi,
+  HandlebarsTemplatePart,
+  HookCallback,
+  HookMap,
+  HookName,
+  HooksApi,
+  HotReloadData,
+  JournalEntryLike,
   KeybindingsApi,
   KeyboardApi,
+  LevelLike,
   LocalizationApi,
+  MacroLike,
   Notification,
   NotificationOptions,
   NotificationsApi,
@@ -32,6 +62,12 @@ export type {
   PackageHandle,
   Point,
   QueryHandlers,
+  RollConstructor,
+  RollEvaluateOptions,
+  RollLike,
+  RollTermLike,
+  SceneControl,
+  SceneLike,
   SettingConfig,
   SettingMenuConfig,
   SettingScope,
@@ -39,20 +75,11 @@ export type {
   StatusEffectConfig,
   SystemHandle,
   TextEditorConfig,
+  TokenDocumentLike,
+  TokenObjectLike,
+  ToMessageOptions,
   UiApi,
   UserLike,
   WorldCollection,
   WorldHandle,
 } from '@vttforge/types';
-
-export type HookCallback<Args extends readonly unknown[] = readonly unknown[]> = (
-  ...args: Args
-) => unknown | Promise<unknown>;
-
-export interface HooksApi {
-  once<Args extends readonly unknown[]>(event: string, fn: HookCallback<Args>): number;
-  on<Args extends readonly unknown[]>(event: string, fn: HookCallback<Args>): number;
-  off(event: string, idOrFn: number | HookCallback): boolean;
-  call(event: string, ...args: readonly unknown[]): boolean;
-  callAll(event: string, ...args: readonly unknown[]): boolean;
-}

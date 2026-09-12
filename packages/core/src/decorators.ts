@@ -15,7 +15,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
-import type { Game, SettingConfig } from './foundry-globals.js';
+import type { AnyClass, Game, SettingConfig } from './foundry-globals.js';
 import { registerSheets, type SheetDocumentKind } from './register-sheets.js';
 
 interface HooksApi {
@@ -34,8 +34,13 @@ function hooks(): HooksApi {
   return api;
 }
 
+/**
+ * What a class decorator is handed. Wider than `AnyClass` on purpose: a
+ * decorated class may be abstract, while a `documentClass` you construct
+ * cannot be.
+ */
 // biome-ignore lint/suspicious/noExplicitAny: a decorator receives whatever class it is applied to
-type AnyClass = abstract new (...args: any[]) => any;
+type DecoratorTarget = abstract new (...args: any[]) => any;
 
 /** Run something in `init`, which is the only place CONFIG may be touched. */
 function atInit(fn: () => void): void {
@@ -79,7 +84,7 @@ function dataModelsFor(kind: 'Actor' | 'Item'): Record<string, unknown> {
  * change in a minor.
  */
 export function ActorDataModel(type: string) {
-  return (target: AnyClass, _context: ClassDecoratorContext): void => {
+  return (target: DecoratorTarget, _context: ClassDecoratorContext): void => {
     atInit(() => {
       dataModelsFor('Actor')[type] = target;
     });
@@ -92,7 +97,7 @@ export function ActorDataModel(type: string) {
  * change in a minor.
  */
 export function ItemDataModel(type: string) {
-  return (target: AnyClass, _context: ClassDecoratorContext): void => {
+  return (target: DecoratorTarget, _context: ClassDecoratorContext): void => {
     atInit(() => {
       dataModelsFor('Item')[type] = target;
     });
@@ -153,7 +158,7 @@ function documentClasses(): Readonly<Record<SheetDocumentKind, unknown>> {
  * change in a minor.
  */
 export function DocumentSheet(options: DocumentSheetOptions) {
-  return (target: AnyClass, _context: ClassDecoratorContext): void => {
+  return (target: DecoratorTarget, _context: ClassDecoratorContext): void => {
     atInit(() => {
       registerSheets(
         options.namespace,
@@ -161,7 +166,7 @@ export function DocumentSheet(options: DocumentSheetOptions) {
           {
             id: options.id,
             document: options.document,
-            sheet: target,
+            sheet: target as AnyClass,
             ...(options.types ? { types: options.types } : {}),
             ...(options.label ? { label: options.label } : {}),
             ...(options.makeDefault !== undefined ? { makeDefault: options.makeDefault } : {}),
@@ -179,7 +184,7 @@ export function DocumentSheet(options: DocumentSheetOptions) {
  * ```ts
  * class MyModule {
  *   @OnHook('renderChatMessageHTML')
- *   static onChatRender(message: unknown, html: HTMLElement) {}
+ *   static onChatRender(message: ChatMessageLike, html: HTMLElement) {}
  * }
  * ```
  *

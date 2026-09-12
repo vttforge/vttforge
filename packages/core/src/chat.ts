@@ -23,6 +23,7 @@
  * a package id, which is why the outcome is not filed under `vttforge`.
  */
 
+import type { ChatMessageLike, ChatSpeakerData } from './foundry-globals.js';
 import { escapeHtml, localize } from './text.js';
 
 /** How to decide a critical or a fumble. */
@@ -90,8 +91,11 @@ export interface RollOutcome {
 export const ROLL_CARD_CLASS = 'vttf-roll';
 
 interface ChatMessageClass {
-  create(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
-  getSpeaker(options?: { actor?: object }): object;
+  create(
+    data: Record<string, unknown>,
+    options?: Record<string, unknown>,
+  ): Promise<ChatMessageLike | undefined>;
+  getSpeaker(options?: { actor?: object }): ChatSpeakerData;
 }
 
 function chatMessageClass(): ChatMessageClass {
@@ -167,7 +171,7 @@ export function rollOutcome(
 export async function postRoll(
   roll: PostableRoll,
   options: PostRollOptions = {},
-): Promise<{ message: unknown; outcome: RollOutcome }> {
+): Promise<{ message: ChatMessageLike | undefined; outcome: RollOutcome }> {
   if (!roll._evaluated) await roll.evaluate();
   const outcome = rollOutcome(roll, options);
   const ChatMessage = chatMessageClass();

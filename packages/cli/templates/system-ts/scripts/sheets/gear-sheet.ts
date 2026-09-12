@@ -3,7 +3,12 @@
  *
  * Single part, one tab group, no drag-drop: the smallest useful sheet.
  */
-import { BaseItemSheet, type ItemLike } from '@vttforge/core';
+import {
+  BaseItemSheet,
+  type ApplicationRenderContext,
+  type ApplicationRenderOptions,
+  type ItemLike,
+} from '@vttforge/core';
 import type { GearData } from '../data/gear-data.js';
 
 const SYSTEM_ID = '{{ID}}';
@@ -54,7 +59,9 @@ export class GearSheet extends BaseItemSheet<GearItem>() {
     return this.document;
   }
 
-  override async _prepareContext(options: unknown): Promise<Record<string, unknown>> {
+  override async _prepareContext(
+    options: ApplicationRenderOptions,
+  ): Promise<ApplicationRenderContext> {
     const context = await super._prepareContext(options);
     const { item } = this;
     context.item = item;

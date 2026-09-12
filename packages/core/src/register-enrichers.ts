@@ -54,7 +54,7 @@ export interface EnricherRegistration {
    */
   readonly enricher: (
     match: RegExpMatchArray,
-    options?: unknown,
+    options?: Record<string, unknown>,
   ) => Promise<HTMLElement | null> | HTMLElement | null;
 
   /**

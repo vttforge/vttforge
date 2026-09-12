@@ -24,6 +24,7 @@
  */
 
 import { VttfError } from './errors/registry.js';
+import type { AnyClass } from './foundry-globals.js';
 
 /** Which document collection the sheet belongs to. */
 export type SheetDocumentKind = 'Actor' | 'Item';
@@ -42,7 +43,7 @@ export interface SheetRegistration {
   readonly document: SheetDocumentKind;
 
   /** The sheet class. */
-  readonly sheet: unknown;
+  readonly sheet: AnyClass;
 
   /**
    * Document sub-types the sheet applies to. Omit to offer it for every type.

@@ -7,6 +7,11 @@
  * cast, and a cast is a sentence you write on purpose.
  */
 
+import type {
+  ApplicationConfiguration,
+  ApplicationRenderContext,
+  ApplicationRenderOptions,
+} from './application.js';
 import type { DocumentMembers } from './documents.js';
 
 /**
@@ -27,22 +32,32 @@ export interface ApplicationV2Members {
   readonly rendered: boolean;
 
   /** Render the application. Resolves when the render completes. */
-  render(options?: unknown, _options?: unknown): Promise<unknown>;
+  render(
+    options?: ApplicationRenderOptions | boolean,
+    _options?: ApplicationRenderOptions,
+  ): Promise<this>;
 
   /** Close the window. */
-  close(options?: unknown): Promise<unknown>;
+  close(options?: Record<string, unknown>): Promise<this>;
 
   /** Build the render context. */
-  _prepareContext(options: unknown): Promise<Record<string, unknown>>;
+  _prepareContext(options: ApplicationRenderOptions): Promise<ApplicationRenderContext>;
+
+  /** Runs after `_prepareContext` and before the frame renders. New in v14. */
+  _preRender(context: ApplicationRenderContext, options: ApplicationRenderOptions): Promise<void>;
 
   /** Runs after every render. */
-  _onRender(context: unknown, options: unknown): void;
+  _onRender(context: ApplicationRenderContext, options: ApplicationRenderOptions): void;
 
   /** Runs after the first render only. */
-  _onFirstRender(context: unknown, options: unknown): void;
+  _onFirstRender(context: ApplicationRenderContext, options: ApplicationRenderOptions): void;
+
+  /** Move the window into its own browser window. New in v14. */
+  detachWindow(): void;
+  attachWindow(): void;
 
   /** The resolved options this instance was constructed with. */
-  readonly options: Record<string, unknown>;
+  readonly options: ApplicationConfiguration;
 }
 
 /**
