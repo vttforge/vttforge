@@ -5,7 +5,6 @@
  * systems copy from each other: data models, initiative, sheets, settings,
  * and the `ready`-time migration gate.
  */
-import './foundry-globals.js';
 import { registerSystem, PackageConfig, VttfError } from '@vttforge/core';
 import { CharacterData } from './data/character-data.js';
 import { GearData } from './data/gear-data.js';
