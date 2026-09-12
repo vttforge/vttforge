@@ -206,8 +206,10 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 - ✅ Published. Every package on npm under OIDC trusted publishing, with provenance
 - ✅ Documentation. [vttforge.dev/docs](https://vttforge.dev/docs/) carries the guide, the API reference, the recipes and the error catalogue
 - ✅ Modules. Sockets and GM-authoritative requests, the module api, sub-type conversion so a module can be uninstalled without stranding data, UI injection into applications you do not own
-- 🛠️ Now. Widening the Foundry surface in `@vttforge/types` as adopters hit gaps, and closing the remaining places where a module has to write by hand what a system does not
-- 🚀 v1.0. A stable API, decorators once the toolchain allows them, and enough adopters to know which of the remaining gaps are real
+- ✅ Decorators. `@ActorDataModel`, `@ItemDataModel`, `@DocumentSheet`, `@SystemSetting` and `@OnHook`, on the standard decorators the toolchain now supports
+- ✅ Typed Foundry surface. `@vttforge/types` describes the documents, `game`, `ui`, `CONFIG`, `CONST`, `foundry.utils`, dice, chat, combat, scenes, tokens, the canvas, ApplicationV2 and a hook map that types each hook's arguments by its name. The published type declarations for `@vttforge/core` carried 91 `unknown` at 0.18.1 and carry 49 at 0.19.0, and most of what is left is the SDK's own generics rather than a Foundry type nobody wrote down
+- 🛠️ Now. Other people's code. The API is shaped and the surface is typed, so what is left is finding where it does not hold in a system I did not write
+- 🚀 v1.0. A stable API, and enough adopters to know which of the remaining gaps are real
 
 ## Where it is now
 
