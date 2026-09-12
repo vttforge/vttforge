@@ -89,9 +89,10 @@ def main():
         seen.add(name)
         page = path.read_text(encoding='utf-8', errors='ignore')
         sigs = members(page)
+        # A class the reference names without describing a member still
+        # belongs here: the name and the base class are what it has to give.
         if not sigs:
-            stats['empty'] += 1
-            continue
+            stats['no members'] += 1
         out.append({'qname': name, 'kind': kind, 'params': typeparams(page),
                     'extends': extends(page), 'signatures': sigs})
         stats[kind] += 1

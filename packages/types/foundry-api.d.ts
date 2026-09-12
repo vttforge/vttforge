@@ -303,6 +303,7 @@ declare namespace CONST {
   const USER_ROLES: Readonly< { ASSISTANT: 3; GAMEMASTER: 4; NONE: 0; PLAYER: 1; TRUSTED: 2 }>;
   const VIDEO_FILE_EXTENSIONS: Readonly< { m4v: "video/mp4"; mp4: "video/mp4"; ogv: "video/ogg"; webm: "video/webm"; }>;
   const vtt: "Foundry VTT";
+  const VTT: "Foundry Virtual Tabletop";
   const WALL_DOOR_INTERACTIONS: readonly ["open", "close", "lock", "unlock", "test"];
   const WALL_DOOR_STATES: Readonly<{ CLOSED: 0; LOCKED: 2; OPEN: 1 }>;
   const WALL_DOOR_TYPES: Readonly<{ DOOR: 1; NONE: 0; SECRET: 2 }>;
@@ -17046,7 +17047,7 @@ declare namespace foundry {
       pinSource(src: string): void;
       unpinSource(src: string): void;
     }
-    class TransitionContainer {
+    class TransitionContainer extends foundry.canvas.containers.UnboundContainer {
       defaultDuration: number;
       defaultTransitionType: string;
       isLocked: boolean;
@@ -17709,6 +17710,8 @@ declare namespace foundry {
         _onTextureUpdate(): void;
         _updateBatchData(): void;
         from( source: | string | unknown | HTMLVideoElement | HTMLCanvasElement, textureOptions?: object, shaderClass?: foundry.canvas.rendering.shaders.BaseSamplerShader): foundry.canvas.containers.SpriteMesh;
+      }
+      class UnboundContainer {
       }
       function FullCanvasObjectMixin(Base: any): unknown;
       namespace types {
@@ -18580,7 +18583,7 @@ declare namespace foundry {
       }
       class ControlsLayer extends foundry.canvas.layers.CanvasLayer {
         _rulerPaths: unknown;
-        cursors: unknown;
+        cursors: foundry.canvas.containers.UnboundContainer;
         debug: unknown;
         doors: unknown;
         options: { name: string };
@@ -21886,6 +21889,8 @@ declare namespace foundry {
           constructor(config?: Partial<foundry.canvas.rendering.filters.types.SMAAFilterConfig>);
           get PRESETS(): foundry.types.DeepReadonly< Record<"LOW" | "MEDIUM" | "HIGH" | "ULTRA", foundry.canvas.rendering.filters.types.SMAAFilterConfig>>;
           apply( filterManager: any, input: any, output: any, clearMode: any, currentState: any): void;
+        }
+        class SMAANeighborhoodBlendingFilter {
         }
         class TextureTransitionFilter extends foundry.canvas.rendering.filters.AbstractBaseFilter {
           set targetTexture(targetTexture: unknown);

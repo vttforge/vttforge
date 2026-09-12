@@ -14,10 +14,19 @@ MARK = '\x00'
 PAIR = re.compile(r'\x00([\w.$]+)\x00(?:<[^>]*>|\s)*\.(?:<[^>]*>|\s)*\x00([\w.$]+)\x00')
 
 
+DISAMBIGUATED = re.compile(r'-\d+$')
+
+
 def qname(href: str) -> str:
-    """The qualified name a link points at: the file's own name."""
+    """The qualified name a link points at: the file's own name.
+
+    Two entries that share a name get a numbered file, and the number is not
+    part of the name.
+    """
     base = href.rsplit('/', 1)[-1]
-    return base[:-5] if base.endswith('.html') else base
+    if base.endswith('.html'):
+        base = base[:-5]
+    return DISAMBIGUATED.sub('', base)
 
 
 def qualify(fragment: str) -> str:

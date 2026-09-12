@@ -23,7 +23,7 @@ The list is short on purpose: every member on it is one a real consumer used. Re
 ## The whole Foundry API
 
 `@vttforge/types/foundry-api` declares every name in Foundry's published API
-reference: 673 classes, 485 interfaces, 289 functions and 218 type aliases,
+reference: 675 classes, 485 interfaces, 289 functions and 218 type aliases,
 across 112 namespaces. It declares the `foundry` global, so a file reaches it
 with a reference directive rather than an import:
 
