@@ -21,7 +21,7 @@ import type {
 } from './application.js';
 import type { ActiveEffectLike, ActorLike, DocumentMembers, ItemLike } from './documents.js';
 import type { ApplicationV2Members } from './foundry.js';
-import type { CompendiumCollection, UserLike } from './globals.js';
+import type { CompendiumCollection, FoundryCollection, UserLike } from './globals.js';
 import type {
   CanvasApi,
   ChatMessageLike,
@@ -30,6 +30,7 @@ import type {
   FolderLikeDocument,
   JournalEntryLike,
   MacroLike,
+  PlaceableObjectLike,
   SceneLike,
   TokenDocumentLike,
   TokenObjectLike,
@@ -122,6 +123,133 @@ export type DocumentLifecycleHooks = {
   ];
 };
 
+/**
+ * A document that has an object placed on the canvas.
+ *
+ * `MeasuredTemplate` is deprecated since v14 and still fires its hooks, so it
+ * is here. Reach for a Region instead when you write new code.
+ */
+export type PlaceableDocumentName =
+  | 'AmbientLight'
+  | 'AmbientSound'
+  | 'Drawing'
+  | 'MeasuredTemplate'
+  | 'Note'
+  | 'Region'
+  | 'Tile'
+  | 'Token'
+  | 'Wall';
+
+/** The object each placed document draws. */
+export interface PlaceableObjectMap {
+  AmbientLight: PlaceableObjectLike;
+  AmbientSound: PlaceableObjectLike;
+  Drawing: PlaceableObjectLike;
+  MeasuredTemplate: PlaceableObjectLike;
+  Note: PlaceableObjectLike;
+  Region: PlaceableObjectLike;
+  Tile: PlaceableObjectLike;
+  Token: TokenObjectLike;
+  Wall: PlaceableObjectLike;
+}
+
+/**
+ * A layer Foundry draws on the canvas.
+ *
+ * The name is the layer's base class, so a system that subclasses `TokenLayer`
+ * still fires `drawTokenLayer`.
+ */
+export type CanvasLayerName =
+  | 'ControlsLayer'
+  | 'DrawingsLayer'
+  | 'GridLayer'
+  | 'LightingLayer'
+  | 'NotesLayer'
+  | 'RegionLayer'
+  | 'SoundsLayer'
+  | 'TemplateLayer'
+  | 'TilesLayer'
+  | 'TokenLayer'
+  | 'WallsLayer'
+  | 'WeatherEffects';
+
+/** A layer that takes tools and selection. These are the ones you activate. */
+export type InteractionLayerName = Exclude<
+  CanvasLayerName,
+  'ControlsLayer' | 'GridLayer' | 'WeatherEffects'
+>;
+
+/** What a canvas layer hands its hooks. */
+export interface CanvasLayerLike {
+  readonly name: string;
+  readonly hookName: string;
+  readonly active: boolean;
+}
+
+/**
+ * The hooks a placed object fires, one name per document.
+ *
+ * Foundry builds the name from the document, so a token fires `drawToken` and
+ * a tile fires `drawTile`. There is no `drawObject`: that name appears in
+ * Foundry's hook documentation to describe the family, and nothing calls it.
+ */
+export type PlaceableHooks = {
+  [K in PlaceableDocumentName as `draw${K}`]: [PlaceableObjectMap[K]];
+} & {
+  [K in PlaceableDocumentName as `refresh${K}`]: [PlaceableObjectMap[K], Record<string, boolean>];
+} & {
+  [K in PlaceableDocumentName as `destroy${K}`]: [PlaceableObjectMap[K]];
+} & {
+  [K in PlaceableDocumentName as `control${K}`]: [PlaceableObjectMap[K], boolean];
+} & {
+  [K in PlaceableDocumentName as `hover${K}`]: [PlaceableObjectMap[K], boolean];
+} & {
+  [K in PlaceableDocumentName as `paste${K}`]: [
+    PlaceableObjectMap[K][],
+    Record<string, unknown>[],
+    { cut: boolean },
+  ];
+};
+
+/**
+ * A group the canvas draws. Layers live inside these.
+ *
+ * The name is the group's class, the same way a layer's is.
+ */
+export type CanvasGroupName =
+  | 'CanvasVisibility'
+  | 'EffectsCanvasGroup'
+  | 'EnvironmentCanvasGroup'
+  | 'HiddenCanvasGroup'
+  | 'InterfaceCanvasGroup'
+  | 'OverlayCanvasGroup'
+  | 'PrimaryCanvasGroup'
+  | 'RenderedCanvasGroup';
+
+/** An effect source that builds shaders: lights, darkness and vision. */
+export type RenderedEffectSourceName =
+  | 'GlobalLightSource'
+  | 'PointDarknessSource'
+  | 'PointLightSource'
+  | 'PointVisionSource';
+
+/** The hooks a canvas layer fires, one name per layer. */
+export type CanvasLayerHooks = {
+  [K in CanvasLayerName as `draw${K}`]: [CanvasLayerLike, Record<string, unknown>];
+} & {
+  [K in CanvasLayerName as `tearDown${K}`]: [CanvasLayerLike, Record<string, unknown>];
+} & {
+  [K in InteractionLayerName as `activate${K}`]: [CanvasLayerLike];
+} & {
+  [K in InteractionLayerName as `deactivate${K}`]: [CanvasLayerLike];
+} & {
+  [K in CanvasGroupName as `draw${K}`]: [unknown, Record<string, unknown>];
+} & {
+  [K in CanvasGroupName as `tearDown${K}`]: [unknown, Record<string, unknown>];
+} & {
+  [K in RenderedEffectSourceName as `initialize${K}Shaders`]: [unknown];
+};
+
 /** The sidebar context menu hooks, one per document. */
 export type ContextMenuHooks = {
   [K in DocumentHookName as `get${K}ContextOptions`]: [ApplicationV2Members, ContextMenuEntry[]];
@@ -176,9 +304,26 @@ export interface StaticHooks {
   hotReload: [HotReloadData];
   userConnected: [UserLike, boolean];
   clientSettingChanged: [string, unknown, Record<string, unknown>];
+  /** The audio and video settings, and what changed in them. */
+  rtcSettingsChanged: [unknown, Record<string, unknown>];
+  /**
+   * Declared by Foundry, and nothing fires it. The three below are what a
+   * volume change actually calls.
+   */
   globalVolumeChanged: [number];
+  /** The music channel. The argument is clamped to 0 through 1. */
+  globalPlaylistVolumeChanged: [number];
+  /** The ambient channel. The argument is clamped to 0 through 1. */
+  globalAmbientVolumeChanged: [number];
+  /** The interface channel. The argument is clamped to 0 through 1. */
+  globalInterfaceVolumeChanged: [number];
 
   // Canvas
+  //
+  // The lighting, vision and environment hooks hand over a canvas group or the
+  // visibility layer. Neither is typed here: wrapping the canvas is not what
+  // this package does, and a name with the right arity is worth more than a
+  // shape invented for it. Typing one later fills every slot at once.
   canvasConfig: [Record<string, unknown>];
   canvasInit: [CanvasApi];
   canvasReady: [CanvasApi];
@@ -188,21 +333,37 @@ export interface StaticHooks {
   dropCanvasData: [CanvasApi, Record<string, unknown>, DragEvent];
   highlightObjects: [boolean];
   initializeEdges: [SceneLike];
-  drawLayer: [unknown, Record<string, unknown>];
-  tearDownLayer: [unknown, Record<string, unknown>];
-  activateLayer: [unknown];
   activateCanvasLayer: [unknown];
-  deactivateLayer: [unknown];
-  pastePlaceableObject: [unknown[], Record<string, unknown>[], { cut: boolean }];
+  /** The environment config, before the canvas reads it. */
+  configureCanvasEnvironment: [Record<string, unknown>];
+  initializeCanvasEnvironment: [];
+  /** The effects group, after its light sources are built. */
+  initializeLightSources: [unknown];
+  initializePriorityLightSources: [unknown];
+  lightingRefresh: [unknown];
+  /** The visibility layer. */
+  initializeVisionMode: [unknown];
+  sightRefresh: [unknown];
+  visibilityRefresh: [unknown];
+  /** Every vision source on the canvas, keyed by id. */
+  initializeVisionSources: [FoundryCollection<unknown>];
+  /** The weather layer and the config it was given. */
+  initializeWeatherEffects: [unknown, Record<string, unknown>];
+  /** `CONFIG.Token.ring`, before the ring is built. */
+  initializeDynamicTokenRingConfig: [unknown];
 
   // Placeables
-  drawObject: [unknown];
-  refreshObject: [unknown];
-  destroyObject: [unknown];
-  controlObject: [unknown, boolean];
-  hoverObject: [unknown, boolean];
   targetToken: [UserLike, TokenObjectLike, boolean];
   applyTokenStatusEffect: [TokenObjectLike, string, boolean];
+  /**
+   * Replaced by `renderChatMessageHTML`, and removed in v15. The second
+   * argument is the jQuery object the old hook passed.
+   */
+  renderChatMessage: [ChatMessageLike, unknown, Record<string, unknown>];
+  /** Replaced by `chatBubbleHTML`, and removed in v15. */
+  chatBubble: [TokenObjectLike, unknown, string, Record<string, unknown>];
+  /** The editor a legacy rich text field opened. Removed in v15. */
+  activateEditorLegacy: [unknown, Record<string, unknown>, string];
   chatBubbleHTML: [TokenObjectLike, HTMLElement, string, Record<string, unknown>];
   modifyTokenAttribute: [
     { attribute: string; value: number; isDelta: boolean; isBar: boolean },
@@ -219,7 +380,11 @@ export interface StaticHooks {
   activateNote: [unknown, Record<string, unknown>];
 
   // Applications
-  preRenderApplication: [ApplicationV2Members, ApplicationRenderContext, ApplicationRenderOptions];
+  preRenderApplicationV2: [
+    ApplicationV2Members,
+    ApplicationRenderContext,
+    ApplicationRenderOptions,
+  ];
   renderApplicationV2: [
     ApplicationV2Members,
     HTMLElement,
@@ -228,8 +393,6 @@ export interface StaticHooks {
   ];
   closeApplicationV2: [ApplicationV2Members];
   getHeaderControlsApplicationV2: [ApplicationV2Members, ApplicationHeaderControlsEntry[]];
-  getDocumentContextOptions: [ApplicationV2Members, ContextMenuEntry[]];
-  getPlaceableContextOptions: [ApplicationV2Members, ContextMenuEntry[]];
   getSceneControlButtons: [Record<string, SceneControl>];
   hotbarDrop: [unknown, Record<string, unknown>, number];
   collapseSidebar: [unknown, boolean];
@@ -295,7 +458,12 @@ export interface StaticHooks {
 }
 
 /** Every hook name Foundry ships, with the arguments it passes. */
-export interface HookMap extends StaticHooks, DocumentLifecycleHooks, ContextMenuHooks {}
+export interface HookMap
+  extends StaticHooks,
+    DocumentLifecycleHooks,
+    ContextMenuHooks,
+    PlaceableHooks,
+    CanvasLayerHooks {}
 
 export type HookName = keyof HookMap;
 

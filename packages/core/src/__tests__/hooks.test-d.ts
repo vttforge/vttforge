@@ -5,7 +5,14 @@
  * fails the build, which is the only way to notice.
  */
 import { describe, expectTypeOf, it } from 'vitest';
-import type { ActorLike, ChatMessageLike, CombatLike, HooksApi, ItemLike } from '../index.js';
+import type {
+  ActorLike,
+  ChatMessageLike,
+  CombatLike,
+  HookName,
+  HooksApi,
+  ItemLike,
+} from '../index.js';
 
 declare const Hooks: HooksApi;
 
@@ -45,10 +52,76 @@ describe('named hooks', () => {
     });
   });
 
+  it('types each audio channel as a volume', () => {
+    Hooks.on('globalPlaylistVolumeChanged', (volume) => {
+      expectTypeOf(volume).toEqualTypeOf<number>();
+    });
+    Hooks.on('globalAmbientVolumeChanged', (volume) => {
+      expectTypeOf(volume).toEqualTypeOf<number>();
+    });
+    Hooks.on('globalInterfaceVolumeChanged', (volume) => {
+      expectTypeOf(volume).toEqualTypeOf<number>();
+    });
+    expectTypeOf(Hooks.callAll<'globalAmbientVolumeChanged'>)
+      .parameter(1)
+      .toEqualTypeOf<number>();
+  });
+
   it('takes no arguments for the lifecycle pair', () => {
     expectTypeOf(Hooks.once<'init'>)
       .parameter(1)
       .toEqualTypeOf<() => unknown>();
+  });
+});
+
+describe('the placeable and layer families', () => {
+  it('names the document, not the family', () => {
+    Hooks.on('drawToken', (token) => {
+      expectTypeOf(token.document.name).toEqualTypeOf<string>();
+      expectTypeOf(token.isTargeted).toEqualTypeOf<boolean>();
+    });
+    Hooks.on('controlTile', (tile, controlled) => {
+      expectTypeOf(tile.id).toEqualTypeOf<string>();
+      expectTypeOf(controlled).toEqualTypeOf<boolean>();
+    });
+    Hooks.on('hoverWall', (_wall, hovered) => {
+      expectTypeOf(hovered).toEqualTypeOf<boolean>();
+    });
+    Hooks.on('refreshRegion', (region) => {
+      expectTypeOf(region.center.x).toEqualTypeOf<number>();
+    });
+  });
+
+  it('names the layer by its base class', () => {
+    Hooks.on('drawTokenLayer', (layer, options) => {
+      expectTypeOf(layer.hookName).toEqualTypeOf<string>();
+      expectTypeOf(options).toEqualTypeOf<Record<string, unknown>>();
+    });
+    Hooks.on('activateWallsLayer', (layer) => {
+      expectTypeOf(layer.active).toEqualTypeOf<boolean>();
+    });
+  });
+
+  it('names the group and the effect source too', () => {
+    Hooks.on('drawPrimaryCanvasGroup', (group, options) => {
+      expectTypeOf(options).toEqualTypeOf<Record<string, unknown>>();
+      expectTypeOf(group).toEqualTypeOf<unknown>();
+    });
+    expectTypeOf<'tearDownEffectsCanvasGroup'>().toExtend<HookName>();
+    expectTypeOf<'initializePointLightSourceShaders'>().toExtend<HookName>();
+    expectTypeOf<'lightingRefresh'>().toExtend<HookName>();
+    expectTypeOf<'rtcSettingsChanged'>().toExtend<HookName>();
+  });
+
+  it('has no key for a name Foundry never calls', () => {
+    expectTypeOf<'drawObject'>().not.toExtend<HookName>();
+    expectTypeOf<'controlObject'>().not.toExtend<HookName>();
+    expectTypeOf<'drawLayer'>().not.toExtend<HookName>();
+    expectTypeOf<'pastePlaceableObject'>().not.toExtend<HookName>();
+    // A layer with no tools is never activated.
+    expectTypeOf<'activateGridLayer'>().not.toExtend<HookName>();
+    // The one that does fire.
+    expectTypeOf<'drawGridLayer'>().toExtend<HookName>();
   });
 });
 
