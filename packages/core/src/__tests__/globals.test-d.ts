@@ -12,6 +12,8 @@ import type {
   FoundryConstants,
   FoundryUtils,
   Game,
+  RegisteredSetting,
+  SettingScope,
   UiApi,
 } from '../index.js';
 
@@ -25,6 +27,19 @@ describe('game', () => {
   it('types the settings round trip', () => {
     expectTypeOf(game.settings.get<number>('my-module', 'schemaVersion')).toEqualTypeOf<number>();
     expectTypeOf(game.settings.register).parameter(0).toEqualTypeOf<string>();
+  });
+
+  it('reads the registry of every setting the world declared', () => {
+    expectTypeOf(game.settings.settings.size).toEqualTypeOf<number>();
+    expectTypeOf(game.settings.settings.get).parameter(0).toEqualTypeOf<string>();
+    const entry: RegisteredSetting | undefined =
+      game.settings.settings.get('my-module.schemaVersion');
+    expectTypeOf(entry?.id).toEqualTypeOf<string | undefined>();
+    expectTypeOf(entry?.namespace).toEqualTypeOf<string | undefined>();
+    expectTypeOf(entry?.key).toEqualTypeOf<string | undefined>();
+    expectTypeOf(entry?.scope).toEqualTypeOf<SettingScope | undefined>();
+    // Registration fills both in, so neither is optional on a stored entry.
+    expectTypeOf(entry?.default).toEqualTypeOf<unknown>();
   });
 
   it('types the collections by document', () => {

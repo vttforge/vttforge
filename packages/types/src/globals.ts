@@ -101,7 +101,34 @@ export interface SettingMenuConfig {
   readonly restricted?: boolean;
 }
 
+/**
+ * One entry of the settings registry: what `register` was given, plus the
+ * three fields it fills in.
+ *
+ * `scope` is always present here even though `SettingConfig` makes it
+ * optional, because registration falls back to `client` when the caller omits
+ * it or passes a name that is not a scope. `default` is `null` rather than
+ * missing for the same reason: a setting value may be `null` and may not be
+ * `undefined`.
+ */
+export interface RegisteredSetting<T = unknown> extends SettingConfig<T> {
+  /** `namespace.key`, the id the registry is keyed by. */
+  readonly id: string;
+  readonly namespace: string;
+  readonly key: string;
+  readonly scope: SettingScope;
+  readonly default: T;
+}
+
 export interface GameSettingsApi {
+  /**
+   * Every setting registered in this world, keyed `namespace.key`.
+   *
+   * The only way to reach settings belonging to a package you did not write.
+   * Read it to enumerate, report on or copy what a world holds; write through
+   * `register`, `get` and `set`, never through the map.
+   */
+  readonly settings: ReadonlyMap<string, RegisteredSetting>;
   register<T>(namespace: string, key: string, data: SettingConfig<T>): void;
   registerMenu(namespace: string, key: string, data: SettingMenuConfig): void;
   get<T = unknown>(namespace: string, key: string, options?: { document?: boolean }): T;

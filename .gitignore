@@ -58,3 +58,6 @@ Thumbs.db
 
 # Generated API reference (apps/docs/scripts/typedoc.mjs)
 apps/docs/src/reference/*/
+
+# firecrawl scrape output — research scratch, never tracked
+.firecrawl/

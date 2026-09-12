@@ -65,6 +65,7 @@ export type {
   NotificationType,
   PackageHandle,
   QueryHandlers,
+  RegisteredSetting,
   SettingConfig,
   SettingMenuConfig,
   SettingScope,
