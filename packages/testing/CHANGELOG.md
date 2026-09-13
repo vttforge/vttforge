@@ -1,5 +1,16 @@
 # @vttforge/testing
 
+## 0.10.0
+
+### Minor Changes
+
+- 762ce7c: `createMockConfig()` now gives every `documentClass` a working `create` and `createDocuments`. Each returns a mock document of that entry's kind. The class was empty before, so a test that called `CONFIG.Item.documentClass.create(...)` threw.
+
+### Patch Changes
+
+- Updated dependencies [762ce7c]
+  - @vttforge/types@0.7.0
+
 ## 0.9.0
 
 ### Minor Changes
