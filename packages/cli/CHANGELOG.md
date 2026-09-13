@@ -1,5 +1,14 @@
 # @vttforge/cli
 
+## 0.18.2
+
+### Patch Changes
+
+- dbd991a: The TypeScript templates pin `@vttforge/types` at `^0.6.0`.
+  
+  On a 0.x line a caret pins the minor, so the old `^0.5.0` would scaffold a
+  project that cannot resolve the version this release publishes.
+
 ## 0.18.1
 
 ### Patch Changes
