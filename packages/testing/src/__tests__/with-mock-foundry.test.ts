@@ -56,7 +56,11 @@ describe('withMockFoundry', () => {
 
   it('records settings and serves their defaults back', () => {
     mock = withMockFoundry();
-    game.settings.register('my-module', 'showWelcome', { type: Boolean, default: true });
+    game.settings.register('my-module', 'showWelcome', {
+      scope: 'world',
+      type: Boolean,
+      default: true,
+    });
 
     expect(mock.settings[0]).toMatchObject({ namespace: 'my-module', key: 'showWelcome' });
     expect(game.settings.get('my-module', 'showWelcome')).toBe(true);
@@ -74,12 +78,12 @@ describe('withMockFoundry', () => {
 
   it('defaults the user to a GM, which is what module code checks', () => {
     mock = withMockFoundry();
-    expect(game.user.isGM).toBe(true);
+    expect(game.user?.isGM).toBe(true);
   });
 
   it('lets a test be a player instead', () => {
     mock = withMockFoundry({ user: { isGM: false } });
-    expect(game.user.isGM).toBe(false);
+    expect(game.user?.isGM).toBe(false);
   });
 
   it('expands dotted paths the way foundry.utils does', () => {
