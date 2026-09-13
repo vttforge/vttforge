@@ -97,6 +97,106 @@ describe('withMockFoundry', () => {
   });
 });
 
+describe('the settings registry', () => {
+  it('files a registered setting under `namespace.key`', () => {
+    mock = withMockFoundry();
+    game.settings.register('my-module', 'showWelcome', {
+      name: 'Show the welcome',
+      scope: 'world',
+      config: true,
+      type: Boolean,
+      default: true,
+    });
+
+    const entry = game.settings.settings.get('my-module.showWelcome');
+    expect(entry).toMatchObject({
+      id: 'my-module.showWelcome',
+      namespace: 'my-module',
+      key: 'showWelcome',
+      scope: 'world',
+      config: true,
+      name: 'Show the welcome',
+    });
+  });
+
+  it('carries settings a package did not register itself', () => {
+    // The registry is the only way to reach another package's settings, which
+    // is what anything that reports on or copies a world needs.
+    mock = withMockFoundry();
+    game.settings.register('some-system', 'schemaVersion', {
+      scope: 'world',
+      config: false,
+      type: String,
+      default: '1.0.0',
+    });
+    game.settings.register('another-module', 'volume', {
+      scope: 'client',
+      config: true,
+      type: Number,
+      default: 0.5,
+    });
+
+    expect([...game.settings.settings.keys()]).toEqual([
+      'some-system.schemaVersion',
+      'another-module.volume',
+    ]);
+  });
+
+  it('normalises as it stores, the way registration does', () => {
+    mock = withMockFoundry();
+    // A scope Foundry does not know falls back to `client`, and a missing
+    // default becomes `null`: a setting value may be null and may not be
+    // undefined.
+    game.settings.register('my-module', 'odd', {
+      scope: 'galaxy' as unknown as 'world',
+      type: String,
+      default: undefined,
+    });
+
+    const entry = game.settings.settings.get('my-module.odd');
+    expect(entry?.scope).toBe('client');
+    expect(entry?.default).toBeNull();
+  });
+
+  it('records a settings menu and files it too', () => {
+    mock = withMockFoundry();
+    class VaultApp {}
+    game.settings.registerMenu('my-module', 'vault', {
+      name: 'MY_MODULE.Menu.name',
+      label: 'MY_MODULE.Menu.label',
+      type: VaultApp,
+      restricted: true,
+    });
+
+    expect(mock.menus).toEqual([
+      {
+        namespace: 'my-module',
+        key: 'vault',
+        config: expect.objectContaining({ restricted: true }),
+      },
+    ]);
+    expect(game.settings.menus.get('my-module.vault')).toMatchObject({
+      id: 'my-module.vault',
+      namespace: 'my-module',
+      key: 'vault',
+    });
+  });
+});
+
+describe('keybindings', () => {
+  it('records what a package binds', () => {
+    mock = withMockFoundry();
+    game.keybindings.register('my-module', 'open', {
+      name: 'MY_MODULE.Keybinding.open.name',
+      editable: [],
+      onDown: () => true,
+      restricted: true,
+    });
+
+    expect(mock.keybindings.map((k) => [k.namespace, k.action])).toEqual([['my-module', 'open']]);
+  });
+});
+
 describe('extra globals', () => {
   it('installs a global the fixed set does not cover', () => {
     // Foundry puts every document class on the global scope, and code under

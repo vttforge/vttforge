@@ -23,9 +23,32 @@ foundry.restore();
 ```
 
 `withMockFoundry` installs `foundry`, `game`, `CONFIG`, `Hooks`, `ui` and
-`CONST`, and hands back a handle that records what your code registered (hooks,
-settings, notifications) so a test can assert on what happened. `restore()`
-puts every global back, including deleting the ones that never existed.
+`CONST`, and hands back a handle that records what your code registered: hooks,
+settings, settings menus, keybindings, sheets, enrichers and notifications.
+`restore()` puts every global back, including deleting the ones that never
+existed.
+
+Registered settings also land in `game.settings.settings`, the registry Foundry
+keys by `namespace.key`. That map is the only way to reach a setting belonging
+to a package you did not write, so a module that enumerates, reports on or
+copies what a world holds reads it:
+
+```ts
+const foundry = withMockFoundry();
+game.settings.register('some-system', 'schemaVersion', {
+  scope: 'world',
+  config: false,
+  type: String,
+  default: '1.0.0',
+});
+
+const entry = game.settings.settings.get('some-system.schemaVersion');
+expect(entry?.scope).toBe('world');
+```
+
+Registration normalises as it stores, the way Foundry does: an unknown scope
+falls back to `client`, and a missing default becomes `null`. Menus land in
+`game.settings.menus` the same way.
 
 Anything else your code reads goes in `globals`. Foundry puts every document
 class on the global scope, and the fixed set above does not include them:

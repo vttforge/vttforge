@@ -118,6 +118,13 @@ export interface RegisteredSetting<T = unknown> extends SettingConfig<T> {
   readonly key: string;
 }
 
+/** One entry of the settings menu registry, keyed `namespace.key`. */
+export interface RegisteredSettingMenu extends SettingMenuConfig {
+  readonly id: string;
+  readonly namespace: string;
+  readonly key: string;
+}
+
 export interface GameSettingsApi {
   /**
    * Every setting registered in this world, keyed `namespace.key`.
@@ -127,6 +134,8 @@ export interface GameSettingsApi {
    * `register`, `get` and `set`, never through the map.
    */
   readonly settings: ReadonlyMap<string, RegisteredSetting>;
+  /** Every settings menu registered in this world, keyed `namespace.key`. */
+  readonly menus: ReadonlyMap<string, RegisteredSettingMenu>;
   register<T>(namespace: string, key: string, data: SettingConfig<T>): void;
   registerMenu(namespace: string, key: string, data: SettingMenuConfig): void;
   get<T = unknown>(namespace: string, key: string, options?: { document?: boolean }): T;

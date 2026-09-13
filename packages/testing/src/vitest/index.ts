@@ -22,6 +22,8 @@ export {
   type MockFoundryOptions,
   type RecordedEnricher,
   type RecordedHook,
+  type RecordedKeybinding,
+  type RecordedMenu,
   type RecordedSetting,
   type RecordedSheet,
   withMockFoundry,
