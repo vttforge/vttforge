@@ -49,6 +49,7 @@
 export type {
   ActiveEffectLike,
   ActorLike,
+  AnyActorLike,
   ApplicationHeaderControlsEntry,
   ApplicationRenderContext,
   ApplicationRenderOptions,

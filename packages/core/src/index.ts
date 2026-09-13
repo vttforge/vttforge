@@ -155,6 +155,7 @@ export {
 export type {
   ActiveEffectLike,
   ActorLike,
+  AnyActorLike,
   ApplicationHeaderControlsEntry,
   ApplicationRenderContext,
   ApplicationRenderOptions,
@@ -202,6 +203,7 @@ export type {
   DiceTermResult,
   DieTermLike,
   DocumentConfig,
+  DocumentConstructor,
   DocumentHookName,
   DocumentTypeMap,
   FolderLikeDocument,

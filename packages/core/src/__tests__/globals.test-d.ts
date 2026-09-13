@@ -8,6 +8,8 @@
 import { describe, expectTypeOf, it } from 'vitest';
 import type {
   ActorLike,
+  AnyClass,
+  DocumentConstructor,
   FoundryConfig,
   FoundryConstants,
   FoundryUtils,
@@ -66,9 +68,15 @@ describe('ui and CONFIG', () => {
   });
 
   it('types what a package writes in init', () => {
-    expectTypeOf(CONFIG.Actor.dataModels).toEqualTypeOf<
-      Record<string, FoundryConfig['Actor']['documentClass']>
-    >();
+    expectTypeOf(CONFIG.Actor.dataModels).toEqualTypeOf<Record<string, AnyClass>>();
+    // Reading gives the statics a package calls.
+    expectTypeOf(CONFIG.Item.documentClass.create).toBeCallableWith({ name: 'Sword' });
+    expectTypeOf(CONFIG.Item.documentClass).toExtend<DocumentConstructor>();
+    // Writing takes any class. A system replacing the document class rarely
+    // declares those statics on its own subclass, so the assignment below is
+    // the assertion: it stops compiling the moment the setter narrows.
+    const bare: AnyClass = class {};
+    CONFIG.Actor.documentClass = bare;
     expectTypeOf(CONFIG.Combat.initiative.formula).toEqualTypeOf<string | null>();
     expectTypeOf(CONFIG.statusEffects.burning?.id).toEqualTypeOf<string | undefined>();
   });

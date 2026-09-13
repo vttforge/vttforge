@@ -145,34 +145,43 @@ export function createMockItem(options: MockDocumentOptions = {}): MockDocument 
  * ```
  */
 export function createMockConfig(overrides: Partial<FoundryConfig> = {}): FoundryConfig {
-  const doc = (): DocumentConfig => ({
-    documentClass: class MockDocument {},
+  const doc = (kind: string): DocumentConfig => ({
+    documentClass: class MockDocumentClass {
+      static async create(data: Record<string, unknown>): Promise<MockDocument> {
+        return createMockDocument(kind, data as MockDocumentOptions);
+      }
+      static async createDocuments(
+        data: readonly Record<string, unknown>[],
+      ): Promise<MockDocument[]> {
+        return data.map((entry) => createMockDocument(kind, entry as MockDocumentOptions));
+      }
+    },
     dataModels: {},
     sheetClasses: {},
   });
   const base: FoundryConfig = {
-    Actor: doc(),
-    Item: doc(),
+    Actor: doc('Actor'),
+    Item: doc('Item'),
     ActiveEffect: {
-      ...doc(),
+      ...doc('ActiveEffect'),
       changeTypes: {},
       phases: ['initial', 'final'],
       expiryEvents: {},
       expiryAction: 'update',
     },
-    Combat: { ...doc(), initiative: { formula: null } },
-    Combatant: doc(),
-    ChatMessage: { ...doc(), modes: {} },
-    JournalEntry: doc(),
-    JournalEntryPage: doc(),
-    Scene: doc(),
-    Token: doc(),
-    Macro: doc(),
-    Folder: doc(),
-    RollTable: doc(),
-    Playlist: doc(),
-    Cards: doc(),
-    User: doc(),
+    Combat: { ...doc('Combat'), initiative: { formula: null } },
+    Combatant: doc('Combatant'),
+    ChatMessage: { ...doc('ChatMessage'), modes: {} },
+    JournalEntry: doc('JournalEntry'),
+    JournalEntryPage: doc('JournalEntryPage'),
+    Scene: doc('Scene'),
+    Token: doc('Token'),
+    Macro: doc('Macro'),
+    Folder: doc('Folder'),
+    RollTable: doc('RollTable'),
+    Playlist: doc('Playlist'),
+    Cards: doc('Cards'),
+    User: doc('User'),
     Dice: {
       rolls: [],
       terms: {},

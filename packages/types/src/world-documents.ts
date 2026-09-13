@@ -8,7 +8,7 @@
  */
 
 import type { RollLike, ToMessageOptions } from './dice.js';
-import type { ActorLike, DocumentMembers, EmbeddedCollection } from './documents.js';
+import type { ActorLike, AnyActorLike, DocumentMembers, EmbeddedCollection } from './documents.js';
 import type { UserLike } from './globals.js';
 
 /** Who a chat message is attributed to. */
@@ -57,7 +57,7 @@ export interface ChatMessageConstructor {
   ): Promise<ChatMessageLike | undefined>;
   getSpeaker(options?: {
     scene?: SceneLike;
-    actor?: ActorLike;
+    actor?: AnyActorLike;
     token?: TokenDocumentLike;
     alias?: string;
   }): ChatSpeakerData;
@@ -137,7 +137,7 @@ export interface CombatLike<System = Record<string, unknown>> extends DocumentMe
   setInitiative(id: string, value: number): Promise<void>;
   setupTurns(): CombatantLike[];
   /** Both return arrays since v14. The singular pair is deprecated. */
-  getCombatantsByActor(actor: ActorLike | string): CombatantLike[];
+  getCombatantsByActor(actor: AnyActorLike | string): CombatantLike[];
   getCombatantsByToken(token: TokenDocumentLike | string): CombatantLike[];
 }
 

@@ -33,6 +33,7 @@ export type {
 export type {
   ActiveEffectLike,
   ActorLike,
+  AnyActorLike,
   DocumentFlags,
   DocumentMembers,
   EmbeddedCollection,
@@ -60,6 +61,7 @@ export type {
   CompendiumCollection,
   DiceConfig,
   DocumentConfig,
+  DocumentConstructor,
   FoundryCollection,
   FoundryConfig,
   FoundryConstants,
