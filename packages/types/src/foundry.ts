@@ -178,8 +178,14 @@ export interface FoundryApplications {
     | 'TokenConfig'
   >;
   readonly apps: FoundryClassNamespace<'DocumentSheetConfig' | 'FilePicker' | 'ImagePopout'>;
-  /** Form input builders: `createFormGroup`, `createSelectInput` and the rest. */
-  readonly fields: Readonly<Record<string, (...args: never[]) => HTMLElement>>;
+  /**
+   * Form input builders: `createFormGroup`, `createSelectInput` and the rest.
+   *
+   * `unknown[]`, not `never[]`. A `never[]` rest parameter accepts no argument
+   * at all, so every real call fails with "not assignable to parameter of type
+   * 'never'".
+   */
+  readonly fields: Readonly<Record<string, (...args: unknown[]) => HTMLElement>>;
   readonly handlebars: {
     /** Render one template with a context. */
     renderTemplate(path: string, context: unknown): Promise<string>;
@@ -231,14 +237,6 @@ export interface FoundryNamespace {
   };
   readonly documents: { readonly collections: FoundryClassNamespace<FoundryCollectionNames> };
   readonly canvas: FoundryClassNamespace;
-  /**
-   * `foundry.utils`, plus the two file helpers that live there and are not part
-   * of the documented utility surface.
-   */
-  readonly utils: FoundryUtils & {
-    /** Offer `data` to the reader as a download. */
-    saveDataToFile(data: string, type: string, filename: string): void;
-    /** Read a file the reader picked. */
-    readTextFromFile(file: File): Promise<string>;
-  };
+  /** `foundry.utils`, whole. */
+  readonly utils: FoundryUtils;
 }

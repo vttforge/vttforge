@@ -21,9 +21,8 @@ declare global {
 ```
 
 It follows the same rule as the rest of the package: every member is one a real
-consumer reached for, not one that exists in Foundry. `foundry.utils` is the
-documented utility surface plus `saveDataToFile` and `readTextFromFile`.
-`applications.api` names `ApplicationV2`, `DocumentSheetV2`, `DialogV2` and
+consumer reached for, not one that exists in Foundry. `foundry.utils` is
+`FoundryUtils`, which this package already described. `applications.api` names `ApplicationV2`, `DocumentSheetV2`, `DialogV2` and
 `HandlebarsApplicationMixin`, with the three dialog helpers typed apart because
 they return different things. The class namespaces spell out the names real
 consumers use and leave the rest reachable as `AnyClass | undefined`.
