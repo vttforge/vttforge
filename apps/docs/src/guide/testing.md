@@ -134,6 +134,12 @@ package added later needs `restart()`. And the container name, the volume and
 the world id all default, so two runs sharing a name fight over one container.
 Name them per project.
 
+Foundry runs one world at a time. `createWorld({ id, title })` declares
+another and `switchWorld(id)` launches it, which is how a package that moves
+data between worlds gets tested in one run. A switch restarts Foundry: a
+browser session on the old world is gone, and world-scoped state does not carry
+over, so a module enabled in the first world starts disabled in the second.
+
 This SDK's own end-to-end run uses this entry point and nothing private, so the
 API a consumer gets is the API the repo tests with.
 

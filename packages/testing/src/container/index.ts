@@ -95,11 +95,26 @@ export interface FoundryContainerOptions {
   readonly wait?: { readonly attempts?: number; readonly everyMs?: number };
 }
 
+/** A world to declare on the running Foundry. */
+export interface FoundryWorldOptions {
+  /** The world id. Becomes the directory name Foundry reads. */
+  readonly id: string;
+  /** Title on the setup screen. Default: the id. */
+  readonly title?: string;
+  /**
+   * Id of the system the world runs on. Default: the system this container
+   * booted with. The system has to be installed already.
+   */
+  readonly system?: string;
+}
+
 /** A running Foundry. Call `stop()` when the run is over. */
 export interface FoundryContainer {
   /** Absolute, because it is not always localhost. */
   readonly baseUrl: string;
-  /** The manifest of the system the world runs on. */
+  /** Id of the world Foundry is running. Changes with `switchWorld`. */
+  readonly worldId: string;
+  /** The manifest of the system that world runs on. Changes with `switchWorld`. */
   readonly system: FoundryManifest;
   /** Manifests of everything installed, by package id. */
   readonly packages: ReadonlyMap<string, FoundryManifest>;
@@ -112,6 +127,29 @@ export interface FoundryContainer {
    * into a running Foundry stays invisible until `restart()`.
    */
   install(source: FoundryPackageSource): FoundryManifest;
+  /**
+   * Declare another world, on a system that is already installed.
+   *
+   * Writing the manifest is all it takes for Foundry to know the world exists.
+   * Foundry runs one world at a time, so the new one is idle until
+   * `switchWorld` points at it.
+   *
+   * ```ts
+   * foundry.createWorld({ id: 'second', title: 'Second world' });
+   * await foundry.switchWorld('second');
+   * ```
+   */
+  createWorld(world: FoundryWorldOptions): void;
+  /**
+   * Launch a world that exists, and wait for it to be joinable.
+   *
+   * Restarts Foundry, so every browser session on the old world is gone and a
+   * test driving one has to join again. World-scoped state does not carry
+   * over: a module enabled in one world is disabled in the next.
+   *
+   * Switching to the world already running does nothing.
+   */
+  switchWorld(id: string): Promise<void>;
   /**
    * Stop and start, clearing the lock that a stop does not always clear.
    *
@@ -386,6 +424,13 @@ export async function startFoundryContainer(
     return manifest;
   };
 
+  /** Read a JSON file out of the volume. Throws when it is not there. */
+  const readJson = (pathInVolume: string): Record<string, unknown> => {
+    const local = join(mkdtempSync(join(tmpdir(), 'vttforge-foundry-')), 'file.json');
+    docker(['cp', `${name}:${pathInVolume}`, local]);
+    return JSON.parse(readFileSync(local, 'utf8')) as Record<string, unknown>;
+  };
+
   /** Read a config file out of the volume, hand it to `edit`, and put it back. */
   const editJson = (
     pathInVolume: string,
@@ -411,6 +456,47 @@ export async function startFoundryContainer(
     await waitFor('the world to launch', async () => (await stage()).endsWith('/join'));
   };
 
+  // Which world is running, and on which system. Both move with `switchWorld`,
+  // so neither can be a value captured once and handed out forever.
+  let liveWorldId = worldId;
+  let liveSystem = system;
+
+  const createWorld = (world: FoundryWorldOptions): void => {
+    const on = world.system === undefined ? system : manifests.get(world.system);
+    if (!on) {
+      throw new Error(
+        `No system \`${world.system}\` is installed, so a world cannot run on it. Pass it in \`packages\`, or call \`install\` first.`,
+      );
+    }
+    writeWorld({
+      container: name,
+      inVolume,
+      worldId: world.id,
+      title: world.title ?? world.id,
+      system: on,
+      coreVersion,
+    });
+  };
+
+  const switchWorld = async (id: string): Promise<void> => {
+    if (id === liveWorldId) return;
+    let manifest: Record<string, unknown>;
+    try {
+      manifest = readJson(`/data/Data/worlds/${id}/world.json`);
+    } catch {
+      throw new Error(
+        `No world \`${id}\` in the container. Call \`createWorld({ id: '${id}' })\` before switching to it.`,
+      );
+    }
+    editJson('/data/Config/options.json', (value) => ({ ...value, world: id }));
+    await restart();
+    liveWorldId = id;
+    const on = String(manifest.system ?? '');
+    // A world seeded by an earlier run can name a system this run never
+    // installed, so fall back to what the world manifest itself records.
+    liveSystem = manifests.get(on) ?? { id: on, version: String(manifest.systemVersion ?? '') };
+  };
+
   await waitFor(`Foundry to answer at ${baseUrl}`, answers);
 
   // 1. Answer the licence agreement. Until this is done every route redirects
@@ -428,14 +514,7 @@ export async function startFoundryContainer(
 
   // 2. Install what is under test, and declare a world on it.
   for (const source of sources) install(source);
-  writeWorld({
-    container: name,
-    inVolume,
-    worldId,
-    title: options.worldTitle ?? 'VTTForge test world',
-    system,
-    coreVersion,
-  });
+  createWorld({ id: worldId, title: options.worldTitle ?? 'VTTForge test world' });
   editJson('/data/Config/options.json', (value) => ({ ...value, world: worldId }));
 
   // 3. Restart into it. `restart` waits for the world, not just the server.
@@ -443,10 +522,17 @@ export async function startFoundryContainer(
 
   return {
     baseUrl,
-    system,
+    get worldId() {
+      return liveWorldId;
+    },
+    get system() {
+      return liveSystem;
+    },
     packages: manifests,
     network: reach.network,
     install,
+    createWorld,
+    switchWorld,
     restart,
     logs: (tail = 40) => foundryContainerLogs(name, tail),
     stop: remove,

@@ -63,6 +63,15 @@ export async function start() {
   return { baseUrl: running.baseUrl, system: running.system, network: running.network };
 }
 
+/**
+ * The live handle, for a check that drives the container itself rather than a
+ * browser. Only the process that called `start` has one.
+ */
+export function handle() {
+  if (!running) throw new Error('Foundry has not been started in this process.');
+  return running;
+}
+
 export function stop() {
   stopFoundryContainer(CONTAINER);
   running = undefined;
