@@ -41,7 +41,18 @@ export type {
   ItemLike,
   TypeDataModelMembers,
 } from './documents.js';
-export type { ApplicationV2Members, DocumentSheetV2Members, VttforgeClass } from './foundry.js';
+export type {
+  ApplicationV2Members,
+  DocumentSheetV2Members,
+  FoundryApplications,
+  FoundryApplicationsApi,
+  FoundryClassNamespace,
+  FoundryCollectionNames,
+  FoundryFieldNames,
+  FoundryNamespace,
+  TextEditorImplementation,
+  VttforgeClass,
+} from './foundry.js';
 export type {
   ActiveEffectConfig,
   ChatMessageConfig,
