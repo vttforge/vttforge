@@ -6,7 +6,9 @@
 
 **An SDK and CLI for building [Foundry VTT](https://foundryvtt.com) v14+ systems and modules.**
 
+[![CI](https://img.shields.io/github/actions/workflow/status/vttforge/vttforge/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/vttforge/vttforge/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@vttforge/core.svg?style=flat-square)](https://www.npmjs.com/package/@vttforge/core)
+[![npm downloads](https://img.shields.io/npm/dm/@vttforge/core?style=flat-square)](https://www.npmjs.com/package/@vttforge/core)
 [![License](https://img.shields.io/npm/l/@vttforge/core.svg?style=flat-square)](LICENSE)
 [![FoundryVTT](https://img.shields.io/badge/FoundryVTT-v14%2B-orange?style=flat-square)](https://foundryvtt.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
