@@ -8,7 +8,7 @@
  * consumer of this SDK reaches for is pinned below.
  */
 import { describe, expectTypeOf, it } from 'vitest';
-import type { AnyClass, FoundryNamespace, RollConstructor } from '../index.js';
+import type { AnyClass, FoundryNamespace, FoundryUtils, RollConstructor } from '../index.js';
 
 declare const foundry: FoundryNamespace;
 
@@ -60,6 +60,24 @@ describe('the paths real consumers reach for', () => {
     expectTypeOf(foundry.utils.randomID).returns.toEqualTypeOf<string>();
     expectTypeOf(foundry.utils.saveDataToFile).returns.toEqualTypeOf<void>();
     expectTypeOf(foundry.utils.readTextFromFile).returns.toEqualTypeOf<Promise<string>>();
+  });
+});
+
+describe('two ways to write a type that compiles and cannot be called', () => {
+  it('takes arguments on a form builder', () => {
+    // `never[]` as the rest parameter reads fine and accepts no argument at
+    // all: every real call fails with "not assignable to parameter of type
+    // 'never'".
+    expectTypeOf(foundry.applications.fields.createFormGroup).toBeCallableWith({
+      label: 'Name',
+    });
+  });
+
+  it('carries the file helpers once, from FoundryUtils', () => {
+    // They were declared a second time in an intersection, on the claim that
+    // `FoundryUtils` did not have them. It does, with the same signatures. Two
+    // copies agree until one of them changes, and then the stale one wins.
+    expectTypeOf<FoundryNamespace['utils']>().toEqualTypeOf<FoundryUtils>();
   });
 });
 
