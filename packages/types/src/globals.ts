@@ -370,9 +370,27 @@ export type QueryHandlers = Record<
   (data: unknown, context: { timeout?: number; user?: UserLike }) => unknown
 >;
 
+/**
+ * A document class as `CONFIG.<Document>.documentClass` holds it: constructible,
+ * and carrying the static writes a package calls.
+ */
+export type DocumentConstructor = AnyClass & {
+  create(data: Record<string, unknown>, operation?: Record<string, unknown>): Promise<unknown>;
+  createDocuments(
+    data: readonly Record<string, unknown>[],
+    operation?: Record<string, unknown>,
+  ): Promise<unknown[]>;
+};
+
 /** What every `CONFIG.<Document>` entry carries. */
-export interface DocumentConfig<TClass = AnyClass> {
-  documentClass: TClass;
+export interface DocumentConfig<TClass = DocumentConstructor> {
+  /**
+   * Reading gives the document statics, so `CONFIG.Item.documentClass.create()`
+   * compiles. Writing takes any class, because a system replacing the class
+   * rarely declares those statics on its own subclass.
+   */
+  get documentClass(): TClass;
+  set documentClass(value: AnyClass);
   dataModels: Record<string, AnyClass>;
   /** Icon per subtype, shown in the sidebar and on creation dialogs. */
   typeIcons?: Record<string, string>;

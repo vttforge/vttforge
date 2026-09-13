@@ -30,7 +30,12 @@ function typecheck(projectDir: string): string {
     tsconfig,
     JSON.stringify({
       extends: './tsconfig.json',
-      compilerOptions: { paths: { '@vttforge/core': [CORE_SOURCE] } },
+      compilerOptions: {
+        paths: {
+          '@vttforge/core': [CORE_SOURCE],
+          '@vttforge/types': [join(PACKAGES, 'types', 'src', 'index.ts')],
+        },
+      },
     }),
   );
   const result = spawnSync(process.execPath, [TSC, '--noEmit', '-p', tsconfig], {

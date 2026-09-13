@@ -32,6 +32,7 @@ export type {
   DiceTermResult,
   DieTermLike,
   DocumentConfig,
+  DocumentConstructor,
   DocumentHookName,
   DocumentTypeMap,
   FolderLikeDocument,

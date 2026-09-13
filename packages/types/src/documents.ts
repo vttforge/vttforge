@@ -128,6 +128,16 @@ export interface ActorLike<
   allApplicableEffects(): Iterable<ActiveEffectLike>;
 }
 
+/**
+ * Any actor, whatever its schema and item type.
+ *
+ * `ActorLike` defaults `System` to an open record, and a class instance is not
+ * an open record. So a parameter typed `ActorLike` rejects an actor whose
+ * `system` came from a data model class. Use this where a call only passes the
+ * actor along and never reads its schema.
+ */
+export type AnyActorLike = ActorLike<unknown, ItemLike<unknown>>;
+
 /** A Folder, as a drop hands one over. */
 export interface FolderLike {
   readonly id: string | null;
