@@ -24,6 +24,20 @@ export interface RecordedSetting {
   config: Record<string, unknown>;
 }
 
+/** A settings menu the code under test registered. */
+export interface RecordedMenu {
+  namespace: string;
+  key: string;
+  config: Record<string, unknown>;
+}
+
+/** A keybinding the code under test registered. */
+export interface RecordedKeybinding {
+  namespace: string;
+  action: string;
+  config: Record<string, unknown>;
+}
+
 /** One `DocumentSheetConfig.registerSheet`, as VTTForge makes it. */
 export interface RecordedSheet {
   /** The key Foundry persists: `<package id>.<sheet id>`. */
@@ -50,6 +64,10 @@ export interface MockFoundry {
   readonly hooks: ReadonlyArray<RecordedHook>;
   /** Every `game.settings.register`, in order. */
   readonly settings: ReadonlyArray<RecordedSetting>;
+  /** Every `game.settings.registerMenu`, in order. */
+  readonly menus: ReadonlyArray<RecordedMenu>;
+  /** Every `game.keybindings.register`, in order. */
+  readonly keybindings: ReadonlyArray<RecordedKeybinding>;
   /** Every notification raised, by severity. */
   readonly notifications: ReadonlyArray<{ level: 'info' | 'warn' | 'error'; message: string }>;
   /**
@@ -198,7 +216,17 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
 
   const hooks: RecordedHook[] = [];
   const settings: RecordedSetting[] = [];
+  const menus: RecordedMenu[] = [];
+  const keybindings: RecordedKeybinding[] = [];
   const values = new Map<string, unknown>();
+  // The registry Foundry keeps, keyed `namespace.key`. It is the only way to
+  // reach a setting belonging to a package the code under test did not write,
+  // so anything that enumerates, reports on or copies a world reads this.
+  const registry = new Map<string, Record<string, unknown>>();
+  const menuRegistry = new Map<string, Record<string, unknown>>();
+
+  /** The scopes Foundry accepts. Anything else falls back to `client`. */
+  const SCOPES = new Set(['world', 'client', 'user']);
   const notifications: { level: 'info' | 'warn' | 'error'; message: string }[] = [];
 
   const Hooks = {
@@ -311,15 +339,44 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
       format: (key: string, data: Record<string, unknown>) => `${key} ${JSON.stringify(data)}`,
     },
     settings: {
+      settings: registry,
+      menus: menuRegistry,
       register: (namespace: string, key: string, config: Record<string, unknown>) => {
         settings.push({ namespace, key, config });
         values.set(`${namespace}.${key}`, config.default);
+        // Registration normalises as it stores, so an entry read back always
+        // carries a real scope and a real default. A setting value may be
+        // `null` and may not be `undefined`.
+        registry.set(`${namespace}.${key}`, {
+          ...config,
+          id: `${namespace}.${key}`,
+          namespace,
+          key,
+          scope: SCOPES.has(String(config.scope)) ? config.scope : 'client',
+          default: config.default ?? null,
+        });
+      },
+      registerMenu: (namespace: string, key: string, config: Record<string, unknown>) => {
+        menus.push({ namespace, key, config });
+        menuRegistry.set(`${namespace}.${key}`, {
+          ...config,
+          id: `${namespace}.${key}`,
+          namespace,
+          key,
+        });
       },
       get: (namespace: string, key: string) => values.get(`${namespace}.${key}`),
       set: async (namespace: string, key: string, value: unknown) => {
         values.set(`${namespace}.${key}`, value);
         return value;
       },
+    },
+    keybindings: {
+      register: (namespace: string, action: string, config: Record<string, unknown>) => {
+        keybindings.push({ namespace, action, config });
+      },
+      get: () => [],
+      set: async () => {},
     },
     ...options.game,
   };
@@ -331,6 +388,8 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
   return {
     hooks,
     settings,
+    menus,
+    keybindings,
     notifications,
     sheets,
     enrichers,

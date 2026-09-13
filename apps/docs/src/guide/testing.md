@@ -19,7 +19,14 @@ foundry.restore();
 
 `withMockFoundry` installs `foundry`, `game`, `CONFIG`, `Hooks`, `ui` and
 `CONST`, and hands back a handle that records what your code registered:
-hooks, settings, notifications, sheets, enrichers.
+hooks, settings, settings menus, keybindings, notifications, sheets, enrichers.
+
+Registered settings also land in `game.settings.settings`, the registry Foundry
+keys by `namespace.key`. A module that enumerates or copies what a world holds
+reads that map, because it is the only way to reach a setting belonging to a
+package you did not write. Registration normalises as it stores, the way
+Foundry does: an unknown scope falls back to `client`, a missing default becomes
+`null`. Menus land in `game.settings.menus`.
 
 `restore()` puts every global back, including deleting the ones that never
 existed.

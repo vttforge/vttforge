@@ -79,6 +79,7 @@ export type {
   PackageHandle,
   QueryHandlers,
   RegisteredSetting,
+  RegisteredSettingMenu,
   SettingConfig,
   SettingMenuConfig,
   SettingScope,
