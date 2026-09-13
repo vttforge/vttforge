@@ -60,7 +60,7 @@ function recipients(): readonly string[] | undefined {
 }
 
 function queries(): Record<string, (data: unknown, context: unknown) => unknown> {
-  return (globalThis as { CONFIG: { queries: Record<string, never> } }).CONFIG.queries;
+  return (globalThis as unknown as { CONFIG: { queries: Record<string, never> } }).CONFIG.queries;
 }
 
 beforeEach(() => {
