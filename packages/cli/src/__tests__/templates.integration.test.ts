@@ -19,6 +19,7 @@ const require = createRequire(import.meta.url);
  * here rather than on the first `pnpm typecheck` a user runs.
  */
 const CORE_SOURCE = join(templatesRoot(), '..', '..', 'core', 'src', 'index.ts');
+const PACKAGES = join(templatesRoot(), '..', '..');
 
 /** `tsc.js` sits next to the package's main entry; the `bin` path is not exported. */
 const TSC = join(dirname(require.resolve('typescript')), 'tsc.js');
@@ -196,6 +197,70 @@ describe('scaffolded templates', () => {
         expect(lang.TYPES.Item['my-pack'].note).toBe('Note');
       });
     });
+  }
+
+  /**
+   * The globals a scaffolded project declares and the ones `@vttforge/testing`
+   * declares have to be the same types, not merely compatible ones.
+   *
+   * They were not. The helpers said `any`, the templates said `Game` and the
+   * rest, and `tsc` stopped with six TS2403 the moment a reader added the
+   * helpers to a scaffolded project. A structurally identical interface
+   * declared in both places fails the same way, which is why the template
+   * imports `FoundryNamespace` rather than writing one out.
+   *
+   * This checks the declaration alone rather than the whole scaffolded project.
+   * The project's own typecheck is the test above; what is under test here is
+   * whether two `declare global` blocks can coexist.
+   */
+  for (const variant of TS_VARIANTS) {
+    it(`${variant}: its globals coexist with the test helpers`, () => {
+      const dir = mkdtempSync(join(tmpdir(), 'vttforge-globals-'));
+      try {
+        writeFileSync(
+          join(dir, 'globals.d.ts'),
+          readFileSync(join(templatesRoot(), variant, 'scripts', 'foundry-globals.d.ts'), 'utf8'),
+        );
+        writeFileSync(
+          join(dir, 'uses-helpers.ts'),
+          "import { withMockFoundry } from '@vttforge/testing/vitest';\nexport const helper = withMockFoundry;\n",
+        );
+        writeFileSync(
+          join(dir, 'tsconfig.json'),
+          JSON.stringify({
+            compilerOptions: {
+              strict: true,
+              target: 'es2022',
+              module: 'esnext',
+              moduleResolution: 'bundler',
+              noEmit: true,
+              // Off on purpose. It hides an import that does not resolve, and
+              // an unresolved import inside the declaration is how this went
+              // unnoticed: every global silently became `any` and everything
+              // passed.
+              skipLibCheck: false,
+              paths: {
+                '@vttforge/types': [join(PACKAGES, 'types', 'src', 'index.ts')],
+                '@vttforge/testing/vitest': [
+                  join(PACKAGES, 'testing', 'src', 'vitest', 'index.ts'),
+                ],
+              },
+            },
+            include: ['*.ts'],
+          }),
+        );
+        const result = spawnSync(
+          process.execPath,
+          [TSC, '--noEmit', '-p', join(dir, 'tsconfig.json')],
+          {
+            encoding: 'utf8',
+          },
+        );
+        expect(`${result.stdout}${result.stderr}`.trim()).toBe('');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    }, 60_000);
   }
 
   for (const variant of TS_VARIANTS) {
