@@ -223,6 +223,13 @@ export interface PackageHandle {
   readonly socket: boolean;
   readonly compatibility: { minimum?: string; verified?: string; maximum?: string };
   readonly flags: Record<string, unknown>;
+  /**
+   * The package's home page, from the manifest. Optional there, so optional
+   * here. It is where an update checker looks for a release feed.
+   */
+  readonly url?: string;
+  /** Where the manifest is served from, for the installer. Optional. */
+  readonly manifest?: string;
   /** Whatever the package chose to expose. Yours to narrow. */
   api?: unknown;
 }

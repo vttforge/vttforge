@@ -28,27 +28,35 @@ export {
 } from './with-mock-foundry.js';
 
 /**
- * `var`, not `const`, and that is the whole point.
+ * `var`, not `const`, and the same types a consumer declares.
  *
  * A package that consumes this already declares these globals for its own
- * source, because the SDK does not ship a Foundry runtime type. Two
- * `declare global` blocks naming the same thing have to merge, and only
- * `var` merges: `const` is block-scoped, so a second one is a redeclaration
- * and `tsc` stops with TS2451. Consumers hit that the moment they add the
- * test helpers to a typechecked project, which is the moment they most want
- * them.
+ * source. Two `declare global` blocks naming one global have to agree on two
+ * things, and this block used to get only the first right.
+ *
+ * `var`, because `const` is block-scoped: a second one is a redeclaration and
+ * `tsc` stops with TS2451.
+ *
+ * The same type, because `tsc` stops with TS2403 otherwise, and `any` is not a
+ * free pass. This block said `any` and the scaffolded templates say `Game`,
+ * `FoundryConfig` and the rest, so adding these helpers to a scaffolded project
+ * produced six errors at once, at the moment a reader most wants them. Both
+ * sides now name the types `@vttforge/types` describes, so they merge.
  */
+import type {
+  FoundryConfig,
+  FoundryConstants,
+  FoundryNamespace,
+  Game,
+  HooksApi,
+  UiApi,
+} from '@vttforge/types';
+
 declare global {
-  // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  var foundry: any;
-  // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  var game: any;
-  // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  var CONFIG: any;
-  // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  var Hooks: any;
-  // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  var ui: any;
-  // biome-ignore lint/suspicious/noExplicitAny: the Foundry surface is typed elsewhere
-  var CONST: any;
+  var foundry: FoundryNamespace;
+  var game: Game;
+  var CONFIG: FoundryConfig;
+  var Hooks: HooksApi;
+  var ui: UiApi;
+  var CONST: FoundryConstants;
 }

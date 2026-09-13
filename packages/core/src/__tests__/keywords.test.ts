@@ -170,7 +170,7 @@ describe('syncKeywordJournal', () => {
       updateEmbeddedDocuments: vi.fn(),
       createEmbeddedDocuments: vi.fn(),
     };
-    (globalThis as { game: { journal: unknown[] } }).game.journal = [other, journal];
+    (globalThis as unknown as { game: { journal: unknown[] } }).game.journal = [other, journal];
 
     expect(await syncKeywordJournal('my-system', KEYWORDS)).toBe('unchanged');
     expect(updateEmbeddedDocuments).not.toHaveBeenCalled();
@@ -199,7 +199,7 @@ describe('syncKeywordJournal', () => {
       updateEmbeddedDocuments: vi.fn(),
       createEmbeddedDocuments,
     };
-    (globalThis as { game: { journal: unknown[] } }).game.journal = [journal];
+    (globalThis as unknown as { game: { journal: unknown[] } }).game.journal = [journal];
 
     expect(await syncKeywordJournal('my-system', KEYWORDS)).toBe('updated');
     expect(createEmbeddedDocuments).toHaveBeenCalledWith('JournalEntryPage', [
