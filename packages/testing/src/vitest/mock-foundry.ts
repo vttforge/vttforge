@@ -146,6 +146,7 @@ export function createMockItem(options: MockDocumentOptions = {}): MockDocument 
  */
 export function createMockConfig(overrides: Partial<FoundryConfig> = {}): FoundryConfig {
   const doc = (kind: string): DocumentConfig => ({
+    // biome-ignore lint/complexity/noStaticOnlyClass: documentClass has to be a constructor, and the document writes live on the class
     documentClass: class MockDocumentClass {
       static async create(data: Record<string, unknown>): Promise<MockDocument> {
         return createMockDocument(kind, data as MockDocumentOptions);
