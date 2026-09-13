@@ -10,7 +10,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { startFoundryContainer } from '../container/index.js';
+import { foundryContainerLogs, startFoundryContainer } from '../container/index.js';
 
 const CREDENTIALS = ['FOUNDRY_LICENSE_KEY', 'FOUNDRY_USERNAME', 'FOUNDRY_PASSWORD'] as const;
 const TOUCHED = [...CREDENTIALS, 'FOUNDRY_ACCEPT_LICENSE'] as const;
@@ -123,5 +123,14 @@ describe('the packages', () => {
         ],
       }),
     ).rejects.toThrow(/No module\.json in/);
+  });
+});
+
+describe('when docker refuses', () => {
+  it('hands back what docker said, not a stack through the helper', () => {
+    // No container by this name exists, so `docker logs` fails. The helper
+    // swallows that one on purpose, which is what this pins: a failure a
+    // caller cannot act on should not become an exception they have to catch.
+    expect(foundryContainerLogs('vttforge-no-such-container')).toBe('(no container logs)');
   });
 });

@@ -43,7 +43,7 @@
  * reached by name; otherwise the port is published and reached on localhost.
  */
 
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -140,8 +140,31 @@ const PACKAGE_DIR: Record<FoundryPackageKind, string> = {
   module: 'modules',
 };
 
+/**
+ * What Docker said when it refused, rather than a stack through this helper.
+ *
+ * `execFileSync` throws an Error whose message is the command line and whose
+ * `stderr` holds the reason. Printed raw that is forty lines of object dump
+ * with the reason buried in the middle, which is what a consumer saw.
+ */
+class DockerError extends Error {
+  constructor(args: readonly string[], status: number | null, stderr: string) {
+    const reason = stderr.trim() || `exit ${status ?? 'unknown'}`;
+    super(`docker ${args.join(' ')}\n\n${reason}`);
+    this.name = 'DockerError';
+  }
+}
+
+/** The port, when Docker refused because something else already holds it. */
+function portInUse(stderr: string): boolean {
+  return /port is already allocated|address already in use/i.test(stderr);
+}
+
 function docker(args: readonly string[], options: { stdio?: 'ignore' } = {}): string {
-  return execFileSync('docker', [...args], { encoding: 'utf8', ...options }) ?? '';
+  const run = spawnSync('docker', [...args], { encoding: 'utf8', ...options });
+  if (run.error) throw run.error;
+  if (run.status !== 0) throw new DockerError(args, run.status, run.stderr ?? '');
+  return run.stdout ?? '';
 }
 
 /**
@@ -291,31 +314,43 @@ export async function startFoundryContainer(
   const reach = reachability(name, port);
   const baseUrl = reach.url;
 
-  docker([
-    'run',
-    '-d',
-    '--name',
-    name,
-    // The image's entrypoint chowns the volume on first boot, then drops privileges.
-    '-u',
-    '0:0',
-    ...reach.args,
-    // Named, not valued: Docker reads each from this process's environment, so
-    // no credential is written into an argument list.
-    '-e',
-    'FOUNDRY_LICENSE_KEY',
-    '-e',
-    'FOUNDRY_USERNAME',
-    '-e',
-    'FOUNDRY_PASSWORD',
-    '-e',
-    `FOUNDRY_ADMIN_KEY=${options.adminKey ?? 'vttforge'}`,
-    '-e',
-    'CONTAINER_PRESERVE_CONFIG=true',
-    '-v',
-    `${volume}:/data`,
-    image,
-  ]);
+  try {
+    docker([
+      'run',
+      '-d',
+      '--name',
+      name,
+      // The image's entrypoint chowns the volume on first boot, then drops privileges.
+      '-u',
+      '0:0',
+      ...reach.args,
+      // Named, not valued: Docker reads each from this process's environment, so
+      // no credential is written into an argument list.
+      '-e',
+      'FOUNDRY_LICENSE_KEY',
+      '-e',
+      'FOUNDRY_USERNAME',
+      '-e',
+      'FOUNDRY_PASSWORD',
+      '-e',
+      `FOUNDRY_ADMIN_KEY=${options.adminKey ?? 'vttforge'}`,
+      '-e',
+      'CONTAINER_PRESERVE_CONFIG=true',
+      '-v',
+      `${volume}:/data`,
+      image,
+    ]);
+  } catch (error) {
+    // A bind failure is the one refusal with an obvious fix, so say it rather
+    // than handing back Docker's wording. Naming the container and the volume
+    // is not enough: every run defaults to the same published port.
+    if (error instanceof DockerError && portInUse(error.message)) {
+      throw new Error(
+        `Port ${port} is already taken, so Foundry could not start. A distinct \`name\` does not help, because every run publishes on the same default port. Pass \`port\` to give this one its own.\n\n${error.message}`,
+      );
+    }
+    throw error;
+  }
 
   const answers = async (): Promise<boolean> => {
     try {

@@ -118,9 +118,11 @@ Foundry scans its packages directory once, at startup. `install()` copies a
 package in; it becomes visible after `restart()`. That is why `packages` is an
 option on `startFoundryContainer`, which installs before the world launches.
 
-The container name, the volume and the world id all default, and two runs
-sharing a name collide. Name them when a project runs more than one, or runs
-alongside another project's.
+The container name, the volume, the port and the world id all default, and two
+runs sharing any of them collide. Name them when a project runs more than one,
+or runs alongside another project's. The port is the one that catches people:
+a distinct `name` does not help, because every run publishes on the same
+default. When the bind fails the error says so and names the option.
 
 `stopFoundryContainer(name)` and `foundryContainerLogs(name)` do the same as
 the handle's `stop()` and `logs()`, for a teardown script in its own process
