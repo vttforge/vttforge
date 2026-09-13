@@ -23,7 +23,7 @@ function registerExampleModule(): void {
   });
 
   Hooks.once('ready', () => {
-    if (game.user.isGM) ui.notifications.info('example ready');
+    if (game.user?.isGM) ui.notifications.info('example ready');
   });
 }
 
