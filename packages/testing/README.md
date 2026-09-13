@@ -124,6 +124,23 @@ or runs alongside another project's. The port is the one that catches people:
 a distinct `name` does not help, because every run publishes on the same
 default. When the bind fails the error says so and names the option.
 
+### A second world
+
+Foundry runs one world at a time. `createWorld` declares another, `switchWorld`
+launches it.
+
+```ts
+foundry.createWorld({ id: 'second', title: 'Second world' });
+await foundry.switchWorld('second');
+```
+
+A switch restarts Foundry, so a browser session on the old world is gone and a
+test driving one joins again. World-scoped state does not carry over either: a
+module enabled in the first world starts disabled in the second. That is what
+the second world is for when a package moves data between them.
+
+`foundry.worldId` and `foundry.system` follow the switch.
+
 `stopFoundryContainer(name)` and `foundryContainerLogs(name)` do the same as
 the handle's `stop()` and `logs()`, for a teardown script in its own process
 and for a boot that failed before there was a handle.

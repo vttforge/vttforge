@@ -62,6 +62,11 @@ jobs:
       - name: Run
         run: pnpm --filter @vttforge-e2e/foundry test:e2e
 
+      # After the suite, never beside it: both use one container name and one
+      # volume, and two containers on one volume wipe each other's data.
+      - name: World switching
+        run: pnpm --filter @vttforge-e2e/foundry test:worlds
+
       - name: Foundry logs on failure
         if: failure()
         run: docker logs --tail 200 vttforge-e2e || true
