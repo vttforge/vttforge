@@ -1,5 +1,13 @@
 # @vttforge/core
 
+## 0.20.2
+
+### Patch Changes
+
+- 762ce7c: Re-export `AnyActorLike` and `DocumentConstructor` from `@vttforge/types`.
+- Updated dependencies [762ce7c]
+  - @vttforge/types@0.7.0
+
 ## 0.20.1
 
 ### Patch Changes

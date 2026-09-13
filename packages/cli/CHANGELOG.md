@@ -1,5 +1,11 @@
 # @vttforge/cli
 
+## 0.18.3
+
+### Patch Changes
+
+- 762ce7c: The templates now pin `@vttforge/types` at `^0.7.0`. On a 0.x line a caret pins the minor, so the old `^0.6.0` would scaffold a project that cannot resolve the types this release publishes.
+
 ## 0.18.2
 
 ### Patch Changes
