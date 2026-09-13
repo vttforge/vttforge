@@ -4,50 +4,32 @@
  * An ambient declaration, so it lives in a `.d.ts` and `include` picks it up.
  * Nothing imports it.
  *
- * `var`, not `const`. Two `declare global` blocks naming the same global have
- * to merge, and only `var` merges. A `const` here collides with the identical
- * declaration `@vttforge/testing` ships, and `tsc` stops with TS2451.
+ * Two `declare global` blocks naming one global have to agree on two things,
+ * and both matter here because `@vttforge/testing` declares the same ones.
  *
- * `@vttforge/types` describes `game`, `ui`, `CONFIG`, `CONST`, the hook map
- * and the document classes. It does not yet describe the `foundry.*`
- * namespace, so `FoundryNamespace` below narrows the members this scaffold
- * reaches for. Add to it as you use more, rather than widening the whole
- * namespace to `any`: a typo in a namespaced path is the kind of mistake that
- * only shows up at runtime, in front of a player.
+ * `var`, not `const`. `const` is block-scoped, so a second one is a
+ * redeclaration and `tsc` stops with TS2451.
+ *
+ * The same type, from the same package. Two structurally identical interfaces
+ * are still two types, and `tsc` stops with TS2403 saying a variable "must be
+ * of type 'FoundryNamespace', but here has type 'FoundryNamespace'", which
+ * reads like a riddle. So `FoundryNamespace` is imported rather than written
+ * out here.
+ *
+ * Reaching a member it does not describe is a cast. Write the cast rather than
+ * widening the global to `any`: a typo in a namespaced path only shows up at
+ * runtime, in front of a player.
  */
 import type {
   ChatMessageConstructor,
   FoundryConfig,
   FoundryConstants,
+  FoundryNamespace,
   Game,
   HooksApi,
   RollConstructor,
   UiApi,
 } from '@vttforge/types';
-
-interface TextEditorImplementation {
-  enrichHTML(content: string, options?: Record<string, unknown>): Promise<string>;
-}
-
-interface FoundryNamespace {
-  readonly applications: {
-    readonly api: {
-      readonly DialogV2: {
-        confirm(options: Record<string, unknown>): Promise<boolean>;
-      };
-    };
-    readonly handlebars: {
-      renderTemplate(path: string, context: unknown): Promise<string>;
-    };
-    readonly ux: {
-      readonly TextEditor: { readonly implementation: TextEditorImplementation };
-    };
-  };
-  readonly utils: {
-    mergeObject<T>(original: T, other?: object, options?: object): T;
-    randomID(length?: number): string;
-  };
-}
 
 declare global {
   var game: Game;
