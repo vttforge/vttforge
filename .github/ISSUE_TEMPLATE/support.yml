@@ -12,7 +12,7 @@ body:
     id: version
     attributes:
       label: Package and version
-      description: The package you are using and its version, from `pnpm list @vttforge/core` (or the CLI, `npx vttforge --version`).
+      description: The package you are using and its version, from `bun pm ls | grep @vttforge/core` (or the CLI, `bunx vttforge --version`).
       placeholder: "@vttforge/core@0.15.1, @vttforge/cli@0.13.0"
     validations:
       required: true

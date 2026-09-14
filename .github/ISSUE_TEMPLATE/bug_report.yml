@@ -14,7 +14,7 @@ body:
     id: vttforge-version
     attributes:
       label: VTTForge version
-      description: Run `pnpm list @vttforge/core` (or the package you use) and paste the version here.
+      description: Run `bun pm ls | grep @vttforge/core` (or the package you use) and paste the version here.
       placeholder: "e.g. @vttforge/core@0.1.2"
     validations:
       required: true
