@@ -3,7 +3,7 @@
 Scaffold, dev loop, release build, lint and audit for Foundry VTT v14+ systems and modules.
 
 ```bash
-pnpm create vttforge my-system        # same as: npx @vttforge/cli init my-system
+bun create vttforge my-system        # same as: bunx @vttforge/cli init my-system
 ```
 
 ## Commands
@@ -18,7 +18,7 @@ vttforge audit [dir] [--json] [--strict]
 vttforge migrate [dir] [--write] [--strict] [--json] [--data-models] [--sheets]
 ```
 
-**`init`** writes a runnable system or module into `<name>/` from one of four templates (`system-ts`, `system-js`, `module-ts`, `module-js`). It asks for what you did not pass, or takes defaults with `--yes`, so it works in CI. It detects the package manager that invoked it (`pnpm`, `npm`, `bun`, `yarn`), installs, and runs `git init`.
+**`init`** writes a runnable system or module into `<name>/` from one of four templates (`system-ts`, `system-js`, `module-ts`, `module-js`). It asks for what you did not pass, or takes defaults with `--yes`, so it works in CI. It detects the package manager that invoked it (`bun`, `npm`, `pnpm`, `yarn`), installs, and runs `git init`.
 
 **`dev`** builds once, links `dist/` into Foundry's data directory under `Data/<systems|modules>/<id>/`, installs the `@vttforge/dev-module` companion, and watches. A saved template redraws the open sheet in place, and a saved stylesheet swaps the CSS. The first run asks where Foundry keeps its data and saves the answer to `.vttforge/config.json`; `--foundry-data` or `FOUNDRY_DATA_DIR` overrides it. If Foundry runs in a container it cannot follow the symlink, and the command prints the compose mount to use instead.
 

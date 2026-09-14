@@ -3,7 +3,7 @@
 The runtime half of [VTTForge](https://vttforge.dev): what a Foundry VTT v14+ system or module imports. A module reaches for everything below, plus the four rows marked for modules.
 
 ```bash
-pnpm add @vttforge/core
+bun add @vttforge/core
 ```
 
 ## What is in it

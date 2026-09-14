@@ -3,11 +3,11 @@
 Scaffold a new Foundry VTT system or module with VTTForge.
 
 ```bash
-pnpm create vttforge my-system
+bun create vttforge my-system
 # or
 npm create vttforge@latest my-system
 # or
-bun create vttforge my-system
+pnpm create vttforge my-system
 # or
 yarn create vttforge my-system
 ```
