@@ -236,8 +236,8 @@ models are already under `scripts/`. Point the manifest at the bundle:
 `"esmodules": ["main.mjs"]`.
 
 ```bash
-pnpm install
-pnpm build
+bun install
+bun run build
 ```
 
 `dist/` holds `main.mjs`, the manifest with the version synced from

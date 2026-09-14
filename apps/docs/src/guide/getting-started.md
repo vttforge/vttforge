@@ -3,9 +3,9 @@
 ## Scaffold
 
 ```bash
-pnpm create vttforge my-system --type system --lang ts
+bun create vttforge my-system --type system --lang ts
 cd my-system
-pnpm build
+bun run build
 ```
 
 Pass `--type module` for a module. Everything below is the same either way:

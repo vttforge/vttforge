@@ -1,7 +1,7 @@
 # CLI reference
 
 ```bash
-pnpm create vttforge my-system        # or: npx @vttforge/cli init my-system
+bun create vttforge my-system        # or: bunx @vttforge/cli init my-system
 ```
 
 ## `vttforge init`
@@ -15,7 +15,7 @@ vttforge init <name> [--type system|module] [--lang ts|js]
 
 Writes a runnable project into `<name>/` from one of four templates. It asks
 for anything not passed; `--yes` takes the defaults instead, so the command
-works in CI. It installs with the package manager that invoked it: `pnpm`, `npm`, `bun`
+works in CI. It installs with the package manager that invoked it: `bun`, `npm`, `pnpm`
 or `yarn`.
 
 | Template | What you get |
