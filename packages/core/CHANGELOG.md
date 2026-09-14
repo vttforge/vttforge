@@ -1,5 +1,17 @@
 # @vttforge/core
 
+## 0.20.7
+
+### Patch Changes
+
+- 39ca019: READMEs led with `pnpm add`/`pnpm create` even though VTTForge's own
+  toolchain has run on Bun since the pnpm-to-bun migration. Every install
+  and scaffold example now leads with `bun`; the CLI's multi-package-manager
+  detection stays real and unchanged, `pnpm`/`npm`/`yarn` still work and are
+  listed as alternatives where they were already shown that way.
+- Updated dependencies [39ca019]
+  - @vttforge/types@0.11.1
+
 ## 0.20.6
 
 ### Patch Changes

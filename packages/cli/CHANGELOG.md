@@ -1,5 +1,20 @@
 # @vttforge/cli
 
+## 0.18.8
+
+### Patch Changes
+
+- 5ba1131: The scaffold templates pinned `packageManager: pnpm@11.25.0` and
+  `pnpm/action-setup@v4`, both a major version behind current pnpm (12.4.1)
+  and the action VTTForge's own CI already runs (`@v6`). A project scaffolded
+  today inherited both stale pins. Bumped all four templates
+  (`system-ts`, `system-js`, `module-ts`, `module-js`) to match.
+- 39ca019: READMEs led with `pnpm add`/`pnpm create` even though VTTForge's own
+  toolchain has run on Bun since the pnpm-to-bun migration. Every install
+  and scaffold example now leads with `bun`; the CLI's multi-package-manager
+  detection stays real and unchanged, `pnpm`/`npm`/`yarn` still work and are
+  listed as alternatives where they were already shown that way.
+
 ## 0.18.7
 
 ### Patch Changes
