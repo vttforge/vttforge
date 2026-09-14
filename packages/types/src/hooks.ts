@@ -274,14 +274,23 @@ export interface ContextMenuEntry {
   icon?: string;
   classes?: string;
   group?: string;
-  /** Whether to draw the entry at all, for this target. */
+  /**
+   * Whether to draw the entry at all.
+   *
+   * Both this and `onClick` receive the row the menu was opened on, not a
+   * document. Resolve the document from the element's dataset.
+   */
   visible?: boolean | ((target: HTMLElement) => boolean);
-  onClick?: (target: HTMLElement) => void;
+  /** Two arguments, unlike the v13 `callback`, which took only the row. */
+  onClick?: (event: Event, target: HTMLElement) => unknown;
   /** @deprecated v14 calls this `label`. Removed in v16. */
   name?: string;
   /** @deprecated v14 calls this `visible`. Removed in v16. */
   condition?: boolean | ((target: HTMLElement) => boolean);
-  /** @deprecated v14 calls this `onClick`. Removed in v16. */
+  /**
+   * @deprecated v14 calls this `onClick`, and hands it the event first.
+   * Removed in v16.
+   */
   callback?: (target: HTMLElement) => void;
 }
 
