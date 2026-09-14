@@ -8,7 +8,7 @@
  * and renders nothing. The window opens empty and nothing names the mismatch.
  * Found by porting a PDF-backed actor sheet onto the SDK.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { BaseDocumentSheet } from '../base-document-sheet.js';
 import { VttfError } from '../errors/registry.js';
 

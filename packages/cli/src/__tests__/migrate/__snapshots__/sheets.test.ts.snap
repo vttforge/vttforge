@@ -1,6 +1,6 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`planSheetFile > matches the snapshot 1`] = `
+exports[`planSheetFile matches the snapshot 1`] = `
 "import { BaseActorSheet } from '@vttforge/core';
 import { helper } from '../utils.mjs';
 
@@ -122,7 +122,7 @@ export class HeroSheet extends BaseActorSheet() {
 "
 `;
 
-exports[`planSheetFile on a FormApplication > matches the snapshot 1`] = `
+exports[`planSheetFile on a FormApplication matches the snapshot 1`] = `
 "const { ApplicationV2, DialogV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export class HeroSettingsForm extends HandlebarsApplicationMixin(ApplicationV2) {

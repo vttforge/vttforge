@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'bun:test';
 import { bootstrap, buildEnv, DEFAULT_PORT, resolveServerUrl } from '../bootstrap.js';
 
 function foundryGlobals(over: Record<string, unknown> = {}) {

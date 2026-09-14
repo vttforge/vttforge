@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import {
   cpSync,
   existsSync,
@@ -12,7 +13,6 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin, PluginOption } from 'vite';
 import { build } from 'vite';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import pluginPackage from '../../package.json' with { type: 'json' };
 import vttforge, { VTTFORGE_VITE_PLUGIN_VERSION, type VttforgeOptions } from '../index';
 
@@ -113,13 +113,13 @@ describe('@vttforge/vite-plugin', () => {
 
   describe('option validation', () => {
     it('throws when id is missing', async () => {
-      await expect(() =>
+      await expect(
         invokeConfigHook(mainPlugin(vttforge({ id: '' } as VttforgeOptions)), workdir),
       ).rejects.toThrow(/`id` option is required/);
     });
 
     it('throws when kind is invalid', async () => {
-      await expect(() =>
+      await expect(
         invokeConfigHook(
           mainPlugin(
             vttforge({ id: 'fixture-system', kind: 'plugin' } as unknown as VttforgeOptions),

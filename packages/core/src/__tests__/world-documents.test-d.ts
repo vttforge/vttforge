@@ -4,7 +4,7 @@
  * Asserted on leaves: these types recurse (a combatant names its combat,
  * which names its combatants) and `expectTypeOf` walks structurally.
  */
-import { describe, expectTypeOf, it } from 'vitest';
+import { describe, expectTypeOf, it } from 'bun:test';
 import type { BaseActorSheet } from '../base-actor-sheet.js';
 import type {
   ApplicationHeaderControlsEntry,

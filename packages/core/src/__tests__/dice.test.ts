@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { countSuccesses, DEFAULT_DIE_LADDER, dicePool, stepDie } from '../dice.js';
 import { VttfError } from '../errors/registry.js';
 

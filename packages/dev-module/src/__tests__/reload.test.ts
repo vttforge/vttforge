@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'bun:test';
 import { type AppV2Like, applyHotReload, type FoundryEnv, type HotReloadData } from '../reload.js';
 
 const NOW = 1_700_000_000_000;
@@ -134,8 +134,8 @@ describe('templates', () => {
     const env = makeEnv({ ui: { windows: { 1: v1 } }, applicationInstances: () => [v2] });
 
     applyHotReload(payload({ extension: 'hbs', content: '<p></p>' }), env);
-    expect(v1.render).toHaveBeenCalledOnce();
-    expect(v2.render).toHaveBeenCalledOnce();
+    expect(v1.render).toHaveBeenCalledTimes(1);
+    expect(v2.render).toHaveBeenCalledTimes(1);
   });
 
   it('reports a broken template instead of throwing', () => {
@@ -251,7 +251,7 @@ describe('scoped re-render', () => {
     );
 
     expect(result).toEqual({ applied: true, kind: 'html', scoped: 1 });
-    expect(match.render).toHaveBeenCalledOnce();
+    expect(match.render).toHaveBeenCalledTimes(1);
     expect(other.render).not.toHaveBeenCalled();
   });
 
@@ -292,8 +292,8 @@ describe('scoped re-render', () => {
     );
 
     expect(result).toMatchObject({ scoped: 2 });
-    expect(a.render).toHaveBeenCalledOnce();
-    expect(b.render).toHaveBeenCalledOnce();
+    expect(a.render).toHaveBeenCalledTimes(1);
+    expect(b.render).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to redrawing everything when nothing claims the file', () => {
@@ -316,8 +316,8 @@ describe('scoped re-render', () => {
     );
 
     expect(result).toEqual({ applied: true, kind: 'html' });
-    expect(unrelated.render).toHaveBeenCalledOnce();
-    expect(v1.render).toHaveBeenCalledOnce();
+    expect(unrelated.render).toHaveBeenCalledTimes(1);
+    expect(v1.render).toHaveBeenCalledTimes(1);
   });
 
   it('matches an older application on its options.template', () => {

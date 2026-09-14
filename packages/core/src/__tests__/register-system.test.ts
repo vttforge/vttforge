@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { VttfError } from '../errors/registry.js';
 import {
   _resetRegisteredSystemsForTests,
@@ -124,8 +124,8 @@ describe('registerSystem', () => {
 
     const initCallback = hooks.once.mock.calls[0]?.[1] as () => void;
     initCallback();
-    expect(before).toHaveBeenCalledOnce();
-    expect(after).toHaveBeenCalledOnce();
+    expect(before).toHaveBeenCalledTimes(1);
+    expect(after).toHaveBeenCalledTimes(1);
     expect(calls).toEqual(['before', 'after']);
   });
 
@@ -178,7 +178,7 @@ describe('registerSystem', () => {
       | undefined;
     expect(readyCallback).toBeDefined();
     readyCallback?.();
-    expect(onReady).toHaveBeenCalledOnce();
+    expect(onReady).toHaveBeenCalledTimes(1);
   });
 
   it('supports async onReady (returned promise is fire-and-forget)', async () => {
@@ -195,7 +195,7 @@ describe('registerSystem', () => {
     readyCallback?.();
     await new Promise((r) => setTimeout(r, 0));
     expect(resolved).toBe(true);
-    expect(onReady).toHaveBeenCalledOnce();
+    expect(onReady).toHaveBeenCalledTimes(1);
   });
 
   it('registers sheets on init, keyed by the id rather than the class name', () => {
@@ -323,7 +323,7 @@ describe('registerSystem', () => {
     )?.[1] as () => void;
     expect(callback).toBeDefined();
     callback();
-    expect(onI18nInit).toHaveBeenCalledOnce();
+    expect(onI18nInit).toHaveBeenCalledTimes(1);
   });
 
   it('runs onSetup on the setup hook', () => {
@@ -333,7 +333,7 @@ describe('registerSystem', () => {
     const callback = hooks.once.mock.calls.find((call) => call[0] === 'setup')?.[1] as () => void;
     expect(callback).toBeDefined();
     callback();
-    expect(onSetup).toHaveBeenCalledOnce();
+    expect(onSetup).toHaveBeenCalledTimes(1);
   });
 
   it('supports async onSetup (returned promise is fire-and-forget)', async () => {

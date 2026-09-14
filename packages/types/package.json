@@ -36,7 +36,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "echo 'types has no tests yet'",
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only"
   },
@@ -45,8 +45,7 @@
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "unrun": "catalog:",
-    "vitest": "catalog:"
+    "unrun": "catalog:"
   },
   "publishConfig": {
     "access": "public",

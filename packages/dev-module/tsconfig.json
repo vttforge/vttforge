@@ -5,7 +5,7 @@
     "rootDir": "./src",
     // This package runs in the browser; Node types are here only for the
     // test that reads module.json off disk to check it against the build.
-    "types": ["node"]
+    "types": ["node", "bun"]
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]

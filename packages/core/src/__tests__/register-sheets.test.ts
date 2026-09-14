@@ -10,7 +10,7 @@
  * Observed on a real module across three builds. These pin the fix: the caller
  * names the sheet, and the name is what Foundry sees.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { VttfError } from '../errors/registry.js';
 import type { AnyClass } from '../foundry-globals.js';
 import { registerSheets } from '../register-sheets.js';

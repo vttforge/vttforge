@@ -6,10 +6,10 @@
  * grew a false positive against the official scaffolds.
  */
 
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runAudit } from '../../audit/index.js';
 import { type ScaffoldVars, scaffold, templatesRoot } from '../../scaffold.js';
 

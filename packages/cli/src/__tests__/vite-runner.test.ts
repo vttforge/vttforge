@@ -1,8 +1,8 @@
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resolveViteInvocation, ViteNotInstalledError } from '../vite-runner.js';
 
 describe('resolveViteInvocation', () => {
@@ -47,19 +47,30 @@ describe('resolveViteInvocation', () => {
     // is a concrete literal, not a re-derivation of the implementation's
     // own detection chain, and doesn't depend on which package manager
     // happens to be running the test suite itself (bun, pnpm, ...).
+    // bun:test has no vi.stubEnv equivalent, so save and restore by hand.
+    let originalUserAgent: string | undefined;
+
+    beforeEach(() => {
+      originalUserAgent = process.env.npm_config_user_agent;
+    });
+
     afterEach(() => {
-      vi.unstubAllEnvs();
+      if (originalUserAgent === undefined) {
+        delete process.env.npm_config_user_agent;
+      } else {
+        process.env.npm_config_user_agent = originalUserAgent;
+      }
     });
 
     it('falls back to the launching package manager (bun) when npm_config_user_agent says so', async () => {
       await writeFile(join(cwd, 'package.json'), '{}', 'utf8');
-      vi.stubEnv('npm_config_user_agent', 'bun/1.4.2 npm/? node/v26.3.0 darwin arm64');
+      process.env.npm_config_user_agent = 'bun/1.4.2 npm/? node/v26.3.0 darwin arm64';
       expect(resolveViteInvocation(cwd)).toEqual(['bun', ['x', 'vite']]);
     });
 
     it('defaults to pnpm when npm_config_user_agent is unset', async () => {
       await writeFile(join(cwd, 'package.json'), '{}', 'utf8');
-      vi.stubEnv('npm_config_user_agent', undefined);
+      delete process.env.npm_config_user_agent;
       expect(resolveViteInvocation(cwd)).toEqual(['pnpm', ['exec', 'vite']]);
     });
   });
@@ -71,7 +82,7 @@ describe('resolveViteInvocation', () => {
   it('surfaces an actionable message when there is no package.json', () => {
     try {
       resolveViteInvocation(cwd);
-      expect.fail('expected resolveViteInvocation to throw');
+      throw new Error('expected resolveViteInvocation to throw');
     } catch (err) {
       expect(err).toBeInstanceOf(ViteNotInstalledError);
       expect((err as Error).message).toContain('package.json');

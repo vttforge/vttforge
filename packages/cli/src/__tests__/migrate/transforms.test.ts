@@ -1,7 +1,7 @@
 /**
  * Each rewrite `vttforge migrate` makes, and each thing it refuses to decide.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import {
   activeEffectModes,
   contextMenuKeys,

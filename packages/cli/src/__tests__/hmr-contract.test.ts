@@ -4,8 +4,9 @@
  * dials a port nobody holds, the retry loop swallows it, and the developer
  * sees a dev server that simply never reloads anything.
  */
+
+import { describe, expect, it } from 'bun:test';
 import { DEFAULT_PORT } from '@vttforge/dev-module';
-import { describe, expect, it } from 'vitest';
 import { DEFAULT_HMR_PORT } from '../commands/dev.js';
 
 describe('hot reload contract', () => {

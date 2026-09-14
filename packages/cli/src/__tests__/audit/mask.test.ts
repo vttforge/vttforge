@@ -2,7 +2,7 @@
  * The comment mask keeps every offset, so a rule that matches on the masked
  * text still reports the right line.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { MASK, maskComments } from '../../audit/mask.js';
 
 const maskedAll = (s: string) =>

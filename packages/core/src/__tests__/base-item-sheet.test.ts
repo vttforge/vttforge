@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { VTTFORGE_SHEET_CLASS } from '../base-actor-sheet.js';
 import { BaseItemSheet } from '../base-item-sheet.js';
 import { VttfError } from '../errors/registry.js';

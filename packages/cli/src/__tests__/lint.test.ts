@@ -4,11 +4,12 @@
  * Biome of its own, so the shipped config and the resolved binary are the
  * whole feature, and a mock would prove nothing.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { biomeArgs, runLintCommand } from '../commands/lint.js';
 
 const UNFORMATTED = 'export const  hello = ( name ) => { return name }\n';

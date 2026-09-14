@@ -40,7 +40,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "bun test --pass-with-no-tests --path-ignore-patterns='templates/**'",
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only"
   },
@@ -55,13 +55,13 @@
     "@arethetypeswrong/cli": "catalog:",
     "@babel/types": "catalog:",
     "@types/archiver": "catalog:",
+    "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "@vttforge/dev-module": "workspace:*",
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "unrun": "catalog:",
-    "vitest": "catalog:"
+    "unrun": "catalog:"
   },
   "engines": {
     "node": ">=26.0.0"

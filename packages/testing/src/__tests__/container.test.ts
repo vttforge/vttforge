@@ -6,10 +6,11 @@
  * call: they are the whole reason a consumer gets a readable message instead of
  * a stack trace out of `execFileSync`.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { foundryContainerLogs, startFoundryContainer } from '../container/index.js';
 
 const CREDENTIALS = ['FOUNDRY_LICENSE_KEY', 'FOUNDRY_USERNAME', 'FOUNDRY_PASSWORD'] as const;

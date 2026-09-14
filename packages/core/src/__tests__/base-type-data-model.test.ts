@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'bun:test';
 import { BaseTypeDataModel } from '../base-type-data-model.js';
 import type { NumberFieldInstance, SchemaFieldInstance } from '../data/fields.js';
 import { VttfError } from '../errors/registry.js';
@@ -73,7 +73,7 @@ describe('BaseTypeDataModel(defineSchema) — runtime', () => {
 
   it('implements defineSchema for the subclass, so the schema is written once', () => {
     class CharacterData extends BaseTypeDataModel(define) {}
-    expect(CharacterData.defineSchema()).toEqual({ level: 1 });
+    expect(CharacterData.defineSchema() as unknown).toEqual({ level: 1 });
   });
 
   it('lets a subclass override defineSchema, like any other static', () => {
@@ -82,7 +82,7 @@ describe('BaseTypeDataModel(defineSchema) — runtime', () => {
         return { level: 99 } as unknown as Record<string, never>;
       }
     }
-    expect(CharacterData.defineSchema()).toEqual({ level: 99 });
+    expect(CharacterData.defineSchema() as unknown).toEqual({ level: 99 });
   });
 
   it('leaves defineSchema alone in the no-argument form', () => {

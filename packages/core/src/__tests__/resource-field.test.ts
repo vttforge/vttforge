@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import type { InferSchema } from '../data/infer-schema.js';
 import { resourceField, schemaHasResource } from '../data/resource-field.js';
 import { VttfError } from '../errors/registry.js';

@@ -2,26 +2,31 @@
  * `--write` computes every rewrite before the first write, so a run that
  * throws on one file leaves the tree as it was.
  */
+
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as actual from 'node:fs/promises';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const calls: string[] = [];
-vi.mock('node:fs/promises', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs/promises')>();
-  return {
-    ...actual,
-    readFile: (async (...args: Parameters<typeof actual.readFile>) => {
-      calls.push('read');
-      return actual.readFile(...args);
-    }) as typeof actual.readFile,
-    writeFile: (async (...args: Parameters<typeof actual.writeFile>) => {
-      calls.push('write');
-      return actual.writeFile(...args);
-    }) as typeof actual.writeFile,
-  };
-});
+// Captured as plain values before mock.module runs: mock.module rebinds
+// every live import of this path, including `actual`'s own properties, so
+// referencing `actual.readFile` inside the factory below would call the
+// wrapper from inside itself. These const bindings hold the real functions.
+const realReadFile = actual.readFile;
+const realWriteFile = actual.writeFile;
+mock.module('node:fs/promises', () => ({
+  ...actual,
+  readFile: (async (...args: Parameters<typeof actual.readFile>) => {
+    calls.push('read');
+    return realReadFile(...args);
+  }) as typeof actual.readFile,
+  writeFile: (async (...args: Parameters<typeof actual.writeFile>) => {
+    calls.push('write');
+    return realWriteFile(...args);
+  }) as typeof actual.writeFile,
+}));
 
 const { runMigrate } = await import('../../migrate/index.js');
 

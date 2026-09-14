@@ -8,7 +8,7 @@
  * "the class is not renderable", pointing at Foundry rather than at the line
  * that was wrong.
  */
-import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'bun:test';
 import { BaseApplication } from '../base-application.js';
 import { VttfError } from '../errors/registry.js';
 

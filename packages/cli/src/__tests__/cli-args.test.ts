@@ -8,15 +8,16 @@
  * scaffolder install dependencies for someone who asked it not to, and
  * nothing downstream would complain.
  */
+
+import { describe, expect, it } from 'bun:test';
 import type { ArgsDef } from 'citty';
 import { parseArgs } from 'citty';
-import { describe, expect, it } from 'vitest';
 import { audit, dev, init, lint, main, migrate } from '../cli.js';
 
 // `CommandDef.args` is declared as resolvable — it may be a function citty
 // awaits. Ours are always plain objects, so the cast is safe here and keeps
 // each case readable.
-const parse = (cmd: { args?: unknown }, argv: string[]) =>
+const parse = (cmd: { args?: unknown }, argv: string[]): Record<string, unknown> =>
   parseArgs(argv, (cmd.args ?? {}) as ArgsDef);
 
 describe('init args', () => {
@@ -144,7 +145,7 @@ describe('lint args', () => {
   });
 
   it('takes a project path', () => {
-    expect(parse(lint, ['packages/my-system'])._[0]).toBe('packages/my-system');
+    expect((parse(lint, ['packages/my-system'])._ as string[])[0]).toBe('packages/my-system');
   });
 
   it('is in the command tree', () => {

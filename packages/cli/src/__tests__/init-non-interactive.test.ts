@@ -9,10 +9,11 @@
  * These cases drive `runInit` with `stdin.isTTY` off, which is what any
  * non-interactive caller looks like.
  */
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInit, ScaffoldError } from '../commands/init.js';
 
 let cwd: string;

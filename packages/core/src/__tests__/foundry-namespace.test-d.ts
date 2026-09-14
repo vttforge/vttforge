@@ -7,7 +7,7 @@
  * mistake that survives review and fails in front of a player, so every path a
  * consumer of this SDK reaches for is pinned below.
  */
-import { describe, expectTypeOf, it } from 'vitest';
+import { describe, expectTypeOf, it } from 'bun:test';
 import type { AnyClass, FoundryNamespace, FoundryUtils, RollConstructor } from '../index.js';
 
 declare const foundry: FoundryNamespace;

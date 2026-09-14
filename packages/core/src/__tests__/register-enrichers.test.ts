@@ -8,7 +8,7 @@
  * match wins), and matches with `matchAll`, which throws on a non-global
  * regex — outside the handler it wraps enrichers in.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { VttfError } from '../errors/registry.js';
 import { type EnricherRegistration, registerEnrichers } from '../register-enrichers.js';
 

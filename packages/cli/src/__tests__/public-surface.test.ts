@@ -7,10 +7,11 @@
  * this test is for: add an export and it fails until you decide which of the
  * three groups it belongs to.
  */
+
+import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
 
 const INDEX = join(dirname(fileURLToPath(import.meta.url)), '..', 'index.ts');
 

@@ -7,7 +7,7 @@
  * The trap was met for real building a module on the SDK: a window with the
  * mixin and no `PARTS` opens, draws nothing, and reports nothing.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { BaseHandlebarsApplication } from '../base-handlebars-application.js';
 import { VttfError } from '../errors/registry.js';
 

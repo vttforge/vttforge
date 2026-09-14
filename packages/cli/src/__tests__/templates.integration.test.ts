@@ -3,12 +3,13 @@
  * the basic shape of the generated project. Catches template drift early
  * (missing files, broken JSON syntax, unresolved placeholders, etc.).
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { type ScaffoldVars, scaffold, templatesRoot } from '../scaffold.js';
 
 const require = createRequire(import.meta.url);

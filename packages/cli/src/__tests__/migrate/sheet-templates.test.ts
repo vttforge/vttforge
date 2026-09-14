@@ -2,7 +2,7 @@
  * The template half of `migrate --sheets`: attributes appear on opening tags
  * and nothing else in the file moves.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { editTemplate, readTabIds } from '../../migrate/sheet-templates.js';
 
 const TPL = `<form class="hero" autocomplete="off">

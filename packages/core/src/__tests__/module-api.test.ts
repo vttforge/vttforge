@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { isModuleActive, moduleApi, requireModuleApi } from '../module-api.js';
 import { _resetRegisteredModulesForTests, registerModule } from '../register-module.js';
 

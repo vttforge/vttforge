@@ -3,9 +3,10 @@
  * forgotten. `vttforge init app --typ module` scaffolded a system and exited
  * 0, and a README naming a flag that no longer exists did the same.
  */
+
+import { describe, expect, it } from 'bun:test';
 import type { ArgsDef } from 'citty';
 import { parseArgs } from 'citty';
-import { describe, expect, it } from 'vitest';
 import { audit, build, dev, init, lint, migrate } from '../cli.js';
 import { unknownArgs } from '../strict-args.js';
 

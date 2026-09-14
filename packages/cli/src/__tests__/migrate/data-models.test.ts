@@ -2,10 +2,11 @@
  * template.json → data models: the shape a v13 system still declares there,
  * turned into classes a reviewer can read.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runMigrateCommand } from '../../commands/migrate.js';
 import { planDataModels } from '../../migrate/data-models.js';
 
