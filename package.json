@@ -4,10 +4,9 @@
   "private": true,
   "description": "A modern SDK and CLI for building FoundryVTT v14+ systems and modules.",
   "type": "module",
-  "packageManager": "pnpm@11.25.0",
+  "packageManager": "bun@1.4.2",
   "engines": {
-    "node": ">=26.0.0",
-    "pnpm": ">=11.0.0"
+    "bun": ">=1.4.2"
   },
   "scripts": {
     "build": "turbo run build",
@@ -19,7 +18,7 @@
     "format": "biome check --write . --colors=off",
     "knip": "knip",
     "changeset": "changeset",
-    "changeset:version": "changeset version && pnpm install --lockfile-only"
+    "changeset:version": "changeset version && bun install --lockfile-only"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -31,5 +30,46 @@
     "syncpack": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "examples/*",
+      "apps/*"
+    ],
+    "catalog": {
+      "@playwright/test": "^1.62.1",
+      "vitepress": "^1.6.4",
+      "@arethetypeswrong/cli": "^0.18.5",
+      "@biomejs/biome": "^2.5.13",
+      "@changesets/cli": "^3.0.1",
+      "@changesets/get-release-plan": "^5.0.1",
+      "@clack/prompts": "^1.7.0",
+      "@types/archiver": "^8.0.0",
+      "@types/node": "^26.4.0",
+      "archiver": "^8.0.0",
+      "citty": "^0.2.2",
+      "happy-dom": "^20.12.0",
+      "knip": "^6.34.0",
+      "lefthook": "^2.1.12",
+      "publint": "^0.3.24",
+      "semver": "^7.8.5",
+      "style-dictionary": "^5.5.2",
+      "syncpack": "^15.3.3",
+      "tsdown": "^0.23.0",
+      "unrun": "^0.3.1",
+      "turbo": "^2.10.12",
+      "typescript": "^7.0.2",
+      "vite": "^8.2.2",
+      "vitest": "^5.0.0",
+      "@rolldown/plugin-babel": "^0.2.4",
+      "@babel/plugin-proposal-decorators": "^8.0.2",
+      "@babel/core": "^8.0.1",
+      "@babel/parser": "^8.0.4",
+      "@babel/types": "^8.0.4"
+    }
+  },
+  "overrides": {
+    "vite@5": "^6.4.3"
   }
 }
