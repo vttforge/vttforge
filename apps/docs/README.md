@@ -5,8 +5,8 @@ The documentation site: VitePress, with its local search.
 <https://vttforge.dev/docs/> with the landing page.
 
 ```bash
-pnpm --filter @vttforge/docs dev     # local, with hot reload
-pnpm --filter @vttforge/docs build   # static HTML
+bun --filter @vttforge/docs dev     # local, with hot reload
+bun --filter @vttforge/docs build   # static HTML
 ```
 
 ## Layout

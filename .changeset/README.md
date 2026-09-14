@@ -5,7 +5,7 @@ This folder contains [changesets](https://github.com/changesets/changesets) — 
 Add one with:
 
 ```bash
-pnpm changeset
+bun run changeset
 ```
 
 The walkthrough asks which packages changed and at what semver level (patch / minor / major). Changesets are consumed by the release workflow (`.github/workflows/changesets.yml`) which opens a Version PR that bumps versions and updates each package's `CHANGELOG.md`. Merging that PR runs `publish.yml`, which publishes the new versions to npm and tags them.

@@ -1,0 +1,4 @@
+[install]
+# Mirrors pnpm's default (1440 min = 24h): no version installs until it
+# has been published for 24h.
+minimumReleaseAge = 86400

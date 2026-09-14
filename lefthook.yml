@@ -5,9 +5,9 @@ pre-commit:
       run: node scripts/check-no-absolute-paths.mjs
     biome:
       glob: '*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc,css,md,yml,yaml}'
-      run: pnpm exec biome check --staged --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      run: bun x biome check --staged --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
 
 pre-push:
   commands:
     typecheck:
-      run: pnpm typecheck
+      run: bun run typecheck

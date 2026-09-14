@@ -33,11 +33,11 @@ Closes #
 
 ## Checklist
 
-- [ ] Changeset added (`pnpm changeset`) for every user-visible package change
+- [ ] Changeset added (`bun run changeset`) for every user-visible package change
 - [ ] Tests added or updated for behaviour changes
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm lint` passes (Biome + syncpack)
+- [ ] `bun run typecheck` passes
+- [ ] `bun run test` passes
+- [ ] `bun run lint` passes (Biome + syncpack)
 - [ ] If a public API changed: CHANGELOG entry phrased for end users
 - [ ] If a new error path was added: a `VTTF-NNNN` registry entry was added in `packages/core/src/errors/registry.ts` and the docs page generates correctly
 

@@ -12,10 +12,7 @@ Code contributions are welcome too.
 ## Prerequisites
 
 - Node.js 26 or higher.
-- Corepack enabled. It picks the pinned `pnpm` from `package.json#packageManager`:
-  ```bash
-  corepack enable
-  ```
+- Bun 1.4.2+ installed (`curl -fsSL https://bun.sh/install | bash`, or `brew install bun`). Corepack is not involved: Bun is not corepack-managed.
 - A Foundry VTT v14 installation, or Docker plus a foundryvtt.com license, for anything that touches sheets or the dev loop.
 
 ## Setup
@@ -23,22 +20,25 @@ Code contributions are welcome too.
 ```bash
 git clone https://github.com/vttforge/vttforge.git
 cd vttforge
-corepack enable
-pnpm install
+bun install
 ```
 
 ## Commands
 
 ```bash
-pnpm build          # tsdown build of every package
-pnpm test           # Vitest across the monorepo
-pnpm typecheck      # tsc --noEmit across all packages
-pnpm lint           # Biome, syncpack, and the template pin check
-pnpm format         # Biome, writing fixes
-pnpm knip           # unused exports and dependencies
+bun run build       # tsdown build of every package
+bun run test        # Vitest across the monorepo
+bun run typecheck   # tsc --noEmit across all packages
+bun run lint        # Biome, syncpack, and the template pin check
+bun run format      # Biome, writing fixes
+bun run knip        # unused exports and dependencies
 ```
 
-`pnpm lint` may print a Biome out-of-memory warning under some terminals. It comes from the parent shell's TTY setup: run it as `bash -c "pnpm lint"` and it goes away.
+`bun run lint` may print a Biome out-of-memory warning under some terminals. It comes from the parent shell's TTY setup: run it as `bash -c "bun run lint"` and it goes away.
+
+## Dependencies
+
+`package.json` overrides `vite@5` to `^6.4.3`. VitePress 1.6.4 depends on vite `^5.4.14`, and vite 5 ended at 5.4.21 with four open advisories (server.fs.deny bypass, optimized-deps path traversal, an esbuild dev-server issue, and an NTLM hash disclosure via launch-editor), none backported. All four are fixed in 6.4.3, and VitePress runs fine on it. Revisit when VitePress 2 moves off vite 5 on its own.
 
 ## Running Foundry locally
 
@@ -50,8 +50,8 @@ For sheet or runtime work you want a real Foundry v14 with the example system lo
    ```
 2. Build the examples once, so `dist/` exists for the mounts:
    ```bash
-   pnpm -F @vttforge-examples/simple-system build
-   pnpm -F @vttforge-examples/simple-module build
+   bun --filter @vttforge-examples/simple-system build
+   bun --filter @vttforge-examples/simple-module build
    ```
    Use `dev` instead of `build` to keep rebuilding on every edit.
 3. Start Foundry:
@@ -73,8 +73,8 @@ sheet is filed under the id it was given, that a sheet actually draws, and that
 the module's sub-type is namespaced.
 
 ```bash
-pnpm build
-pnpm --filter @vttforge-e2e/foundry test:e2e
+bun run build
+bun --filter @vttforge-e2e/foundry test:e2e
 ```
 
 It needs the same three credentials as the compose file above and stops with a
@@ -90,7 +90,7 @@ to those workflows.
 If your PR changes anything user-visible in a `@vttforge/*` package, add a changeset:
 
 ```bash
-pnpm changeset
+bun run changeset
 ```
 
 It asks which packages changed and at what level. The bot reminds you on the PR if you forget.
@@ -110,7 +110,7 @@ Scopes are package names (`core`, `cli`, `vite-plugin`, `styles`, `testing`, `ty
 
 - [ ] A changeset, if a package changed
 - [ ] Tests for behaviour changes
-- [ ] `pnpm typecheck`, `pnpm test` and `pnpm lint` pass
+- [ ] `bun run typecheck`, `bun run test` and `bun run lint` pass
 - [ ] Docs updated if the change is user-visible
 
 The PR template carries the same list.

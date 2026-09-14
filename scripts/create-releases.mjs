@@ -11,9 +11,10 @@
  * generated file list would not.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listWorkspacePackages } from './lib/workspace-packages.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -23,19 +24,9 @@ function sh(cmd, args) {
 
 /** Every workspace package directory that publishes. */
 function publishablePackages() {
-  const dirs = [];
-  for (const group of ['packages', 'apps']) {
-    const root = join(REPO_ROOT, group);
-    if (!existsSync(root)) continue;
-    for (const name of readdirSync(root)) {
-      const manifest = join(root, name, 'package.json');
-      if (!existsSync(manifest)) continue;
-      const pkg = JSON.parse(readFileSync(manifest, 'utf8'));
-      if (pkg.private === true || !pkg.name || !pkg.version) continue;
-      dirs.push({ dir: join(root, name), name: pkg.name, version: pkg.version });
-    }
-  }
-  return dirs;
+  return listWorkspacePackages(REPO_ROOT, ['packages', 'apps'])
+    .filter(({ pkg }) => pkg.private !== true && pkg.name && pkg.version)
+    .map(({ dir, pkg }) => ({ dir, name: pkg.name, version: pkg.version }));
 }
 
 /**

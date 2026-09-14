@@ -6,8 +6,8 @@ asserts what only a running Foundry can answer.
 
 ```bash
 cp .env.example .env      # at the repo root: your Foundry licence and login
-pnpm build
-pnpm test:e2e
+bun run build
+bun run test:e2e
 ```
 
 ## What it covers

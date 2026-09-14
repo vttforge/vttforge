@@ -35,24 +35,16 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version: '26'
-
-      - name: Activate pnpm via Corepack
-        run: |
-          npm install -g corepack@latest
-          corepack enable
-          corepack install -g pnpm@11.25.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       # Covers both sites as well as the packages. It has to: the error pages
       # under apps/docs/errors are written by the core build from the
       # VTTF-NNNN registry, so the docs cannot be built on their own.
       - name: Build
-        run: pnpm build
+        run: bun run build
 
       - name: Assemble
         run: node scripts/assemble-site.mjs
