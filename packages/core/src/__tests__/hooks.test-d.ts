@@ -125,6 +125,22 @@ describe('the placeable and layer families', () => {
   });
 });
 
+describe('a context menu entry', () => {
+  it('takes the v14 names, and still takes the old ones', () => {
+    Hooks.on('getActorContextOptions', (_app, entries) => {
+      // v14: `label`, `visible`, `onClick`. These are the ones to write.
+      entries.push({
+        label: 'MY_MODULE.Menu.open',
+        icon: 'fa-solid fa-file',
+        visible: () => true,
+        onClick: () => undefined,
+      });
+      // v13: still accepted, warns at runtime, removed in v16.
+      entries.push({ name: 'Old', condition: true, callback: () => undefined });
+    });
+  });
+});
+
 describe('the open families', () => {
   it("gives a package's own render hook the application shape", () => {
     Hooks.on('renderMyCustomSheet', (app, element) => {

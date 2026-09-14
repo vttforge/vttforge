@@ -54,6 +54,23 @@ export interface DocumentMembers<System = Record<string, unknown>> {
   /** Whether the current user owns this document. */
   readonly isOwner: boolean;
 
+  /**
+   * Whether a user has at least this level of access to the document.
+   *
+   * `isOwner` answers the same question for the current user and the highest
+   * level. This answers it for any user and any level, which is what a package
+   * asks before it shows someone another person's document.
+   *
+   * ```ts
+   * if (item.testUserPermission(game.user, 'LIMITED')) render(link);
+   * ```
+   */
+  testUserPermission(
+    user: unknown,
+    permission: 'NONE' | 'LIMITED' | 'OBSERVER' | 'OWNER' | number,
+    options?: { exact?: boolean },
+  ): boolean;
+
   getFlag<T = unknown>(scope: string, key: string): T | undefined;
   setFlag(scope: string, key: string, value: unknown): Promise<this>;
   unsetFlag(scope: string, key: string): Promise<this>;

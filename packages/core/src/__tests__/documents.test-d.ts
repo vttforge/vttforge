@@ -63,3 +63,15 @@ describe('the type data model', () => {
     expectTypeOf(data.parent.items.filter(() => true)[0]?.name).toEqualTypeOf<string | undefined>();
   });
 });
+
+describe('who may see a document', () => {
+  it('asks for any user and any level, not only the current owner', () => {
+    // `isOwner` answers for the current user at the highest level. A package
+    // deciding whether to render a link to someone else's document needs the
+    // other question, and asked it through a cast until now.
+    expectTypeOf(sheet.document.isOwner).toEqualTypeOf<boolean>();
+    expectTypeOf(sheet.document.testUserPermission).toBeCallableWith({}, 'LIMITED');
+    expectTypeOf(sheet.document.testUserPermission).toBeCallableWith({}, 3, { exact: true });
+    expectTypeOf(sheet.document.testUserPermission({}, 'OBSERVER')).toEqualTypeOf<boolean>();
+  });
+});
