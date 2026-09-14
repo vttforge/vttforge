@@ -22,23 +22,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: '26'
-
-      - name: Activate pnpm via Corepack
-        run: |
-          npm install -g corepack@latest
-          corepack enable
-          corepack install -g pnpm@11.25.0
+          bun-version: '1.4.2'
 
       - name: Install
-        run: pnpm install --frozen-lockfile --force
+        run: bun install --frozen-lockfile
 
       - name: Create Version PR (merging it runs publish.yml under OIDC)
         uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2
         with:
-          version-script: pnpm changeset:version
+          version-script: bun run changeset:version
           commit-message: 'chore(release): version packages'
           pr-title: 'chore(release): version packages'
           github-token: ${{ secrets.GITHUB_TOKEN }}
