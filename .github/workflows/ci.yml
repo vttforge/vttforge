@@ -14,9 +14,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Self-hosted GCP runner from fcsouza/infra (gcp/runners/).
-# Bun is pinned via oven-sh/setup-bun rather than taken from the runner
-# image, at the exact version `bun-version` specifies below. Keep that in
-# sync with `package.json#engines`'s floor by hand.
+# oven-sh/setup-bun installs the version pinned in `package.json`'s
+# `packageManager` field, rather than taking whatever Bun the runner image
+# ships. No `bun-version` input here: one source of truth in `package.json`
+# beats nine copies of the same version string across five workflows.
 
 jobs:
   lint:
@@ -26,8 +27,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version: '1.4.2'
 
       - name: Install
         run: bun install --frozen-lockfile --force
@@ -42,8 +41,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version: '1.4.2'
 
       - name: Install
         run: bun install --frozen-lockfile --force
@@ -58,8 +55,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version: '1.4.2'
 
       - name: Install
         run: bun install --frozen-lockfile --force
@@ -74,8 +69,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version: '1.4.2'
 
       - name: Install
         run: bun install --frozen-lockfile --force
@@ -100,8 +93,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version: '1.4.2'
 
       - name: Install
         run: bun install --frozen-lockfile --force
@@ -123,8 +114,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version: '1.4.2'
 
       - name: Install
         run: bun install --frozen-lockfile --force
