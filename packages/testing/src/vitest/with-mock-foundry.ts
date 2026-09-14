@@ -10,6 +10,8 @@
  * on what was registered rather than only on what did not throw.
  */
 
+import type { MockDocument } from './mock-foundry.js';
+
 /** A hook registration the code under test made. */
 export interface RecordedHook {
   event: string;
@@ -110,6 +112,21 @@ export interface MockFoundryOptions {
    * ```
    */
   modules?: readonly MockModuleOptions[];
+  /**
+   * The documents the world holds.
+   *
+   * Each collection answers `get`, `getName`, `find`, `filter`, `size` and
+   * iteration, so code that reads a world reads this the way it reads Foundry.
+   * `createMockActor` and `createMockItem` build entries with flags and
+   * `update` already on them; a plain object works too.
+   *
+   * ```ts
+   * withMockFoundry({ items: [createMockItem({ id: 'a', name: 'Sword' })] });
+   * ```
+   */
+  actors?: readonly MockWorldDocument[];
+  items?: readonly MockWorldDocument[];
+  journal?: readonly MockWorldDocument[];
   /** Extra `foundry.*` members, merged over the defaults. */
   foundry?: Record<string, unknown>;
   /** Extra `game.*` members, merged over the defaults. */
@@ -163,6 +180,64 @@ export interface MockModuleOptions {
   readonly url?: string;
   readonly manifest?: string;
   readonly [key: string]: unknown;
+}
+
+/**
+ * A document a test puts in the world.
+ *
+ * `createMockActor` and `createMockItem` build one with flags and `update`
+ * already on it. A plain object works too, which is why this is a union: a
+ * `MockDocument` is an interface and does not satisfy an index signature.
+ */
+export type MockWorldDocument = MockDocument | Record<string, unknown>;
+
+/**
+ * `game.actors`, `game.items` and `game.journal`: a collection a test can walk.
+ *
+ * These were empty arrays, which answer `filter` and iteration and nothing
+ * else. Code that calls `get`, `getName`, `find` or `size` on them, which is
+ * most code that reads a world, then had to be handed a collection the test
+ * built by hand.
+ *
+ * Unlike `game.modules`, nothing is invented: a world holds the documents it
+ * holds, and `get` on an id that is not there answers `undefined`, the same as
+ * Foundry.
+ */
+function mockDocuments(seed: readonly MockWorldDocument[] = []) {
+  // The spread comes first: a document that names no id gets one, and one that
+  // does keeps it. The other way round, `...document` would put an `undefined`
+  // id straight back.
+  const documents: Record<string, unknown>[] = seed.map((document, index) => {
+    const fields = document as Record<string, unknown>;
+    return { ...fields, id: String(fields.id ?? `mock${index}`) };
+  });
+  const byId = new Map(documents.map((document) => [String(document.id), document]));
+
+  return {
+    get size() {
+      return documents.length;
+    },
+    get contents() {
+      return [...documents];
+    },
+    get: (id: string) => byId.get(id),
+    getName: (name: string) => documents.find((document) => document.name === name),
+    has: (id: string) => byId.has(id),
+    keys: () => byId.keys(),
+    values: () => documents.values(),
+    entries: () => byId.entries(),
+    [Symbol.iterator]: () => documents.values(),
+    find: (condition: (entry: Record<string, unknown>) => boolean) => documents.find(condition),
+    filter: (condition: (entry: Record<string, unknown>) => boolean) => documents.filter(condition),
+    map: <U>(transformer: (entry: Record<string, unknown>) => U) => documents.map(transformer),
+    reduce: <U>(reducer: (carry: U, entry: Record<string, unknown>) => U, initial: U) =>
+      documents.reduce(reducer, initial),
+    forEach: (fn: (entry: Record<string, unknown>) => void) => {
+      for (const document of documents) fn(document);
+    },
+    some: (condition: (entry: Record<string, unknown>) => boolean) => documents.some(condition),
+    every: (condition: (entry: Record<string, unknown>) => boolean) => documents.every(condition),
+  };
 }
 
 /**
@@ -387,8 +462,9 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
     // installed and switched on. Without this, anything that reads or writes
     // `game.modules.get(id)` sees nothing and reports a missing module.
     modules: mockModules(options.modules),
-    actors: [],
-    items: [],
+    actors: mockDocuments(options.actors),
+    items: mockDocuments(options.items),
+    journal: mockDocuments(options.journal),
     i18n: {
       localize: (key: string) => key,
       format: (key: string, data: Record<string, unknown>) => `${key} ${JSON.stringify(data)}`,
