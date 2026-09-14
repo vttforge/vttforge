@@ -194,7 +194,7 @@ The **Forge theme**: warm-dark surfaces, an ember accent, a `{ d20 }` mark, a 4-
 1. Zero lock-in. The output is plain `.mjs` that Foundry loads natively. Drop VTTForge whenever you like.
 2. Validated against something real. A real Foundry module uses every API before it ships. Several exist only because that module broke in a way nothing reported.
 3. Fail loudly or not at all. Where Foundry accepts something and quietly does nothing with it, VTTForge either refuses it up front or makes the mistake impossible to express.
-4. Current tooling. Bun with catalogs, Turborepo, tsdown, Vite, Biome, Changesets with npm OIDC trusted publishing (still via pnpm: Bun has no OIDC trusted-publishing support yet), publint, attw, knip, syncpack, lefthook.
+4. Current tooling. Bun with catalogs, Turborepo, tsdown, Vite, Biome, Changesets with npm OIDC trusted publishing (via the npm CLI, not `bun publish`: Bun has no OIDC trusted-publishing support yet), publint, attw, knip, syncpack, lefthook.
 5. Community first. MIT. No paid tiers.
 
 ## Roadmap
