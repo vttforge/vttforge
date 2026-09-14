@@ -14,22 +14,15 @@
 // does not.
 
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listWorkspacePackages } from './lib/workspace-packages.mjs';
 
 const NPM = 'npm@12.0.2';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-
-// Only packages/*: every package under examples/* and apps/* is private
-// today, so scanning packages/* alone matches what used to be published
-// by `pnpm publish -r`. A future non-private package outside packages/
-// would need this list widened (see scripts/create-releases.mjs, which
-// scans both packages/ and apps/ for the same reason release notes span
-// more than packages/*).
-const packagesDir = join(repoRoot, 'packages');
 
 function run(cmd, args, opts = {}) {
   execFileSync(cmd, args, { stdio: 'inherit', ...opts });
@@ -43,13 +36,13 @@ async function isPublished(name, version) {
   throw new Error(`registry check for ${name}@${version} failed: HTTP ${res.status}`);
 }
 
-const dirs = readdirSync(packagesDir, { withFileTypes: true })
-  .filter((d) => d.isDirectory())
-  .map((d) => join(packagesDir, d.name));
-
-const pkgs = dirs
-  .map((dir) => ({ dir, pkg: JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) }))
-  .filter(({ pkg }) => !pkg.private);
+// Only packages/*: every package under examples/* and apps/* is private
+// today, so scanning packages/* alone matches what used to be published
+// by `pnpm publish -r`. A future non-private package outside packages/
+// would need this list widened (see scripts/create-releases.mjs, which
+// scans both packages/ and apps/ for the same reason release notes span
+// more than packages/*).
+const pkgs = listWorkspacePackages(repoRoot, ['packages']).filter(({ pkg }) => !pkg.private);
 
 // Topological sort (leaves first) over each package's own @vttforge/*
 // dependencies, so a dependency always publishes before whatever depends

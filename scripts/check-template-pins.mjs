@@ -41,6 +41,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import getReleasePlan from '@changesets/get-release-plan';
 import semver from 'semver';
+import { listWorkspacePackages } from './lib/workspace-packages.mjs';
 
 // This is a command-line check. Its console output is the whole point — there
 // is no other channel to report a bad pin through.
@@ -49,21 +50,14 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 /** The package whose tarball carries the templates. */
 const CLI_PACKAGE = '@vttforge/cli';
 const templatesDir = join(repoRoot, 'packages', 'cli', 'templates');
-const packagesDir = join(repoRoot, 'packages');
 
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
 /** Current version of every workspace package, keyed by published name. */
 function currentVersions() {
   const out = new Map();
-  for (const dir of readdirSync(packagesDir, { withFileTypes: true })) {
-    if (!dir.isDirectory()) continue;
-    try {
-      const pkg = readJson(join(packagesDir, dir.name, 'package.json'));
-      if (pkg.name) out.set(pkg.name, pkg.version);
-    } catch {
-      // Not a package directory. Nothing to record.
-    }
+  for (const { pkg } of listWorkspacePackages(repoRoot, ['packages'])) {
+    if (pkg.name) out.set(pkg.name, pkg.version);
   }
   return out;
 }
