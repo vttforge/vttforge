@@ -32,7 +32,7 @@ jobs:
 
       # No `version` here: package.json's `packageManager` is the one source,
       # and the action fails when both are set.
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v4
         with:
