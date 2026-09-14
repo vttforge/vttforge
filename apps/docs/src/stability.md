@@ -10,7 +10,7 @@ Every package is below `1.0.0`. Under semver that means a **minor may break
 you**. In this project it regularly does, because the API is still meeting
 real systems and modules for the first time.
 
-Pin exactly, or accept that `pnpm update` can require code changes:
+Pin exactly, or accept that `bun update` can require code changes:
 
 ```jsonc
 { "dependencies": { "@vttforge/core": "0.8.0" } }

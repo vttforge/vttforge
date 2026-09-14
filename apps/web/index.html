@@ -328,8 +328,8 @@
 <pre><span class="vttf-tk-com"># clone &amp; install</span>
 <span class="vttf-tk-prop">git</span> clone https://github.com/vttforge/vttforge
 <span class="vttf-tk-prop">cd</span> vttforge
-<span class="vttf-tk-prop">corepack</span> enable <span class="vttf-tk-pun">&amp;&amp;</span> <span class="vttf-tk-prop">pnpm</span> install
-<span class="vttf-tk-prop">pnpm</span> build
+<span class="vttf-tk-prop">bun</span> install
+<span class="vttf-tk-prop">bun</span> run build
 
 <span class="vttf-tk-com"># fill in your foundryvtt.com license</span>
 <span class="vttf-tk-prop">cp</span> .env.example .env
