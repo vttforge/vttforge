@@ -1,5 +1,5 @@
 [install]
-# Espelha o default do pnpm (1440 min = 24h) — nenhuma versão instala
-# antes de passar 24h publicada, exceto os pacotes abaixo.
+# Mirrors pnpm's default (1440 min = 24h): no version installs until it
+# has been published for 24h, except the packages listed below.
 minimumReleaseAge = 86400
 minimumReleaseAgeExcludes = ["knip", "@rolldown/plugin-babel"]
