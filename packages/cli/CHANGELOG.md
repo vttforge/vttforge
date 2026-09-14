@@ -1,5 +1,13 @@
 # @vttforge/cli
 
+## 0.18.7
+
+### Patch Changes
+
+- 9b091fc: The `system-ts` and `module-ts` templates pin `@vttforge/types` to `^0.11.0`.
+  On a 0.x line a caret pins the minor, so the old pin would scaffold a project
+  that cannot resolve the version this release publishes.
+
 ## 0.18.6
 
 ### Patch Changes
