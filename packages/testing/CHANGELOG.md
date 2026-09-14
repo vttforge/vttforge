@@ -1,5 +1,12 @@
 # @vttforge/testing
 
+## 0.14.2
+
+### Patch Changes
+
+- Updated dependencies [39ca019]
+  - @vttforge/types@0.11.1
+
 ## 0.14.1
 
 ### Patch Changes
