@@ -1,4 +1,3 @@
-// @vitest-environment happy-dom
 /**
  * BaseApplication exists because of two traps in raw ApplicationV2, and the
  * cases that matter are the ones that prove each trap is gone.

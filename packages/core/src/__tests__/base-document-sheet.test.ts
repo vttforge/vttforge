@@ -1,4 +1,3 @@
-// @vitest-environment happy-dom
 /**
  * The case this base exists for: a sheet whose content is an element, not a
  * template.

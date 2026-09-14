@@ -1,4 +1,3 @@
-// @vitest-environment happy-dom
 /**
  * BaseHandlebarsApplication exists because a standalone templated window had
  * no typed base. The cases that matter are the ones proving the mixin is

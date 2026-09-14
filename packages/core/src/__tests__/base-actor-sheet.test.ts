@@ -1,5 +1,3 @@
-// @vitest-environment happy-dom
-
 import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { BaseActorSheet, type DragDropConfig, VTTFORGE_SHEET_CLASS } from '../base-actor-sheet.js';
 import { VttfError } from '../errors/registry.js';
