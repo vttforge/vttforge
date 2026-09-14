@@ -14,9 +14,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Self-hosted GCP runner from fcsouza/infra (gcp/runners/).
-# Node is pinned via actions/setup-node rather than taken from the runner image,
-# so the version CI validates on is the one the packages declare in `engines`.
-# Corepack ships with Node — we activate pnpm@11.25.0 via `corepack prepare`.
+# Bun is pinned via oven-sh/setup-bun rather than taken from the runner
+# image, so the version CI validates on is the one `package.json#engines`
+# declares.
 
 jobs:
   lint:
@@ -25,21 +25,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: '26'
-
-      - name: Activate pnpm via Corepack
-        run: |
-          npm install -g corepack@latest
-          corepack enable
-          corepack install -g pnpm@11.25.0
+          bun-version: '1.4.2'
 
       - name: Install
-        run: pnpm install --frozen-lockfile --force
+        run: bun install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: bun run lint
 
   typecheck:
     name: Typecheck
@@ -47,21 +41,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: '26'
-
-      - name: Activate pnpm via Corepack
-        run: |
-          npm install -g corepack@latest
-          corepack enable
-          corepack install -g pnpm@11.25.0
+          bun-version: '1.4.2'
 
       - name: Install
-        run: pnpm install --frozen-lockfile --force
+        run: bun install --frozen-lockfile
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: bun run typecheck
 
   test:
     name: Test
@@ -69,21 +57,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: '26'
-
-      - name: Activate pnpm via Corepack
-        run: |
-          npm install -g corepack@latest
-          corepack enable
-          corepack install -g pnpm@11.25.0
+          bun-version: '1.4.2'
 
       - name: Install
-        run: pnpm install --frozen-lockfile --force
+        run: bun install --frozen-lockfile
 
       - name: Test
-        run: pnpm test
+        run: bun run test
 
   build:
     name: Build
@@ -91,21 +73,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: '26'
-
-      - name: Activate pnpm via Corepack
-        run: |
-          npm install -g corepack@latest
-          corepack enable
-          corepack install -g pnpm@11.25.0
+          bun-version: '1.4.2'
 
       - name: Install
-        run: pnpm install --frozen-lockfile --force
+        run: bun install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: bun run build
 
       - name: Upload dist artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -123,27 +99,21 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: '26'
-
-      - name: Activate pnpm via Corepack
-        run: |
-          npm install -g corepack@latest
-          corepack enable
-          corepack install -g pnpm@11.25.0
+          bun-version: '1.4.2'
 
       - name: Install
-        run: pnpm install --frozen-lockfile --force
+        run: bun install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: bun run build
 
       - name: Publint
-        run: pnpm publint
+        run: bun run publint
 
       - name: Are The Types Wrong
-        run: pnpm attw
+        run: bun run attw
 
   knip:
     name: Knip (dead-code detection, non-blocking)
@@ -152,21 +122,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: '26'
-
-      - name: Activate pnpm via Corepack
-        run: |
-          npm install -g corepack@latest
-          corepack enable
-          corepack install -g pnpm@11.25.0
+          bun-version: '1.4.2'
 
       - name: Install
-        run: pnpm install --frozen-lockfile --force
+        run: bun install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: bun run build
 
       - name: Knip
-        run: pnpm knip
+        run: bun run knip
