@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * Keep the scaffolding templates pinned to versions that will exist.
  *
@@ -40,7 +40,6 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import getReleasePlan from '@changesets/get-release-plan';
-import semver from 'semver';
 import { listWorkspacePackages } from './lib/workspace-packages.mjs';
 
 // This is a command-line check. Its console output is the whole point — there
@@ -110,7 +109,7 @@ for (const entry of readdirSync(templatesDir, { withFileTypes: true })) {
     for (const [name, range] of Object.entries(pkg[group] ?? {})) {
       if (!current.has(name)) continue;
       const target = planned.get(name) ?? current.get(name);
-      if (semver.satisfies(target, range)) continue;
+      if (Bun.semver.satisfies(target, range)) continue;
       problems.push({
         template: entry.name,
         name,
@@ -142,7 +141,7 @@ for (const entry of readdirSync(templatesDir, { withFileTypes: true })) {
   for (const group of ['dependencies', 'devDependencies']) {
     for (const [name, range] of Object.entries(pkg[group] ?? {})) {
       if (name === CLI_PACKAGE || !current.has(name)) continue;
-      if (!semver.satisfies(current.get(name), range)) movedPins.add(name);
+      if (!Bun.semver.satisfies(current.get(name), range)) movedPins.add(name);
     }
   }
 }
