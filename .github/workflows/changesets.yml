@@ -27,7 +27,7 @@ jobs:
           bun-version: '1.4.2'
 
       - name: Install
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --force
 
       - name: Create Version PR (merging it runs publish.yml under OIDC)
         uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2

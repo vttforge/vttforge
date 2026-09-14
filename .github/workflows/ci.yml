@@ -30,7 +30,7 @@ jobs:
           bun-version: '1.4.2'
 
       - name: Install
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --force
 
       - name: Lint
         run: bun run lint
@@ -46,7 +46,7 @@ jobs:
           bun-version: '1.4.2'
 
       - name: Install
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --force
 
       - name: Typecheck
         run: bun run typecheck
@@ -62,7 +62,7 @@ jobs:
           bun-version: '1.4.2'
 
       - name: Install
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --force
 
       - name: Test
         run: bun run test
@@ -78,7 +78,7 @@ jobs:
           bun-version: '1.4.2'
 
       - name: Install
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --force
 
       - name: Build
         run: bun run build
@@ -104,7 +104,7 @@ jobs:
           bun-version: '1.4.2'
 
       - name: Install
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --force
 
       - name: Build
         run: bun run build
@@ -127,7 +127,7 @@ jobs:
           bun-version: '1.4.2'
 
       - name: Install
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --force
 
       - name: Build
         run: bun run build
