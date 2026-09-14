@@ -43,29 +43,26 @@ jobs:
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: '26'
-
-      - name: Activate pnpm
-        run: corepack enable && corepack prepare pnpm@11.25.0 --activate
+          bun-version: '1.4.2'
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: bun run build
 
       - name: Install the browser
-        run: pnpm --filter @vttforge-e2e/foundry exec playwright install --with-deps chromium
+        run: bun --filter @vttforge-e2e/foundry playwright:install
 
       - name: Run
-        run: pnpm --filter @vttforge-e2e/foundry test:e2e
+        run: bun --filter @vttforge-e2e/foundry test:e2e
 
       # After the suite, never beside it: both use one container name and one
       # volume, and two containers on one volume wipe each other's data.
       - name: World switching
-        run: pnpm --filter @vttforge-e2e/foundry test:worlds
+        run: bun --filter @vttforge-e2e/foundry test:worlds
 
       - name: Foundry logs on failure
         if: failure()

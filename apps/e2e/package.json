@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "playwright:install": "playwright install --with-deps chromium",
     "test:e2e": "playwright test",
     "test:worlds": "node scripts/world-switch.mjs",
     "e2e:up": "node -e \"import('./scripts/foundry.mjs').then(m => m.start()).then(r => console.log(r.baseUrl))\"",
