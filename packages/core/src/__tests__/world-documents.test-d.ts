@@ -13,6 +13,7 @@ import type {
   ChatMessageLike,
   CombatLike,
   Game,
+  JournalEntryLike,
   RollLike,
   SceneLike,
   TokenDocumentLike,
@@ -23,6 +24,7 @@ declare const message: ChatMessageLike;
 declare const combat: CombatLike;
 declare const scene: SceneLike;
 declare const token: TokenDocumentLike;
+declare const journal: JournalEntryLike;
 declare const canvas: CanvasApi;
 declare const game: Game;
 declare const sheet: InstanceType<ReturnType<typeof BaseActorSheet>>;
@@ -90,5 +92,19 @@ describe('the sheet render surface', () => {
   it('types the context and the header controls', () => {
     expectTypeOf(sheet._prepareContext).parameter(0).toEqualTypeOf<ApplicationRenderOptions>();
     expectTypeOf(sheet._getHeaderControls()).toEqualTypeOf<ApplicationHeaderControlsEntry[]>();
+  });
+});
+
+describe('a document that owns embedded documents', () => {
+  it('can write them', async () => {
+    // A journal owns its pages, a scene its tokens, a combat its combatants.
+    // Reading the collection was typed and writing to it was not, so every
+    // call went through a cast.
+    expectTypeOf(
+      await journal.createEmbeddedDocuments('JournalEntryPage', [{ name: 'A page' }]),
+    ).toEqualTypeOf<unknown[]>();
+    expectTypeOf(journal.deleteEmbeddedDocuments).toBeCallableWith('JournalEntryPage', ['abc']);
+    expectTypeOf(scene.createEmbeddedDocuments).toBeCallableWith('Token', [{ x: 0, y: 0 }]);
+    expectTypeOf(combat.createEmbeddedDocuments).toBeCallableWith('Combatant', [{}]);
   });
 });

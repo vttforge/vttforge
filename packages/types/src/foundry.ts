@@ -159,6 +159,16 @@ export interface FoundryApplicationsApi {
     confirm(options?: Record<string, unknown>): Promise<boolean>;
     /** Ask for input. Resolves to the form data, or `null` when dismissed. */
     prompt(options?: Record<string, unknown>): Promise<unknown>;
+    /**
+     * A form with an Ok button. Resolves to the form data, or `null` when
+     * dismissed.
+     *
+     * `prompt` asks a question and hands back one answer; this renders the
+     * inputs you give it and hands back all of them.
+     */
+    input(options?: Record<string, unknown>): Promise<unknown>;
+    /** Ask another client the question, and wait for that client's answer. */
+    query(options?: Record<string, unknown>): Promise<unknown>;
     /** Render and wait. Rejects when dismissed, unless told otherwise. */
     wait(options?: Record<string, unknown>): Promise<unknown>;
   };
@@ -169,6 +179,20 @@ export interface FoundryApplicationsApi {
 /** `foundry.applications`. */
 export interface FoundryApplications {
   readonly api: FoundryApplicationsApi;
+  /**
+   * Every open application, keyed by its id.
+   *
+   * v13 removed `ui.windows`, and this replaced it. The value is `object`
+   * rather than a shape: a package finds its own window with `instanceof`,
+   * and then it has the class it wrote.
+   *
+   * ```ts
+   * for (const app of foundry.applications.instances.values()) {
+   *   if (app instanceof MyViewer) app.refresh();
+   * }
+   * ```
+   */
+  readonly instances: ReadonlyMap<string, object>;
   readonly sheets: FoundryClassNamespace<
     | 'ActiveEffectConfig'
     | 'ActorSheetV2'

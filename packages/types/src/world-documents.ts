@@ -8,7 +8,13 @@
  */
 
 import type { RollLike, ToMessageOptions } from './dice.js';
-import type { ActorLike, AnyActorLike, DocumentMembers, EmbeddedCollection } from './documents.js';
+import type {
+  ActorLike,
+  AnyActorLike,
+  DocumentMembers,
+  EmbeddedCollection,
+  EmbeddedDocumentOwner,
+} from './documents.js';
 import type { UserLike } from './globals.js';
 
 /** Who a chat message is attributed to. */
@@ -96,7 +102,9 @@ export interface CombatHistoryData {
 }
 
 /** An encounter. */
-export interface CombatLike<System = Record<string, unknown>> extends DocumentMembers<System> {
+export interface CombatLike<System = Record<string, unknown>>
+  extends DocumentMembers<System>,
+    EmbeddedDocumentOwner {
   readonly round: number;
   readonly turn: number | null;
   readonly active: boolean;
@@ -220,7 +228,9 @@ export interface LevelLike extends DocumentMembers {
 }
 
 /** A scene. */
-export interface SceneLike<System = Record<string, unknown>> extends DocumentMembers<System> {
+export interface SceneLike<System = Record<string, unknown>>
+  extends DocumentMembers<System>,
+    EmbeddedDocumentOwner {
   readonly active: boolean;
   readonly navigation: boolean;
   readonly navName: string;
@@ -258,7 +268,7 @@ export interface SceneLike<System = Record<string, unknown>> extends DocumentMem
 }
 
 /** A journal entry. */
-export interface JournalEntryLike extends DocumentMembers {
+export interface JournalEntryLike extends DocumentMembers, EmbeddedDocumentOwner {
   readonly pages: EmbeddedCollection<DocumentMembers>;
   readonly categories: EmbeddedCollection<DocumentMembers>;
   readonly sort: number;
