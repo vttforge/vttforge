@@ -20,6 +20,7 @@ export {
 export {
   type MockFoundry,
   type MockFoundryOptions,
+  type MockModuleOptions,
   type RecordedEnricher,
   type RecordedHook,
   type RecordedKeybinding,

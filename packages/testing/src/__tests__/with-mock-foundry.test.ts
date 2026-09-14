@@ -97,6 +97,40 @@ describe('withMockFoundry', () => {
   });
 });
 
+describe('the installed modules', () => {
+  it('invents a handle for any id the code under test names', () => {
+    mock = withMockFoundry();
+    const handle = game.modules.get('my-module');
+    expect(handle).toMatchObject({ id: 'my-module', active: true });
+  });
+
+  it('walks the list a test named, which is what a report reads', () => {
+    // `get` alone is enough for a package reading its own handle. Code that
+    // enumerates, an update checker or a report, needs a list to enumerate.
+    mock = withMockFoundry({
+      modules: [
+        { id: 'a-module', version: '1.2.0', url: 'https://github.com/owner/a-module' },
+        { id: 'b-module', title: 'B Module', active: false },
+      ],
+    });
+
+    expect([...game.modules.values()].map((m) => m.id)).toEqual(['a-module', 'b-module']);
+    expect(game.modules.get('a-module')?.version).toBe('1.2.0');
+    expect(game.modules.get('b-module')?.title).toBe('B Module');
+    expect(game.modules.filter((m) => m.active).map((m) => m.id)).toEqual(['a-module']);
+    expect(game.modules.size).toBe(2);
+  });
+
+  it('fills in a title and a version for a module named by id alone', () => {
+    mock = withMockFoundry({ modules: [{ id: 'bare' }] });
+    expect(game.modules.get('bare')).toMatchObject({
+      id: 'bare',
+      title: 'bare',
+      version: '1.0.0',
+    });
+  });
+});
+
 describe('the settings registry', () => {
   it('files a registered setting under `namespace.key`', () => {
     mock = withMockFoundry();

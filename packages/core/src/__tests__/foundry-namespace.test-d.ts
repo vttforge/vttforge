@@ -34,6 +34,23 @@ describe('the paths real consumers reach for', () => {
     expectTypeOf(foundry.applications.api.DialogV2.prompt).returns.toEqualTypeOf<
       Promise<unknown>
     >();
+    // `input` renders a form and hands back every field; `query` asks another
+    // client. Both are on the class in v14, and a package using either had to
+    // cast until now.
+    expectTypeOf(foundry.applications.api.DialogV2.input).returns.toEqualTypeOf<Promise<unknown>>();
+    expectTypeOf(foundry.applications.api.DialogV2.query).returns.toEqualTypeOf<Promise<unknown>>();
+  });
+
+  it('names the open applications, which is how a package finds its own', () => {
+    // v13 removed `ui.windows`. The value is `object` so `instanceof` narrows:
+    // `unknown` on the left of `instanceof` does not compile.
+    expectTypeOf(foundry.applications.instances).toEqualTypeOf<ReadonlyMap<string, object>>();
+    class MyViewer {
+      refreshed = false;
+    }
+    for (const app of foundry.applications.instances.values()) {
+      if (app instanceof MyViewer) expectTypeOf(app).toEqualTypeOf<MyViewer>();
+    }
   });
 
   it('types the template helpers', () => {

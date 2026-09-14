@@ -96,6 +96,20 @@ export interface MockFoundry {
 export interface MockFoundryOptions {
   /** The current user. Defaults to a GM, since most module code checks. */
   user?: { id?: string; isGM?: boolean; name?: string };
+  /**
+   * The modules installed in this world.
+   *
+   * `game.modules.get(id)` invents a handle for any id the code under test
+   * names, which is enough for a package reading its own. Code that walks the
+   * list, an update checker or a report, needs one to walk: name them here.
+   *
+   * ```ts
+   * withMockFoundry({
+   *   modules: [{ id: 'other-module', version: '1.2.0', url: 'https://…' }],
+   * });
+   * ```
+   */
+  modules?: readonly MockModuleOptions[];
   /** Extra `foundry.*` members, merged over the defaults. */
   foundry?: Record<string, unknown>;
   /** Extra `game.*` members, merged over the defaults. */
@@ -129,9 +143,26 @@ const GLOBALS = ['foundry', 'game', 'CONFIG', 'Hooks', 'ui', 'CONST'] as const;
 /** One module handle, as Foundry builds it from a manifest. */
 interface MockModuleHandle {
   id: string;
+  title: string;
+  version: string;
   active: boolean;
   socket: boolean;
+  url?: string;
+  manifest?: string;
   api?: unknown;
+  [key: string]: unknown;
+}
+
+/** What a test says about a module it wants installed. Only `id` is required. */
+export interface MockModuleOptions {
+  readonly id: string;
+  readonly title?: string;
+  readonly version?: string;
+  readonly active?: boolean;
+  readonly socket?: boolean;
+  readonly url?: string;
+  readonly manifest?: string;
+  readonly [key: string]: unknown;
 }
 
 /**
@@ -142,17 +173,22 @@ interface MockModuleHandle {
  * switched on. The handle is remembered, so writing an api on it and reading
  * it back works the way it does in a world.
  */
-function mockModules(): {
-  get(id: string): MockModuleHandle;
-  has(id: string): boolean;
-  readonly size: number;
-} {
+function mockModules(seed: readonly MockModuleOptions[] = []) {
   const handles = new Map<string, MockModuleHandle>();
+  const build = (options: MockModuleOptions): MockModuleHandle => ({
+    title: options.id,
+    version: '1.0.0',
+    active: true,
+    socket: true,
+    ...options,
+  });
+  for (const options of seed) handles.set(options.id, build(options));
+
   return {
     get(id: string) {
       const existing = handles.get(id);
       if (existing) return existing;
-      const handle: MockModuleHandle = { id, active: true, socket: true };
+      const handle = build({ id });
       handles.set(id, handle);
       return handle;
     },
@@ -160,6 +196,25 @@ function mockModules(): {
     get size() {
       return handles.size;
     },
+    get contents() {
+      return [...handles.values()];
+    },
+    keys: () => handles.keys(),
+    values: () => handles.values(),
+    entries: () => handles.entries(),
+    [Symbol.iterator]: () => handles.values(),
+    find: (condition: (entry: MockModuleHandle) => boolean) =>
+      [...handles.values()].find(condition),
+    filter: (condition: (entry: MockModuleHandle) => boolean) =>
+      [...handles.values()].filter(condition),
+    map: <U>(transformer: (entry: MockModuleHandle) => U) => [...handles.values()].map(transformer),
+    forEach: (fn: (entry: MockModuleHandle) => void) => {
+      for (const handle of handles.values()) fn(handle);
+    },
+    some: (condition: (entry: MockModuleHandle) => boolean) =>
+      [...handles.values()].some(condition),
+    every: (condition: (entry: MockModuleHandle) => boolean) =>
+      [...handles.values()].every(condition),
   };
 }
 
@@ -331,7 +386,7 @@ export function withMockFoundry(options: MockFoundryOptions = {}): MockFoundry {
     // module list: whatever the code under test names is the module it is,
     // installed and switched on. Without this, anything that reads or writes
     // `game.modules.get(id)` sees nothing and reports a missing module.
-    modules: mockModules(),
+    modules: mockModules(options.modules),
     actors: [],
     items: [],
     i18n: {
