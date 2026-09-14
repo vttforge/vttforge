@@ -36,7 +36,7 @@ jobs:
         run: pnpm install --frozen-lockfile --force
 
       - name: Create Version PR (merging it runs publish.yml under OIDC)
-        uses: changesets/action@8488615a623b1b9c987934bb89eae8af6a946ac1 # v2
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2
         with:
           version-script: pnpm changeset:version
           commit-message: 'chore(release): version packages'

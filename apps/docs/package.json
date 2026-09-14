@@ -13,7 +13,7 @@
     "@vttforge/styles": "workspace:*"
   },
   "devDependencies": {
-    "@shikijs/vitepress-twoslash": "^2.5.0",
+    "@shikijs/vitepress-twoslash": "^4.4.3",
     "@viteplus/versions": "^2.0.9",
     "@vttforge/core": "workspace:*",
     "typedoc": "^0.28.20",
