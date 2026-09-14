@@ -97,6 +97,46 @@ describe('withMockFoundry', () => {
   });
 });
 
+describe('the documents a world holds', () => {
+  it('answers what a collection answers, not what an array does', () => {
+    // `game.items` was an empty array. `filter` and iteration worked; `get`,
+    // `getName`, `find` and `size` did not, so a test handed the code a
+    // collection it had built by hand.
+    mock = withMockFoundry({
+      items: [
+        createMockItem({ id: 'sword', name: 'Sword', type: 'weapon' }),
+        createMockItem({ id: 'shield', name: 'Shield', type: 'armour' }),
+      ],
+    });
+
+    expect(game.items.size).toBe(2);
+    expect(game.items.get('sword')?.name).toBe('Sword');
+    expect(game.items.getName('Shield')?.id).toBe('shield');
+    expect(game.items.find((item) => item.type === 'armour')?.id).toBe('shield');
+    expect([...game.items].map((item) => item.id)).toEqual(['sword', 'shield']);
+    expect(game.items.filter((item) => item.type === 'weapon')).toHaveLength(1);
+  });
+
+  it('invents nothing, because a world holds the documents it holds', () => {
+    // `game.modules` makes a handle up for any id, because a package reads its
+    // own. A document the world does not have is a different answer.
+    mock = withMockFoundry({ actors: [createMockActor({ id: 'hero' })] });
+
+    expect(game.actors.get('hero')).toBeDefined();
+    expect(game.actors.get('nobody')).toBeUndefined();
+    expect(game.actors.size).toBe(1);
+  });
+
+  it('starts empty, and takes plain objects too', () => {
+    mock = withMockFoundry({ journal: [{ name: 'PDFs' }] });
+
+    expect(game.items.size).toBe(0);
+    expect(game.journal.find((entry) => entry.name === 'PDFs')).toBeDefined();
+    // A document that names no id still gets one, so `get` and `has` work.
+    expect(game.journal.contents[0]?.id).toBeDefined();
+  });
+});
+
 describe('the installed modules', () => {
   it('invents a handle for any id the code under test names', () => {
     mock = withMockFoundry();

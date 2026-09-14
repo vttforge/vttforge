@@ -21,6 +21,7 @@ export {
   type MockFoundry,
   type MockFoundryOptions,
   type MockModuleOptions,
+  type MockWorldDocument,
   type RecordedEnricher,
   type RecordedHook,
   type RecordedKeybinding,
