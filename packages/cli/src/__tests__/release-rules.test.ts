@@ -2,11 +2,12 @@
  * VTTF-AUDIT-020: a release workflow that ships the checkout of a project
  * that builds to dist/. The one failure that reaches players first.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runReleaseRules } from '../audit/release-rules.js';
 
 const OLD_WORKFLOW = `name: Release Creation

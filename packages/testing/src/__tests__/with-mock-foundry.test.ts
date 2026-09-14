@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'bun:test';
 import { createMockActor, createMockItem } from '../vitest/mock-foundry.js';
 import { type MockFoundry, withMockFoundry } from '../vitest/with-mock-foundry.js';
 
@@ -63,7 +63,7 @@ describe('withMockFoundry', () => {
     });
 
     expect(mock.settings[0]).toMatchObject({ namespace: 'my-module', key: 'showWelcome' });
-    expect(game.settings.get('my-module', 'showWelcome')).toBe(true);
+    expect(game.settings.get('my-module', 'showWelcome') as boolean).toBe(true);
   });
 
   it('collects notifications with their severity', () => {

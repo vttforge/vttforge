@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { ERROR_MANIFEST_VERSION, getErrorManifest } from '../errors/manifest.js';
 import { listErrorEntries } from '../errors/registry.js';
 
@@ -21,7 +21,13 @@ describe('getErrorManifest()', () => {
 
   it('includes every code currently in the registry (sanity check on append-only)', () => {
     const codes = getErrorManifest().entries.map((e) => e.code);
-    for (const expected of ['VTTF-0001', 'VTTF-0002', 'VTTF-0003', 'VTTF-0004', 'VTTF-0005']) {
+    for (const expected of [
+      'VTTF-0001',
+      'VTTF-0002',
+      'VTTF-0003',
+      'VTTF-0004',
+      'VTTF-0005',
+    ] as const) {
       expect(codes).toContain(expected);
     }
   });

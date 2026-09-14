@@ -12,7 +12,7 @@
  * `dogfood.test.ts` already stands a module entry up by hand for the same
  * reason.
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'bun:test';
 import { type MockFoundry, withMockFoundry } from '../vitest/with-mock-foundry.js';
 
 let mock: MockFoundry | undefined;

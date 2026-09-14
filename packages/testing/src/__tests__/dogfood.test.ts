@@ -5,7 +5,7 @@
  * time. This is the same job done through the package, and it is the case
  * that would have caught a mock too thin to be useful.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { createMockActor } from '../vitest/mock-foundry.js';
 import { withMockFoundry } from '../vitest/with-mock-foundry.js';
 
@@ -37,7 +37,7 @@ describe('a module registered against the mock', () => {
 
     mock.callHook('init');
     expect(mock.settings[0]?.key).toBe('cacheSize');
-    expect(game.settings.get('example', 'cacheSize')).toBe(256);
+    expect(game.settings.get('example', 'cacheSize') as number).toBe(256);
     expect(CONFIG.Item.dataModels['example.pdf']).toBeDefined();
 
     mock.callHook('ready');

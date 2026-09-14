@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { convertSubTypes, subTypeDocuments } from '../sub-types.js';
 
 interface FakeDoc {

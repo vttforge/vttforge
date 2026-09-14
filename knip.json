@@ -39,8 +39,7 @@
       "entry": ["tests/*.spec.mjs"]
     },
     "packages/core": {
-      "entry": ["src/**/*.test-d.ts"],
-      "ignoreDependencies": ["@babel/plugin-proposal-decorators"]
+      "entry": ["src/**/*.test-d.ts"]
     }
   }
 }

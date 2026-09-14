@@ -5,7 +5,7 @@
  * `CONFIG`, `CONST` and `foundry.utils`. Asserted on leaves: `expectTypeOf`
  * walks structurally, and these types recurse.
  */
-import { describe, expectTypeOf, it } from 'vitest';
+import { describe, expectTypeOf, it } from 'bun:test';
 import type {
   ActorLike,
   AnyClass,

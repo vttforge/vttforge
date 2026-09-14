@@ -3,7 +3,7 @@
  * encoder that produced them proves nothing. These drive a real WebSocket
  * client — the same implementation a browser uses — against the real server.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { startDevServer } from '../dev-server.js';
 
 /** Resolve once the client is open, or fail the test rather than hang. */

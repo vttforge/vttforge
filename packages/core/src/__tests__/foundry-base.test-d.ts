@@ -8,7 +8,7 @@
  * `@ts-expect-error` is the assertion here: each one fails the build if the
  * line it guards ever starts compiling again.
  */
-import { describe, expectTypeOf, it } from 'vitest';
+import { describe, expectTypeOf, it } from 'bun:test';
 import type { BaseApplication } from '../base-application.js';
 import type { ApplicationV2Members, DocumentSheetV2Members } from '../foundry-base.js';
 

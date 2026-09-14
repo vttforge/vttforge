@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { naturalResult, type PostableRoll, postRoll, rollOutcome } from '../chat.js';
 
 const create = vi.fn(async (data: Record<string, unknown>, _options?: Record<string, unknown>) => ({

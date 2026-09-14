@@ -5,11 +5,12 @@
  * sheet accepted every edit and dropped it on close, with nothing in the
  * console. The rule reads the Handlebars, because that is where it lives.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runTemplateRules } from '../../audit/template-rules.js';
 
 let cwd: string;

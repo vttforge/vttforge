@@ -8,16 +8,14 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "echo 'simple-module has no tests yet'"
   },
   "dependencies": {
     "@vttforge/core": "workspace:*"
   },
   "devDependencies": {
     "@vttforge/vite-plugin": "workspace:*",
-    "happy-dom": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite": "catalog:"
   }
 }

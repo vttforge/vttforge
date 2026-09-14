@@ -3,10 +3,11 @@
  * way manifests do: the module loads, the entry never runs, and nothing says
  * so. These assert the paths resolve against what the build actually emits.
  */
+
+import { describe, expect, it } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const manifest = JSON.parse(readFileSync(join(packageRoot, 'module.json'), 'utf8'));

@@ -1,8 +1,8 @@
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { type ScaffoldVars, scaffold, substitute } from '../scaffold.js';
 
 const FIXTURE_VARS: ScaffoldVars = {

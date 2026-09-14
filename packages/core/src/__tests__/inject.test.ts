@@ -1,6 +1,4 @@
-// @vitest-environment happy-dom
-
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { INJECTION_ATTRIBUTE, inject } from '../inject.js';
 
 let bound: Map<string, Array<{ id: number; fn: (...args: unknown[]) => unknown }>>;

@@ -6,7 +6,7 @@
  * only by importing them by name. Those are gone. This holds both halves of
  * that: the surface that remains, and the internals that must not come back.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import cliPackage from '../../package.json' with { type: 'json' };
 import * as api from '../index.js';
 import {

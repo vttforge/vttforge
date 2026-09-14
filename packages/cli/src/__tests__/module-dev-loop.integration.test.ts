@@ -16,12 +16,13 @@
  * volume, which cannot hold a symlink to files on this host. That half stays
  * covered by `@vttforge/dev-module`'s own tests.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { existsSync } from 'node:fs';
 import { lstat, mkdir, mkdtemp, readlink, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanupDevSymlink, setupDevSymlink } from '../commands/dev.js';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
@@ -48,7 +49,7 @@ afterEach(async () => {
   await rm(dataRoot, { recursive: true, force: true });
 });
 
-describe.runIf(built(MODULE) && built(SYSTEM))('the dev loop against a real build', () => {
+describe.skipIf(!(built(MODULE) && built(SYSTEM)))('the dev loop against a real build', () => {
   it('links a built module into Data/modules, not Data/systems', async () => {
     const { target, manifest } = await setupDevSymlink({ cwd: MODULE, dataRoot });
 

@@ -3,10 +3,11 @@
  * system still declares its types there: a v13 system on template.json has
  * no TypeDataModel to read, and its bars still work.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runSourceRules } from '../../audit/source-rules.js';
 
 let cwd: string;

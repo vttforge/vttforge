@@ -41,19 +41,18 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "bun test",
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
+    "@happy-dom/global-registrator": "^20.14.5",
+    "@types/bun": "catalog:",
     "@types/node": "catalog:",
-    "happy-dom": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "unrun": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "publishConfig": {
     "access": "public",

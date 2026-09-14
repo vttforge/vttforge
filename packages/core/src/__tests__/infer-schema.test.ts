@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'bun:test';
 import type { Color } from '../data/color.js';
 import {
   type ArrayFieldInstance,
@@ -95,19 +95,19 @@ describe('fields()', () => {
 
   it('returns the foundry data.fields bag when present', () => {
     const f = fields();
-    expect(f.NumberField).toBe(FakeNumberField);
-    expect(f.StringField).toBe(FakeStringField);
-    expect(f.BooleanField).toBe(FakeBooleanField);
-    expect(f.HTMLField).toBe(FakeHTMLField);
-    expect(f.ColorField).toBe(FakeColorField);
-    expect(f.FilePathField).toBe(FakeFilePathField);
-    expect(f.ArrayField).toBe(FakeArrayField);
-    expect(f.SetField).toBe(FakeSetField);
-    expect(f.ForeignDocumentField).toBe(FakeForeignDocumentField);
-    expect(f.SchemaField).toBe(FakeSchemaField);
-    expect(f.EmbeddedDataField).toBe(FakeEmbeddedDataField);
-    expect(f.EmbeddedDocumentField).toBe(FakeEmbeddedDocumentField);
-    expect(f.TypedSchemaField).toBe(FakeTypedSchemaField);
+    expect(f.NumberField as unknown).toBe(FakeNumberField);
+    expect(f.StringField as unknown).toBe(FakeStringField);
+    expect(f.BooleanField as unknown).toBe(FakeBooleanField);
+    expect(f.HTMLField as unknown).toBe(FakeHTMLField);
+    expect(f.ColorField as unknown).toBe(FakeColorField);
+    expect(f.FilePathField as unknown).toBe(FakeFilePathField);
+    expect(f.ArrayField as unknown).toBe(FakeArrayField);
+    expect(f.SetField as unknown).toBe(FakeSetField);
+    expect(f.ForeignDocumentField as unknown).toBe(FakeForeignDocumentField);
+    expect(f.SchemaField as unknown).toBe(FakeSchemaField);
+    expect(f.EmbeddedDataField as unknown).toBe(FakeEmbeddedDataField);
+    expect(f.EmbeddedDocumentField as unknown).toBe(FakeEmbeddedDocumentField);
+    expect(f.TypedSchemaField as unknown).toBe(FakeTypedSchemaField);
   });
 });
 

@@ -38,7 +38,7 @@
     "build": "tsdown",
     "postbuild": "node ./scripts/codegen-errors.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "bun test",
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only"
   },
@@ -47,16 +47,12 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
-    "@babel/core": "catalog:",
-    "@babel/plugin-proposal-decorators": "catalog:",
-    "@rolldown/plugin-babel": "catalog:",
+    "@happy-dom/global-registrator": "^20.14.5",
+    "@types/bun": "catalog:",
     "@vttforge/testing": "workspace:*",
-    "happy-dom": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "unrun": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "publishConfig": {
     "access": "public",

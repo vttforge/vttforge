@@ -1,4 +1,3 @@
-// @vitest-environment happy-dom
 /**
  * BaseApplication exists because of two traps in raw ApplicationV2, and the
  * cases that matter are the ones that prove each trap is gone.
@@ -8,7 +7,7 @@
  * "the class is not renderable", pointing at Foundry rather than at the line
  * that was wrong.
  */
-import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'bun:test';
 import { BaseApplication } from '../base-application.js';
 import { VttfError } from '../errors/registry.js';
 

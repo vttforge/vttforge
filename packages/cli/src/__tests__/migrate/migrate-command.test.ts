@@ -1,12 +1,13 @@
 /**
  * The command over a real directory: preview by default, written on request.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runAudit } from '../../audit/index.js';
 import { runMigrateCommand } from '../../commands/migrate.js';
 

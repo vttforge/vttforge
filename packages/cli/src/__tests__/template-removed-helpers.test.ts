@@ -1,11 +1,12 @@
 /**
  * VTTF-AUDIT-021: a template that calls a helper v14 removed never renders.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runTemplateRules } from '../audit/template-rules.js';
 
 describe('VTTF-AUDIT-021', () => {

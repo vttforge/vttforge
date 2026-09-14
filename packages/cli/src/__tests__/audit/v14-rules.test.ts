@@ -1,10 +1,11 @@
 /**
  * VTTF-AUDIT-011 to 016: the v13 code that v14 broke or deprecated.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runAudit } from '../../audit/index.js';
 
 let cwd: string;

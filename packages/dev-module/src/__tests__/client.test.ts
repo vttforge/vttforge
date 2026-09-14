@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'bun:test';
 import { connect, parsePayload, type SocketLike } from '../client.js';
 import type { FoundryEnv } from '../reload.js';
 

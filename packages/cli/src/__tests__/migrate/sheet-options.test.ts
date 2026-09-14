@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { findSheetClasses, parseSource } from '../../migrate/parse.js';
 import { extractOptions, renderStatics } from '../../migrate/sheet-options.js';
 

@@ -4,7 +4,7 @@
  * No parameter here carries an annotation. A name that stops inferring
  * fails the build, which is the only way to notice.
  */
-import { describe, expectTypeOf, it } from 'vitest';
+import { describe, expectTypeOf, it } from 'bun:test';
 import type {
   ActorLike,
   ChatMessageLike,

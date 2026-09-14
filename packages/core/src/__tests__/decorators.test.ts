@@ -5,8 +5,9 @@
  * Driven through `@vttforge/testing`, which is also the first real use of
  * that package outside its own suite.
  */
+
+import { afterEach, describe, expect, it } from 'bun:test';
 import { type MockFoundry, withMockFoundry } from '@vttforge/testing/vitest';
-import { afterEach, describe, expect, it } from 'vitest';
 import {
   ActorDataModel,
   DocumentSheet,
@@ -185,7 +186,7 @@ describe('@SystemSetting', () => {
     Settings.homebrew = true;
     await Promise.resolve();
     expect(Settings.homebrew).toBe(true);
-    expect(game.settings.get('my-system', 'homebrew')).toBe(true);
+    expect(game.settings.get('my-system', 'homebrew') as boolean).toBe(true);
   });
 
   it('takes an explicit key and default over the accessor name and initializer', () => {

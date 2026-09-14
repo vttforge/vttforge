@@ -2,11 +2,12 @@
  * VTTF-AUDIT-022: a package that talks over its own socket channel while the
  * manifest never declares one. Foundry drops the emit and logs nothing.
  */
+
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runSourceRules } from '../audit/source-rules.js';
 
 let cwd: string;

@@ -1,6 +1,4 @@
-// @vitest-environment happy-dom
-
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { VttfError } from '../errors/registry.js';
 import { type PromptResult, promptFieldGroup, promptFields } from '../prompt-fields.js';
 

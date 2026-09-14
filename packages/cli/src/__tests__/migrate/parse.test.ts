@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { findSheetClasses, methodOf, parseSource, unsupportedBases } from '../../migrate/parse.js';
 
 const SRC = `

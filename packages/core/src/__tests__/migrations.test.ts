@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'bun:test';
 import { VttfError } from '../errors/registry.js';
 import type { GameSettingsApi } from '../foundry-globals.js';
 import { createMigrationRunner } from '../migrations/runner.js';
@@ -232,7 +232,7 @@ describe('createMigrationRunner — run()', () => {
     const ran = await runner.run();
     expect(fn1).not.toHaveBeenCalled();
     expect(fn2).not.toHaveBeenCalled();
-    expect(fn3).toHaveBeenCalledOnce();
+    expect(fn3).toHaveBeenCalledTimes(1);
     expect(ran).toEqual(['2.0.0']);
   });
 
@@ -375,7 +375,7 @@ describe('createMigrationRunner — VTTF-0005 compatibleVersion floor', () => {
       isNewerVersion: FOUNDRY_NEWER,
     });
     expect(await runner.run()).toEqual(['2.0.0']);
-    expect(fn).toHaveBeenCalledOnce();
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 });
 

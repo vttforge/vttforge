@@ -5,7 +5,7 @@
  * document surface. They compile now; if one stops compiling, the surface
  * shrank and every sheet that reads it goes back to casting.
  */
-import { describe, expectTypeOf, it } from 'vitest';
+import { describe, expectTypeOf, it } from 'bun:test';
 import type { BaseActorSheet } from '../base-actor-sheet.js';
 import type { BaseItemSheet } from '../base-item-sheet.js';
 import type { FieldInstance } from '../data/fields.js';

@@ -1,6 +1,4 @@
-// @vitest-environment happy-dom
-
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { BaseActorSheet } from '../base-actor-sheet.js';
 import { BaseItemSheet } from '../base-item-sheet.js';
 import { EDIT_IN_PLAY_ATTRIBUTE, MODE_CLASS, TOGGLE_MODE_ACTION } from '../sheet-modes.js';

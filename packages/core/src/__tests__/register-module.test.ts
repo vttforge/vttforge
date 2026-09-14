@@ -6,8 +6,9 @@
  * error — the type just never shows up. These cases pin the prefixing, and
  * pin what a module is deliberately not allowed to do.
  */
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { createMockConfig } from '@vttforge/testing/vitest';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FoundryConfig } from '../foundry-globals.js';
 import {
   _resetRegisteredModulesForTests,
@@ -91,8 +92,8 @@ describe('registerModule', () => {
   it('leaves the system document classes alone', () => {
     registerModule({ id: MODULE_ID, itemDataModels: { pdf: PdfItemData } });
     fireInit();
-    expect(CONFIG.Actor.documentClass).toBe(SystemActor);
-    expect(CONFIG.Item.documentClass).toBe(SystemItem);
+    expect(CONFIG.Actor.documentClass as unknown).toBe(SystemActor);
+    expect(CONFIG.Item.documentClass as unknown).toBe(SystemItem);
   });
 
   it('leaves the initiative formula alone', () => {
@@ -134,7 +135,7 @@ describe('registerModule', () => {
     fireInit();
     expect(onReady).not.toHaveBeenCalled();
     for (const fn of readyHooks) fn();
-    expect(onReady).toHaveBeenCalledOnce();
+    expect(onReady).toHaveBeenCalledTimes(1);
   });
 
   it('refuses a second registration of the same id', () => {
@@ -208,7 +209,7 @@ describe('registerModule', () => {
     const [hook] = hooksFor('i18nInit');
     expect(hook).toBeDefined();
     hook?.();
-    expect(onI18nInit).toHaveBeenCalledOnce();
+    expect(onI18nInit).toHaveBeenCalledTimes(1);
   });
 
   it('runs onSetup on the setup hook', () => {
@@ -217,7 +218,7 @@ describe('registerModule', () => {
     const [hook] = hooksFor('setup');
     expect(hook).toBeDefined();
     hook?.();
-    expect(onSetup).toHaveBeenCalledOnce();
+    expect(onSetup).toHaveBeenCalledTimes(1);
   });
 
   it('supports async onSetup (the returned promise is fire-and-forget)', async () => {

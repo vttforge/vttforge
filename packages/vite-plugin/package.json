@@ -36,7 +36,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "bun test --pass-with-no-tests",
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only"
   },
@@ -45,13 +45,12 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
+    "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "unrun": "catalog:",
-    "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite": "catalog:"
   },
   "engines": {
     "node": ">=26.0.0"
