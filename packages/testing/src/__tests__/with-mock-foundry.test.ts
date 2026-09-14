@@ -127,6 +127,19 @@ describe('the documents a world holds', () => {
     expect(game.actors.size).toBe(1);
   });
 
+  it('takes documents declared as an interface too', () => {
+    interface Doc {
+      id: string;
+      name: string;
+      type: string;
+    }
+    const items: Doc[] = [{ id: 'sword', name: 'Sword', type: 'weapon' }];
+
+    mock = withMockFoundry({ items });
+
+    expect(game.items.get('sword')?.name).toBe('Sword');
+  });
+
   it('starts empty, and takes plain objects too', () => {
     mock = withMockFoundry({ journal: [{ name: 'PDFs' }] });
 
@@ -159,6 +172,22 @@ describe('the installed modules', () => {
     expect(game.modules.get('b-module')?.title).toBe('B Module');
     expect(game.modules.filter((m) => m.active).map((m) => m.id)).toEqual(['a-module']);
     expect(game.modules.size).toBe(2);
+  });
+
+  it('takes fixtures declared as an interface, not only object literals', () => {
+    // An interface never satisfies an index signature. A test that declares
+    // its fixtures as `interface Handle { ... }` used to fail to compile here,
+    // with a message that reads like a puzzle.
+    interface Handle {
+      id: string;
+      title: string;
+      version: string;
+    }
+    const handles: Handle[] = [{ id: 'from-an-interface', title: 'Named', version: '2.0.0' }];
+
+    mock = withMockFoundry({ modules: handles });
+
+    expect(game.modules.get('from-an-interface')?.version).toBe('2.0.0');
   });
 
   it('fills in a title and a version for a module named by id alone', () => {
