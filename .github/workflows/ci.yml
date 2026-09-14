@@ -15,8 +15,8 @@ concurrency:
 
 # Self-hosted GCP runner from fcsouza/infra (gcp/runners/).
 # Bun is pinned via oven-sh/setup-bun rather than taken from the runner
-# image, so the version CI validates on is the one `package.json#engines`
-# declares.
+# image, at the exact version `bun-version` specifies below. Keep that in
+# sync with `package.json#engines`'s floor by hand.
 
 jobs:
   lint:
