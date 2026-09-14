@@ -132,8 +132,14 @@ describe('a context menu entry', () => {
       entries.push({
         label: 'MY_MODULE.Menu.open',
         icon: 'fa-solid fa-file',
-        visible: () => true,
-        onClick: () => undefined,
+        // Both receive the row the menu was opened on, and `onClick` receives
+        // the event before it. A handler that reads the row from the first
+        // argument reads an event instead, which is the mistake this pins.
+        visible: (target) => target.dataset.entryId !== undefined,
+        onClick: (event, target) => {
+          expectTypeOf(event).toEqualTypeOf<Event>();
+          expectTypeOf(target).toEqualTypeOf<HTMLElement>();
+        },
       });
       // v13: still accepted, warns at runtime, removed in v16.
       entries.push({ name: 'Old', condition: true, callback: () => undefined });
