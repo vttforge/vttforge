@@ -170,17 +170,25 @@ interface MockModuleHandle {
   [key: string]: unknown;
 }
 
-/** What a test says about a module it wants installed. Only `id` is required. */
-export interface MockModuleOptions {
-  readonly id: string;
-  readonly title?: string;
-  readonly version?: string;
-  readonly active?: boolean;
-  readonly socket?: boolean;
-  readonly url?: string;
-  readonly manifest?: string;
-  readonly [key: string]: unknown;
-}
+/**
+ * What a test says about a module it wants installed. Only `id` is required.
+ *
+ * A type, not an interface, and the extra fields ride in a separate member of
+ * the intersection. An interface never satisfies an index signature, so a test
+ * that declared its fixtures with `interface Handle { id: string; ... }` could
+ * not pass them here, and the compiler's explanation reads like a puzzle.
+ */
+export type MockModuleOptions =
+  | {
+      readonly id: string;
+      readonly title?: string;
+      readonly version?: string;
+      readonly active?: boolean;
+      readonly socket?: boolean;
+      readonly url?: string;
+      readonly manifest?: string;
+    }
+  | (Record<string, unknown> & { readonly id: string });
 
 /**
  * A document a test puts in the world.
@@ -189,7 +197,10 @@ export interface MockModuleOptions {
  * already on it. A plain object works too, which is why this is a union: a
  * `MockDocument` is an interface and does not satisfy an index signature.
  */
-export type MockWorldDocument = MockDocument | Record<string, unknown>;
+export type MockWorldDocument =
+  | MockDocument
+  | { readonly id?: string; readonly name?: string }
+  | Record<string, unknown>;
 
 /**
  * `game.actors`, `game.items` and `game.journal`: a collection a test can walk.
@@ -255,7 +266,8 @@ function mockModules(seed: readonly MockModuleOptions[] = []) {
     version: '1.0.0',
     active: true,
     socket: true,
-    ...options,
+    ...(options as Record<string, unknown>),
+    id: options.id,
   });
   for (const options of seed) handles.set(options.id, build(options));
 
