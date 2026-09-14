@@ -12,7 +12,7 @@ Code contributions are welcome too.
 ## Prerequisites
 
 - Node.js 26 or higher.
-- Bun 1.4.2+ installed (`curl -fsSL https://bun.sh/install | bash`, or `brew install bun`). Corepack is not involved — Bun is not corepack-managed.
+- Bun 1.4.2+ installed (`curl -fsSL https://bun.sh/install | bash`, or `brew install bun`). Corepack is not involved: Bun is not corepack-managed.
 - A Foundry VTT v14 installation, or Docker plus a foundryvtt.com license, for anything that touches sheets or the dev loop.
 
 ## Setup
@@ -35,6 +35,10 @@ bun run knip        # unused exports and dependencies
 ```
 
 `bun run lint` may print a Biome out-of-memory warning under some terminals. It comes from the parent shell's TTY setup: run it as `bash -c "bun run lint"` and it goes away.
+
+## Dependencies
+
+`package.json` overrides `vite@5` to `^6.4.3`. VitePress 1.6.4 depends on vite `^5.4.14`, and vite 5 ended at 5.4.21 with four open advisories (server.fs.deny bypass, optimized-deps path traversal, an esbuild dev-server issue, and an NTLM hash disclosure via launch-editor), none backported. All four are fixed in 6.4.3, and VitePress runs fine on it. Revisit when VitePress 2 moves off vite 5 on its own.
 
 ## Running Foundry locally
 
