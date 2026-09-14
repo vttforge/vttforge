@@ -1,5 +1,12 @@
 # @vttforge/testing
 
+## 0.13.1
+
+### Patch Changes
+
+- Updated dependencies [7f2a3e2]
+  - @vttforge/types@0.10.0
+
 ## 0.13.0
 
 ### Minor Changes
