@@ -3,7 +3,7 @@
 The build contract for a Foundry VTT v14+ system or module, as a Vite plugin.
 
 ```bash
-pnpm add -D @vttforge/vite-plugin vite
+bun add -D @vttforge/vite-plugin vite
 ```
 
 ```js

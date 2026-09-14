@@ -3,7 +3,7 @@
 The TypeScript types shared across VTTForge packages.
 
 ```bash
-pnpm add -D @vttforge/types
+bun add -D @vttforge/types
 ```
 
 ## What is in it

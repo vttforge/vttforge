@@ -3,7 +3,7 @@
 CSS-only package: design tokens, scoped reset, base styles, sheet primitives, and opt-in themes.
 
 ```bash
-pnpm add @vttforge/styles
+bun add @vttforge/styles
 ```
 
 ## Usage

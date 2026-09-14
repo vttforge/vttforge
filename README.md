@@ -24,9 +24,9 @@
 ## Start here
 
 ```bash
-pnpm create vttforge my-system --type system --lang ts
+bun create vttforge my-system --type system --lang ts
 cd my-system
-pnpm build
+bun run build
 ```
 
 Pass `--type module` for a module. The two get the same treatment: the same
@@ -34,12 +34,12 @@ sheet bases, the same data models, the same build, the same dev loop.
 
 That scaffolds a Foundry-loadable package, installs it, and builds a `dist/` plus a release zip with the manifest at the root, which is what foundryvtt.com expects. Every prompt is also a flag, so the same line runs in CI with `--yes`.
 
-`npx @vttforge/cli init` does the same thing if you would rather not go through `create`.
+`bunx @vttforge/cli init` does the same thing if you would rather not go through `create`.
 
 Then point Foundry at it:
 
 ```bash
-pnpm dev
+bun run dev
 ```
 
 This builds, symlinks `dist/` into your Foundry data directory, and watches. Save a template and the open sheet redraws in place, with no page reload. The first run asks where Foundry keeps its data and remembers the answer; if Foundry runs in a container and cannot follow a symlink, it prints the compose mount to use instead.
@@ -154,7 +154,7 @@ Most of these exist because something failed quietly in a real world.
 | [`@vttforge/testing`](https://www.npmjs.com/package/@vttforge/testing) | `withMockFoundry` for Vitest, and a Quench half for what a mock cannot answer |
 | [`@vttforge/types`](https://www.npmjs.com/package/@vttforge/types) | The Foundry surface the bases stand on: `ApplicationV2Members`, `DocumentSheetV2Members`, `VttforgeClass` |
 | [`@vttforge/dev-module`](https://www.npmjs.com/package/@vttforge/dev-module) | The in-world half of the dev loop, installed for you by `vttforge dev` |
-| [`create-vttforge`](https://www.npmjs.com/package/create-vttforge) | So `pnpm create vttforge` works |
+| [`create-vttforge`](https://www.npmjs.com/package/create-vttforge) | So `bun create vttforge` works |
 
 ### Three things it stops you getting wrong
 

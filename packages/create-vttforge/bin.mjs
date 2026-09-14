@@ -2,8 +2,8 @@
 /**
  * create-vttforge — npm `create-*` convention wrapper.
  *
- * `pnpm create vttforge my-system` (or `npm create vttforge@latest my-system`,
- * `bun create vttforge my-system`, `yarn create vttforge my-system`) invokes
+ * `bun create vttforge my-system` (or `npm create vttforge@latest my-system`,
+ * `pnpm create vttforge my-system`, `yarn create vttforge my-system`) invokes
  * this binary. We forward the args to `@vttforge/cli`'s `init` subcommand so
  * the scaffolder code lives in exactly one place.
  *
