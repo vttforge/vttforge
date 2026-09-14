@@ -165,5 +165,8 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile --force
 
+      - name: Build
+        run: pnpm build
+
       - name: Knip
         run: pnpm knip
