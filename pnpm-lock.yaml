@@ -54,6 +54,9 @@ catalogs:
     happy-dom:
       specifier: ^20.12.0
       version: 20.12.0
+    knip:
+      specifier: ^6.34.0
+      version: 6.35.1
     lefthook:
       specifier: ^2.1.12
       version: 2.1.12
@@ -108,7 +111,7 @@ importers:
         specifier: 'catalog:'
         version: 5.0.1
       knip:
-        specifier: 6.35.1
+        specifier: 'catalog:'
         version: 6.35.1
       lefthook:
         specifier: 'catalog:'
@@ -3305,6 +3308,9 @@ packages:
 
   oniguruma-to-es@3.1.1:
     resolution: {integrity: sha512-bUH8SDvPkH3ho3dvwJwfonjlQ4R80vjyvrU8YpxuROddv55vAEJrTuCuCVUhhsHbtlD9tGGbaNApGQckXhS8iQ==}
+
+  oniguruma-to-es@4.3.6:
+    resolution: {integrity: sha512-csuQ9x3Yr0cEIs/Zgx/OEt9iBw9vqIunAPQkx19R/fiMq2oGVTgcMqO/V3Ybqefr1TBvosI6jU539ksaBULJyA==}
 
   oxc-parser@0.148.0:
     resolution: {integrity: sha512-syxUKHeUll89RIABQADcI7sikYrwyssvA6gj4phSSIPezKVM8yMaLAiLLSc7fmzVvrwybfFGFbW5zme9sX87rg==}
@@ -6747,6 +6753,12 @@ snapshots:
   oniguruma-to-es@3.1.1:
     dependencies:
       emoji-regex-xs: 1.0.0
+      regex: 6.1.0
+      regex-recursion: 6.0.2
+
+  oniguruma-to-es@4.3.6:
+    dependencies:
+      oniguruma-parser: 0.12.2
       regex: 6.1.0
       regex-recursion: 6.0.2
 
