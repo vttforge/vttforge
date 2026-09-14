@@ -60,8 +60,7 @@
     "@vttforge/dev-module": "workspace:*",
     "publint": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "unrun": "catalog:"
+    "typescript": "catalog:"
   },
   "engines": {
     "node": ">=26.0.0"

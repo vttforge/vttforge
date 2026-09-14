@@ -58,8 +58,7 @@
     "@types/node": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "unrun": "catalog:"
+    "typescript": "catalog:"
   },
   "engines": {
     "node": ">=22.0.0"

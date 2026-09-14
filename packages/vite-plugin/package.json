@@ -50,7 +50,6 @@
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "unrun": "catalog:",
     "vite": "catalog:"
   },
   "engines": {

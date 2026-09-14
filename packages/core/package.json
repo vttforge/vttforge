@@ -52,8 +52,7 @@
     "@vttforge/testing": "workspace:*",
     "publint": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "unrun": "catalog:"
+    "typescript": "catalog:"
   },
   "publishConfig": {
     "access": "public",
