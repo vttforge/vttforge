@@ -30,7 +30,7 @@ const SYSTEM = join(repoRoot, 'examples', 'simple-system');
 
 /**
  * These need the examples built. `turbo.json` makes `@vttforge/cli#test`
- * depend on both example builds, so `pnpm test` and CI always have them; the
+ * depend on both example builds, so `bun run test` and CI always have them; the
  * guard is for someone running vitest directly, and vitest reports the skip.
  */
 const built = (project: string) =>

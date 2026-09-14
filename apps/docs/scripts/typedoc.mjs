@@ -60,7 +60,7 @@ for (const pkg of PACKAGES) {
       '--excludeInternal',
       '--disableSources',
       // The workspace compiles with a newer TypeScript than TypeDoc supports;
-      // the packages are typechecked by `pnpm typecheck`, not here.
+      // the packages are typechecked by `bun run typecheck`, not here.
       '--skipErrorChecking',
       // Helper types behind a public conditional type are not part of the API.
       '--validation.notExported',
