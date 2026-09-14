@@ -164,7 +164,7 @@ if (cliUnshipped) {
     `\nThe templates ship inside the ${CLI_PACKAGE} tarball, so a pin corrected here reaches`,
   );
   console.error('nobody until the CLI is published too. Add a patch changeset for it:\n');
-  console.error(`  pnpm changeset  # patch ${CLI_PACKAGE}`);
+  console.error(`  bun run changeset  # patch ${CLI_PACKAGE}`);
   if (problems.length === 0) process.exit(1);
   console.error('');
 }

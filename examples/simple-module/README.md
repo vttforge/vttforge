@@ -19,13 +19,13 @@ From the repo root:
 
 ```bash
 cp .env.example .env                                  # FOUNDRY_LICENSE_KEY + foundryvtt.com credentials
-pnpm -F @vttforge-examples/simple-module build        # → examples/simple-module/dist/
+bun --filter @vttforge-examples/simple-module build    # → examples/simple-module/dist/
 docker compose -f docker-compose.dev.yml up           # → http://localhost:30000
 ```
 
 Enable **VTTForge Example Module** in any world. Create a Note from the Items sidebar, copy the `@Note[id]` reference from its sheet, and paste it into any text field.
 
-`pnpm -F @vttforge-examples/simple-module dev` rebuilds on every edit.
+`bun --filter @vttforge-examples/simple-module dev` rebuilds on every edit.
 
 ## Layout
 

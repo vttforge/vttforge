@@ -28,12 +28,12 @@ the repo root:
 
 ```bash
 cp .env.example .env                                  # fill in FOUNDRY_LICENSE_KEY + foundryvtt.com credentials
-pnpm install                                          # one-time
-pnpm -F @vttforge-examples/simple-system build        # bundles into examples/simple-system/dist/
+bun install                                            # one-time
+bun --filter @vttforge-examples/simple-system build    # bundles into examples/simple-system/dist/
 docker compose -f docker-compose.dev.yml up           # → http://localhost:30000
 ```
 
-`pnpm -F @vttforge-examples/simple-system dev` rebuilds on every source
+`bun --filter @vttforge-examples/simple-system dev` rebuilds on every source
 change (a Foundry refresh picks up the new bundle).
 
 Open <http://localhost:30000>, create a world using the **VTTForge Example

@@ -4,9 +4,10 @@
  *
  * Strategy: read `npm_config_user_agent`, which pnpm/npm/bun/yarn all set when
  * they spawn a child process (including `pnpm dlx`, `pnpm create`, etc.).
- * Falls back to `pnpm` because that's the VTTForge house default and the
- * most common Foundry-developer choice, but any concrete signal in the
- * environment wins over the default.
+ * Falls back to `pnpm` because that's the most common Foundry-developer
+ * choice, but any concrete signal in the environment wins over the default.
+ * (VTTForge's own tooling runs on Bun; this default is about the ecosystem
+ * this CLI scaffolds into, not about VTTForge itself.)
  */
 
 import { existsSync } from 'node:fs';

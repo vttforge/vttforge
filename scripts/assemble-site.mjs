@@ -50,7 +50,7 @@ const STYLE_GRAPH = [
 function requireBuilt(path, what) {
   if (!existsSync(path)) {
     console.error(`Missing ${what}: ${path}`);
-    console.error('Run `pnpm build` first — this script assembles, it does not build.');
+    console.error('Run `bun run build` first: this script assembles, it does not build.');
     process.exit(1);
   }
 }

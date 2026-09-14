@@ -92,7 +92,7 @@ function renderStub(entry) {
     '',
     '`packages/core/scripts/codegen-errors.mjs` builds this file from the',
     `registry at [\`${SOURCE_RELATIVE}\`](${SOURCE_URL}). Do not edit by hand;`,
-    're-run `pnpm --filter @vttforge/core build` after editing the registry.',
+    're-run `bun --filter @vttforge/core build` after editing the registry.',
     '',
   );
   return lines.join('\n');
