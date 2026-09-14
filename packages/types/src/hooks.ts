@@ -260,14 +260,29 @@ export type ContextMenuHooks = {
   ];
 };
 
-/** One entry of a context menu. */
+/**
+ * One entry of a context menu.
+ *
+ * v14 renamed three fields: `name` is `label`, `condition` is `visible`, and
+ * `callback` is `onClick`. The old names still work and log a deprecation
+ * warning; they are removed in v16. Both shapes are described here, and the
+ * v14 ones are the ones to write.
+ */
 export interface ContextMenuEntry {
-  name: string;
+  /** The text on the entry. */
+  label?: string;
   icon?: string;
   classes?: string;
   group?: string;
+  /** Whether to draw the entry at all, for this target. */
+  visible?: boolean | ((target: HTMLElement) => boolean);
+  onClick?: (target: HTMLElement) => void;
+  /** @deprecated v14 calls this `label`. Removed in v16. */
+  name?: string;
+  /** @deprecated v14 calls this `visible`. Removed in v16. */
   condition?: boolean | ((target: HTMLElement) => boolean);
-  callback: (target: HTMLElement) => void;
+  /** @deprecated v14 calls this `onClick`. Removed in v16. */
+  callback?: (target: HTMLElement) => void;
 }
 
 /** One button in the scene controls. */
