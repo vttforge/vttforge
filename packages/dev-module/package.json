@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
-    "@happy-dom/global-registrator": "^20.14.5",
+    "@happy-dom/global-registrator": "^21.0.3",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "publint": "catalog:",
