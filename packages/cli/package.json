@@ -39,7 +39,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun check --no-script",
     "test": "bun test --pass-with-no-tests --path-ignore-patterns='templates/**'",
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only"
