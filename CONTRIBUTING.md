@@ -34,7 +34,7 @@ bun run format      # Biome, writing fixes
 bun run knip        # unused exports and dependencies
 ```
 
-While you work, run only the tests your change touches: `bun test --changed` inside a package runs the test files that import a file you changed. Run the whole suite once before you push. A test can depend on something it does not import, such as the examples' built `dist/` that the CLI tests read, so `--changed` can miss it.
+While you work, run only the tests your change touches: `bun run test --changed=origin/main` inside a package runs the test files that import a file changed since `main`. Go through `bun run test` rather than bare `bun test`, so the package's own flags apply (the CLI's skips the template tests), and pass the ref, since without one `--changed` sees only uncommitted edits. Run the whole suite once before you push. A test can depend on something it does not import, such as the examples' built `dist/` that the CLI tests read, so `--changed` can miss it.
 
 `bun run lint` may print a Biome out-of-memory warning under some terminals. It comes from the parent shell's TTY setup: run it as `bash -c "bun run lint"` and it goes away.
 
