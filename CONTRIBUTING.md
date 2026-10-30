@@ -27,12 +27,14 @@ bun install
 
 ```bash
 bun run build       # tsdown build of every package
-bun run test        # Vitest across the monorepo
-bun run typecheck   # tsc --noEmit across all packages
+bun run test        # bun test across the monorepo
+bun run typecheck   # bun check in every package, after building its dependencies
 bun run lint        # Biome, syncpack, and the template pin check
 bun run format      # Biome, writing fixes
 bun run knip        # unused exports and dependencies
 ```
+
+While you work, run only the tests your change touches: `bun test --changed` inside a package runs the test files that import a file you changed. Run the whole suite once before you push. A test can depend on something it does not import, such as the examples' built `dist/` that the CLI tests read, so `--changed` can miss it.
 
 `bun run lint` may print a Biome out-of-memory warning under some terminals. It comes from the parent shell's TTY setup: run it as `bash -c "bun run lint"` and it goes away.
 

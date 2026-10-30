@@ -40,7 +40,7 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun check --no-script",
     "test": "bun test",
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only"
