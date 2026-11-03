@@ -58,7 +58,7 @@
       "turbo": "^2.10.12",
       "typescript": "^7.0.2",
       "vite": "^8.2.2",
-      "@rolldown/plugin-babel": "^0.2.4",
+      "@rolldown/plugin-babel": "^0.3.0",
       "@babel/plugin-proposal-decorators": "^8.0.2",
       "@babel/core": "^8.0.1",
       "@babel/parser": "^8.0.4",
